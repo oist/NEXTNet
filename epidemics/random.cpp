@@ -53,7 +53,6 @@ vector<double> randu( int n){
     // Note: We add +0.5 and +1 to ensure that the values 0 and 1 are never actually reached.
 }
 
-
 int poissrnd(double lambda) {
     // poisson_distribution<int>(lambda)(mersenneTwister)
     typedef poisson_distribution<int> pois_int_t;
