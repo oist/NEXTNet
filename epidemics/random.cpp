@@ -13,8 +13,7 @@ using namespace std;
 /*-----RANDOM NUMBER GENERATOR-----*/
 
 /*  MersenneTwister random number generator */
-static mt19937 mersenneTwister;
-//default_random_engine generator;
+static mt19937 mersenneTwister(1);
 
 
 /* Generate infection times of a single individual
@@ -29,15 +28,12 @@ vector<double> beta_normalised( int n, double mean, double variance){
     vector<double> vec(n,0.0); // Initialise empty vector of size n.
     
     for (int i = 0; i< n; i++)
-        vec[i] = log_distribution(mersenneTwister );
+        vec[i] = log_distribution(mersenneTwister);
 
     return vec;
 }
 
-/*  Reset the random number generator*/
-void rng(string& description ) {
-    mersenneTwister.seed(mt19937::default_seed);
-}
+
 
 
 
@@ -45,12 +41,12 @@ void rng(string& description ) {
 
 /*  Create uniformly distributed random numbers using the Mersenne Twister algorithm. */
 vector<double> randu( int n){
-    vector<double> vec(n, 0.0); // Initialise vector object of size n will all entries equal to zero.
+    vector<double> vec(n,0.0);
+    uniform_real_distribution<> dis(0,1);
     for (int i =0; i<n; i++) {
-        vec[i] = (mersenneTwister()+ 0.5)/(mersenneTwister.max()+1.0);
+        vec[i]=dis(mersenneTwister);
     }
-    return vec; //
-    // Note: We add +0.5 and +1 to ensure that the values 0 and 1 are never actually reached.
+    return vec;
 }
 
 int poissrnd(double lambda) {
@@ -61,7 +57,7 @@ int poissrnd(double lambda) {
 }
 
 #if 0
-
+// My own random number generators
 vector<double> poissrnd(double lambda,int n){
     vector<double> vec(n, 0.0);
     vector<double> u = randu(n);

@@ -15,7 +15,6 @@ void exportData(vector<double>& trajectory,string filename) {
     ofstream out;
     //choose where to write
     out.open(filename);
-    // string path = "/Users/samuelcure/Documents/Epidemics-Mean-Field/data/";
     int n = (int) trajectory.size();
     out << "t" << ", " << "n"<< "\n";
     for (int i =0; i<n; i++)

@@ -9,37 +9,40 @@
 #include "random.h"
 #include "savingData.h"
 #include "simulation.h"
+#include "testing.h"
 
 using namespace std;
 
-/* Infection times of an individual */
-double beta_normalised( double mean, double variance);
+
 
 int main(int argc, const char * argv[]) {
-
+    
+    setDebugEnabled(false);// testing or not.
+    
+    
     /*--------- Initialise Parameters ----------*/
-
 
 //    double absolute_time= 0;
 //    int number_of_infected = 1;
-    int number_of_paths = 100;
+    int number_of_paths =10;
     
 
     int n_max =3000;
 
     double mean = 5; // Mean time of secondary infections.
-    double variance = 3; // Variance "" "" ""
+    double variance = 0.5; // Variance "" "" ""
     double r0 = 3.0; // Average number of secondary infection.
-    cout << argc;
-    if (argc > 1) {
-       n_max = atoi(argv[1]); // Optional user's choice of n_max
-    }
     
-    // if (argc == 5) {
-    //     mean = 1.0 * atoi(argv[2]);
-    //     variance = 1.0* atoi(argv[3]); // User's choice
-    //     r0 = 1.0 * atoi(argv[4]);
-    // }
+//    Optional arguments:
+//    if (argc > 1) {
+//       n_max = atoi(argv[1]); // Optional user's choice of n_max
+//    }
+//
+//     if (argc == 5) {
+//         mean = 1.0 * atoi(argv[2]);
+//         variance = 1.0* atoi(argv[3]); // User's choice
+//         r0 = 1.0 * atoi(argv[4]);
+//     }
     
     string filename("path");
     string csv(".csv");
@@ -47,19 +50,20 @@ int main(int argc, const char * argv[]) {
     for (int path = 0; path < number_of_paths ; path++ ){
         
         /*--------- Initialise Infection times of the starting population ----------*/
-        vector<double> infection_times ={0}; // First infected occurs at t=0
-        
-        // Not needed for now:
-        //vector<double> infection_times = intialiseInfectionTimes(number_of_infected, r0, mean, variance);
+
+        vector<double> infection_times({0});
 
         /*--------- Begin the simulation ----------*/
-        vector<double> time_trajectory = simulatePath(infection_times, n_max, mean, variance,r0);
-        //cout << path;
+        
 
+        vector<double> time_trajectory = simulatePath(infection_times, n_max,  mean, variance, r0);
+        cout << path<<"\n";
+
+    
         /*--------- Save Data ----------*/
         string s = to_string(path+1);
         exportData(time_trajectory,filename+s+csv);
+    
     }
-
     return 0;
 }
