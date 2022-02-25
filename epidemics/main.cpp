@@ -10,9 +10,12 @@
 #include "savingData.h"
 #include "simulation.h"
 #include "testing.h"
+#include "Tau.h"
 
 using namespace std;
 
+/*  MersenneTwister random number generator */
+/*static*/ mt19937 mersenneTwister;
 
 
 int main(int argc, const char * argv[]) {
@@ -24,14 +27,14 @@ int main(int argc, const char * argv[]) {
 
 //    double absolute_time= 0;
 //    int number_of_infected = 1;
-    int number_of_paths =10;
-    
+    int number_of_paths =2;
+    Tau tau(1,1,2); //Mean Variance R0
 
     int n_max =3000;
 
-    double mean = 5; // Mean time of secondary infections.
-    double variance = 0.5; // Variance "" "" ""
-    double r0 = 3.0; // Average number of secondary infection.
+//    double mean = 5; // Mean time of secondary infections.
+//    double variance = 0.5; // Variance "" "" ""
+//    double r0 = 3.0; // Average number of secondary infection.
     
 //    Optional arguments:
 //    if (argc > 1) {
@@ -55,8 +58,7 @@ int main(int argc, const char * argv[]) {
 
         /*--------- Begin the simulation ----------*/
         
-
-        vector<double> time_trajectory = simulatePath(infection_times, n_max,  mean, variance, r0);
+        vector<double> time_trajectory = simulatePath(infection_times, n_max,tau,mersenneTwister);
         cout << path<<"\n";
 
     

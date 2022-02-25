@@ -8,10 +8,11 @@
 #include "stdafx.h"
 #include "simulation.h"
 #include "random.h"
+#include "Tau.h"
 
 using namespace std;
 
-vector<double> simulatePath(vector<double>& infection_times, int n_max, double mean, double variance,double r0){
+vector<double> simulatePath(vector<double>& infection_times, int n_max, Tau& tau, mt19937& mersenneTwister ){
     
     double absolute_time = 0;
     vector<double> time_trajectory({});
@@ -21,8 +22,8 @@ vector<double> simulatePath(vector<double>& infection_times, int n_max, double m
 
         
         /*----Add new infection times----*/
-        int new_infections = poissrnd(r0);
-        vector<double> new_infection_times = beta_normalised(new_infections,mean,variance);
+        int new_infections = poissrnd(tau.r0,mersenneTwister);
+        vector<double> new_infection_times = beta_normalised(new_infections,tau.mean,tau.variance,mersenneTwister);
         for (int i =0; i < new_infections; i++)
             infection_times.push_back(new_infection_times[i]+ absolute_time);  // the infection times are not relative to the age of the infected indiv. They are relative to the general time of the system.
 
@@ -53,15 +54,17 @@ generate the nb of infections Y_i
 generate the Y_i infection times.
 Append them all in the infectiontime array.
 */
-vector<double> intialiseInfectionTimes(int number_of_infected, double r0,double mean, double variance){
-    
-    vector<double> infection_times({});
-    
-    for (int i=0; i < number_of_infected; i++){
-        int Y = poissrnd(r0);
-        vector<double> times = beta_normalised(Y,mean,variance);
-        for (int j=0; j < Y; j++)
-            infection_times.push_back(times[j]);
-    }
-    return infection_times;
-}
+//vector<double> intialiseInfectionTimes(int number_of_infected, double r0,double mean, double variance){
+//    
+//    vector<double> infection_times({});
+//    
+//    for (int i=0; i < number_of_infected; i++){
+//        int Y = poissrnd(r0,);
+//        vector<double> times = beta_normalised(Y,mean,variance);
+//        for (int j=0; j < Y; j++)
+//            infection_times.push_back(times[j]);
+//    }
+//    return infection_times;
+//}
+
+

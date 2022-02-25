@@ -13,12 +13,12 @@ using namespace std;
 /*-----RANDOM NUMBER GENERATOR-----*/
 
 /*  MersenneTwister random number generator */
-static mt19937 mersenneTwister(1);
+//static mt19937 mersenneTwister(1);
 
 
 /* Generate infection times of a single individual
  In this example we generate a time tau where LOG(tau) is normally distributed with mean mu and variance sigma^2 */
-vector<double> beta_normalised( int n, double mean, double variance){
+vector<double> beta_normalised( int n, double mean, double variance, mt19937& mersenneTwister){
     
     double mu = 2 * log(mean) - 0.5 * log( pow(mean,2.0) + variance );
     double sigma = sqrt( log( 1 + variance/pow(mean,2.0)));
@@ -35,12 +35,8 @@ vector<double> beta_normalised( int n, double mean, double variance){
 
 
 
-
-
-
-
 /*  Create uniformly distributed random numbers using the Mersenne Twister algorithm. */
-vector<double> randu( int n){
+vector<double> randu( int n,mt19937& mersenneTwister){
     vector<double> vec(n,0.0);
     uniform_real_distribution<> dis(0,1);
     for (int i =0; i<n; i++) {
@@ -49,7 +45,7 @@ vector<double> randu( int n){
     return vec;
 }
 
-int poissrnd(double lambda) {
+int poissrnd(double lambda,mt19937& mersenneTwister) {
     // poisson_distribution<int>(lambda)(mersenneTwister)
     typedef poisson_distribution<int> pois_int_t;
     pois_int_t pois(lambda);
