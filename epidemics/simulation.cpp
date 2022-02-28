@@ -68,3 +68,21 @@ Append them all in the infectiontime array.
 //}
 
 
+
+/*
+This is not yet what Boguna et al propose in their algorithm, but is a first step.
+ */
+vector<double> simulatePathRenewal(vector<double>& infection_times, int n_max, Tau& tau, mt19937& mersenneTwister ){
+    
+//    double absolute_time = 0;
+    vector<double> time_trajectory({});
+//
+//    /* Start with one infected individual at time t=0*/
+//    for (int population = 1; population <n_max; population++ ){
+//
+//
+//
+//    }
+    
+    return time_trajectory;
+}

@@ -13,6 +13,8 @@
 		984A0CB627C0E0B7004A0A96 /* simulation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 984A0CB427C0E0B7004A0A96 /* simulation.cpp */; };
 		989859FA27C8889100DE70AA /* Tau.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 989859F827C8889100DE70AA /* Tau.cpp */; };
 		98CE3E3C27C77B6E00C5D139 /* testing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 98CE3E3B27C77B6E00C5D139 /* testing.cpp */; };
+		98D92C7E27CB5E3100293F72 /* masuda.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 98D92C7C27CB5E3100293F72 /* masuda.cpp */; };
+		98D92C8227CB6C6800293F72 /* boguna.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 98D92C8027CB6C6800293F72 /* boguna.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -41,6 +43,10 @@
 		989859F927C8889100DE70AA /* Tau.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Tau.h; sourceTree = "<group>"; };
 		98CE3E3A27C77B4D00C5D139 /* testing.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = testing.h; sourceTree = "<group>"; };
 		98CE3E3B27C77B6E00C5D139 /* testing.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = testing.cpp; sourceTree = "<group>"; };
+		98D92C7C27CB5E3100293F72 /* masuda.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = masuda.cpp; sourceTree = "<group>"; };
+		98D92C7D27CB5E3100293F72 /* masuda.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = masuda.h; sourceTree = "<group>"; };
+		98D92C8027CB6C6800293F72 /* boguna.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = boguna.cpp; sourceTree = "<group>"; };
+		98D92C8127CB6C6800293F72 /* boguna.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = boguna.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -78,6 +84,7 @@
 				98CE3E3B27C77B6E00C5D139 /* testing.cpp */,
 				984A0CB427C0E0B7004A0A96 /* simulation.cpp */,
 				984A0CB527C0E0B7004A0A96 /* simulation.h */,
+				98805A0D27CC90B70021A647 /* Comparaison */,
 				989859F827C8889100DE70AA /* Tau.cpp */,
 				989859F927C8889100DE70AA /* Tau.h */,
 				984A0CA827C0DF3B004A0A96 /* stdafx.h */,
@@ -87,6 +94,17 @@
 				984A0CAE27C0DF81004A0A96 /* random.h */,
 			);
 			path = epidemics;
+			sourceTree = "<group>";
+		};
+		98805A0D27CC90B70021A647 /* Comparaison */ = {
+			isa = PBXGroup;
+			children = (
+				98D92C8027CB6C6800293F72 /* boguna.cpp */,
+				98D92C8127CB6C6800293F72 /* boguna.h */,
+				98D92C7D27CB5E3100293F72 /* masuda.h */,
+				98D92C7C27CB5E3100293F72 /* masuda.cpp */,
+			);
+			path = Comparaison;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -146,11 +164,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				989859FA27C8889100DE70AA /* Tau.cpp in Sources */,
+				98D92C7E27CB5E3100293F72 /* masuda.cpp in Sources */,
 				984A0CB627C0E0B7004A0A96 /* simulation.cpp in Sources */,
 				984A0CAF27C0DF81004A0A96 /* random.cpp in Sources */,
 				98CE3E3C27C77B6E00C5D139 /* testing.cpp in Sources */,
 				984A0CA027C0DE5C004A0A96 /* main.cpp in Sources */,
 				984A0CAB27C0DF56004A0A96 /* savingData.cpp in Sources */,
+				98D92C8227CB6C6800293F72 /* boguna.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

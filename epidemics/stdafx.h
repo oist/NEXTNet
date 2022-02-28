@@ -10,9 +10,15 @@
 
 
 #include <iostream>
+#include <math.h>
 #include <cmath>
 #include <vector>
 #include <random>
 #include <fstream>
 #include <sstream>
 #include <algorithm>
+
+//From Masuda
+#include <cstdlib> // atof
+#include <cstring>
+#include <ctime>

@@ -21,16 +21,16 @@ using namespace std;
 int main(int argc, const char * argv[]) {
     
     setDebugEnabled(false);// testing or not.
-    
+
     
     /*--------- Initialise Parameters ----------*/
 
 //    double absolute_time= 0;
 //    int number_of_infected = 1;
-    int number_of_paths =2;
+    int number_of_paths =1;
     Tau tau(1,1,2); //Mean Variance R0
 
-    int n_max =3000;
+    int n_max =10;
 
 //    double mean = 5; // Mean time of secondary infections.
 //    double variance = 0.5; // Variance "" "" ""
