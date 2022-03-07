@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		982A07D927D5BED900B4772A /* graph.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 982A07D727D5BED900B4772A /* graph.cpp */; };
 		984A0CA027C0DE5C004A0A96 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 984A0C9F27C0DE5C004A0A96 /* main.cpp */; };
 		984A0CAB27C0DF56004A0A96 /* savingData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 984A0CA927C0DF56004A0A96 /* savingData.cpp */; };
 		984A0CAF27C0DF81004A0A96 /* random.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 984A0CAD27C0DF81004A0A96 /* random.cpp */; };
@@ -29,6 +30,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		982A07D727D5BED900B4772A /* graph.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = graph.cpp; sourceTree = "<group>"; };
+		982A07D827D5BED900B4772A /* graph.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = graph.h; sourceTree = "<group>"; };
 		984A0C9C27C0DE5C004A0A96 /* epidemics */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = epidemics; sourceTree = BUILT_PRODUCTS_DIR; };
 		984A0C9F27C0DE5C004A0A96 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		984A0CA827C0DF3B004A0A96 /* stdafx.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = stdafx.h; sourceTree = "<group>"; };
@@ -90,6 +93,8 @@
 				984A0CAA27C0DF56004A0A96 /* savingData.h */,
 				984A0CAD27C0DF81004A0A96 /* random.cpp */,
 				984A0CAE27C0DF81004A0A96 /* random.h */,
+				982A07D727D5BED900B4772A /* graph.cpp */,
+				982A07D827D5BED900B4772A /* graph.h */,
 			);
 			path = epidemics;
 			sourceTree = "<group>";
@@ -154,6 +159,7 @@
 				984A0CB627C0E0B7004A0A96 /* simulation.cpp in Sources */,
 				984A0CAF27C0DF81004A0A96 /* random.cpp in Sources */,
 				98CE3E3C27C77B6E00C5D139 /* testing.cpp in Sources */,
+				982A07D927D5BED900B4772A /* graph.cpp in Sources */,
 				984A0CA027C0DE5C004A0A96 /* main.cpp in Sources */,
 				984A0CAB27C0DF56004A0A96 /* savingData.cpp in Sources */,
 				98D92C8227CB6C6800293F72 /* boguna.cpp in Sources */,
@@ -279,6 +285,7 @@
 		984A0CA427C0DE5C004A0A96 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CODE_SIGN_STYLE = Automatic;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -287,6 +294,7 @@
 		984A0CA527C0DE5C004A0A96 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
 				CODE_SIGN_STYLE = Automatic;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};

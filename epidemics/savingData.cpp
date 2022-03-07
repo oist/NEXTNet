@@ -17,9 +17,9 @@ void exportData(vector<double>& trajectory,string filename) {
 //    string location("Comparaison/");
     out.open(filename);
     int n = (int) trajectory.size();
-    out << "t" << ", " << "n"<< "\n";
+   // out << "t" << ", " << "n"<< "\n";
     for (int i =0; i<n; i++)
-        out << trajectory[i] <<", " << i+1 <<"\n";
+        out << trajectory[i] <<" " << i+1 <<"\n";
 
     out.close();
 }
