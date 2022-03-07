@@ -9,7 +9,7 @@
 	<key>CustomBuildLocationType</key>
 	<string>Absolute</string>
 	<key>CustomBuildProductsPath</key>
-	<string>/Users/curesamuelcyrus/Documents/epidemics_update/Product</string>
+	<string>/Users/curesamuelcyrus/Documents/epidemics/Product</string>
 	<key>DerivedDataLocationStyle</key>
 	<string>Default</string>
 	<key>IssueFilterStyle</key>

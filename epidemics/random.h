@@ -9,6 +9,7 @@
 
 #include "stdafx.h"
 #include "savingData.h"
+#include "Tau.h"
 
 typedef std::mt19937 rng_t;
 
@@ -17,7 +18,10 @@ std::vector<double> rand(int n,rng_t& mersenneTwister);
 double rand(double a, double b, rng_t& mersenneTwister);
 
 /* Create a vector of size N where each element is an IID lognormal number */
-std::vector<double> beta_normalised( int n,double mean, double variance,rng_t& mersenneTwister);
+std::vector<double> beta_normalised( int n,Tau& tau,rng_t& mersenneTwister);
+
+double beta_normalised(Tau& tau, rng_t& mersenneTwister);
+
 
 //std::vector<double> poissrnd(double lambda,int n);
 int poissrnd(double lambda,rng_t& mersenneTwister);
@@ -26,20 +30,32 @@ int poissrnd(double lambda,rng_t& mersenneTwister);
 std::vector<double> rgamma( int n, double a, double b, rng_t& mersenneTwister);
 double rgamma(double a, double b, rng_t& mersenneTwister);
 
+// Erdos-Renyi Graph
+//initialise_adjacency_matrix(std::vector<std::vector<int>>& A, std::vector<int>& K,int n, double degree,rng_t& mersenneTwister);
+//
 
 // Uniform random number
 /* Resets the random number generator*/
 //To do
 //void rng() ;
 
-/* CDF Gaussian*/
-double normcdf( double x );
 
-/*Inverse CDF Gaussian*/
-double norminv( double x );
+double pdf_log_normal(double t,double mean ,double variance);
 
-/* Testing */
+double cdf_log_normal(double t,double mean,double variance);
 
-void testNormCdf();
+void test_pdf_logv();
+void test_cdf_logv();
 
-void testNormInv();
+
+///**
+// *  Computes the cumulative
+// *  distribution function of the
+// *  normal distribution
+// */
+//double normcdf( double x );
+//
+///**
+// *  Computes the inverse of normcdf
+// */
+//double norminv( double x );

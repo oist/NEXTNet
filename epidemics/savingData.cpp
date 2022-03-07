@@ -14,6 +14,7 @@ void exportData(vector<double>& trajectory,string filename) {
     //create an ofstream
     ofstream out;
     //choose where to write
+//    string location("Comparaison/");
     out.open(filename);
     int n = (int) trajectory.size();
     out << "t" << ", " << "n"<< "\n";
