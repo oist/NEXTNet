@@ -20,7 +20,7 @@ std::pair<node_t, absolutetime_t> simulator::step() {
         
         /* Lazily enqueue next sibling of the putatively infected node if necessary */
         if (next.neighbour_index >= 0) {
-            const auto sibling = graph.neighbour(next.source_node, next.neighbour_index+1);
+            const auto sibling = network.neighbour(next.source_node, next.neighbour_index+1);
             if ((sibling.first >= 0) && (std::isfinite(sibling.second))) {
                 /* Create sibling's infection times entry and add to queue */
                 infectiontimes_entry e;
@@ -41,7 +41,7 @@ std::pair<node_t, absolutetime_t> simulator::step() {
         infected.insert(next.node);
         
         /* Add the infecte node's first neigbhour to the infection times queue */
-        const auto neighbour = graph.neighbour(next.node, 0);
+        const auto neighbour = network.neighbour(next.node, 0);
         if ((neighbour.first >= 0) && (std::isfinite(neighbour.second))) {
             infectiontimes_entry e;
             e.time = next.time + neighbour.second;

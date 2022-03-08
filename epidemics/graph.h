@@ -52,11 +52,11 @@ public:
 
 class simulator {
 public:
-    graph& graph;
+    graph& network;
     std::unordered_set<node_t> infected;
     
-    simulator(class graph& _graph)
-        :graph(_graph)
+    simulator(class graph& nw)
+        :network(nw)
     {}
     
     void add_infections(const std::vector<std::pair<node_t, absolutetime_t>>& v);
