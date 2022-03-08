@@ -8,7 +8,7 @@
 #include "random.h"
 #include "stdafx.h"
 #include "testing.h"
-#include "Tau.h"
+
 
 using namespace std;
 
@@ -20,29 +20,29 @@ using namespace std;
 
 /* Generate infection times of a single individual
  In this example we generate a time tau where LOG(tau) is normally distributed with mean mu and variance sigma^2 */
-vector<double> beta_normalised( int n, Tau& tau, mt19937& mersenneTwister){
-    
-    double mu = 2 * log(tau.mean) - 0.5 * log( pow(tau.mean,2.0) + tau.variance );
-    double sigma = sqrt( log( 1 + tau.variance/pow(tau.mean,2.0)));
-    
-    lognormal_distribution<double> log_distribution(mu,sigma);
-    
-    vector<double> vec(n,0.0); // Initialise empty vector of size n.
-    
-    for (int i = 0; i< n; i++)
-        vec[i] = log_distribution(mersenneTwister);
+//vector<double> beta_normalised( int n, Tau& tau, mt19937& mersenneTwister){
+//    
+//    double mu = 2 * log(tau.mean) - 0.5 * log( pow(tau.mean,2.0) + tau.variance );
+//    double sigma = sqrt( log( 1 + tau.variance/pow(tau.mean,2.0)));
+//    
+//    lognormal_distribution<double> log_distribution(mu,sigma);
+//    
+//    vector<double> vec(n,0.0); // Initialise empty vector of size n.
+//    
+//    for (int i = 0; i< n; i++)
+//        vec[i] = log_distribution(mersenneTwister);
+//
+//    return vec;
+//}
 
-    return vec;
-}
-
-double beta_normalised(Tau& tau, mt19937& mersenneTwister){
-    
-    double mu = 2 * log(tau.mean) - 0.5 * log( pow(tau.mean,2.0) + tau.variance );
-    double sigma = sqrt( log( 1 + tau.variance/pow(tau.mean,2.0)));
-    lognormal_distribution<double> log_distribution(mu,sigma);
-    
-    return log_distribution(mersenneTwister);
-}
+//double beta_normalised(Tau& tau, mt19937& mersenneTwister){
+//    
+//    double mu = 2 * log(tau.mean) - 0.5 * log( pow(tau.mean,2.0) + tau.variance );
+//    double sigma = sqrt( log( 1 + tau.variance/pow(tau.mean,2.0)));
+//    lognormal_distribution<double> log_distribution(mu,sigma);
+//    
+//    return log_distribution(mersenneTwister);
+//}
 
 
 vector<double> rgamma( int n, double a, double b, mt19937& mersenneTwister){

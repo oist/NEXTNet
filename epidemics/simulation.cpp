@@ -8,11 +8,12 @@
 #include "stdafx.h"
 #include "simulation.h"
 #include "random.h"
-#include "Tau.h"
+#include "graph.h"
+#include "types.h"
 
 using namespace std;
 
-vector<double> simulatePath(vector<double>& infection_times, int n_max, Tau& tau, mt19937& mersenneTwister ){
+vector<double> simulatePath(vector<double>& infection_times, int n_max,const lognormal_beta& infection_distribution, rng_t engine){
     
     double absolute_time = 0;
     vector<double> time_trajectory({});
@@ -22,10 +23,10 @@ vector<double> simulatePath(vector<double>& infection_times, int n_max, Tau& tau
 
         
         /*----Add new infection times----*/
-        int new_infections = poissrnd(tau.r0,mersenneTwister);
-        vector<double> new_infection_times = beta_normalised(new_infections,tau,mersenneTwister);
+        int new_infections = poissrnd(infection_distribution.r0,engine);
+
         for (int i =0; i < new_infections; i++)
-            infection_times.push_back(new_infection_times[i]+ absolute_time);  // the infection times are not relative to the age of the infected indiv. They are relative to the general time of the system.
+        infection_times.push_back( infection_distribution.sample(engine) + absolute_time);  // the infection times are not relative to the age of the infected indiv. They are relative to the general time of the system.
 
 
         /*----Determine the next infection time in the population----*/
@@ -48,61 +49,6 @@ vector<double> simulatePath(vector<double>& infection_times, int n_max, Tau& tau
     return time_trajectory;
     
 }
-
-vector<double> simulatePathNetwork(int network_size,double degree, Tau& tau, mt19937& mersenneTwister ){
-    
-//    double absolute_time = 0;
-    
-    vector<vector<double>> A(network_size, vector<double>(network_size)); // Initialise Adjacency Matrix
-    
-    vector<vector<int>> neighbours(network_size, vector<int>({}) ); // list of first neighbours to vertex i.
-    vector<vector<int>> infection_times(network_size, vector<int>({}) );
-    
-    vector<double> r =rand( network_size * network_size ,mersenneTwister);// pr. of having a link
-    //vector<double> infection_times = beta_normalised(network_size * network_size,tau,mersenneTwister); // infection time between nodes
-    
-    
-    /*--------------Initialisation--------------
-
-     Construct erdos-Reyni graph and for each link we add an infection time:
-     => A[i][j] is the time node i (or j) takes to infect node j (or i) once it has itself been infected by someone else.
-     
-     */
-    
-    double p = degree/network_size; // probability of an edge: if network_size ->infty and degree-> fixed then we get Poisson Graph.
-    
-    for (int i=0; i<network_size; i++) {
-        for (int j=0; j<i; j++) {
-            if (r[i*network_size+j]>p) {
-                A[i][j]=0;
-                A[j][i]=0;
-            }
-            else{
-                A[i][j]=beta_normalised(tau, mersenneTwister);
-                A[j][i]=A[i][j];
-                neighbours[i].push_back(j);
-                neighbours[j].push_back(i);
-                
-                infection_times[i].push_back(A[i][j]);
-                infection_times[j].push_back(A[i][j]);
-            }
-        }
-        
-    }
-    
-    cout << "Graph generated" << endl;
-    
-    
-    int number_of_infected = 1;
-    vector<int> infected_nodes({0}); // Start with vertex 0 be the initial infected, without loss of generality.
-    
-    while (number_of_infected < network_size) {
-        
-    }
-    cout << "Entire network has been infected" << endl;
-    return r;
-}
-
 
 void print_matrix(vector<vector<double>>& A){
     long rows = A.size();

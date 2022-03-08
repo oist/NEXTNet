@@ -10,16 +10,15 @@
 #include "stdafx.h"
 #include "types.h"
 #include "savingData.h"
-#include "Tau.h"
 
 /*  Create uniformly distributed random numbers */
 std::vector<double> rand(int n,rng_t& mersenneTwister);
 double rand(double a, double b, rng_t& mersenneTwister);
 
-/* Create a vector of size N where each element is an IID lognormal number */
-std::vector<double> beta_normalised( int n,Tau& tau,rng_t& mersenneTwister);
-
-double beta_normalised(Tau& tau, rng_t& mersenneTwister);
+///* Create a vector of size N where each element is an IID lognormal number */
+//std::vector<double> beta_normalised( int n,Tau& tau,rng_t& mersenneTwister);
+//
+//double beta_normalised(Tau& tau, rng_t& mersenneTwister);
 
 
 //std::vector<double> poissrnd(double lambda,int n);

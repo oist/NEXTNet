@@ -35,6 +35,30 @@ public:
     virtual interval_t sample_next_conditional(interval_t last, int healthy, rng_t& engine) const = 0;
 };
 
+
+class lognormal_beta : public beta {
+public:
+    const double mean;
+    const double variance;
+    const double r0;
+    const double mu = 2 * log(mean) - 0.5 * log( pow(mean,2.0)+ variance );
+    const double sigma = sqrt( log( 1 + variance/pow(mean,2.0)));
+
+public:
+    lognormal_beta(double _mean, double _variance, double _r0)
+        :mean(_mean), variance(_variance), r0(_r0)
+    {}
+    
+    virtual interval_t sample(rng_t& engine) const;
+
+    virtual interval_t sample_next(interval_t last, rng_t& engine) const;
+    
+    virtual interval_t sample_next_conditional(interval_t last, int healthy, rng_t& engine) const;
+
+private:
+    mutable std::lognormal_distribution<interval_t> log_distribution = std::lognormal_distribution<interval_t>(mu,sigma);
+};
+
 class graph {
 public:
     
@@ -45,6 +69,19 @@ public:
      */
     virtual std::pair<node_t, interval_t> neighbour(node_t node, int neighbour_index) = 0;
 };
+
+
+class erdos_reyni : public graph {
+public:
+    erdos_reyni(int size, double avg_degree, const beta& infection_distribution, rng_t& engine);
+
+    virtual std::pair<node_t, interval_t> neighbour(node_t node, int neighbour_index);
+
+private:
+    /* Adjacency list of the graph */
+    std::vector<std::vector<std::pair<node_t,interval_t>>> neighbours;
+};
+
 
 class simulator {
 public:
@@ -93,37 +130,4 @@ private:
       infectiontimes;
 };
 
-class lognormal_beta : public beta {
-public:
-    const double mean;
-    const double variance;
-    const double r0;
-    const double mu = 2 * log(mean) - 0.5 * log( pow(mean,2.0)+ variance );
-    const double sigma = sqrt( log( 1 + variance/pow(mean,2.0)));
-
-public:
-    lognormal_beta(double _mean, double _variance, double _r0)
-        :mean(_mean), variance(_variance), r0(_r0)
-    {}
-    
-    virtual interval_t sample(rng_t& engine) const;
-
-    virtual interval_t sample_next(interval_t last, rng_t& engine) const;
-    
-    virtual interval_t sample_next_conditional(interval_t last, int healthy, rng_t& engine) const;
-
-private:
-    mutable std::lognormal_distribution<interval_t> log_distribution = std::lognormal_distribution<interval_t>(mu,sigma);
-};
-
-class erdos_reyni : public graph {
-public:
-    erdos_reyni(int size, double avg_degree, const beta& infection_distribution, rng_t& engine);
-
-    virtual std::pair<node_t, interval_t> neighbour(node_t node, int neighbour_index);
-
-private:
-    /* Adjacency list of the graph */
-    std::vector<std::vector<std::pair<node_t,interval_t>>> neighbours;
-};
 

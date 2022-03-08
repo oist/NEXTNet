@@ -10,9 +10,7 @@
 #include "savingData.h"
 #include "simulation.h"
 #include "testing.h"
-#include "Tau.h"
 #include "graph.h"
-#include "boguna.h"
 
 using namespace std;
 
@@ -52,6 +50,8 @@ int main(int argc, const char * argv[]) {
     for (int i =0 ; i<size; i++) {
         trajectory.push_back(simulation.step().second);
     }
+    
+    exportData(trajectory, "data.dat");
     
     exportData(trajectory, "data.dat");
     return 0;
