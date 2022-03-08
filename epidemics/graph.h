@@ -8,11 +8,7 @@
 #pragma once
 
 #include "stdafx.h"
-#include "random.h"
-
-typedef int node_t;
-typedef double interval_t;
-typedef double absolutetime_t;
+#include "types.h"
 
 class beta {
 public:

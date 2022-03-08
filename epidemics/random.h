@@ -8,10 +8,9 @@
 #pragma once
 
 #include "stdafx.h"
+#include "types.h"
 #include "savingData.h"
 #include "Tau.h"
-
-typedef std::mt19937 rng_t;
 
 /*  Create uniformly distributed random numbers */
 std::vector<double> rand(int n,rng_t& mersenneTwister);

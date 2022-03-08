@@ -5,8 +5,8 @@
 //  Created by Cure Samuel Cyrus on 2022/03/07.
 //
 
+#include "types.h"
 #include "graph.h"
-#include "random.h"
 
 std::pair<node_t, absolutetime_t> simulator::step() {
     while (true) {
