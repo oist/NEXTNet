@@ -8,13 +8,11 @@
 #include "graph.h"
 #include "random.h"
 
-using namespace std;
-
-pair<node_t, absolutetime_t> simulator::step() {
+std::pair<node_t, absolutetime_t> simulator::step() {
     while (true) {
         /* If there are no more infection times, stop */
         if (infectiontimes.empty())
-            return make_pair(-1, INFINITY);
+            return std::make_pair(-1, INFINITY);
 
         /* Fetch the next putatively infected node */
         const auto next = infectiontimes.top();
@@ -54,7 +52,7 @@ pair<node_t, absolutetime_t> simulator::step() {
             infectiontimes.push(e);
         }
         
-        return make_pair(next.node, next.time);
+        return std::make_pair(next.node, next.time);
     }
 }
 
@@ -92,7 +90,7 @@ erdos_reyni::erdos_reyni(int size, double avg_degree, const beta& infection_dist
     
     const double p = avg_degree/size; // probability of an edge: if size ->infty and degree-> fixed then we get Poisson Graph.
     
-    bernoulli_distribution has_edge(p);
+    std::bernoulli_distribution has_edge(p);
 
     neighbours.resize(size);
     for (int i=0; i<size; i++) {
@@ -101,8 +99,8 @@ erdos_reyni::erdos_reyni(int size, double avg_degree, const beta& infection_dist
                 continue;
             }
             const double tau = infection_distribution.sample(engine);
-            neighbours[i].push_back( make_pair(j, tau ) );
-            neighbours[j].push_back( make_pair(i, tau ) );
+            neighbours[i].push_back(std::make_pair(j, tau));
+            neighbours[j].push_back(std::make_pair(i, tau));
         }
     }
     
@@ -116,7 +114,7 @@ std::pair<node_t, interval_t>
 erdos_reyni::neighbour(node_t node, int neighbour_index) {
     const auto& n = neighbours.at(node);
     if ((neighbour_index < 0) || (n.size() <= neighbour_index))
-        return make_pair(-1, INFINITY);
+        return std::make_pair(-1, INFINITY);
     return n[neighbour_index];
 }
 
