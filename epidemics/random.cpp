@@ -8,6 +8,14 @@
 #include "stdafx.h"
 #include "random.h"
 
+double lognormal_beta::cdf_fat(interval_t tau) {
+    return cdf_log_normal(tau, mean, variance);
+}
+
+double lognormal_beta::lambda(interval_t tau) {
+    return pdf_log_normal(tau, mean, variance) / (1.0 - cdf_fat(tau));
+}
+
 interval_t lognormal_beta::sample(rng_t& engine) const {
     return log_distribution(engine);
 }

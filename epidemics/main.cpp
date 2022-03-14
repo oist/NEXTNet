@@ -14,16 +14,40 @@
 using namespace std;
 
 /*  MersenneTwister random number generator */
-/*static*/ mt19937 mersenneTwister;
+/*static*/ mt19937 engine;
 
 
 int main(int argc, const char * argv[]) {
 
-    simulateManyPaths(1000, mersenneTwister);
-//    int size = 3000;
-//    int degree = 3;
-//    double mean = 1;
-//    double variance = 1;
+//    simulateManyPaths(1000, mersenneTwister);
+    
+    int size = 3000;
+    int degree = 3;
+    double mean = 10;
+    double variance = 1.2;
+    
+    lognormal_beta my_log_norm(mean,variance,degree);
+    erdos_reyni network(size,degree, my_log_norm, engine);
+    
+    simulate_nmga simulation(network,my_log_norm);
+    simulation.approximation_threshold = 100;
+//    simulate_next_reaction simulation(network);
+    simulation.add_infections({ std::make_pair(0, 0.0)});
+    
+    std::vector<double> time_trajectory({});
+    std::vector<double> vertex_path({});
+    for (int i =0 ; i< size; i++) {
+        auto point = simulation.step(engine);
+        if (point.second != INFINITY) {
+            vertex_path.push_back(point.first);
+            time_trajectory.push_back(point.second);
+            continue;
+        }
+        break;
+    }
+    
+    exportData(time_trajectory,"data.dat");
+    
     
 //
 //    erdos_reyni network(size,degree,lognormal_beta(mean,variance,degree) , mersenneTwister);

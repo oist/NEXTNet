@@ -17,26 +17,38 @@
 
 class beta {
 public:
-    /*
+    /**
+     * The CDF of the first-arival time  (FAT) distribution.
+     * For integrable itensities, this is the cumulative intensity function,
+     * for constant intensities, this is the CDF of an exponential distribution
+     */
+    virtual double cdf_fat(interval_t) = 0;
+    
+    /**
+     * The "instantenous hazard rate" of Boguna et al.
+     * This is the PDF of the FAT distribution over 1 minus the CDF.
+     */
+    virtual double lambda(interval_t) = 0;
+
+    /**
      * sample() returns a single (iid) sample from the
      * (normalized versio of) the distribution.
      */
     virtual interval_t sample(rng_t& engine) const = 0;
 
-    /*
+    /**
      * sample_next() returns the next single sample from the
      * the distribution condtioned on the last infection time of the individual.
      * /!\ returning infinity is possible and represnets no further infection.
      */
     virtual interval_t sample_next(interval_t last, rng_t& engine) const = 0;
     
-    /*
+    /**
      * sample_next_conditional() returns same as above but takes into consideration the
      * current number of healthy neighbours.
      * i.e if there are no more healthy neighbours
      * it raises an error as no more infections are possible.
      */
-
     virtual interval_t sample_next_conditional(interval_t last, int healthy, rng_t& engine) const = 0;
 };
 
@@ -54,6 +66,10 @@ public:
         :mean(_mean), variance(_variance), r0(_r0)
     {}
     
+    virtual double cdf_fat(interval_t);
+    
+    virtual double lambda(interval_t);
+
     virtual interval_t sample(rng_t& engine) const;
 
     virtual interval_t sample_next(interval_t last, rng_t& engine) const;

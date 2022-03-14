@@ -44,11 +44,7 @@ erdos_reyni::erdos_reyni(int size, double avg_degree, const beta& infection_dist
 
     neighbours.resize(size);
     for (int i=0; i<size; i++) {
-        for (int j=0; j<i; j++) {
-            j = skip_edge(engine);
-            if (j>=i) { // all necessary edges were covered
-                break;
-            }
+        for (int j=skip_edge(engine); j<i; j += 1 + skip_edge(engine)) {
             const double tau = infection_distribution.sample(engine);
             neighbours[i].push_back(std::make_pair(j, tau));
             neighbours[j].push_back(std::make_pair(i, tau));
