@@ -13,3 +13,5 @@ std::vector<double> simulatePath(std::vector<double>& infection_times, int n_max
 
 
 void print_matrix(std::vector<std::vector<double>>& A);
+
+void simulateManyPaths(int nb_paths, rng_t& engine);

@@ -9,10 +9,9 @@
 /* Begin PBXBuildFile section */
 		982A07D927D5BED900B4772A /* graph.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 982A07D727D5BED900B4772A /* graph.cpp */; };
 		984A0CA027C0DE5C004A0A96 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 984A0C9F27C0DE5C004A0A96 /* main.cpp */; };
-		984A0CAB27C0DF56004A0A96 /* savingData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 984A0CA927C0DF56004A0A96 /* savingData.cpp */; };
+		984A0CAB27C0DF56004A0A96 /* analysis.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 984A0CA927C0DF56004A0A96 /* analysis.cpp */; };
 		984A0CAF27C0DF81004A0A96 /* random.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 984A0CAD27C0DF81004A0A96 /* random.cpp */; };
 		984A0CB627C0E0B7004A0A96 /* simulation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 984A0CB427C0E0B7004A0A96 /* simulation.cpp */; };
-		98CE3E3C27C77B6E00C5D139 /* testing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 98CE3E3B27C77B6E00C5D139 /* testing.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -33,15 +32,13 @@
 		984A0C9C27C0DE5C004A0A96 /* epidemics */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = epidemics; sourceTree = BUILT_PRODUCTS_DIR; };
 		984A0C9F27C0DE5C004A0A96 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		984A0CA827C0DF3B004A0A96 /* stdafx.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = stdafx.h; sourceTree = "<group>"; };
-		984A0CA927C0DF56004A0A96 /* savingData.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = savingData.cpp; sourceTree = "<group>"; };
-		984A0CAA27C0DF56004A0A96 /* savingData.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = savingData.h; sourceTree = "<group>"; };
+		984A0CA927C0DF56004A0A96 /* analysis.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = analysis.cpp; sourceTree = "<group>"; };
+		984A0CAA27C0DF56004A0A96 /* analysis.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = analysis.h; sourceTree = "<group>"; };
 		984A0CAD27C0DF81004A0A96 /* random.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = random.cpp; sourceTree = "<group>"; };
 		984A0CAE27C0DF81004A0A96 /* random.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = random.h; sourceTree = "<group>"; };
 		984A0CB427C0E0B7004A0A96 /* simulation.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = simulation.cpp; sourceTree = "<group>"; };
 		984A0CB527C0E0B7004A0A96 /* simulation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = simulation.h; sourceTree = "<group>"; };
 		986328CC27D728F30029F31F /* types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = types.h; sourceTree = "<group>"; };
-		98CE3E3A27C77B4D00C5D139 /* testing.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = testing.h; sourceTree = "<group>"; };
-		98CE3E3B27C77B6E00C5D139 /* testing.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = testing.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -76,13 +73,11 @@
 			children = (
 				986328CC27D728F30029F31F /* types.h */,
 				984A0C9F27C0DE5C004A0A96 /* main.cpp */,
-				98CE3E3A27C77B4D00C5D139 /* testing.h */,
-				98CE3E3B27C77B6E00C5D139 /* testing.cpp */,
 				984A0CB427C0E0B7004A0A96 /* simulation.cpp */,
 				984A0CB527C0E0B7004A0A96 /* simulation.h */,
 				984A0CA827C0DF3B004A0A96 /* stdafx.h */,
-				984A0CA927C0DF56004A0A96 /* savingData.cpp */,
-				984A0CAA27C0DF56004A0A96 /* savingData.h */,
+				984A0CA927C0DF56004A0A96 /* analysis.cpp */,
+				984A0CAA27C0DF56004A0A96 /* analysis.h */,
 				984A0CAD27C0DF81004A0A96 /* random.cpp */,
 				984A0CAE27C0DF81004A0A96 /* random.h */,
 				982A07D727D5BED900B4772A /* graph.cpp */,
@@ -149,10 +144,9 @@
 			files = (
 				984A0CB627C0E0B7004A0A96 /* simulation.cpp in Sources */,
 				984A0CAF27C0DF81004A0A96 /* random.cpp in Sources */,
-				98CE3E3C27C77B6E00C5D139 /* testing.cpp in Sources */,
 				982A07D927D5BED900B4772A /* graph.cpp in Sources */,
 				984A0CA027C0DE5C004A0A96 /* main.cpp in Sources */,
-				984A0CAB27C0DF56004A0A96 /* savingData.cpp in Sources */,
+				984A0CAB27C0DF56004A0A96 /* analysis.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

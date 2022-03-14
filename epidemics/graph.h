@@ -10,6 +10,11 @@
 #include "stdafx.h"
 #include "types.h"
 
+//--------------------------------------
+//----------INFECTION TIMES------------
+//--------------------------------------
+
+
 class beta {
 public:
     /*
@@ -59,6 +64,13 @@ private:
     mutable std::lognormal_distribution<interval_t> log_distribution = std::lognormal_distribution<interval_t>(mu,sigma);
 };
 
+
+//--------------------------------------
+//--------------NETWORKS----------------
+//--------------------------------------
+
+
+
 class graph {
 public:
     
@@ -77,10 +89,15 @@ public:
 
     virtual std::pair<node_t, interval_t> neighbour(node_t node, int neighbour_index);
 
-private:
+//private:
     /* Adjacency list of the graph */
     std::vector<std::vector<std::pair<node_t,interval_t>>> neighbours;
 };
+
+
+//--------------------------------------
+//-------------SIMULATION---------------
+//--------------------------------------
 
 
 class simulator {

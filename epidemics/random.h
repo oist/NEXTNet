@@ -9,7 +9,7 @@
 
 #include "stdafx.h"
 #include "types.h"
-#include "savingData.h"
+#include "analysis.h"
 
 /*  Create uniformly distributed random numbers */
 std::vector<double> rand(int n,rng_t& mersenneTwister);
@@ -42,18 +42,3 @@ double pdf_log_normal(double t,double mean ,double variance);
 
 double cdf_log_normal(double t,double mean,double variance);
 
-void test_pdf_logv();
-void test_cdf_logv();
-
-
-///**
-// *  Computes the cumulative
-// *  distribution function of the
-// *  normal distribution
-// */
-//double normcdf( double x );
-//
-///**
-// *  Computes the inverse of normcdf
-// */
-//double norminv( double x );

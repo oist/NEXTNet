@@ -7,9 +7,8 @@
 
 #include "stdafx.h"
 #include "random.h"
-#include "savingData.h"
+#include "analysis.h"
 #include "simulation.h"
-#include "testing.h"
 #include "graph.h"
 
 using namespace std;
@@ -19,40 +18,35 @@ using namespace std;
 
 
 int main(int argc, const char * argv[]) {
+
+    simulateManyPaths(1000, mersenneTwister);
+//    int size = 3000;
+//    int degree = 3;
+//    double mean = 1;
+//    double variance = 1;
     
-    setDebugEnabled(false);// testing or not.
+//
+//    erdos_reyni network(size,degree,lognormal_beta(mean,variance,degree) , mersenneTwister);
+//
+//    vector<vector<pair<node_t,interval_t>>> adjacency_list = network.neighbours;
+//
+//    export_adjacency_list(adjacency_list, "adjacency_list.csv");
 //
 //
-//    /*--------- Initialise Parameters ----------*/
 //
-//    Tau tau(10,1,2); //Mean Variance R0
 //
-////    int size = 10;
-////    double degree = 3;
-////    simulatePathNetwork(size,degree, tau, mersenneTwister);
-//    vector<double> infection_times({});
-//    vector <double> trajectory = simulatePath(infection_times, 10000, tau, mersenneTwister);
-    
-    
-    int size = 10000;
-    int degree = 3;
-    double mean = 10;
-    double variance = 1;
-    
-    
-    erdos_reyni network(size,degree,lognormal_beta(mean,variance,degree) , mersenneTwister);
-    
-    simulator simulation(network);
-    simulation.add_infections({make_pair(0, 0.0)});
-    
-    vector<double> trajectory({});
-    
-    for (int i =0 ; i<size; i++) {
-        trajectory.push_back(simulation.step().second);
-    }
-    
-    exportData(trajectory, "data.dat");
-    
-    exportData(trajectory, "data.dat");
+//    simulator simulation(network);
+//    simulation.add_infections({make_pair(0, 0.0)});
+//
+//    vector<double> time_trajectory({});
+//    vector<double> vertex_path({});
+//    for (int i =0 ; i< size; i++) {
+//        time_trajectory.push_back(simulation.step().second);
+//        vertex_path.push_back(simulation.step().first);
+//    }
+//
+//    exportData(time_trajectory,"data2.dat");
+//
+////    exportData(vertex_path, "path.dat");
     return 0;
 }

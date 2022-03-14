@@ -7,7 +7,6 @@
 
 #include "random.h"
 #include "stdafx.h"
-#include "testing.h"
 
 
 using namespace std;
@@ -169,11 +168,3 @@ double cdf_log_normal(double t,double mean,double variance){
 }
 
 
-void test_cdf_logv() {
-    ASSERT_APPROX_EQUAL( cdf_log_normal(10000, 1 ,1), 1, 0.01 );
-    ASSERT_APPROX_EQUAL( cdf_log_normal(0, 1, 1), 0, 0.01 );
-}
-void test_pdf_logv() {
-    ASSERT_APPROX_EQUAL( pdf_log_normal(0, 2, 3), 0, 0.01 );
-    ASSERT_APPROX_EQUAL( pdf_log_normal(100000, 2, 3), 0, 0.01 );
-}
