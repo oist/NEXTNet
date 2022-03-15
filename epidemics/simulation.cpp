@@ -271,7 +271,7 @@ void simulate_nmga::add_infections(const std::vector<std::pair<node_t, absolutet
 }
 
 
-std::vector<double> simulatePath(std::vector<double>& infection_times, int n_max,const lognormal_beta& infection_distribution, rng_t engine){
+std::vector<double> simulatePath(std::vector<double>& infection_times, int n_max,const lognormal_beta& infection_distribution, rng_t& engine){
     
     double absolute_time = 0;
     std::vector<double> time_trajectory({});
@@ -320,13 +320,8 @@ void print_matrix(const std::vector<std::vector<double>>& A){
     }
 }
 
-void simulateManyPaths(int nb_paths, rng_t& engine){
-    int size = 10000;
-    int degree = 1;
-    double mean = 1;
-    double variance = 10;
-    
-    
+void simulatePaths_MeanField(double mean, double variance, int degree,int nb_paths,double size, rng_t& engine){
+        
     for (int path=1; path<= nb_paths; path++) {
         std::string file_nb = std::to_string(path);
         
@@ -351,16 +346,71 @@ void simulateManyPaths(int nb_paths, rng_t& engine){
         exportData(time_trajectory,filename+file_nb+ext);
     }
     
-        
-    
-    
-    
-    
-
-
-
-
-    
-    
+ 
 
 }
+
+
+
+void generatePaths_NMGA(double mean, double variance, int degree,int nb_paths,double size, rng_t& engine,double threshold){
+    
+    std::string filename ="data";
+    std::string ext= ".dat";
+    
+    
+    for (int path=0; path< nb_paths; path++) {
+        std::string file_nb = std::to_string(path);
+
+        erdos_reyni network(size, degree, lognormal_beta(mean,variance,degree), engine);
+
+        lognormal_beta log(mean,variance,degree);
+        simulate_nmga simulation(network,log);
+        simulation.approximation_threshold = threshold;
+    //    simulate_next_reaction simulation(network);
+        simulation.add_infections({ std::make_pair(0, 0.0)});
+
+        std::vector<double> time_trajectory({});
+        std::vector<double> vertex_path({});
+        for (int i =0 ; i< size; i++) {
+            auto point = simulation.step(engine);
+            if (point.second != INFINITY) {
+                vertex_path.push_back(point.first);
+                time_trajectory.push_back(point.second);
+                continue;
+            }
+            break;
+        }
+        std::cout << path<< std::endl;
+        exportData(time_trajectory,filename+file_nb+ext);
+    }
+}
+
+void generatePaths_next_reaction(double mean, double variance, int degree,int nb_paths,double size, rng_t& engine){
+    
+    std::string filename ="data";
+    std::string ext= ".dat";
+    
+    
+    for (int path=0; path< nb_paths; path++) {
+        std::string file_nb = std::to_string(path);
+
+        erdos_reyni network(size,degree, lognormal_beta(mean,variance,degree), engine);
+
+        simulate_next_reaction simulation(network);
+        simulation.add_infections({ std::make_pair(0, 0.0)});
+
+        std::vector<double> time_trajectory({});
+        std::vector<double> vertex_path({});
+        for (int i =0 ; i< size; i++) {
+            auto point = simulation.step(engine);
+            if (point.second != INFINITY) {
+                time_trajectory.push_back(point.second);
+                continue;
+            }
+            break;
+        }
+        std::cout << path<< std::endl;
+        exportData(time_trajectory,filename+file_nb+ext);
+    }
+}
+

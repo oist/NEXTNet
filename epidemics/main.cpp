@@ -19,58 +19,32 @@ using namespace std;
 
 int main(int argc, const char * argv[]) {
 
-//    simulateManyPaths(1000, mersenneTwister);
-    
-    int size = 3000;
-    int degree = 3;
-    double mean = 10;
-    double variance = 1.2;
-    
-    lognormal_beta my_log_norm(mean,variance,degree);
-    erdos_reyni network(size,degree, my_log_norm, engine);
-    
-    simulate_nmga simulation(network,my_log_norm);
-    simulation.approximation_threshold = 100;
-//    simulate_next_reaction simulation(network);
-    simulation.add_infections({ std::make_pair(0, 0.0)});
-    
-    std::vector<double> time_trajectory({});
-    std::vector<double> vertex_path({});
-    for (int i =0 ; i< size; i++) {
-        auto point = simulation.step(engine);
-        if (point.second != INFINITY) {
-            vertex_path.push_back(point.first);
-            time_trajectory.push_back(point.second);
-            continue;
-        }
-        break;
-    }
-    
-    exportData(time_trajectory,"data.dat");
+ 
+    // PARAMETERS
     
     
-//
-//    erdos_reyni network(size,degree,lognormal_beta(mean,variance,degree) , mersenneTwister);
-//
-//    vector<vector<pair<node_t,interval_t>>> adjacency_list = network.neighbours;
-//
-//    export_adjacency_list(adjacency_list, "adjacency_list.csv");
-//
-//
-//
-//
-//    simulator simulation(network);
-//    simulation.add_infections({make_pair(0, 0.0)});
-//
-//    vector<double> time_trajectory({});
-//    vector<double> vertex_path({});
-//    for (int i =0 ; i< size; i++) {
-//        time_trajectory.push_back(simulation.step().second);
-//        vertex_path.push_back(simulation.step().first);
-//    }
-//
-//    exportData(time_trajectory,"data2.dat");
-//
-////    exportData(vertex_path, "path.dat");
+    int size = 5000; // Size network or max pop for mean field.
+    int degree = 4; // Average Degree
+    double mean = 10; // Average infection time
+    double variance = 2;
+    
+    int nb_paths = 1;
+    
+    
+     /*-----nMGA-----*/
+
+    //generatePaths_next_reaction( men, variance, degree,nb_paths, size, engine, int threshold= 10000);
+  
+
+    /*----Next Reaction on ERDOS REYNI network---*/
+    
+    generatePaths_next_reaction( mean, variance, degree,nb_paths, size, engine);
+    
+    
+    /*---Mean Field---*/
+    
+    //simulatePaths_MeanField( mean, variance, degree,nb_paths, size, engine);
+
     return 0;
 }
+
