@@ -7,8 +7,6 @@
 // Added to follow apparent conventions of including all libraries in a stdafx file.
 #pragma once
 
-
-
 #include <iostream>
 #include <math.h>
 #include <cmath>
