@@ -165,7 +165,7 @@ std::pair<node_t, absolutetime_t> simulate_nmga::step(rng_t& engine) {
     
     /* Find the time of the next event */
     double tau;
-    if (active_edges.size() <= approximation_threshold)
+    if ((approximation_threshold >= 0) && (active_edges.size() <= (unsigned int)approximation_threshold))
         tau = next_time_exact(engine);
     else
         tau = next_time_approximation(engine);

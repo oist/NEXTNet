@@ -60,7 +60,7 @@ erdos_reyni::erdos_reyni(int size, double avg_degree, const beta& infection_dist
 std::pair<node_t, interval_t>
 erdos_reyni::neighbour(node_t node, int neighbour_index) {
     const auto& n = neighbours.at(node);
-    if ((neighbour_index < 0) || (n.size() <= neighbour_index))
+    if ((neighbour_index < 0) || (n.size() <= (unsigned int)neighbour_index))
         return std::make_pair(-1, INFINITY);
     return n[neighbour_index];
 }
