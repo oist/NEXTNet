@@ -28,10 +28,11 @@ void generatePaths_next_reaction(double mean, double variance, int degree,int nb
 class simulate_next_reaction {
 public:
     graph& network;
+    transmission_time& psi;
     std::unordered_set<node_t> infected;
     
-    simulate_next_reaction(class graph& nw)
-        :network(nw)
+    simulate_next_reaction(class graph& nw, class transmission_time& psi)
+        :network(nw), psi(psi)
     {}
     
     void add_infections(const std::vector<std::pair<node_t, absolutetime_t>>& v);
@@ -39,7 +40,7 @@ public:
     std::pair<node_t, absolutetime_t> step(rng_t& engine);
     
 private:
-    struct infectiontimes_entry {
+    struct active_edges_entry {
         /*
          * Absolute time of infection
          */
@@ -58,18 +59,19 @@ private:
         absolutetime_t source_time = INFINITY;
         node_t source_node = -1;
         int neighbour_index = -1;
+        int neighbours_remaining = 0;
         
-        bool operator< (const infectiontimes_entry& o) const { return time < o.time; }
-        bool operator<= (const infectiontimes_entry& o) const { return time <= o.time; }
-        bool operator== (const infectiontimes_entry& o) const { return time == o.time; }
-        bool operator!= (const infectiontimes_entry& o) const { return time != o.time; }
-        bool operator>= (const infectiontimes_entry& o) const { return time >= o.time; }
-        bool operator> (const infectiontimes_entry& o) const { return time > o.time; }
+        bool operator< (const active_edges_entry& o) const { return time < o.time; }
+        bool operator<= (const active_edges_entry& o) const { return time <= o.time; }
+        bool operator== (const active_edges_entry& o) const { return time == o.time; }
+        bool operator!= (const active_edges_entry& o) const { return time != o.time; }
+        bool operator>= (const active_edges_entry& o) const { return time >= o.time; }
+        bool operator> (const active_edges_entry& o) const { return time > o.time; }
     };
     
-    std::priority_queue<infectiontimes_entry, std::deque<infectiontimes_entry>,
-                        std::greater<infectiontimes_entry>>
-      infectiontimes;
+    std::priority_queue<active_edges_entry, std::deque<active_edges_entry>,
+                        std::greater<active_edges_entry>>
+      active_edges;
 };
 
 class simulate_nmga {
