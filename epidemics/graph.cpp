@@ -9,7 +9,7 @@
 #include "types.h"
 #include "graph.h"
 
-erdos_reyni::erdos_reyni(int size, double avg_degree, const beta& infection_distribution, rng_t& engine ){
+erdos_reyni::erdos_reyni(int size, double avg_degree, rng_t& engine ){
     
     /*--------------Initialisation--------------
 
@@ -45,9 +45,8 @@ erdos_reyni::erdos_reyni(int size, double avg_degree, const beta& infection_dist
     neighbours.resize(size);
     for (int i=0; i<size; i++) {
         for (int j=skip_edge(engine); j<i; j += 1 + skip_edge(engine)) {
-            const double tau = infection_distribution.sample(engine);
-            neighbours[i].push_back(std::make_pair(j, tau));
-            neighbours[j].push_back(std::make_pair(i, tau));
+            neighbours[i].push_back(i);
+            neighbours[j].push_back(j);
         }
     }
     
@@ -57,11 +56,10 @@ erdos_reyni::erdos_reyni(int size, double avg_degree, const beta& infection_dist
     }
 }
 
-std::pair<node_t, interval_t>
-erdos_reyni::neighbour(node_t node, int neighbour_index) {
+node_t erdos_reyni::neighbour(node_t node, int neighbour_index) {
     const auto& n = neighbours.at(node);
     if ((neighbour_index < 0) || (n.size() <= (unsigned int)neighbour_index))
-        return std::make_pair(-1, INFINITY);
+        return -1;
     return n[neighbour_index];
 }
 
