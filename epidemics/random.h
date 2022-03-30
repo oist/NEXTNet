@@ -15,6 +15,49 @@
 //----------INFECTION TIMES------------
 //--------------------------------------
 
+class transmission_time {
+public:
+    /**
+     * Samples from the distribution with survival function Psi( tau | t,m ) and pdf psi(tau)
+     */
+    virtual interval_t sample(rng_t&, interval_t t, int m);
+
+    /*
+     * Probability Density Function psi(tau) of the samples.
+     */
+    virtual double density(interval_t tau) = 0;
+
+    /**
+     * "hazard rate" of the process, denoted by lambda in Boguna
+     * and defined as lambda(tau) = psi(tau) / survivalprobability(tau).
+     */
+    virtual double hazardrate(interval_t);
+
+    /*
+     * Evaluates the survival function Psi(tau), 
+     * i.e. the probability that a single edges does not fire within time interval [t , t + tau).
+     */
+    virtual double survivalprobability(interval_t tau) = 0;
+
+    /**
+     * Evaluates the survival function  Psi( tau | t, m), 
+     * i.e. the probability that none of m edges fire within the time interval [t, t+).
+     */
+    virtual double survivalprobability(interval_t tau, interval_t t, int m);
+
+    /*
+     * Evaluates the inverse of the survival function Psi(tau),
+     * i.e returns the time interval given a probability in 
+     */
+    virtual interval_t survivalquantile(double u);
+
+    /*
+     * Evaluates the inverse of the survival function Psi(tau | t, m),
+     * i.e returns the time interval given a probability in 
+     */
+    virtual interval_t survivalquantile(double u, interval_t t, int m);
+};
+
 class beta {
 public:
     /**

@@ -7,6 +7,43 @@
 
 #include "stdafx.h"
 #include "random.h"
+#include "utility.h"
+
+/* "this ->"" is also used to ensure that if some of the functions are 
+* redefined in herited classes then they are they ones being used and
+* not the by-default implementations.*/
+
+interval_t transmission_time::sample(rng_t& rng, interval_t t, int m) {
+    const double u = std::uniform_real_distribution<double>(0, 1)(rng);
+    return this->survivalquantile(u, t, m);
+}
+
+double transmission_time::hazardrate(interval_t tau) {
+    return this->density(tau) / this->survivalprobability(tau);
+}
+
+double transmission_time::survivalprobability(interval_t tau, interval_t t, int m) {
+    // By default compute the conditional survival probability
+    // using the unconditional survival function Psi(tau) based on
+    // Psi(tau | t, m) = (Psi(t + tau) / Psi(t))^m
+    return std::pow((this->survivalprobability(t + tau) / this->survivalprobability(t)), m);
+}
+
+interval_t transmission_time::survivalquantile(double u) {
+    // By default, numerically invert the survival function
+    return inverse_survival_function(u, [&] (double tau) { return this->survivalprobability(tau); });
+}
+
+interval_t transmission_time::survivalquantile(double u, interval_t t, int m) {
+    // By default, analytically reduce the problem to computing the
+    // inverse of the unconditional survival function Psi(tau) by using
+    // Psi^-1(tau | t, m) = Psi^-1( Psi(t) * u^(1/m) ) - t
+    const double up = this->survivalprobability(t) * std::pow(u, 1.0 / double(m));
+    const interval_t t_plus_tau = this->survivalquantile(up);
+    if (t_plus_tau < t)
+        throw std::logic_error("encountered invalid result when inverting the survival function");
+    return (t_plus_tau - t);
+}
 
 double lognormal_beta::cdf_fat(interval_t tau) {
     return cdf_log_normal(tau, mean, variance);

@@ -6,13 +6,15 @@ project(Epidemics-Mean-Field LANGUAGES CXX)
 set(LIB_SOURCES
     epidemics/graph.cpp
     epidemics/random.cpp
-    epidemics/simulation.cpp)
+    epidemics/simulation.cpp
+    epidemics/utility.cpp)
 
 set(LIB_HEADERS
     epidemics/types.h
     epidemics/graph.h
     epidemics/random.h
-    epidemics/simulation.h)
+    epidemics/simulation.h
+    epidemics/utility.h)
 
 SET(LIB_PCH epidemics/stdafx.h)
 
