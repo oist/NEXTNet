@@ -8,7 +8,6 @@
 #pragma once
 
 #include <iostream>
-#include <math.h>
 #include <cmath>
 #include <vector>
 #include <random>
@@ -19,3 +18,8 @@
 #include <queue>
 #include <deque>
 #include <utility>
+
+#include <boost/math/distributions.hpp>
+
+/* Make boost::math available as simply bm */
+namespace bm = boost::math;

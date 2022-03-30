@@ -50,6 +50,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Enable all warnings
 add_compile_options(-Wall)
 
+# Dependencies
+find_package(Boost REQUIRED)
+link_libraries(Boost::boost)
+#include_directories(${Boost_INCLUDE_DIRS})
+
 # *** Build command-line similator
 add_executable(simulator
     ${SIMULATOR_SOURCES}

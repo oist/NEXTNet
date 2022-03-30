@@ -8,8 +8,10 @@
 //---------GENERATING PATHS-------------
 //--------------------------------------
 
+#if 0
 /* Simulates path in the mean field regime */
 std::vector<double> simulatePath(std::vector<double>& infection_times, int n_max, const lognormal_beta& infection_distribution, rng_t& engine);
+#endif
 
 /* Simulates several paths in the mean field regime */
 void simulatePaths_MeanField(double mean, double variance, int degree,int nb_paths,double size, rng_t& engine);
@@ -31,8 +33,8 @@ public:
     transmission_time& psi;
     std::unordered_set<node_t> infected;
     
-    simulate_next_reaction(class graph& nw, class transmission_time& psi)
-        :network(nw), psi(psi)
+    simulate_next_reaction(class graph& nw, class transmission_time& psi_)
+        :network(nw), psi(psi_)
     {}
     
     void add_infections(const std::vector<std::pair<node_t, absolutetime_t>>& v);
@@ -106,13 +108,13 @@ private:
     
 public:
     graph& network;
-    beta& infection_time_distribution;
+    transmission_time& psi;
     int approximation_threshold;
-    double tau_precision;
+    double tau_precision = 1e-6;
     std::unordered_set<node_t> infected;
     
-    simulate_nmga(class graph& nw, class beta& dist, int threshold = 100, double tauprec = 1e-6)
-        :network(nw), infection_time_distribution(dist)
+    simulate_nmga(class graph& nw, class transmission_time& psi_, int threshold = 100, double tauprec = 1e-6)
+        :network(nw), psi(psi_)
         ,approximation_threshold(threshold), tau_precision(tauprec)
     {}
     

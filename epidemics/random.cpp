@@ -9,6 +9,12 @@
 #include "random.h"
 #include "utility.h"
 
+
+/*----------------------------------------------------*/
+/*----------------------CLASS-------------------------*/
+/*----------------TRANSMISSION TIME-------------------*/
+/*----------------------------------------------------*/
+
 /* "this ->"" is also used to ensure that if some of the functions are 
 * redefined in herited classes then they are they ones being used and
 * not the by-default implementations.*/
@@ -31,7 +37,7 @@ double transmission_time::survivalprobability(interval_t tau, interval_t t, int 
 
 interval_t transmission_time::survivalquantile(double u) {
     // By default, numerically invert the survival function
-    return inverse_survival_function(u, [&] (double tau) { return this->survivalprobability(tau); });
+    return inverse_survival_function(u, 1e-6, [&] (double tau) { return this->survivalprobability(tau); });
 }
 
 interval_t transmission_time::survivalquantile(double u, interval_t t, int m) {
@@ -45,24 +51,67 @@ interval_t transmission_time::survivalquantile(double u, interval_t t, int m) {
     return (t_plus_tau - t);
 }
 
-double lognormal_beta::cdf_fat(interval_t tau) {
-    return cdf_log_normal(tau, mean, variance);
+
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+/*-----------TRANSMISSION TIME:LOG NORMAL-------------*/
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+
+double transmission_time_lognormal::density(interval_t tau) {
+    return cdf(complement(bm::lognormal(mu, sigma), tau));
+    /*
+    if (tau==0)
+        return 0;
+    return 1.0 / (tau*sigma*sqrt(2* M_PI)) * exp( -pow(log(tau)-mu,2) / (2*sigma*sigma) );    
+    */
 }
 
-double lognormal_beta::lambda(interval_t tau) {
-    return pdf_log_normal(tau, mean, variance) / (1.0 - cdf_fat(tau));
+double transmission_time_lognormal::survivalprobability(interval_t tau) {
+    return cdf(complement(bm::lognormal(mu, sigma), tau));
+    /*
+    if (tau == 0)
+        return 1;
+    
+    double mu = 2 * log(mean) - 0.5 * log( pow(mean,2.0) + variance );
+    double sigma = sqrt( log( 1 + variance/pow(mean,2.0)));
+
+    return 1 - 0.5 * (1 + erf( (log(tau)-mu) / (sqrt(2)*sigma) ));
+    */
 }
 
-interval_t lognormal_beta::sample(rng_t& engine) const {
-    return log_distribution(engine);
+interval_t transmission_time_lognormal::survivalquantile(double u) {
+    return cdf(complement(bm::lognormal(mu, sigma), u));
 }
 
-interval_t lognormal_beta::sample_next(interval_t last, rng_t& engine) const {
-    throw std::logic_error("not implemented yet");
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+/*-----------TRANSMISSION TIME:EXPONENTIAL------------*/
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+
+double transmission_time_exponential::density(interval_t tau) {
+    return lambda*exp(-lambda*tau);
 }
 
-interval_t lognormal_beta::sample_next_conditional(interval_t last, int healthy, rng_t& engine) const {
-    throw std::logic_error("not implemented yet");
+double transmission_time_exponential::hazardrate(interval_t tau) {
+    return lambda;
+}
+
+double transmission_time_exponential::survivalprobability(interval_t tau) {
+    return exp(-lambda*tau);
+}
+
+double transmission_time_exponential::survivalprobability(interval_t tau, interval_t t, int m) {
+    return exp(-lambda * m * tau);
+}
+
+double transmission_time_exponential::survivalquantile(double u) {
+    return -mean * log(u);
+}
+
+double transmission_time_exponential::survivalquantile(double u, interval_t t, int m) {
+    return -mean/m * log(u);
 }
 
 std::vector<double> rgamma( int n, double a, double b, std::mt19937& mersenneTwister){

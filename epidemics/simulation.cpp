@@ -10,6 +10,7 @@
 #include "random.h"
 #include "graph.h"
 #include "types.h"
+#include "utility.h"
 
 std::pair<node_t, absolutetime_t> simulate_next_reaction::step(rng_t& engine) {
     while (true) {
@@ -86,50 +87,17 @@ double simulate_nmga::phi(absolutetime_t t, interval_t tau) {
         /* Skip edges not yet active at relative time tau */
         if (te + tau < 0)
             continue;
-        /* Edges can be active at time tau, but not at the current time.
-         * In that case, the survival function evalutes to one
+        /* Multiply with the survival probability of the current edge,
+         * taking into account that it might activate between time t
+         * and tau, in which case the 'last firing time' is zero
          */
-        double Psi;
-        if (te >= 0)
-            Psi = 1 - infection_time_distribution.cdf_fat(te);
-        else
-            Psi = 1.0;
-        r *= (1 - infection_time_distribution.cdf_fat(te+tau)) / Psi;
+        r *= psi.survivalprobability(te + tau, std::max(te, 0.0), 1);
     }
     return r;
 }
 
 interval_t simulate_nmga::invphi(absolutetime_t t, double u) {
-    if ((u > 1) || (u < 0))
-        return NAN;
-    /* Use bisecetion to invert phi. Since phi(0) = 1 >= u, we can
-     start with the left bound l = 0, but we have to find a right
-     bound r such that  phi(r) <= u */
-    double l = 0;
-    double phi_l = 1;
-    double r = 1;
-    double phi_r = phi(t, r);
-    while (std::isfinite(r) && (phi_r > u)) {
-        r *= 2;
-        phi_r = phi(t, r);
-    }
-    /* Now we split the interval and pick the left or right subinterval
-     * until we reach the desired precision
-     */
-    while ((phi_l != phi_r) && ((r - l) > tau_precision)) {
-        const double m = std::isfinite(r) ? (l + r) / 2 : l*2 ;
-        const double phi_m = phi(t, m);
-        if (phi_m >= u) {
-            l = m;
-            phi_l = phi_m;
-        }
-        else {
-            r = m;
-            phi_r = phi_m;
-        }
-    }
-    /* Return mid-point of the final interval */
-    return (l + r) / 2;
+    return inverse_survival_function(u, tau_precision, [&,t] (double tau) { return phi(t, tau); });
 }
 
 double simulate_nmga::lambda_total(std::vector<double>* lambda_finite_cumulative,
@@ -138,11 +106,11 @@ double simulate_nmga::lambda_total(std::vector<double>* lambda_finite_cumulative
     double lambda_finite_total = 0;
     for(std::size_t i=0; i < active_edges.size(); ++i) {
         const active_edges_entry& e = active_edges[i];
-        const double t = current_time - e.source_time;
+        const double te = current_time - e.source_time;
         double lambda = 0;
         /* For edges not yet active, lambda is zero */
-        if (t >= 0)
-            lambda = infection_time_distribution.lambda(t);
+        if (te >= 0)
+            lambda = psi.hazardrate(te);
         lambda_total += lambda;
         /* Collect both the grand total and the total across all finite lambdas */
         if (std::isfinite(lambda))
@@ -211,15 +179,15 @@ std::pair<node_t, absolutetime_t> simulate_nmga::step(rng_t& engine) {
     /* Mark node as infected and make edges to non-infected neighbours active */
     infected.insert(node);
     for(int j=0; ; ++j) {
-        const auto neighbour = network.neighbour(node, j);
-        if (neighbour.first < 0)
+        const node_t neighbour = network.neighbour(node, j);
+        if (neighbour < 0)
             break;
-        if (infected.find(neighbour.first) != infected.end())
+        if (infected.find(neighbour) != infected.end())
             continue;
         active_edges_entry e;
         e.source = node;
         e.source_time = current_time;
-        e.target = neighbour.first;
+        e.target = neighbour;
         add_active_edge(e);
     }
     
@@ -264,21 +232,22 @@ void simulate_nmga::add_infections(const std::vector<std::pair<node_t, absolutet
         /* Iterator over source node's neighbours */
         for(int i=0; ; ++i) {
             /* Query next neighbour, abort if no more neighbours exist */
-            const auto neighbour = network.neighbour(ve.first, i);
-            if (neighbour.first < 0)
+            const node_t neighbour = network.neighbour(ve.first, i);
+            if (neighbour < 0)
                 break;
             
             /* Add future active edge */
             active_edges_entry e;
             e.source_time = ve.second;
             e.source = ve.first;
-            e.target = neighbour.first;
+            e.target = neighbour;
             active_edges.push_back(e);
         }
     }
 }
 
 
+#if 0
 std::vector<double> simulatePath(std::vector<double>& infection_times, int n_max,const lognormal_beta& infection_distribution, rng_t& engine){
     
     double absolute_time = 0;
@@ -315,6 +284,7 @@ std::vector<double> simulatePath(std::vector<double>& infection_times, int n_max
     return time_trajectory;
     
 }
+#endif
 
 void print_matrix(const std::vector<std::vector<double>>& A){
     long rows = A.size();
@@ -333,9 +303,10 @@ void simulatePaths_MeanField(double mean, double variance, int degree,int nb_pat
     for (int path=1; path<= nb_paths; path++) {
         std::string file_nb = std::to_string(path);
         
-        erdos_reyni network(size,degree, lognormal_beta(mean,variance,degree), engine);
-        
-        simulate_next_reaction simulation(network);
+
+        erdos_reyni network(size,degree, engine);
+        transmission_time_lognormal psi(mean, variance); 
+        simulate_next_reaction simulation(network, psi);
         simulation.add_infections({ std::make_pair(0, 0.0)});
         
         std::vector<double> time_trajectory({});
@@ -369,10 +340,9 @@ void generatePaths_NMGA(double mean, double variance, int degree,int nb_paths,do
     for (int path=0; path< nb_paths; path++) {
         std::string file_nb = std::to_string(path);
 
-        erdos_reyni network(size, degree, lognormal_beta(mean,variance,degree), engine);
-
-        lognormal_beta log(mean,variance,degree);
-        simulate_nmga simulation(network,log);
+        erdos_reyni network(size, degree, engine);
+        transmission_time_lognormal psi(mean, variance); 
+        simulate_nmga simulation(network, psi);
         simulation.approximation_threshold = threshold;
     //    simulate_next_reaction simulation(network);
         simulation.add_infections({ std::make_pair(0, 0.0)});
@@ -402,9 +372,9 @@ void generatePaths_next_reaction(double mean, double variance, int degree,int nb
     for (int path=0; path< nb_paths; path++) {
         std::string file_nb = std::to_string(path);
 
-        erdos_reyni network(size,degree, lognormal_beta(mean,variance,degree), engine);
-
-        simulate_next_reaction simulation(network);
+        erdos_reyni network(size, degree, engine);
+        transmission_time_lognormal psi(mean, variance); 
+        simulate_next_reaction simulation(network, psi);
         simulation.add_infections({ std::make_pair(0, 0.0)});
 
         std::vector<double> time_trajectory({});

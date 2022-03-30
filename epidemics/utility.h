@@ -9,7 +9,7 @@
 #include "types.h"
 
 template<typename T, typename ...Args>
-double inverse_survival_function(double u, T f, Args... args) {
+double inverse_survival_function(double u, double precision, T f, Args... args) {
     if ((u > 1) || (u < 0))
         return NAN;
     /* Use bisection to invert f. We assume that f(0) = 1 >= u,
@@ -26,7 +26,7 @@ double inverse_survival_function(double u, T f, Args... args) {
     /* Now we split the interval and pick the left or right subinterval
      * until we reach the desired precision
      */
-    while ((f_l != f_r) && ((r - l) > tau_precision)) {
+    while ((f_l != f_r) && ((r - l) > precision)) {
         const double m = std::isfinite(r) ? (l + r) / 2 : l*2 ;
         const double f_m = f(m, std::forward(args)...);
         if (f_m >= u) {
