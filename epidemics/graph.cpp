@@ -63,3 +63,6 @@ node_t erdos_reyni::neighbour(node_t node, int neighbour_index) {
     return n[neighbour_index];
 }
 
+int erdos_reyni::outdegree(node_t node) {
+    return neighbours.at(node).size();
+}
