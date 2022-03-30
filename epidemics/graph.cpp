@@ -18,27 +18,8 @@ erdos_reyni::erdos_reyni(int size, double avg_degree, rng_t& engine ){
      
      */
     
-//    std::vector<std::vector<node_t>> neighbours;
-    
     const double p = avg_degree/size; // probability of an edge: if size ->infty and degree-> fixed then we get Poisson Graph.
     
-    
-     //Using naive Bernoulli implementation
-
-//    std::bernoulli_distribution has_edge(p);
-//
-//    neighbours.resize(size);
-//    for (int i=0; i<size; i++) {
-//        for (int j=0; j<i; j++) {
-//            if (!has_edge(engine)) {
-//                continue;
-//            }
-//            const double tau = infection_distribution.sample(engine);
-//            neighbours[i].push_back(std::make_pair(j, tau));
-//            neighbours[j].push_back(std::make_pair(i, tau));
-//        }
-//    }
-//
     /* Using geometric distribution */
     std::geometric_distribution<> skip_edge(p);// comment: equals 0 with prob. p
 
@@ -48,11 +29,6 @@ erdos_reyni::erdos_reyni(int size, double avg_degree, rng_t& engine ){
             neighbours[i].push_back(i);
             neighbours[j].push_back(j);
         }
-    }
-    
-    for (int i =0; i< size; i++) {
-        sort(neighbours[i].begin(), neighbours[i].end(),
-             [](const auto& a, const auto& b) { return a.second < b.second; });
     }
 }
 
