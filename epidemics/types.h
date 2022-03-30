@@ -11,5 +11,6 @@
 
 typedef std::mt19937 rng_t;
 typedef int node_t;
+typedef int index_t;
 typedef double interval_t;
 typedef double absolutetime_t;

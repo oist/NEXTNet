@@ -12,6 +12,8 @@
 		984A0CAB27C0DF56004A0A96 /* analysis.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 984A0CA927C0DF56004A0A96 /* analysis.cpp */; };
 		984A0CAF27C0DF81004A0A96 /* random.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 984A0CAD27C0DF81004A0A96 /* random.cpp */; };
 		984A0CB627C0E0B7004A0A96 /* simulation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 984A0CB427C0E0B7004A0A96 /* simulation.cpp */; };
+		98CFFC0327F4696F00A6E322 /* utility.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 98CFFC0227F4696F00A6E322 /* utility.cpp */; };
+		98CFFC0427F4696F00A6E322 /* utility.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 98CFFC0227F4696F00A6E322 /* utility.cpp */; };
 		F9D26B8927E229AB005A272D /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F99D7A9C27E21CC000200C18 /* main.cpp */; };
 		F9D26B8A27E229B0005A272D /* graph.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F99D7A9B27E21CC000200C18 /* graph.cpp */; };
 		F9D26B8B27E229B9005A272D /* simulation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 984A0CB427C0E0B7004A0A96 /* simulation.cpp */; };
@@ -55,6 +57,8 @@
 		984A0CB427C0E0B7004A0A96 /* simulation.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = simulation.cpp; sourceTree = "<group>"; };
 		984A0CB527C0E0B7004A0A96 /* simulation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = simulation.h; sourceTree = "<group>"; };
 		986328CC27D728F30029F31F /* types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = types.h; sourceTree = "<group>"; };
+		98CFFC0127F4696F00A6E322 /* utility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = utility.h; sourceTree = "<group>"; };
+		98CFFC0227F4696F00A6E322 /* utility.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = utility.cpp; sourceTree = "<group>"; };
 		F99D7A9827E21CC000200C18 /* catch.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = catch.hpp; sourceTree = "<group>"; };
 		F99D7A9A27E21CC000200C18 /* stdafx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stdafx.h; sourceTree = "<group>"; };
 		F99D7A9B27E21CC000200C18 /* graph.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = graph.cpp; sourceTree = "<group>"; };
@@ -112,6 +116,8 @@
 			isa = PBXGroup;
 			children = (
 				986328CC27D728F30029F31F /* types.h */,
+				98CFFC0227F4696F00A6E322 /* utility.cpp */,
+				98CFFC0127F4696F00A6E322 /* utility.h */,
 				984A0C9F27C0DE5C004A0A96 /* main.cpp */,
 				984A0CB427C0E0B7004A0A96 /* simulation.cpp */,
 				984A0CB527C0E0B7004A0A96 /* simulation.h */,
@@ -258,6 +264,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				98CFFC0327F4696F00A6E322 /* utility.cpp in Sources */,
 				984A0CB627C0E0B7004A0A96 /* simulation.cpp in Sources */,
 				984A0CAF27C0DF81004A0A96 /* random.cpp in Sources */,
 				982A07D927D5BED900B4772A /* graph.cpp in Sources */,
@@ -270,6 +277,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				98CFFC0427F4696F00A6E322 /* utility.cpp in Sources */,
 				F9D26B8D27E229BA005A272D /* graph.cpp in Sources */,
 				F9D26B8E27E229BA005A272D /* analysis.cpp in Sources */,
 				F9D26B8B27E229B9005A272D /* simulation.cpp in Sources */,
@@ -308,7 +316,7 @@
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = NO;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
@@ -343,6 +351,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = "$(BOOST_DIR)";
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -370,7 +379,7 @@
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = NO;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
@@ -399,6 +408,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = "$(BOOST_DIR)";
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;

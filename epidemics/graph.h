@@ -37,7 +37,7 @@ public:
 
     virtual node_t neighbour(node_t node, int neighbour_index);
 
-    virtual int outdegree(node_t node);
+    virtual index_t outdegree(node_t node);
 
 //private:
     /* Adjacency list of the graph */

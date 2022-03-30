@@ -60,8 +60,8 @@ private:
          */
         absolutetime_t source_time = INFINITY;
         node_t source_node = -1;
-        int neighbour_index = -1;
-        int neighbours_remaining = 0;
+        index_t neighbour_index = -1;
+        index_t neighbours_remaining = 0;
         
         bool operator< (const active_edges_entry& o) const { return time < o.time; }
         bool operator<= (const active_edges_entry& o) const { return time <= o.time; }

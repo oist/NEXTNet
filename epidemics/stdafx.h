@@ -19,7 +19,10 @@
 #include <deque>
 #include <utility>
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Weverything"
 #include <boost/math/distributions.hpp>
+#pragma clang diagnostic pop
 
 /* Make boost::math available as simply bm */
 namespace bm = boost::math;
