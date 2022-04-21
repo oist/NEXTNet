@@ -26,8 +26,8 @@ erdos_reyni::erdos_reyni(int size, double avg_degree, rng_t& engine ){
     neighbours.resize(size);
     for (int i=0; i<size; i++) {
         for (int j=skip_edge(engine); j<i; j += 1 + skip_edge(engine)) {
-            neighbours[i].push_back(i);
-            neighbours[j].push_back(j);
+            neighbours[i].push_back(j);
+            neighbours[j].push_back(i);
         }
     }
 }
@@ -36,6 +36,7 @@ node_t erdos_reyni::neighbour(node_t node, int neighbour_index) {
     const auto& n = neighbours.at(node);
     if ((neighbour_index < 0) || (n.size() <= (unsigned int)neighbour_index))
         return -1;
+    //std::cout << node<< "neighbour: "<< n[neighbour_index]<<"\n";
     return n[neighbour_index];
 }
 

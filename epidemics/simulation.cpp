@@ -13,21 +13,9 @@
 #include "utility.h"
 #include "nMGA.h"
 #include "NextReaction.h"
+#include "analysis.h"
 
 
-
-
-void print_matrix(const std::vector<std::vector<double>>& A){
-    long rows = A.size();
-    long cols = A[0].size();
-    
-    for (int i = 0; i<rows; i++) {
-        for (int j =0; j<cols; j++) {
-            std::cout << ceil(A[i][j]*10)/10 << "   ";
-        }
-        std::cout << std::endl;
-    }
-}
 
 void simulatePaths_MeanField(double mean, double variance, int degree,int nb_paths,double size, rng_t& engine){
         
@@ -99,11 +87,13 @@ void generatePaths_next_reaction(double mean, double variance, int degree,int nb
     std::string filename ="data";
     std::string ext= ".dat";
     
+    std::string adjalist ="adjaLIST.csv";
     
     for (int path=0; path< nb_paths; path++) {
         std::string file_nb = std::to_string(path);
 
         erdos_reyni network(size, degree, engine);
+        export_adjacency_list(network.neighbours,adjalist);
         transmission_time_lognormal psi(mean, variance); 
         simulate_next_reaction simulation(network, psi);
         simulation.add_infections({ std::make_pair(0, 0.0)});

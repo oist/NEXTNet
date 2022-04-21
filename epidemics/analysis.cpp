@@ -72,7 +72,7 @@ void exportData(vector<double>& trajectory,string filename) {
     out.close();
 }
 
-void export_adjacency_list(vector<vector<pair<node_t,interval_t>>>& adjacencyList,string filename) {
+void export_adjacency_list(std::vector<std::vector<node_t>>& adjacencyList,string filename) {
     //create an ofstream
     ofstream out;
     
@@ -81,9 +81,9 @@ void export_adjacency_list(vector<vector<pair<node_t,interval_t>>>& adjacencyLis
     for (int i =0; i<n; i++){
         if ((int) adjacencyList[i].size() > 0) {
             for (int j =0; j < (int) adjacencyList[i].size() -1; j++){
-                out << adjacencyList[i][j].first << ", ";
+                out << adjacencyList[i][j] << ", ";
             }
-            out << adjacencyList[i].back().first << "\n" ;
+            out << adjacencyList[i].back() << "\n" ;
             continue;
         } else {
             out << "\n";
@@ -96,4 +96,14 @@ void export_adjacency_list(vector<vector<pair<node_t,interval_t>>>& adjacencyLis
 
 
 
-
+void print_matrix(const std::vector<std::vector<double>>& A){
+    long rows = A.size();
+    long cols = A[0].size();
+    
+    for (int i = 0; i<rows; i++) {
+        for (int j =0; j<cols; j++) {
+            std::cout << ceil(A[i][j]*10)/10 << "   ";
+        }
+        std::cout << std::endl;
+    }
+}

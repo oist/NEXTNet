@@ -90,6 +90,7 @@ public:
     virtual double density(interval_t tau);
     virtual double survivalprobability(interval_t tau);
     virtual interval_t survivalquantile(double u);
+    virtual interval_t sample(rng_t&, interval_t t, int m);
 };
 
 template<typename DistributionType>

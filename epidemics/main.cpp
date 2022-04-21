@@ -23,23 +23,23 @@ int main(int argc, const char * argv[]) {
     // PARAMETERS
     
     
-    int size = 5000; // Size network or max pop for mean field.
+    int size = 1000; // Size network or max pop for mean field.
     int degree = 5; // Average Degree
     double mean = 10; // Average infection time
     double variance = 3;
     
     int nb_paths = 1;
-    double threshold=100;
+    //double threshold=100;
     
     
      /*-----nMGA-----*/
-    generatePaths_NMGA( mean, variance, degree,nb_paths, size, engine,threshold);
+    //generatePaths_NMGA( mean, variance, degree,nb_paths, size, engine,threshold);
 
   
 
     /*----Next Reaction on ERDOS REYNI network---*/
     
-    //generatePaths_next_reaction( mean, variance, degree,nb_paths, size, engine);
+    generatePaths_next_reaction( mean, variance, degree,nb_paths, size, engine);
     
     
     /*---Mean Field---*/

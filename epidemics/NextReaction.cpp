@@ -19,12 +19,16 @@ std::pair<node_t, absolutetime_t> simulate_next_reaction::step(rng_t& engine) {
         /* Lazily enqueue next sibling of the putatively infected node if necessary */
         if (next.neighbours_remaining > 0) {
             const node_t sibling = network.neighbour(next.source_node, next.neighbour_index + 1);
-            if (sibling < 0)
-                throw std::logic_error(std::string("neighbour ") + std::to_string(next.neighbour_index + 1) +
-                                       " of node " + std::to_string(next.source_node) + " is invalid");
+            if (sibling < 0){
+                continue;
+                //throw std::logic_error(std::string("neighbour ") + std::to_string(next.neighbour_index + 1) +
+                //                       " of node " + std::to_string(next.source_node) + " is invalid");
+            }
+            std::cout << "nei remaining :"<< next.neighbours_remaining <<"\n";
             /* Create sibling's infection times entry and add to queue */
             const double tau = psi.sample(engine, next.time - next.source_time,
                                           next.neighbours_remaining);
+            std::cout<< "infect time" << tau<<"\n";
             active_edges_entry e;
             e.time = next.source_time + tau;
             e.node = sibling;
@@ -41,6 +45,7 @@ std::pair<node_t, absolutetime_t> simulate_next_reaction::step(rng_t& engine) {
         
         /* Mark the node as infected */
         infected.insert(next.node);
+        std::cout << next.node <<" & "<<next.time <<"\n";
         
         /* Add the infecte node's first neigbhour to the infection times queue */
         const node_t neighbour = network.neighbour(next.node, 0);

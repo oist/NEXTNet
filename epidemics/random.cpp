@@ -81,7 +81,15 @@ double transmission_time_lognormal::survivalprobability(interval_t tau) {
 }
 
 interval_t transmission_time_lognormal::survivalquantile(double u) {
+    //return quantile(bm::lognormal(mu, sigma),u);
     return cdf(complement(bm::lognormal(mu, sigma), u));
+}
+
+interval_t transmission_time_lognormal::sample(rng_t& rng, interval_t t, int m) {
+    const double u = std::uniform_real_distribution<double>(0, 1)(rng);
+    double argument = 1 - pow((1-u),1/m);
+    return quantile(bm::lognormal(mu, sigma),argument);
+    //return cdf(complement(bm::lognormal(mu, sigma), u));
 }
 
 /*----------------------------------------------------*/

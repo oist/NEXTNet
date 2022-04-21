@@ -8,7 +8,6 @@
 //---------GENERATING PATHS-------------
 //--------------------------------------
 
-
 /* Simulates several paths in the mean field regime */
 void simulatePaths_MeanField(double mean, double variance, int degree,int nb_paths,double size, rng_t& engine);
 
@@ -24,9 +23,6 @@ std::vector<double> simulatePath(std::vector<double>& infection_times, int n_max
 #endif
 
 //--------------------------------------
-//-------------SIMULATION---------------
+//-------------MISC--------------------
 //--------------------------------------
 
-
-
-void print_matrix(std::vector<std::vector<double>>& A);
