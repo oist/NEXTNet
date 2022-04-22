@@ -52,6 +52,10 @@ TEST_CASE("Lognormal distribution sampling", "[random]") {
     }
 }
 
+TEST_CASE("Lognormal distribution nonconditional", "[random]") {
+    // TODO: Check that t=0, m=1 produces the correct mean and variance
+}
+
 TEST_CASE("Lognormal distribution incremental sampling", "[random]") {
     std::mt19937 engine;
 
@@ -66,8 +70,11 @@ TEST_CASE("Lognormal distribution incremental sampling", "[random]") {
     std::vector<std::vector<double>> samples_iid(K, std::vector<double> {});
     for(int i=0; i < N; ++i) {
         std::vector<double> s;
-        for(int j=0; j < K; ++j)
-            s.push_back(ln.sample(engine, 0, 1));
+        for(int j=0; j < K; ++j) {
+            const double t = ln.sample(engine, 0, 1);
+            REQUIRE(t);
+            s.push_back(t);
+        }
         REQUIRE(s.size() == K);
         std::sort(s.begin(), s.end());
         for(int j=0; j < K; ++j)
@@ -87,7 +94,9 @@ TEST_CASE("Lognormal distribution incremental sampling", "[random]") {
     for(int i=0; i < N; ++i) {        
         double t = 0;
         for(int j=0; j < K; ++j) {
-            t = t + ln.sample(engine, t, K-j);
+            const double d = ln.sample(engine, t, K-j);
+            REQUIRE(d >= 0);
+            t = t + d;
             samples_seq[j].push_back(t);
         }
     }
