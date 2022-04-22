@@ -31,30 +31,6 @@ std::pair<double, double> mean_variance(Iterator begin, Iterator end) {
     return std::make_pair(m, v / (n - 1));
 }
 
-TEST_CASE("Lognormal distribution sampling", "[random]") {
-    std::mt19937 engine;
-
-    transmission_time_lognormal ln(5, 1);
-    REQUIRE(ln.survivalprobability(0) == 1.0);
-    for(auto t: {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0}) {
-        for(auto m: {1}) { //, 2, 3}) {
-            REQUIRE(ln.survivalprobability(0, t, m) == 1.0);
-            const int n = 1000;
-            double m1 = 0.0;
-            double m2 = 0.0;
-            for(int i=0; i < n; ++i) {
-                const double v = ln.sample(engine, t, m);
-                REQUIRE(v >= 0);
-                m1 += v;
-                m2 += v * v;
-            }
-            const double mean = m1 / n;
-            const double variance = m2 / n - mean * mean;
-            std::cout << "t: " << t << ", m: " << m << ", mean: " << mean << ", variance: " << variance << std::endl;
-        }
-    }
-}
-
 TEST_CASE("Lognormal distribution nonconditional", "[random]") {
     // TODO: Check that t=0, m=1 produces the correct mean and variance
 }
@@ -117,31 +93,3 @@ TEST_CASE("Lognormal distribution incremental sampling", "[random]") {
         REQUIRE(std::abs(z) <= 3);
     }
 }
-
-#if ENABLE_PLOTTING
-TEST_CASE("Lognormal distribution plots", "[random]") {
-    std::mt19937 engine;
-
-    const double t = 3;
-    const int m = 1;
-    transmission_time_lognormal ln(5, 1);
-    const double n = 1000;
-    std::vector<double> q(n, 0);
-    std::vector<double> qp(n, 0);
-    std::vector<double> u(n, 0);
-    std::vector<double> uq(n, 0);
-    for(int i=0; i < n; ++i) {
-        q[i] = (double(i) / n) * 10.0;
-        qp[i] = ln.survivalprobability(q[i], t, m);
-        u[i] = (double(i+1) / (n+1)) * 1.0;
-        uq[i] = ln.survivalquantile(u[i], t, 1);
-    }
-
-//    plt::plot(q, qp);
-//    plt::show();
-
-    plt::plot(u, uq);
-    plt::show();
-}
-#endif
-
