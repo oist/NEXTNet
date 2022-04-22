@@ -43,7 +43,7 @@ interval_t transmission_time::survivalquantile(double u) {
 interval_t transmission_time::survivalquantile(double u, interval_t t, int m) {
     /* We consider i.i.d. tau_1, ..., tau_m and ask for the probability
      *
-     *   p(tau) = P[ tau_1, ..., tau_m >= t + tau | tau_1, ..., tau_m <= t ].
+     *   p(tau) = P[ tau_1, ..., tau_m >= t + tau | tau_1, ..., tau_m >= t ].
      *
      * In terms of the (unconditional) CDF F of tau this yields
      *
