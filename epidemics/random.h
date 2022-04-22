@@ -22,7 +22,7 @@ public:
      */
     virtual interval_t sample(rng_t&, interval_t t, int m);
 
-    /*
+    /**
      * Probability Density Function psi(tau) of the samples.
      */
     virtual double density(interval_t tau) = 0;
@@ -33,7 +33,7 @@ public:
      */
     virtual double hazardrate(interval_t);
 
-    /*
+    /**
      * Evaluates the survival function Psi(tau), 
      * i.e. the probability that a single edges does not fire within time interval [t , t + tau).
      */
@@ -45,18 +45,24 @@ public:
      */
     virtual double survivalprobability(interval_t tau, interval_t t, int m);
 
-    /*
+    /**
      * Evaluates the inverse of the survival function Psi(tau),
      * i.e returns the time interval given a probability in 
      */
     virtual interval_t survivalquantile(double u);
 
-    /*
+    /**
      * Evaluates the inverse of the survival function Psi(tau | t, m),
      * i.e returns the time interval given a probability in 
      */
     virtual interval_t survivalquantile(double u, interval_t t, int m);
 };
+
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+/*-----------TRANSMISSION TIME:EXPONENTIAL------------*/
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
 
 class transmission_time_exponential : public transmission_time {
     const double lambda;
@@ -76,30 +82,20 @@ public:
 
 };
 
-class transmission_time_lognormal : public transmission_time {
-    const double mean;
-    const double variance;
-    const double mu = 2 * log(mean) - 0.5 * log( pow(mean,2.0)+ variance );
-    const double sigma = sqrt( log( 1 + variance/pow(mean,2.0)));
-
-public:
-    transmission_time_lognormal(double _mean, double _variance)
-        :mean(_mean), variance(_variance)
-    {}
-
-    virtual double density(interval_t tau);
-    virtual double survivalprobability(interval_t tau);
-    virtual interval_t survivalquantile(double u);
-    virtual interval_t sample(rng_t&, interval_t t, int m);
-};
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+/*-----------TRANSMISSION TIME:GENERIC----------------*/
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
 
 template<typename DistributionType>
 class transmission_time_generic_boost : public transmission_time {
     typedef DistributionType distribution_t;
     const distribution_t distribution;
 
+public:
     transmission_time_generic_boost(const distribution_t& d)
-        :distribution(distribution)
+        :distribution(d)
     {}
 
     virtual double density(interval_t tau) {
@@ -114,6 +110,33 @@ class transmission_time_generic_boost : public transmission_time {
         return quantile(complement(distribution, u));
     }
 };
+
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+/*-----------TRANSMISSION TIME:LOG NORMAL-------------*/
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+
+class transmission_time_lognormal : public transmission_time_generic_boost<bm::lognormal> {
+    const double mean;
+    const double variance;
+
+    static double mu(const double mean, double variance) {
+        return 2 * log(mean) - 0.5 * log( pow(mean,2.0)+ variance );
+    }
+    
+    static double sigma(const double mean, double variance) {
+        return sqrt( log( 1 + variance/pow(mean,2.0)));
+    }
+    
+public:
+    transmission_time_lognormal(double m, double v)
+        :transmission_time_generic_boost(bm::lognormal(mu(m, v), sigma(m, v)))
+        ,mean(m), variance(v)
+    {}
+};
+
+
 
 /*  Create uniformly distributed random numbers */
 std::vector<double> rand(int n,rng_t& mersenneTwister);

@@ -41,9 +41,25 @@ interval_t transmission_time::survivalquantile(double u) {
 }
 
 interval_t transmission_time::survivalquantile(double u, interval_t t, int m) {
-    // By default, analytically reduce the problem to computing the
-    // inverse of the unconditional survival function Psi(tau) by using
-    // Psi^-1(tau | t, m) = Psi^-1( Psi(t) * u^(1/m) ) - t
+    /* We consider i.i.d. tau_1, ..., tau_m and ask for the probability
+     *
+     *   p(tau) = P[ tau_1, ..., tau_m >= t + tau | tau_1, ..., tau_m <= t ].
+     *
+     * In terms of the (unconditional) CDF F of tau this yields
+     *
+     *                                   m
+     *            (   1 - F(t + tau)   )
+     *   p(tau) = ( ------------------ )
+     *            (       1 - F(t)     )
+     *
+     * and solving p(tau) = u gives
+     *
+     *  t + tau = F^-1[ 1 - u^(1/m) * (1 - F(t)) ].
+     *
+     * In terms of the (unconditional) survival function G = 1 -F we get
+     *
+     *  t + tau = G^-1[ u^(1/m) * G(t) ].
+     */
     const double up = this->survivalprobability(t) * std::pow(u, 1.0 / double(m));
     const interval_t t_plus_tau = this->survivalquantile(up);
     if (t_plus_tau < t)
@@ -51,46 +67,6 @@ interval_t transmission_time::survivalquantile(double u, interval_t t, int m) {
     return (t_plus_tau - t);
 }
 
-
-/*----------------------------------------------------*/
-/*----------------------------------------------------*/
-/*-----------TRANSMISSION TIME:LOG NORMAL-------------*/
-/*----------------------------------------------------*/
-/*----------------------------------------------------*/
-
-double transmission_time_lognormal::density(interval_t tau) {
-    return cdf(complement(bm::lognormal(mu, sigma), tau));
-    /*
-    if (tau==0)
-        return 0;
-    return 1.0 / (tau*sigma*sqrt(2* M_PI)) * exp( -pow(log(tau)-mu,2) / (2*sigma*sigma) );    
-    */
-}
-
-double transmission_time_lognormal::survivalprobability(interval_t tau) {
-    return cdf(complement(bm::lognormal(mu, sigma), tau));
-    /*
-    if (tau == 0)
-        return 1;
-    
-    double mu = 2 * log(mean) - 0.5 * log( pow(mean,2.0) + variance );
-    double sigma = sqrt( log( 1 + variance/pow(mean,2.0)));
-
-    return 1 - 0.5 * (1 + erf( (log(tau)-mu) / (sqrt(2)*sigma) ));
-    */
-}
-
-interval_t transmission_time_lognormal::survivalquantile(double u) {
-    //return quantile(bm::lognormal(mu, sigma),u);
-    return cdf(complement(bm::lognormal(mu, sigma), u));
-}
-
-interval_t transmission_time_lognormal::sample(rng_t& rng, interval_t t, int m) {
-    const double u = std::uniform_real_distribution<double>(0, 1)(rng);
-    double argument = 1 - pow((1-u),1/m);
-    return quantile(bm::lognormal(mu, sigma),argument);
-    //return cdf(complement(bm::lognormal(mu, sigma), u));
-}
 
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
