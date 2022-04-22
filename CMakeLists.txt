@@ -60,6 +60,7 @@ link_libraries(Boost::boost)
 
 find_package(Python3 COMPONENTS Interpreter Development NumPy REQUIRED)
 link_libraries(Python3::Python Python3::NumPy Python3::Module)
+add_compile_definitions(ENABLE_PLOTTING=1)
 
 #include_directories(${Boost_INCLUDE_DIRS})
 

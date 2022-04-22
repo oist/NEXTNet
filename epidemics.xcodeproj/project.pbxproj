@@ -18,6 +18,8 @@
 		98B96F7D28111BB800A78600 /* nMGA.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 98B96F7A28111BB800A78600 /* nMGA.cpp */; };
 		98CFFC0327F4696F00A6E322 /* utility.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 98CFFC0227F4696F00A6E322 /* utility.cpp */; };
 		98CFFC0427F4696F00A6E322 /* utility.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 98CFFC0227F4696F00A6E322 /* utility.cpp */; };
+		F946A5E2281255F2000668F9 /* random.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F946A5E0281255F2000668F9 /* random.cpp */; };
+		F9ADCB9B28128A6D00AEB3C0 /* nextreaction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F9ADCB9A28128A6D00AEB3C0 /* nextreaction.cpp */; };
 		F9D26B8927E229AB005A272D /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F99D7A9C27E21CC000200C18 /* main.cpp */; };
 		F9D26B8A27E229B0005A272D /* graph.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F99D7A9B27E21CC000200C18 /* graph.cpp */; };
 		F9D26B8B27E229B9005A272D /* simulation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 984A0CB427C0E0B7004A0A96 /* simulation.cpp */; };
@@ -67,11 +69,13 @@
 		98B96F7B28111BB800A78600 /* nMGA.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = nMGA.h; sourceTree = "<group>"; };
 		98CFFC0127F4696F00A6E322 /* utility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = utility.h; sourceTree = "<group>"; };
 		98CFFC0227F4696F00A6E322 /* utility.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = utility.cpp; sourceTree = "<group>"; };
+		F946A5E0281255F2000668F9 /* random.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = random.cpp; sourceTree = "<group>"; };
 		F99D7A9827E21CC000200C18 /* catch.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = catch.hpp; sourceTree = "<group>"; };
 		F99D7A9A27E21CC000200C18 /* stdafx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stdafx.h; sourceTree = "<group>"; };
 		F99D7A9B27E21CC000200C18 /* graph.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = graph.cpp; sourceTree = "<group>"; };
 		F99D7A9C27E21CC000200C18 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		F99D7AAB27E21DD400200C18 /* tests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = tests; sourceTree = BUILT_PRODUCTS_DIR; };
+		F9ADCB9A28128A6D00AEB3C0 /* nextreaction.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = nextreaction.cpp; sourceTree = "<group>"; };
 		F9D26B6C27E22410005A272D /* libtestrunner.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libtestrunner.a; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -157,9 +161,11 @@
 		F99D7A9927E21CC000200C18 /* tests */ = {
 			isa = PBXGroup;
 			children = (
+				F9ADCB9A28128A6D00AEB3C0 /* nextreaction.cpp */,
 				F99D7A9C27E21CC000200C18 /* main.cpp */,
 				F99D7A9B27E21CC000200C18 /* graph.cpp */,
 				F99D7A9A27E21CC000200C18 /* stdafx.h */,
+				F946A5E0281255F2000668F9 /* random.cpp */,
 			);
 			path = tests;
 			sourceTree = "<group>";
@@ -294,8 +300,10 @@
 				98CFFC0427F4696F00A6E322 /* utility.cpp in Sources */,
 				F9D26B8D27E229BA005A272D /* graph.cpp in Sources */,
 				F9D26B8E27E229BA005A272D /* analysis.cpp in Sources */,
+				F9ADCB9B28128A6D00AEB3C0 /* nextreaction.cpp in Sources */,
 				F9D26B8B27E229B9005A272D /* simulation.cpp in Sources */,
 				98B96F7D28111BB800A78600 /* nMGA.cpp in Sources */,
+				F946A5E2281255F2000668F9 /* random.cpp in Sources */,
 				F9D26B8A27E229B0005A272D /* graph.cpp in Sources */,
 				F9D26B8C27E229B9005A272D /* random.cpp in Sources */,
 				98B96F7328111BAC00A78600 /* NextReaction.cpp in Sources */,
@@ -457,8 +465,18 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					/opt/local/Library/Frameworks,
+				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = epidemics/tests/stdafx.h;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					/opt/local/Library/Frameworks/Python.framework/Versions/3.10,
+					/opt/local/Library/Frameworks/Python.framework/Versions/3.10/lib,
+					"/opt/local/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/config-3.10-darwin",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -467,8 +485,18 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					/opt/local/Library/Frameworks,
+				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = epidemics/tests/stdafx.h;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					/opt/local/Library/Frameworks/Python.framework/Versions/3.10,
+					/opt/local/Library/Frameworks/Python.framework/Versions/3.10/lib,
+					"/opt/local/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/config-3.10-darwin",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

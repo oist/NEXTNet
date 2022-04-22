@@ -1,9 +1,12 @@
 #include "tests/stdafx.h"
 
 #include "random.h"
+
+#if ENABLE_PLOTTING
 #include "matplotlibcpp.h"
 
 namespace plt = matplotlibcpp;
+#endif
 
 template<typename Iterator>
 double mean(Iterator begin, Iterator end) {
@@ -115,7 +118,7 @@ TEST_CASE("Lognormal distribution incremental sampling", "[random]") {
     }
 }
 
-#if 0
+#if ENABLE_PLOTTING
 TEST_CASE("Lognormal distribution plots", "[random]") {
     std::mt19937 engine;
 
