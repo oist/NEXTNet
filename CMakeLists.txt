@@ -7,6 +7,8 @@ set(LIB_SOURCES
     epidemics/graph.cpp
     epidemics/random.cpp
     epidemics/simulation.cpp
+    epidemics/NextReaction.cpp 
+    epidemics/nMGA.cpp
     epidemics/utility.cpp)
 
 set(LIB_HEADERS
@@ -30,7 +32,9 @@ set(SIMULATOR_HEADERS
 set(TESTS_SOURCES
     epidemics/analysis.cpp
     epidemics/tests/main.cpp
-    epidemics/tests/graph.cpp)
+    epidemics/tests/graph.cpp
+    epidemics/tests/random.cpp
+    epidemics/tests/nextreaction.cpp)
 
 set(TESTS_HEADERS
     epidemics/catch/catch.hpp)
@@ -53,6 +57,10 @@ add_compile_options(-Wall)
 # Dependencies
 find_package(Boost REQUIRED)
 link_libraries(Boost::boost)
+
+find_package(Python3 COMPONENTS Interpreter Development NumPy REQUIRED)
+link_libraries(Python3::Python Python3::NumPy Python3::Module)
+
 #include_directories(${Boost_INCLUDE_DIRS})
 
 # *** Build command-line similator
