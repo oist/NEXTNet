@@ -34,7 +34,8 @@ set(TESTS_SOURCES
     epidemics/tests/main.cpp
     epidemics/tests/graph.cpp
     epidemics/tests/random.cpp
-    epidemics/tests/nextreaction.cpp)
+    epidemics/tests/nextreaction.cpp
+    epidemics/tests/nmga.cpp)
 
 set(TESTS_HEADERS
     epidemics/catch/catch.hpp)
