@@ -41,7 +41,7 @@ public:
 
     /**
      * Evaluates the survival function  Psi( tau | t, m), 
-     * i.e. the probability that none of m edges fire within the time interval [t, t+).
+     * i.e. the probability that none of m edges fire within the time interval [t, t+tau).
      */
     virtual double survivalprobability(interval_t tau, interval_t t, int m);
 
@@ -102,9 +102,13 @@ public:
         return pdf(distribution, tau);
     }
 
+    using transmission_time::survivalprobability;
+    
     virtual double survivalprobability(interval_t tau) {
         return cdf(complement(distribution, tau));
     }
+
+    using transmission_time::survivalquantile;
 
     virtual interval_t survivalquantile(double u) {
         return quantile(complement(distribution, u));
