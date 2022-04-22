@@ -34,14 +34,14 @@ std::pair<node_t, absolutetime_t> simulate_next_reaction::step(rng_t& engine) {
                                        " of node " + std::to_string(next.source_node) + " is invalid");
             }
             /* Create sibling's infection times entry and add to queue
-             * When sampling transmission times, we always work in a frame of reference where
-             * the infection occured at time 0, therefore we translate the current time accordingly
-             * when sampling tau here.
+             * When sampling transmission times, we pass the "current time" in a frame of reference where
+             * the infection occured at time 0. The returned transmission time, however, is relative to the
+             * current time.
              */
             const double tau = psi.sample(engine, next.time - next.source_time,
                                           next.neighbours_remaining);
             active_edges_entry e;
-            e.time = next.source_time + tau;
+            e.time = next.time + tau;
             e.node = sibling;
             e.source_time = next.source_time;
             e.source_node = next.source_node;
