@@ -17,7 +17,10 @@
 
 transmission_time::transmission_time(double pinf)
     :pinfinity(pinf)
-{}
+{
+    if ((pinfinity < 0.0) || (pinfinity > 1.0) || !std::isfinite(pinfinity))
+        throw std::range_error("pinfinity must lie within [0, 1]");
+}
 
 /* "this ->"" is also used to ensure that if some of the functions are 
 * redefined in herited classes then they are they ones being used and
