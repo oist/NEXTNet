@@ -18,7 +18,18 @@
 class transmission_time {
 public:
     /**
+     * The probability of no infection, i.e. of the infection time being infinite.
+     * The total probability represented by the density function *plus*
+     * pinfinity() must be one, meaning that the integral over the density
+     * must be 1 - pinfinity().
+     */
+    const double pinfinity = 0.0;
+
+    transmission_time(double pinf = 0.0);
+
+    /**
      * Samples from the distribution with survival function Psi( tau | t,m ) and pdf psi(tau)
+     * May return infinity to indicate that no further infections occur if pinfinity() > 0.
      */
     virtual interval_t sample(rng_t&, interval_t t, int m);
 
@@ -36,12 +47,14 @@ public:
     /**
      * Evaluates the survival function Psi(tau), 
      * i.e. the probability that a single edges does not fire within time interval [t , t + tau).
+     * Since infinity is larger than any finite tau, this probability is always >= pinfinity().
      */
     virtual double survivalprobability(interval_t tau) = 0;
 
     /**
      * Evaluates the survival function  Psi( tau | t, m), 
      * i.e. the probability that none of m edges fire within the time interval [t, t+tau).
+     * Since infinity is larger than any finite tau, this probability is always >= pinfinity().
      */
     virtual double survivalprobability(interval_t tau, interval_t t, int m);
 
@@ -94,8 +107,9 @@ class transmission_time_generic_boost : public transmission_time {
     const distribution_t distribution;
 
 public:
-    transmission_time_generic_boost(const distribution_t& d)
-        :distribution(d)
+    transmission_time_generic_boost(const distribution_t& d, double pinfinity = 0.0)
+        :transmission_time(pinfinity)
+        ,distribution(d)
     {}
 
     virtual double density(interval_t tau) {
@@ -108,7 +122,10 @@ public:
     using transmission_time::survivalquantile;
     
     virtual double survivalprobability(interval_t tau) {
-        return cdf(complement(distribution, tau));
+        if (std::isinf(tau))
+            return pinfinity;
+        else
+            return pinfinity + (1-pinfinity) * cdf(complement(distribution, tau));
     }
 
     virtual interval_t survivalquantile(double u) {

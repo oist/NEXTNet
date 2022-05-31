@@ -15,6 +15,10 @@
 /*----------------TRANSMISSION TIME-------------------*/
 /*----------------------------------------------------*/
 
+transmission_time::transmission_time(double pinf)
+    :pinfinity(pinf)
+{}
+
 /* "this ->"" is also used to ensure that if some of the functions are 
 * redefined in herited classes then they are they ones being used and
 * not the by-default implementations.*/
