@@ -140,9 +140,6 @@ public:
 /*----------------------------------------------------*/
 
 class transmission_time_lognormal : public transmission_time_generic_boost<bm::lognormal> {
-    const double mean;
-    const double variance;
-
     static double mu(const double mean, double variance) {
         return 2 * log(mean) - 0.5 * log( pow(mean,2.0)+ variance );
     }
@@ -152,6 +149,9 @@ class transmission_time_lognormal : public transmission_time_generic_boost<bm::l
     }
     
 public:
+    const double mean;
+    const double variance;
+
     transmission_time_lognormal(double m, double v)
         :transmission_time_generic_boost(bm::lognormal(mu(m, v), sigma(m, v)))
         ,mean(m), variance(v)
