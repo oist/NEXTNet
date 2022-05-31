@@ -52,3 +52,15 @@ public:
     /* Adjacency list of the graph */
     std::vector<std::vector<node_t>> neighbours;
 };
+
+class fully_connected : public graph {
+public:
+    fully_connected(int size, rng_t& engine);
+
+    virtual node_t neighbour(node_t node, int neighbour_index);
+
+    virtual index_t outdegree(node_t node);
+
+    rng_t& engine;
+    std::vector<std::vector<node_t>>  neighbours;
+};

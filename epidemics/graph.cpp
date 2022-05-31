@@ -43,3 +43,36 @@ node_t erdos_reyni::neighbour(node_t node, int neighbour_index) {
 index_t erdos_reyni::outdegree(node_t node) {
     return (index_t) neighbours.at(node).size();
 }
+
+fully_connected::fully_connected(int size, rng_t& engine_)
+    :engine(engine_)
+    ,neighbours(size, std::vector<node_t>({}))
+{}
+
+node_t fully_connected::neighbour(node_t node, int neighbour_index) {
+    // index has to be in the range [0, size - 1]
+    if ((neighbour_index < 0) || (neighbour_index >= neighbours.size() - 1))
+        return -1;
+    // get neighbours of node <node>
+    const auto& n = neighbours.at(node);
+    if (!n.empty())
+        return n.at(neighbour_index);
+    // neighbours not yet generated, generate it now
+    std::vector<node_t> np;
+    np.reserve(neighbours.size() - 1);
+    // add nodes [0,...,node-1,node+1,...,size] as neighbours
+    for(int i=0; i < node; ++i)
+        np.push_back(i);
+    for(int i=node+1, m=neighbours.size(); i < m; ++i)
+        np.push_back(i);
+    // shuffle
+    std::shuffle(np.begin(), np.end(), engine);
+    // store and return
+    neighbours[node] = np;        
+    return np.at(neighbour_index);
+}
+
+index_t fully_connected::outdegree(node_t node) {
+    // network is fully connected, every node is every node's neighbour
+    return neighbours.size() - 1;
+}
