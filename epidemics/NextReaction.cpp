@@ -40,14 +40,18 @@ std::pair<node_t, absolutetime_t> simulate_next_reaction::step(rng_t& engine) {
              */
             const double tau = psi.sample(engine, next.time - next.source_time,
                                           next.neighbours_remaining);
-            active_edges_entry e;
-            e.time = next.time + tau;
-            e.node = sibling;
-            e.source_time = next.source_time;
-            e.source_node = next.source_node;
-            e.neighbour_index = next.neighbour_index + 1;
-            e.neighbours_remaining = next.neighbours_remaining - 1;
-            active_edges.push(e);
+            if (!std::isinf(tau)) {
+                if (std::isnan(tau) || (tau < 0))
+                    throw std::logic_error("transmission times must be non-negative");
+                active_edges_entry e;
+                e.time = next.time + tau;
+                e.node = sibling;
+                e.source_time = next.source_time;
+                e.source_node = next.source_node;
+                e.neighbour_index = next.neighbour_index + 1;
+                e.neighbours_remaining = next.neighbours_remaining - 1;
+                active_edges.push(e);
+            }
         }
         
         /* Check if the putatively infected node is already infected, if so we're done */
@@ -67,14 +71,18 @@ std::pair<node_t, absolutetime_t> simulate_next_reaction::step(rng_t& engine) {
             /* Create target node's infection times entry and add to queue */
             const int neighbours_total = network.outdegree(next.node);
             const double tau = psi.sample(engine, 0, neighbours_total);
-            active_edges_entry e;
-            e.time = next.time + tau;
-            e.node = neighbour;
-            e.source_time = next.time;
-            e.source_node = next.node;
-            e.neighbour_index = 0;
-            e.neighbours_remaining = neighbours_total - 1;
-            active_edges.push(e);
+            if (!std::isinf(tau)) {
+                if (std::isnan(tau) || (tau < 0))
+                    throw std::logic_error("transmission times must be non-negative");
+                active_edges_entry e;
+                e.time = next.time + tau;
+                e.node = neighbour;
+                e.source_time = next.time;
+                e.source_node = next.node;
+                e.neighbour_index = 0;
+                e.neighbours_remaining = neighbours_total - 1;
+                active_edges.push(e);
+            }
         }
         
         /* Return the infected node and it's infection time */
