@@ -15,22 +15,31 @@
 //--------------NETWORKS----------------
 //--------------------------------------
 
+/**
+ * @brief Abstract interface to a "network", i.e. a (directed) graph.
+ * 
+ * Provides two functions `neighbour()` and `outdegree()`, which can be used
+ * to query the network. `outdegree(n)` must return the number of outgoing edges
+ * of node n, and `neighbour(n, i)` must return the target of the i-th outgoing
+ * edge.
+ */
 class graph {
 public:    
-    /*
-     * returns:
-     * - the ith neighbour of node (in order of infection times)
-     * - the infection time from node to the ith neigbhour of node.
+    /**
+     * @brief Returns the target of the i-th outgoing edge of node n.
      */
     virtual node_t neighbour(node_t node, int neighbour_index) = 0;
 
     /**
-     * Returns the number of (outgoing) edges of the given node
+     * @brief Returns the number of (outgoing) edges of the given node
      */
     virtual int outdegree(node_t node) = 0;
 };
 
 
+/**
+ * @brief A Erdös-Reyni network
+ */
 class erdos_reyni : public graph {
 public:
     erdos_reyni(int size, double avg_degree, rng_t& engine);

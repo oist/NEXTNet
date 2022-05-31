@@ -102,13 +102,14 @@ public:
         return pdf(distribution, tau);
     }
 
+    // use the implementations of the conditional probabilities
+    // in terms of the unconditional probabilities from the base class
     using transmission_time::survivalprobability;
+    using transmission_time::survivalquantile;
     
     virtual double survivalprobability(interval_t tau) {
         return cdf(complement(distribution, tau));
     }
-
-    using transmission_time::survivalquantile;
 
     virtual interval_t survivalquantile(double u) {
         return quantile(complement(distribution, u));
