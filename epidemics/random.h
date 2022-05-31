@@ -83,7 +83,8 @@ class transmission_time_exponential : public transmission_time {
     const double variance = 1/pow(lambda,2);
 
 public:
-    transmission_time_exponential(double _lambda):lambda(_lambda)
+    transmission_time_exponential(double _lambda)
+        :lambda(_lambda)
     {}
 
     virtual double density(interval_t tau);

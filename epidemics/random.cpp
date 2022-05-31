@@ -79,7 +79,7 @@ interval_t transmission_time::survivalquantile(double u, interval_t t, int m) {
      *
      *  t + tau = F^-1[ 1 - u^(1/m) * (1 - F(t)) ].
      *
-     * In terms of the (unconditional) survival function G = 1 -F we get
+     * In terms of the (unconditional) survival function G = 1 - F we get
      *
      *  t + tau = G^-1[ u^(1/m) * G(t) ].
      */
