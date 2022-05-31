@@ -123,14 +123,20 @@ public:
     using transmission_time::survivalquantile;
     
     virtual double survivalprobability(interval_t tau) {
+        // distribution has a scaled version of the specified CDF on tau in [0, inf)
+        // and point mass pinfinity at tau = infinity
         if (std::isinf(tau))
             return pinfinity;
-        else
-            return pinfinity + (1-pinfinity) * cdf(complement(distribution, tau));
+        return pinfinity + (1.0 - pinfinity) * cdf(complement(distribution, tau));
     }
 
     virtual interval_t survivalquantile(double u) {
-        return quantile(complement(distribution, u));
+        // distribution has a scaled version of the specified CDF on tau in [0, inf)
+        // and point mass pinfinity at tau = infinity, so pinfinity is the lower bound
+        // of survivalprobability() and any u-quantile for any u < pinfinity is infinity.
+        if (u < pinfinity)
+            return INFINITY;
+        return quantile(complement(distribution, (u - pinfinity) / (1.0 - pinfinity)));
     }
 };
 
