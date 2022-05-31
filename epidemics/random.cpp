@@ -20,6 +20,11 @@
 * not the by-default implementations.*/
 
 interval_t transmission_time::sample(rng_t& rng, interval_t t, int m) {
+    if ((t < 0) || !std::isfinite(t))
+        throw std::range_error("t must be non-negative and finite");
+    if (m < 1)
+        throw std::range_error("m must be positive");
+    // sample by inverting the survival function
     const double u = std::uniform_real_distribution<double>(0, 1)(rng);
     return this->survivalquantile(u, t, m);
 }
@@ -29,6 +34,10 @@ double transmission_time::hazardrate(interval_t tau) {
 }
 
 double transmission_time::survivalprobability(interval_t tau, interval_t t, int m) {
+    if ((t < 0) || !std::isfinite(t))
+        throw std::range_error("t must be non-negative and finite");
+    if (m < 1)
+        throw std::range_error("m must be positive");
     // By default compute the conditional survival probability
     // using the unconditional survival function Psi(tau) based on
     // Psi(tau | t, m) = (Psi(t + tau) / Psi(t))^m
@@ -36,11 +45,21 @@ double transmission_time::survivalprobability(interval_t tau, interval_t t, int 
 }
 
 interval_t transmission_time::survivalquantile(double u) {
+    if ((u < 0) || (u > 1) || !std::isfinite(u))
+        throw std::range_error("u-quantile undefined for u not in [0,1]");
+    // pinfinity() is the lower bound of survivalprobability(), so the u-quantile
+    // for any u < pinfinity is infinity.
+    if (u < pinfinity)
+        return INFINITY;
     // By default, numerically invert the survival function
     return inverse_survival_function(u, 1e-6, [&] (double tau) { return this->survivalprobability(tau); });
 }
 
 interval_t transmission_time::survivalquantile(double u, interval_t t, int m) {
+    if ((t < 0) || !std::isfinite(t))
+        throw std::range_error("t must be non-negative and finite");
+    if (m < 1)
+        throw std::range_error("m must be positive");
     /* We consider i.i.d. tau_1, ..., tau_m and ask for the probability
      *
      *   p(tau) = P[ tau_1, ..., tau_m >= t + tau | tau_1, ..., tau_m >= t ].
