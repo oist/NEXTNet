@@ -153,8 +153,8 @@ public:
     const double mean;
     const double variance;
 
-    transmission_time_lognormal(double m, double v)
-        :transmission_time_generic_boost(bm::lognormal(mu(m, v), sigma(m, v)))
+    transmission_time_lognormal(double m, double v, double pinf = 0.0)
+        :transmission_time_generic_boost(bm::lognormal(mu(m, v), sigma(m, v)), pinf)
         ,mean(m), variance(v)
     {}
 };
