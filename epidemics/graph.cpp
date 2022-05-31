@@ -63,7 +63,7 @@ node_t fully_connected::neighbour(node_t node, int neighbour_index) {
     // add nodes [0,...,node-1,node+1,...,size] as neighbours
     for(int i=0; i < node; ++i)
         np.push_back(i);
-    for(int i=node+1, m=neighbours.size(); i < m; ++i)
+    for(int i=node+1, m=(int)neighbours.size(); i < m; ++i)
         np.push_back(i);
     // shuffle
     std::shuffle(np.begin(), np.end(), engine);
@@ -74,5 +74,5 @@ node_t fully_connected::neighbour(node_t node, int neighbour_index) {
 
 index_t fully_connected::outdegree(node_t node) {
     // network is fully connected, every node is every node's neighbour
-    return neighbours.size() - 1;
+    return (int)neighbours.size() - 1;
 }
