@@ -10,7 +10,7 @@
 namespace plt = matplotlibcpp;
 #endif
 
-#if ENABLE_PLOTTING
+#if ENABLE_PLOTTING && 0
 TEST_CASE("Plot infection times for next reaction scheme on Erdös-Reyni", "[nextreaction]") {
     std::mt19937 engine;
 
