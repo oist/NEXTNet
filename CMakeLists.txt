@@ -99,9 +99,9 @@ set_source_files_properties(epidemics/tests/main.cpp
     PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
 
 # Enable address and undefined behaviour sanitizers for all builds
-target_compile_options(tests PRIVATE
-    -fsanitize=address
-    -fsanitize=undefined)
-target_link_options(tests PRIVATE
-    -fsanitize=address
-    -fsanitize=undefined)
+#target_compile_options(tests PRIVATE
+#    -fsanitize=address
+#    -fsanitize=undefined)
+#target_link_options(tests PRIVATE
+#    -fsanitize=address
+#    -fsanitize=undefined)
