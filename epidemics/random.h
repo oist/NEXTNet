@@ -93,7 +93,6 @@ public:
     virtual double survivalprobability(interval_t tau, interval_t t, int m);
     virtual interval_t survivalquantile(double u);
     virtual interval_t survivalquantile(double u, interval_t t, int m);
-
 };
 
 /*----------------------------------------------------*/
