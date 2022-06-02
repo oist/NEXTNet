@@ -164,6 +164,31 @@ public:
     {}
 };
 
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+/*-----------TRANSMISSION TIME:GAMMA------------------*/
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+
+class transmission_time_gamma : public transmission_time_generic_boost<bm::gamma_distribution<double>> {
+    static double shape(const double mean, double variance) {
+        return std::pow(mean, 2.0) / variance;
+    }
+
+    static double scale(const double mean, double variance) {
+        return variance / mean;
+    }
+
+public:
+    const double mean;
+    const double variance;
+
+    transmission_time_gamma(double m, double v, double pinf = 0.0)
+        :transmission_time_generic_boost(bm::gamma_distribution(shape(m, v), scale(m, v)), pinf)
+        ,mean(m), variance(v)
+    {}
+};
+
 
 
 /*  Create uniformly distributed random numbers */
