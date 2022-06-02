@@ -8,6 +8,14 @@
 #include "stdafx.h"
 #include "types.h"
 
+/**
+ * @brief Approximates m with p/q under the constraint that q <= L
+ * @param x value to approximate
+ * @param L largest allowed denominator
+ * @return the pair (p, q)
+ */
+std::pair<unsigned int, unsigned int> fraction(double x, unsigned int L);
+
 template<typename T, typename ...Args>
 double inverse_survival_function(double u, double precision, T f, Args... args) {
     if ((u > 1) || (u < 0))
