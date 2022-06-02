@@ -12,13 +12,32 @@ namespace plt = matplotlibcpp;
 #endif
 
 namespace {
+    /**
+      * @brief The large-population mean-field solution for gamma transmission times
+      */
     struct meanfield_infpop_gamma {
+        /**
+         * @brief Create solution for specified mean, variance and R0
+         * @param mean mean of the transmission time distribution
+         * @param var variance of the transmission time distribution
+         * @param r0 average number of subsequent transmissions
+         * @param max_terms number of terms used in numeric evaluation
+         * @return a solution object
+         */
         static meanfield_infpop_gamma mean_variance(double mean, double var, double r0, std::size_t max_terms=1000) {
             const double rho = mean / var;
             const double alpha = mean * rho;
             return meanfield_infpop_gamma(alpha, rho, r0, max_terms);
         }
 
+        /**
+         * @brief Create solution for specified mean, variance and R0
+         * @param alpha the shape parameter of the transmission time distribution
+         * @param rho the rate parameter of the transmission time distribution
+         * @param r0 average number of subsequent transmissions
+         * @param max_terms number of terms used in numeric evaluation
+         * @return a solution object
+         */
         static meanfield_infpop_gamma alpha_rho(double alpha, double rho, double r0, std::size_t max_terms=1000) {
             return meanfield_infpop_gamma(alpha, rho, r0, max_terms);
         }
@@ -36,6 +55,11 @@ namespace {
             }
         }
 
+        /**
+         * @brief rate of new infections at time t
+         * @param t time
+         * @return infection rate
+         */
         double I(double t) {
             if (t < 0.0) return 0;
             if (t == 0.0) return NAN;
@@ -46,6 +70,11 @@ namespace {
             return abs(y) * s * rho / alpha;
         }
 
+        /**
+         * @brief total infections at time t
+         * @param t
+         * @return total number of infections
+         */
         double N(double t) {
             if (t < 0.0) return 0;
             if (t == 0.0) return 1.0;
@@ -67,16 +96,31 @@ namespace {
         double s;
     };
 
+    /**
+     * @brief simulate and return transmission times
+     * @param engine RNG engine
+     * @param psi transmission time distribution
+     * @param T stopping time
+     * @param Mn number of network instances to simulate on
+     * @param Ms number of simulations per network instance
+     * @param args parameters to pass to the network
+     * @return a pair of pairs containing (1) ordered transmission times
+     *         and (2) total number of infections
+     */
     template<typename N, typename S, typename ...Args>
     std::pair<std::vector<absolutetime_t>, std::vector<absolutetime_t>>
     simulate(rng_t& engine, transmission_time& psi, absolutetime_t T, std::size_t Mn, std::size_t Ms, Args&&...args) {
         std::vector<double> t = {};
+
+        // Create Mn network instances
         for(std::size_t i=0; i < Mn; ++i) {
             N nw(std::forward<Args>(args)..., engine);
+            // Simulate Ms times on the current network
             for(std::size_t i=0; i < Ms; ++i) {
                 S sim(nw, psi);
                 sim.add_infections({ std::make_pair(0, 0.0)});
 
+                // Run simulation, collect transmission times
                 while (true) {
                     auto point = sim.step(engine);
                     if (point.second > T)
@@ -85,8 +129,12 @@ namespace {
                 }
             }
         }
+
+        // Sort transmission times (only necessary for Mn or Ms > 1)
         std::sort(t.begin(), t.end());
 
+        // Create vector representing the total number of infections
+        // at each time point
         std::vector<double> y = { (1.0/Mn) * (1.0/Ms) };
         for(std::size_t i=1; i < t.size(); ++i)
             y.push_back(y.back() + (1.0/Mn) * (1.0/Ms) );
