@@ -154,6 +154,7 @@ TEST_CASE("Plot large-population mean-field solution for Gamma transmission time
     const std::size_t N2 = 1000;
     const std::size_t N3 = 10000;
     const std::size_t T = 45;
+    const std::size_t X = 400;
     const double R0 = 2;
     // Every infecteced node has N-1 neighbours, of which in the large-population limit N-2 are susceptible.
     // To trigger subsequent infections amgonst these N-2 susceptible neighbours, we must infect each neighbour
@@ -176,14 +177,12 @@ TEST_CASE("Plot large-population mean-field solution for Gamma transmission time
 
     /* Evaluate analytical solution */
     std::vector<double> t_analytical;
-    std::copy(r1.first.begin(), r1.first.end(), std::back_inserter(t_analytical));
-    std::copy(r2.first.begin(), r2.first.end(), std::back_inserter(t_analytical));
-    std::copy(r3.first.begin(), r3.first.end(), std::back_inserter(t_analytical));
-    std::sort(t_analytical.begin(), t_analytical.end());
     std::vector<double> y_analytical;
     meanfield_infpop_gamma sol = meanfield_infpop_gamma::mean_variance(MEAN, VARIANCE, R0);
-    for(std::size_t i=0; i < t_analytical.size(); ++i)
-        y_analytical.push_back(sol.N(t_analytical[i]));
+    for(std::size_t i=0; i < X; ++i) {
+        t_analytical.push_back((double)T * i / (X-1));
+        y_analytical.push_back(sol.N(t_analytical.back()));
+    }
 
     plt::figure_size(1600, 1200);
     plt::named_plot("next reaction (N="s + std::to_string(N1) + ")", r1.first, r1.second);
