@@ -22,6 +22,7 @@
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Weverything"
 #include <boost/math/distributions.hpp>
+#include <boost/math/tools/roots.hpp>
 #pragma clang diagnostic pop
 
 /* Make boost::math available as simply bm */

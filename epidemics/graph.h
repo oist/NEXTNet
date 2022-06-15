@@ -79,7 +79,7 @@ public:
 
     rng_t& engine;
     std::poisson_distribution<> degree_distribution;
-    std::vector<std::vector<node_t>> adjacencylist;
+    std::deque<std::vector<node_t>> adjacencylist;
 
 private:
     void generate_neighbours(node_t node);

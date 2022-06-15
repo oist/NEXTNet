@@ -129,8 +129,8 @@ void acyclic::generate_neighbours(node_t node) {
 
     // neighbours not yet determined, so generate them
 
-    // draw number of neighbours from a Poisson distribution
-    // conditioned on being strictly positive
+    // draw number of neighbours
+    // we draw from a Poisson distribution conditioned on k > 0
     int k = 0;
     while (k == 0)
         k = degree_distribution(engine);
@@ -139,7 +139,8 @@ void acyclic::generate_neighbours(node_t node) {
     neighbours.pop_back();
 
     // add neighbours
-    for(int i=0; i < k; ++i) {
+    // note that all nodes except 0 already have one neighbour when we get here
+    while (neighbours.size() < k) {
         // get the first unused node index
 		if (adjacencylist.size() > std::numeric_limits<node_t>::max())
 			throw std::range_error("maximum number of nodes exceeded");
@@ -156,7 +157,7 @@ node_t acyclic::neighbour(node_t node, int neighbour_index) {
     generate_neighbours(node);
     const std::vector<node_t>& neighbours = adjacencylist[node];
     // index has to be in the range [0, size - 1]
-    if ((neighbour_index < 0) || (neighbour_index >= neighbours.size() - 1))
+    if ((neighbour_index < 0) || (neighbour_index >= neighbours.size()))
         return -1;
     return neighbours[neighbour_index];
 }
