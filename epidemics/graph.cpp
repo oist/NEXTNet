@@ -9,6 +9,12 @@
 #include "types.h"
 #include "graph.h"
 
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+/*-------------- NETWORK: ERDÖS-REYNI ----------------*/
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+
 erdos_reyni::erdos_reyni(int size, double avg_degree, rng_t& engine ){
     
     /*--------------Initialisation--------------
@@ -44,6 +50,12 @@ index_t erdos_reyni::outdegree(node_t node) {
     return (index_t) neighbours.at(node).size();
 }
 
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+/*-------------- NETWORK: FULLY CONNECTED ------------*/
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+
 fully_connected::fully_connected(int size, rng_t& engine_)
     :engine(engine_)
     ,neighbours(size, std::vector<node_t>({}))
@@ -75,4 +87,82 @@ node_t fully_connected::neighbour(node_t node, int neighbour_index) {
 index_t fully_connected::outdegree(node_t node) {
     // network is fully connected, every node is every node's neighbour
     return (int)neighbours.size() - 1;
+}
+
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+/*-------------- NETWORK: ACYCLIC --------------------*/
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+
+const node_t acyclic::incomplete_neighbours;
+
+double acyclic::lambda(double mean, int digits) {
+    /*
+     * A Poisson distribution with parameter lambda conditioned
+     * on strictly positive values has mean
+     *   lambda / (1 - exp(-lambda)).
+     * We invert this expression numerically to find lambda
+     * for a given mean.
+     */
+    using namespace boost::math::tools;
+    return newton_raphson_iterate([mean](double l) {
+        return std::make_tuple(mean - l - mean * exp(-l),
+                               -1 + mean * exp(-l));
+    }, mean, 0.0, mean, digits);
+}
+
+acyclic::acyclic(int avg_degree, rng_t& engine_)
+    :engine(engine_)
+    ,degree_distribution(lambda(avg_degree, 10))
+    ,adjacencylist({ std::vector<node_t>{ incomplete_neighbours } })
+{}
+
+void acyclic::generate_neighbours(node_t node) {
+    // check if the node is known to us
+    if ((node < 0) || (node >= adjacencylist.size()))
+        throw std::range_error(std::string("invalid node ") + std::to_string(node));
+    // get its adjacencies, possibly incomplete
+    std::vector<node_t>& neighbours = adjacencylist[node];
+    if (neighbours.back() != incomplete_neighbours)
+        return;
+
+    // neighbours not yet determined, so generate them
+
+    // draw number of neighbours from a Poisson distribution
+    // conditioned on being strictly positive
+    int k = 0;
+    while (k == 0)
+        k = degree_distribution(engine);
+
+    // remove the incomplete marker from the node's adjacency list
+    neighbours.pop_back();
+
+    // add neighbours
+    for(int i=0; i < k; ++i) {
+        // get the first unused node index
+		if (adjacencylist.size() > std::numeric_limits<node_t>::max())
+			throw std::range_error("maximum number of nodes exceeded");
+        const node_t n = (node_t)adjacencylist.size();
+        // add an entry marked incomplete for the new node to the adjacencylist
+        std::vector<node_t> n_entry = { node, incomplete_neighbours };
+        adjacencylist.push_back(n_entry);
+        // add neighbour to node's adjacency list
+        neighbours.push_back(n);
+    }
+}
+
+node_t acyclic::neighbour(node_t node, int neighbour_index) {
+    generate_neighbours(node);
+    const std::vector<node_t>& neighbours = adjacencylist[node];
+    // index has to be in the range [0, size - 1]
+    if ((neighbour_index < 0) || (neighbour_index >= neighbours.size() - 1))
+        return -1;
+    return neighbours[neighbour_index];
+}
+
+index_t acyclic::outdegree(node_t node) {
+    generate_neighbours(node);
+    const std::vector<node_t>& neighbours = adjacencylist[node];
+    return (index_t)neighbours.size();
 }

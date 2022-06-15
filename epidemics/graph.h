@@ -64,3 +64,23 @@ public:
     rng_t& engine;
     std::vector<std::vector<node_t>>  neighbours;
 };
+
+class acyclic : public graph {
+public:
+    static const node_t incomplete_neighbours = -1;
+
+    static double lambda(double mean, int digits);
+
+    acyclic(int avg_degree, rng_t& engine);
+
+    virtual node_t neighbour(node_t node, int neighbour_index);
+
+    virtual index_t outdegree(node_t node);
+
+    rng_t& engine;
+    std::poisson_distribution<> degree_distribution;
+    std::vector<std::vector<node_t>> adjacencylist;
+
+private:
+    void generate_neighbours(node_t node);
+};
