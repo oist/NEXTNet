@@ -148,12 +148,12 @@ TEST_CASE("Plot large-population mean-field solution for Gamma transmission time
     using namespace std::string_literals;
     std::mt19937 engine;
 
-    const std::size_t Mn = 100;
-    const std::size_t Ms = 100;
+    const std::size_t Mn = 50;
+    const std::size_t Ms = 10;
     const std::size_t N1 = 100;
     const std::size_t N2 = 1000;
     const std::size_t N3 = 10000;
-    const std::size_t T = 45;
+    const std::size_t T = 25;
     const std::size_t X = 400;
     const double R0 = 2;
     // Every infecteced node has N-1 neighbours, of which in the large-population limit N-2 are susceptible.
