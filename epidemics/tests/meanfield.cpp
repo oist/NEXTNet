@@ -194,3 +194,82 @@ TEST_CASE("Plot large-population mean-field solution for Gamma transmission time
     plt::show();
 }
 #endif
+
+#if ENABLE_PLOTTING
+TEST_CASE("Plot large-population mean-field solution for Gamma transmission times on an Erdös-Reyni network", "[meanfield]") {
+    using namespace std::string_literals;
+    std::mt19937 engine;
+
+    const std::size_t N = 10000;
+    const std::size_t M = 100;
+    const std::size_t T = 35;
+    const std::size_t X = 400;
+    const double R0 = 4;
+    // Every infecteced node has N-1 neighbours, of which in the large-population limit N-2 are susceptible.
+    // To trigger subsequent infections amgonst these N-2 susceptible neighbours, we must infect each neighbour
+    // with probability R0/(N-2). Note that for the first infected node, this is not strictly speaking correct,
+    // since it's infection has no source, and it will thus create R0(N-1)/(N-2) > R0 subsequent infections.
+    // This only causes a relative error of |1 - (N-1)/(N-2)| =~= 1/N though.
+    const double MEAN = 10;
+    const double VARIANCE = 1;
+    transmission_time_gamma psi(MEAN, VARIANCE);
+
+    /* Simulate using next reaction M times */
+    auto r1 = simulate<erdos_reyni, simulate_next_reaction>(engine, psi, T, 1, M, N, R0 + 0.9);
+
+    /* Evaluate analytical solution */
+    std::vector<double> t_analytical;
+    std::vector<double> y_analytical;
+    meanfield_infpop_gamma sol = meanfield_infpop_gamma::mean_variance(MEAN, VARIANCE, R0);
+    for(std::size_t i=0; i < X; ++i) {
+        t_analytical.push_back((double)T * i / (X-1));
+        y_analytical.push_back(sol.N(t_analytical.back()));
+    }
+
+    plt::figure_size(1600, 1200);
+    plt::named_plot("next reaction", r1.first, r1.second);
+    plt::named_plot("analytical", t_analytical, y_analytical);
+    plt::title("Large-population mean-field solution for Gamma transmission times on an Erdös-Reyni network");
+    plt::legend();
+    plt::show();
+}
+#endif
+
+#if ENABLE_PLOTTING
+TEST_CASE("Plot large-population mean-field solution for Gamma transmission times on an acyclic network", "[meanfield]") {
+    using namespace std::string_literals;
+    std::mt19937 engine;
+
+    const std::size_t M = 1000;
+    const std::size_t T = 55;
+    const std::size_t X = 400;
+    const double R0 = 2;
+    // Every infecteced node has N-1 neighbours, of which in the large-population limit N-2 are susceptible.
+    // To trigger subsequent infections amgonst these N-2 susceptible neighbours, we must infect each neighbour
+    // with probability R0/(N-2). Note that for the first infected node, this is not strictly speaking correct,
+    // since it's infection has no source, and it will thus create R0(N-1)/(N-2) > R0 subsequent infections.
+    // This only causes a relative error of |1 - (N-1)/(N-2)| =~= 1/N though.
+    const double MEAN = 10;
+    const double VARIANCE = 1;
+    transmission_time_gamma psi(MEAN, VARIANCE);
+
+    /* Simulate using next reaction M times */
+    auto r1 = simulate<acyclic, simulate_next_reaction>(engine, psi, T, M, 1, R0+1, true);
+
+    /* Evaluate analytical solution */
+    std::vector<double> t_analytical;
+    std::vector<double> y_analytical;
+    meanfield_infpop_gamma sol = meanfield_infpop_gamma::mean_variance(MEAN, VARIANCE, R0);
+    for(std::size_t i=0; i < X; ++i) {
+        t_analytical.push_back((double)T * i / (X-1));
+        y_analytical.push_back(sol.N(t_analytical.back()));
+    }
+
+    plt::figure_size(800, 600);
+    plt::named_plot("next reaction", r1.first, r1.second);
+    plt::named_plot("analytical", t_analytical, y_analytical);
+    plt::title("Large-population mean-field solution for Gamma transmission times on an acyclic network");
+    plt::legend();
+    plt::show();
+}
+#endif
