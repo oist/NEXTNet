@@ -71,7 +71,7 @@ public:
 
     static double lambda(double mean, int digits);
 
-    acyclic(int avg_degree, rng_t& engine);
+    acyclic(double avg_degree, bool reduced_root_degree, rng_t& engine);
 
     virtual node_t neighbour(node_t node, int neighbour_index);
 
@@ -79,6 +79,7 @@ public:
 
     rng_t& engine;
     std::poisson_distribution<> degree_distribution;
+    bool reduced_root_degree;
     std::deque<std::vector<node_t>> adjacencylist;
 
 private:

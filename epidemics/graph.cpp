@@ -112,9 +112,10 @@ double acyclic::lambda(double mean, int digits) {
     }, mean, 0.0, mean, digits);
 }
 
-acyclic::acyclic(int avg_degree, rng_t& engine_)
+acyclic::acyclic(double avg_degree, bool reduced_root_degree_, rng_t& engine_)
     :engine(engine_)
     ,degree_distribution(lambda(avg_degree, 10))
+    ,reduced_root_degree(reduced_root_degree_)
     ,adjacencylist({ std::vector<node_t>{ incomplete_neighbours } })
 {}
 
@@ -134,6 +135,11 @@ void acyclic::generate_neighbours(node_t node) {
     int k = 0;
     while (k == 0)
         k = degree_distribution(engine);
+    // if reduced_root_degree is set, we treat the root node as
+    // if it had an additional edge connecting it to the outside world,
+    // and thus reduce it's degree here by one
+    if ((node == 0) && reduced_root_degree)
+        k -= 1;
 
     // remove the incomplete marker from the node's adjacency list
     neighbours.pop_back();
@@ -150,6 +156,17 @@ void acyclic::generate_neighbours(node_t node) {
         adjacencylist.push_back(n_entry);
         // add neighbour to node's adjacency list
         neighbours.push_back(n);
+    }
+
+    // we dont have to shuffle all neighbours, but we *do* have to ensure
+    // that the neighbour that connects us to the root is at a random
+    // position. Otherwise, traversals from the root will always find that
+    // the neighbour at position 0 has already been traversed, while all
+    // others haven't, which e.g. leads to bias towards later infection times
+    // running an epidemic process on the networks that starts from node 0.
+    if ((node > 0) && !neighbours.empty()) {
+        auto idx_dist = std::uniform_int_distribution<std::size_t>(0, neighbours.size()-1);
+        std::swap(neighbours[0], neighbours[idx_dist(engine)]);
     }
 }
 
