@@ -2,6 +2,9 @@
 
 #include "graph.h"
 
+/**
+ * @brief Test case to verify `fully_connected`
+ */
 TEST_CASE("fully connected networks", "[graph]") {
     std::mt19937 engine;
     const int M = 3;
@@ -21,6 +24,13 @@ TEST_CASE("fully connected networks", "[graph]") {
     }
 }
 
+/**
+ * @brief Test case to verify `acyclic::lambda`
+ *
+ * The static member `lambda` finds the Poisson parameter lambda
+ * such that the distribution conditioned on k >= 1 has the
+ * specified mean.
+ */
 TEST_CASE("modified R0 for acyclic graphs","[graph]") {
     std::mt19937 engine; 
 
@@ -46,7 +56,16 @@ TEST_CASE("modified R0 for acyclic graphs","[graph]") {
     }
 }
 
-TEST_CASE("acyclic networks", "[graph]") {
+/**
+ * @brief Test case to verify `acyclic` in the uniform-degree case
+ *
+ * Here, the tree-like network has the same degree distribution
+ * for every node. If we count only edges pointing *away* from the
+ * root, the degree of the root is thus on average one higher than
+ * that of any other node (because it has no edge pointing towards
+ * the root, while all other nodes have exactly one)
+ */
+TEST_CASE("acyclic networks (reduce_root_degree=false)", "[graph]") {
     std::mt19937 engine;
     const int K = 3;
 
