@@ -63,7 +63,7 @@ fully_connected::fully_connected(int size, rng_t& engine_)
 
 node_t fully_connected::neighbour(node_t node, int neighbour_index) {
     // index has to be in the range [0, size - 1]
-    if ((neighbour_index < 0) || (neighbour_index >= neighbours.size() - 1))
+    if ((neighbour_index < 0) || ((std::size_t)neighbour_index >= neighbours.size() - 1))
         return -1;
     // get neighbours of node <node>
     const auto& n = neighbours.at(node);
@@ -121,7 +121,7 @@ acyclic::acyclic(double avg_degree, bool reduced_root_degree_, rng_t& engine_)
 
 void acyclic::generate_neighbours(node_t node) {
     // check if the node is known to us
-    if ((node < 0) || (node >= adjacencylist.size()))
+    if ((node < 0) || ((std::size_t)node >= adjacencylist.size()))
         throw std::range_error(std::string("invalid node ") + std::to_string(node));
     // get its adjacencies, possibly incomplete
     std::vector<node_t>& neighbours = adjacencylist[node];
@@ -132,7 +132,7 @@ void acyclic::generate_neighbours(node_t node) {
 
     // draw number of neighbours
     // we draw from a Poisson distribution conditioned on k > 0
-    int k = 0;
+    unsigned int k = 0;
     while (k == 0)
         k = degree_distribution(engine);
     // if reduced_root_degree is set, we treat the root node as
@@ -174,7 +174,7 @@ node_t acyclic::neighbour(node_t node, int neighbour_index) {
     generate_neighbours(node);
     const std::vector<node_t>& neighbours = adjacencylist[node];
     // index has to be in the range [0, size - 1]
-    if ((neighbour_index < 0) || (neighbour_index >= neighbours.size()))
+    if ((neighbour_index < 0) || ((std::size_t)neighbour_index >= neighbours.size()))
         return -1;
     return neighbours[neighbour_index];
 }
