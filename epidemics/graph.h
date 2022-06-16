@@ -38,7 +38,7 @@ public:
 
 
 /**
- * @brief A Erdös-Reyni network
+ * @brief A random Erdös-Reyni network
  */
 class erdos_reyni : public graph {
 public:
@@ -53,6 +53,9 @@ public:
     std::vector<std::vector<node_t>> neighbours;
 };
 
+/**
+ * @brief A fully-connected network with random edge order
+ */
 class fully_connected : public graph {
 public:
     fully_connected(int size, rng_t& engine);
@@ -65,6 +68,9 @@ public:
     std::vector<std::vector<node_t>>  neighbours;
 };
 
+/**
+ * @brief A random acyclic network
+ */
 class acyclic : public graph {
 public:
     static const node_t incomplete_neighbours = -1;
