@@ -1,9 +1,10 @@
 [ DONE ]	Remove generation of tau from graph class
 [ DONE ]	Use inter-arrival time distribution (conditioned on previous arrival) where possible
-[ OPEN ]	Allow inter-arrival time of infinity to indicate "no more infections"
+[ DONE ]	Allow inter-arrival time of infinity to indicate "no more infections"
 [ DONE ]	Clean up beta, make it represent inter-arrival times
 [ DONE ]	Remove infinite-lambda special cases, just report an error instead
 [ OPEN ]	Add comments explaining the purpose of every class
 [ OPEN ]	Add corrected version of NMGA where exact simulation is used if tau is excessive
-[ OPEN ]	Mean-field simulation on a large complete *contact* network (requires infinite transmission times)
-[ OPEN ]	Mean-field simulation on a tree-like *infection* network
+[ DONE ]	Mean-field simulation on a large complete *contact* network (requires infinite transmission times)
+[ DONE ]	Mean-field simulation on a tree-like *infection* network
+[ OPEN ]	Implement recovery
