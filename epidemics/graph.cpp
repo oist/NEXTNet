@@ -15,23 +15,28 @@
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
 
-erdos_reyni::erdos_reyni(int size, double avg_degree, rng_t& engine ){
-    
+erdos_reyni::erdos_reyni(int size, double avg_degree, rng_t& engine){
     /*--------------Initialisation--------------
 
      Construct erdos-Reyni graph and for each link we add an infection time:
      => A[i][j] is the time node i (or j) takes to infect node j (or i) once it has itself been infected by someone else.
      
      */
-    
-    const double p = avg_degree/size; // probability of an edge: if size ->infty and degree-> fixed then we get Poisson Graph.
+    const double p = avg_degree / (size - 1); // probability of an edge: if size ->infty and degree-> fixed then we get Poisson Graph.
     
     /* Using geometric distribution */
-    std::geometric_distribution<> skip_edge(p);// comment: equals 0 with prob. p
+    std::geometric_distribution<> skip_edge(p); // comment: equals 0 with prob. p
 
     neighbours.resize(size);
-    for (int i=0; i<size; i++) {
-        for (int j=skip_edge(engine); j<i; j += 1 + skip_edge(engine)) {
+    for (int i=0; i < size; i++) {
+        int s = skip_edge(engine);
+        // for very low probabilities p, skip_edge can return very large numbers
+        // and so we have to be carefull not to overflow. Hence the slightly weird
+        // coding of this loop; we test that we don't skip past the end of the nodes
+        // before we attempt to update j, that way j cannot overflow.
+        for(int j = -1; (s >= 0) && (s < (i - j - 1)); s = skip_edge(engine)) {
+            j += 1 + s;
+            assert(j < i);
             neighbours[i].push_back(j);
             neighbours[j].push_back(i);
         }
