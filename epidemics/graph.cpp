@@ -152,7 +152,7 @@ void acyclic::generate_neighbours(node_t node) {
     // note that all nodes except 0 already have one neighbour when we get here
     while (neighbours.size() < k) {
         // get the first unused node index
-		if (adjacencylist.size() > std::numeric_limits<node_t>::max())
+        if (adjacencylist.size() > (std::size_t)std::numeric_limits<node_t>::max())
 			throw std::range_error("maximum number of nodes exceeded");
         const node_t n = (node_t)adjacencylist.size();
         // add an entry marked incomplete for the new node to the adjacencylist
