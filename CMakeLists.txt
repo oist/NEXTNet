@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(Epidemics-Mean-Field LANGUAGES CXX)
+project(Epidemics-On-Networks LANGUAGES CXX)
 
 # *** Simulation library sources and headers
 set(LIB_SOURCES
