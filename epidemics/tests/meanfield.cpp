@@ -280,14 +280,13 @@ TEST_CASE("Plot different mean-field large-population limits for Gamma transmiss
 
     const std::size_t Mfully_n = 100;
     const std::size_t Mfully_s = 10;
-    const std::size_t Macyclic = 1000;
-    const std::size_t Merdos_n = 100;
-    const std::size_t Merdos_s = 10;
+    const std::size_t Macyclic = 10000;
+    const std::size_t Merdos = 1000;
     const std::size_t Nfully1 = 100;
     const std::size_t Nfully2 = 1000;
     const std::size_t Nfully3 = 10000;
-    const std::size_t Nerdos = 100000;
-    const std::size_t T = 85;
+    const std::size_t Nerdos = 10000;
+    const std::size_t T = 45;
     const std::size_t X = 400;
     const double R0 = 2;
     // Every infecteced node has N-1 neighbours, of which in the large-population limit N-2 are susceptible.
@@ -310,7 +309,7 @@ TEST_CASE("Plot different mean-field large-population limits for Gamma transmiss
     auto rfully2 = simulate<fully_connected, simulate_next_reaction>(engine, psifully2, T, Mfully_n, Mfully_s, Nfully2);
     auto rfully3 = simulate<fully_connected, simulate_next_reaction>(engine, psifully3, T, Mfully_n, Mfully_s, Nfully3);
     auto racyclic = simulate<acyclic, simulate_next_reaction>(engine, psi, T, Macyclic, 1, R0+1, true);
-    auto rerdos = simulate<erdos_reyni, simulate_next_reaction>(engine, psi, T, Merdos_n, Merdos_s, Nerdos, R0);
+    auto rerdos = simulate<erdos_reyni, simulate_next_reaction>(engine, psi, T, Merdos, 1, Nerdos, R0);
 
     /* Evaluate analytical solution */
     std::vector<double> t_analytical;
