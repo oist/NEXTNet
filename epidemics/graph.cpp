@@ -42,7 +42,6 @@ node_t erdos_reyni::neighbour(node_t node, int neighbour_index) {
     const auto& n = neighbours.at(node);
     if ((neighbour_index < 0) || (n.size() <= (unsigned int)neighbour_index))
         return -1;
-    //std::cout << node<< "neighbour: "<< n[neighbour_index]<<"\n";
     return n[neighbour_index];
 }
 

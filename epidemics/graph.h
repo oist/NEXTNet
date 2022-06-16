@@ -73,8 +73,6 @@ public:
  */
 class acyclic : public graph {
 public:
-    static const node_t incomplete_neighbours = -1;
-
     static double lambda(double mean, int digits);
 
     acyclic(double avg_degree, bool reduced_root_degree, rng_t& engine);
@@ -89,5 +87,7 @@ public:
     std::deque<std::vector<node_t>> adjacencylist;
 
 private:
+    static const node_t incomplete_neighbours = -1;
+
     void generate_neighbours(node_t node);
 };
