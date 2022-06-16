@@ -40,8 +40,8 @@ TEST_CASE("Erdös-Reyni networks", "[graph]") {
             double dsum = 0.0;
             for(int i=0; i < M; ++i) {
                 erdos_reyni nw(n, d, engine);
-                for(int i=0; i < n; ++i)
-                    dsum += nw.outdegree(i);
+                for(int j=0; j < n; ++j)
+                    dsum += nw.outdegree(j);
             }
             const double dmean = dsum / ((double)n * (double)M);
 
