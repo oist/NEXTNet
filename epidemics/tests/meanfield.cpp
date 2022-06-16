@@ -143,7 +143,7 @@ namespace {
     }
 }
 
-#if ENABLE_PLOTTING
+#if ENABLE_PLOTTING && 0
 TEST_CASE("Plot large-population mean-field solution for Gamma transmission times on a fully-connected network", "[meanfield]") {
     using namespace std::string_literals;
     std::mt19937 engine;
@@ -195,7 +195,7 @@ TEST_CASE("Plot large-population mean-field solution for Gamma transmission time
 }
 #endif
 
-#if ENABLE_PLOTTING
+#if ENABLE_PLOTTING && 0
 TEST_CASE("Plot large-population mean-field solution for Gamma transmission times on an Erdös-Reyni network", "[meanfield]") {
     using namespace std::string_literals;
     std::mt19937 engine;
@@ -235,7 +235,7 @@ TEST_CASE("Plot large-population mean-field solution for Gamma transmission time
 }
 #endif
 
-#if ENABLE_PLOTTING
+#if ENABLE_PLOTTING && 0
 TEST_CASE("Plot large-population mean-field solution for Gamma transmission times on an acyclic network", "[meanfield]") {
     using namespace std::string_literals;
     std::mt19937 engine;
@@ -273,3 +273,62 @@ TEST_CASE("Plot large-population mean-field solution for Gamma transmission time
     plt::show();
 }
 #endif
+
+TEST_CASE("Plot different mean-field large-population limits for Gamma transmission times", "[meanfield]") {
+    using namespace std::string_literals;
+    std::mt19937 engine;
+
+    const std::size_t Mfully_n = 100;
+    const std::size_t Mfully_s = 10;
+    const std::size_t Macyclic = 1000;
+    const std::size_t Merdos_n = 100;
+    const std::size_t Merdos_s = 10;
+    const std::size_t Nfully1 = 100;
+    const std::size_t Nfully2 = 1000;
+    const std::size_t Nfully3 = 10000;
+    const std::size_t Nerdos = 100000;
+    const std::size_t T = 85;
+    const std::size_t X = 400;
+    const double R0 = 2;
+    // Every infecteced node has N-1 neighbours, of which in the large-population limit N-2 are susceptible.
+    // To trigger subsequent infections amgonst these N-2 susceptible neighbours, we must infect each neighbour
+    // with probability R0/(N-2). Note that for the first infected node, this is not strictly speaking correct,
+    // since it's infection has no source, and it will thus create R0(N-1)/(N-2) > R0 subsequent infections.
+    // This only causes a relative error of |1 - (N-1)/(N-2)| =~= 1/N though.
+    const double pfully1 = R0/(Nfully1-2);
+    const double pfully2 = R0/(Nfully2-2);
+    const double pfully3 = R0/(Nfully3-2);
+    const double MEAN = 10;
+    const double VARIANCE = 1;
+    transmission_time_gamma psifully1(MEAN, VARIANCE, 1.0-pfully1);
+    transmission_time_gamma psifully2(MEAN, VARIANCE, 1.0-pfully2);
+    transmission_time_gamma psifully3(MEAN, VARIANCE, 1.0-pfully3);
+    transmission_time_gamma psi(MEAN, VARIANCE);
+
+    /* Simulate using next reaction M times */
+    auto rfully1 = simulate<fully_connected, simulate_next_reaction>(engine, psifully1, T, Mfully_n, Mfully_s, Nfully1);
+    auto rfully2 = simulate<fully_connected, simulate_next_reaction>(engine, psifully2, T, Mfully_n, Mfully_s, Nfully2);
+    auto rfully3 = simulate<fully_connected, simulate_next_reaction>(engine, psifully3, T, Mfully_n, Mfully_s, Nfully3);
+    auto racyclic = simulate<acyclic, simulate_next_reaction>(engine, psi, T, Macyclic, 1, R0+1, true);
+    auto rerdos = simulate<erdos_reyni, simulate_next_reaction>(engine, psi, T, Merdos_n, Merdos_s, Nerdos, R0);
+
+    /* Evaluate analytical solution */
+    std::vector<double> t_analytical;
+    std::vector<double> y_analytical;
+    meanfield_infpop_gamma sol = meanfield_infpop_gamma::mean_variance(MEAN, VARIANCE, R0);
+    for(std::size_t i=0; i < X; ++i) {
+        t_analytical.push_back((double)T * i / (X-1));
+        y_analytical.push_back(sol.N(t_analytical.back()));
+    }
+
+    plt::figure_size(1600, 1200);
+    plt::named_plot("next reaction fully-connected (N="s + std::to_string(Nfully1) + ")", rfully1.first, rfully1.second);
+    plt::named_plot("next reaction fully-connected (N="s + std::to_string(Nfully2) + ")", rfully2.first, rfully2.second);
+    plt::named_plot("next reaction fully-connected (N="s + std::to_string(Nfully3) + ")", rfully3.first, rfully3.second);
+    plt::named_plot("next reaction acyclic", racyclic.first, racyclic.second);
+    plt::named_plot("next reaction Erdös-Reyni (N="s + std::to_string(Nerdos) + ")", rerdos.first, rerdos.second);
+    plt::named_plot("analytical", t_analytical, y_analytical);
+    plt::title("Mean-field large-population limits for Gamma transmission times");
+    plt::legend();
+    plt::show();
+}
