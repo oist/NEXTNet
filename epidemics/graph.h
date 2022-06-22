@@ -36,6 +36,9 @@ public:
     virtual int outdegree(node_t node) = 0;
 };
 
+//--------------------------------------
+//--------------ER GRAPH----------------
+//--------------------------------------
 
 /**
  * @brief A random Erdös-Reyni network
@@ -53,6 +56,12 @@ public:
     std::vector<std::vector<node_t>> neighbours;
 };
 
+//--------------------------------------
+//-------FULLY CONNECTED----------------
+//--------------------------------------
+
+
+
 /**
  * @brief A fully-connected network with random edge order
  */
@@ -67,6 +76,11 @@ public:
     rng_t& engine;
     std::vector<std::vector<node_t>>  neighbours;
 };
+
+//--------------------------------------
+//---------------TREE-------------------
+//--------------------------------------
+
 
 /**
  * @brief A random acyclic network
@@ -90,4 +104,29 @@ private:
     static const node_t incomplete_neighbours = -1;
 
     void generate_neighbours(node_t node);
+};
+
+
+//--------------------------------------
+//------CONFIGURATION MODEL-------------
+//--------------------------------------
+/**
+ * @brief Network from arbitrary degree distribution. 
+ */
+class cm : public graph {
+public:
+    cm(int size, std::vector<int> degreeList, rng_t& engine);
+
+    virtual node_t neighbour(node_t node, int neighbour_index);
+
+    virtual index_t outdegree(node_t node);
+
+    // rng_t& engine;
+    
+    std::vector<std::vector<node_t>>  adjacencyList;
+
+
+private:
+    std::vector<int> stubs;
+    std::vector<edge_t> edgeList;
 };

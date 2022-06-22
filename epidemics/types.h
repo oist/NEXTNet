@@ -14,3 +14,4 @@ typedef int node_t;
 typedef int index_t;
 typedef double interval_t;
 typedef double absolutetime_t;
+typedef std::pair<node_t,node_t> edge_t;

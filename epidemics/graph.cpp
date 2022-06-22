@@ -188,3 +188,64 @@ index_t acyclic::outdegree(node_t node) {
     const std::vector<node_t>& neighbours = adjacencylist[node];
     return (index_t)neighbours.size();
 }
+
+
+
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+/*-------- NETWORK: CONFIGURATION MODEL --------------*/
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+
+cm::cm(int size, std::vector<int> degreeList, rng_t& engine){
+
+    // Verify that the degree list is the same size at the number of nodes
+    if ((int) (degreeList.size()) != size)
+        throw std::range_error("size of degree list and graph do not match.");
+    
+    // Verify that all half edges can be paired
+    int total_degree = std::accumulate(degreeList.begin(), degreeList.end(), 0);
+    if (total_degree % 2 != 0)
+        throw std::range_error("Total degree is odd, all edges cannot be paired."); 
+    
+
+    // Generate the list of all stubs (i.e. half edge without end point e.g. i--?)
+    for (int i=0; i<size; i++){
+        for (int j=0; j<degreeList[i]; j++)
+            stubs.push_back(i);
+    }
+
+    // Generate the list of all possible edges (i.e. all pairs of different nodes (not unique))
+    for (int i = 0; i < (int) stubs.size(); i++)
+    {
+        for (int j = 0; j < i; j++)
+        {
+            // no self-edge
+            if (stubs[i]==stubs[j])
+                continue;
+            
+            edgeList.push_back(std::make_pair(stubs[i],stubs[j]));
+        }
+    }
+
+    // Shuffle the list of stubs in order to sample without replacement
+    std::shuffle(edgeList.begin(), edgeList.end(), engine);
+
+    // Add the selected edges to the adjacency list.
+    adjacencyList.resize(size);
+    for (int i = 0; i < total_degree/2; i++)
+    {
+        node_t a = edgeList[i].first;
+        node_t b = edgeList[i].second;  
+
+        adjacencyList[a].push_back(b);
+        adjacencyList[b].push_back(a);
+    }
+    
+
+
+
+    
+
+
+}

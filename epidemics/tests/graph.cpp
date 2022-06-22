@@ -221,3 +221,46 @@ TEST_CASE("acyclic networks (reduce_root_degree=true)", "[graph]") {
     const double sd = std::sqrt(K / total_nodes);
     REQUIRE(std::abs((K-1) - tota_outgoing_neighbours / total_nodes) < 3.0 * sd);
 }
+
+
+/**
+ * @brief Test case to verify `cm::cm`
+ *
+ * The variance and mean degree of the resulting network should match
+ * with the initial degree list that was the input.
+ * 
+ */
+TEST_CASE("Configuration model networks","[graph]") {
+    std::mt19937 engine;
+    int size = 10000;
+
+    
+    // Generate a Poisson graph with the configuration model
+
+    std::poisson_distribution<> poisson(3);
+    
+    std::vector<int> degreeList(size,0);
+
+    int total_degree = 0;
+
+    //Make sure that the total degree is even (so edges can find a pair)
+    while ((total_degree % 2 != 0) && (total_degree !=0))
+    {
+        for (int i = 0; i < size; i++)
+        {
+            const int k = poisson(engine); 
+            degreeList[i] = k;
+            total_degree += k;
+        }
+    }
+
+    cm nw(size, degreeList, engine); 
+    int nw_degree = 0;
+    for (node_t i = 0; i < size; i++)
+    {
+        nw_degree += (int) nw.adjacencyList[i].size();
+    }
+    nw_degree /= 2;
+    REQUIRE(std::abs(total_degree - nw_degree) < 0.00001);
+    
+}

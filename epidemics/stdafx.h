@@ -18,6 +18,7 @@
 #include <queue>
 #include <deque>
 #include <utility>
+#include <numeric>
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Weverything"
