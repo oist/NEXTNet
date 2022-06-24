@@ -232,35 +232,32 @@ TEST_CASE("acyclic networks (reduce_root_degree=true)", "[graph]") {
  */
 TEST_CASE("Configuration model networks","[graph]") {
     std::mt19937 engine;
-    int size = 10000;
+    const int size = 10000;
 
-    
     // Generate a Poisson graph with the configuration model
-
-    std::poisson_distribution<> poisson(3);
-    
+    std::poisson_distribution<> poisson(3);    
     std::vector<int> degreeList(size,0);
-
-    int total_degree = 0;
-
-    //Make sure that the total degree is even (so edges can find a pair)
-    while ((total_degree % 2 != 0) && (total_degree !=0))
+    std::size_t total_degree = 0;
+    for (int i = 0; i < size; i++)
     {
-        for (int i = 0; i < size; i++)
-        {
-            const int k = poisson(engine); 
-            degreeList[i] = k;
-            total_degree += k;
-        }
+        const int k = poisson(engine); 
+        degreeList[i] = k;
+        total_degree += k;
     }
 
-    cm nw(size, degreeList, engine); 
-    int nw_degree = 0;
+    // make sure the total degree is even, otherwise no graph can exist
+    while (total_degree % 2 == 1) {
+        // re-generate a random degree
+        const std::size_t i = std::uniform_int_distribution<>(0, size-1)(engine);
+        const int d = degreeList[i];
+        const int dp = poisson(engine);
+        degreeList[i] = dp;
+        total_degree += dp - d;
+    }
+
+    config_model nw(degreeList, engine); 
+    std::size_t nw_degree = 0;
     for (node_t i = 0; i < size; i++)
-    {
-        nw_degree += (int) nw.adjacencyList[i].size();
-    }
-    nw_degree /= 2;
-    REQUIRE(std::abs(total_degree - nw_degree) < 0.00001);
-    
+        nw_degree += nw.adjacencylist[i].size();
+    REQUIRE(std::abs((long)total_degree - (long)nw_degree) < 0.00001);
 }

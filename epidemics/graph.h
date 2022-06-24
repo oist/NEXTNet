@@ -37,30 +37,40 @@ public:
 };
 
 //--------------------------------------
+//----------ADJACENCYLIST GRAPH---------
+//--------------------------------------
+
+/**
+ * @brief Base class for networks defined by an adjacency list.
+ * 
+ * Implements functions `neighbour()` and `outdegree()`, the constructor
+ * is expected to setup the adjacencylist neighbours.
+ */
+class graph_adjacencylist : public graph {
+public:
+    virtual node_t neighbour(node_t node, int neighbour_index);
+
+    virtual index_t outdegree(node_t node);
+
+    /* Adjacency list of the graph */
+    std::vector<std::vector<node_t>>  adjacencylist;
+};
+
+//--------------------------------------
 //--------------ER GRAPH----------------
 //--------------------------------------
 
 /**
  * @brief A random Erdös-Reyni network
  */
-class erdos_reyni : public graph {
+class erdos_reyni : public graph_adjacencylist {
 public:
     erdos_reyni(int size, double avg_degree, rng_t& engine);
-
-    virtual node_t neighbour(node_t node, int neighbour_index);
-
-    virtual index_t outdegree(node_t node);
-
-//private:
-    /* Adjacency list of the graph */
-    std::vector<std::vector<node_t>> neighbours;
 };
 
 //--------------------------------------
 //-------FULLY CONNECTED----------------
 //--------------------------------------
-
-
 
 /**
  * @brief A fully-connected network with random edge order
@@ -74,7 +84,7 @@ public:
     virtual index_t outdegree(node_t node);
 
     rng_t& engine;
-    std::vector<std::vector<node_t>>  neighbours;
+    std::vector<std::vector<node_t>> neighbours;
 };
 
 //--------------------------------------
@@ -113,20 +123,10 @@ private:
 /**
  * @brief Network from arbitrary degree distribution. 
  */
-class cm : public graph {
+class config_model : public graph_adjacencylist {
 public:
-    cm(int size, std::vector<int> degreeList, rng_t& engine);
+    config_model(std::vector<int> degreelist, rng_t& engine);
 
-    virtual node_t neighbour(node_t node, int neighbour_index);
-
-    virtual index_t outdegree(node_t node);
-
-    // rng_t& engine;
-    
-    std::vector<std::vector<node_t>>  adjacencyList;
-
-
-private:
-    std::vector<int> stubs;
-    std::vector<edge_t> edgeList;
+    std::size_t selfloops = 0;
+    std::size_t multiedges = 0;
 };

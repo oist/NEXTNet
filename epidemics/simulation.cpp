@@ -93,7 +93,7 @@ void generatePaths_next_reaction(double mean, double variance, int degree,int nb
         std::string file_nb = std::to_string(path);
 
         erdos_reyni network(size, degree, engine);
-        export_adjacency_list(network.neighbours,adjalist);
+        export_adjacency_list(network.adjacencylist,adjalist);
         transmission_time_lognormal psi(mean, variance); 
         simulate_next_reaction simulation(network, psi);
         simulation.add_infections({ std::make_pair(0, 0.0)});

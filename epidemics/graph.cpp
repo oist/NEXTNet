@@ -8,6 +8,25 @@
 #include "stdafx.h"
 #include "types.h"
 #include "graph.h"
+#include "utility.h"
+
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+/*-------------- NETWORK: ADJACENCY LIST -------------*/
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+
+node_t graph_adjacencylist::neighbour(node_t node, int neighbour_index) {
+    const auto& n = adjacencylist.at(node);
+    if ((neighbour_index < 0) || (n.size() <= (unsigned int)neighbour_index))
+        return -1;
+    return n[neighbour_index];
+}
+
+index_t graph_adjacencylist::outdegree(node_t node) {
+    return (index_t) adjacencylist.at(node).size();
+}
+
 
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
@@ -27,7 +46,7 @@ erdos_reyni::erdos_reyni(int size, double avg_degree, rng_t& engine){
     /* Using geometric distribution */
     std::geometric_distribution<> skip_edge(p); // comment: equals 0 with prob. p
 
-    neighbours.resize(size);
+    adjacencylist.resize(size);
     for (int i=0; i < size; i++) {
         int s = skip_edge(engine);
         // for very low probabilities p, skip_edge can return very large numbers
@@ -37,21 +56,10 @@ erdos_reyni::erdos_reyni(int size, double avg_degree, rng_t& engine){
         for(int j = -1; (s >= 0) && (s < (i - j - 1)); s = skip_edge(engine)) {
             j += 1 + s;
             assert(j < i);
-            neighbours[i].push_back(j);
-            neighbours[j].push_back(i);
+            adjacencylist[i].push_back(j);
+            adjacencylist[j].push_back(i);
         }
     }
-}
-
-node_t erdos_reyni::neighbour(node_t node, int neighbour_index) {
-    const auto& n = neighbours.at(node);
-    if ((neighbour_index < 0) || (n.size() <= (unsigned int)neighbour_index))
-        return -1;
-    return n[neighbour_index];
-}
-
-index_t erdos_reyni::outdegree(node_t node) {
-    return (index_t) neighbours.at(node).size();
 }
 
 /*----------------------------------------------------*/
@@ -197,55 +205,50 @@ index_t acyclic::outdegree(node_t node) {
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
 
-cm::cm(int size, std::vector<int> degreeList, rng_t& engine){
+config_model::config_model(std::vector<int> degreelist, rng_t& engine){
 
-    // Verify that the degree list is the same size at the number of nodes
-    if ((int) (degreeList.size()) != size)
-        throw std::range_error("size of degree list and graph do not match.");
-    
     // Verify that all half edges can be paired
-    int total_degree = std::accumulate(degreeList.begin(), degreeList.end(), 0);
+    const std::size_t size = degreelist.size();
+    const std::size_t total_degree = std::accumulate(degreelist.begin(), degreelist.end(), 0);
     if (total_degree % 2 != 0)
         throw std::range_error("Total degree is odd, all edges cannot be paired."); 
     
-
     // Generate the list of all stubs (i.e. half edge without end point e.g. i--?)
-    for (int i=0; i<size; i++){
-        for (int j=0; j<degreeList[i]; j++)
+    std::vector<node_t> stubs;
+    stubs.reserve(total_degree);
+    for (int i=0; i < size ; i++){
+        for (int j=0; j<degreelist[i]; j++)
             stubs.push_back(i);
     }
 
-    // Generate the list of all possible edges (i.e. all pairs of different nodes (not unique))
-    for (int i = 0; i < (int) stubs.size(); i++)
-    {
-        for (int j = 0; j < i; j++)
-        {
-            // no self-edge
-            if (stubs[i]==stubs[j])
-                continue;
-            
-            edgeList.push_back(std::make_pair(stubs[i],stubs[j]));
-        }
-    }
-
     // Shuffle the list of stubs in order to sample without replacement
-    std::shuffle(edgeList.begin(), edgeList.end(), engine);
+    std::shuffle(stubs.begin(), stubs.end(), engine);
+
+    // set to keep track of multi-edges
+    std::unordered_set<edge_t, pair_hash> edges = {};
 
     // Add the selected edges to the adjacency list.
-    adjacencyList.resize(size);
-    for (int i = 0; i < total_degree/2; i++)
+    adjacencylist.resize(size);
+    for (std::size_t i = 0; i < total_degree - 1; i+=2)
     {
-        node_t a = edgeList[i].first;
-        node_t b = edgeList[i].second;  
+        const node_t a = stubs[i];
+        const node_t b = stubs[i+1];
+        
+        adjacencylist.at(a).push_back(b);
+        adjacencylist.at(b).push_back(a);
 
-        adjacencyList[a].push_back(b);
-        adjacencyList[b].push_back(a);
+        // keep track of number of self loops
+        if (a == b)
+            ++selfloops;
+
+        // keep track of number of multi-edges
+        // make undirected edges unambiguous by storing them
+        // as a pair with a <= b.
+        const edge_t e = (a < b) ? edge_t(a, b) : edge_t(b, a);
+        const bool is_in = edges.find(e) != edges.end();
+        if (!is_in)
+            edges.insert(e);
+        else
+            ++multiedges;
     }
-    
-
-
-
-    
-
-
 }
