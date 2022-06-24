@@ -49,7 +49,7 @@ namespace {
             using namespace std::complex_literals;
             // Compute q-th power of p-ths roots w, and poles in the Laplace plane a
             for(unsigned int i=0; i < qp.second; ++i) {
-                w.at(i) = exp(1i * 2.0 * M_PI * (double)i * (double)qp.first / (double)qp.second);
+                w.at(i) = std::exp(1i * 2.0 * M_PI * (double)i * (double)qp.first / (double)qp.second);
                 a.at(i) = rho * (s * w[i] - 1.0);
                 r += w.at(i) / a.at(i);
             }
@@ -88,7 +88,6 @@ namespace {
     private:
         double alpha;
         double rho;
-        double r0;
         std::pair<unsigned int, unsigned int> qp;
         std::vector<std::complex<double>> w;
         std::vector<std::complex<double>> a;
@@ -274,6 +273,7 @@ TEST_CASE("Plot large-population mean-field solution for Gamma transmission time
 }
 #endif
 
+#if ENABLE_PLOTTING
 TEST_CASE("Plot different mean-field large-population limits for Gamma transmission times", "[meanfield]") {
     using namespace std::string_literals;
     std::mt19937 engine;
@@ -331,3 +331,4 @@ TEST_CASE("Plot different mean-field large-population limits for Gamma transmiss
     plt::legend();
     plt::show();
 }
+#endif
