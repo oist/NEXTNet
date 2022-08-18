@@ -19,33 +19,18 @@ using namespace std;
 
 int main(int argc, const char * argv[]) {
 
- 
-    // PARAMETERS
+    int n = 1000;
+    if(argc == 2){
+        n = atoi(argv[1]);
+    }
     
-    
-    int size = 1000; // Size network or max pop for mean field.
-    int degree = 5; // Average Degree
-    double mean = 10; // Average infection time
-    double variance = 3;
-    
-    int nb_paths = 1;
-    //double threshold=100;
-    
-    
-     /*-----nMGA-----*/
-    //generatePaths_NMGA( mean, variance, degree,nb_paths, size, engine,threshold);
 
-  
-
-    /*----Next Reaction on ERDOS REYNI network---*/
     
-    generatePaths_next_reaction( mean, variance, degree,nb_paths, size, engine);
+    int degree = 3;
+    double mean = 10;
+    double variance = 1.0;
     
-    
-    /*---Mean Field---*/
-    
-    //simulatePaths_MeanField( mean, variance, degree,nb_paths, size, engine);
-
+   
     return 0;
 }
 

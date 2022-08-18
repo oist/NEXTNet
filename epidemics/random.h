@@ -9,7 +9,7 @@
 
 #include "stdafx.h"
 #include "types.h"
-#include "analysis.h"
+// #include "analysis.h"
 
 //--------------------------------------
 //----------INFECTION TIMES------------
