@@ -30,8 +30,12 @@ int main(int argc, const char * argv[]) {
     if(argc == 2){
         size = atoi(argv[1]);
     } else if (argc == 3){
-            size = atoi(argv[1]);
-            threshold = atoi(argv[2]);
+        size = atoi(argv[1]);
+        threshold = atoi(argv[2]);
+    } else if (argc == 3){
+        size = atoi(argv[1]);
+        threshold = atoi(argv[2]);
+        variance = atoi(argv[3]);
     }
     
 
