@@ -5,6 +5,20 @@
 #include "types.h"
 #include "utility.h"
 
+double simulate_nmga::find_maximal_dt(transmission_time& psi) {
+    // We find dt such that F(t + dt) - F(t) < dp,
+    // meaning such that moving from t to dt skips over
+    // at most probability mass dp
+    const double dp = 0.1;
+    double max_dt = INFINITY;
+    for(double p = 1; p - dp > 0; p -= dp) {
+        const double dt = psi.survivalquantile(p - dp ) - psi.survivalquantile(p);
+        max_dt = std::min(max_dt,dt);
+    }
+    return max_dt;
+}
+
+
 double simulate_nmga::phi(absolutetime_t t, interval_t tau) {
     /* This implements our version of equation 4 from the Boguna paper */
     if (std::isinf(tau))
@@ -124,14 +138,25 @@ std::pair<node_t, absolutetime_t> simulate_nmga::step(rng_t& engine)
         } else {
             /* Approximate version */
 
-            /* First, update hazard rates lambda and lambda_total */
-            update_active_edge_lambdas();
+            /* The following fixes an issue in the original NMGA algorithm */
+            double tau = NAN;
+            while (true) {
+                /* First, update hazard rates lambda and lambda_total */
+                update_active_edge_lambdas();
 
-            /* Then, draw the time of the next event
-            * Note: Here, this draw *does* depend on the hazard rates
-            */
-            const double tau = next_time_approximation(engine);
-
+                /* Then, draw the time of the next event
+                 * Note: Here, this draw *does* depend on the hazard rates
+                 * Only accept time increments that dont exceed the maximum
+                 * allowed time step!
+                 */
+                tau = next_time_approximation(engine);
+                if (tau <= maximal_dt)
+                    break;
+                
+                /* Make maximum allowed time step and try again */
+                current_time += maximal_dt;
+            }
+            
             /* Now determine which event takes place.
             * Note that we do not recompute the hazard rates, which amounts
             * to doing the draw *before* updating the current time

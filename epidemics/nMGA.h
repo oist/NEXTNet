@@ -23,6 +23,8 @@ private:
     std::vector<std::size_t> active_edges_infinite_lambdas;
     std::uniform_real_distribution<double> unif01_dist;
     
+    static double find_maximal_dt(transmission_time& psi);
+    
     void add_active_edge(const active_edges_entry& e) {
         active_edges.push_back(e);
     }
@@ -47,12 +49,18 @@ public:
     graph& network;
     transmission_time& psi;
     int approximation_threshold = 100;
+    double maximal_dt = NAN;
     double tau_precision = 1e-6;
     std::unordered_set<node_t> infected;
     
-    simulate_nmga(class graph& nw, class transmission_time& psi_, int threshold = 100, double tauprec = 1e-6)
+    simulate_nmga(class graph& nw, class transmission_time& psi_,
+                  int threshold = 100, double max_dt = NAN,
+                  double tauprec = 1e-6)
         :network(nw), psi(psi_)
-        ,approximation_threshold(threshold), tau_precision(tauprec)
+        ,approximation_threshold(threshold)
+        ,maximal_dt((std::isfinite(max_dt) && (max_dt > 0)) ?
+                    max_dt : find_maximal_dt(psi_))
+        ,tau_precision(tauprec)
     {}
     
     void add_infections(const std::vector<std::pair<node_t, absolutetime_t>>& v);
