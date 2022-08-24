@@ -54,6 +54,7 @@ void generatePaths_NMGA(double mean, double variance, int degree,int nb_paths,do
     
 //    std::string filename ="datanmga";
 //    std::string ext= ".dat";
+    //exportData(time_trajectory,filename+file_nb+ext);
     
     
     for (int path=0; path< nb_paths; path++) {
