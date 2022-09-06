@@ -37,6 +37,27 @@ void exportData(vector<double>& trajectory,string filename) {
     out.close();
 }
 
+void exportData(vector<int>& trajectory,string filename) {
+    //create an ofstream
+    ofstream out;
+    //choose where to write
+//    string location("Comparaison/");
+    out.open(filename);
+    int n = (int) trajectory.size();
+   // out << "t" << ", " << "n"<< "\n";
+//    out << trajectory[0] <<" " << 1 <<"\n";
+    for (int i =0; i<n; i++){
+//        if (abs(trajectory[i]-trajectory[i+1])<=0.001) {
+//            out << trajectory[i]+0.0111 <<" " << i+1 <<"\n";
+//            cout << "OUPS" << endl;
+//            continue;
+//        }
+        out << trajectory[i] <<" " << i+1 <<"\n";
+    }
+    out.close();
+}
+
+
 void export_adjacency_list(std::vector<std::vector<node_t>>& adjacencyList,string filename) {
     //create an ofstream
     ofstream out;

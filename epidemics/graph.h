@@ -129,3 +129,17 @@ public:
     std::size_t selfloops = 0;
     std::size_t multiedges = 0;
 };
+
+//--------------------------------------
+//--------SCALE FREE NETWORK------------
+//--------------------------------------
+/**
+ * @brief Power Law Network using Barabasi-Albert model.
+ *
+ * The degree distribution scales with k^-3.
+ */
+class scale_free : public graph_adjacencylist {
+public:
+    scale_free(int size, rng_t& engine);
+
+};

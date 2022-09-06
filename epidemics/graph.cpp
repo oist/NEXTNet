@@ -10,6 +10,7 @@
 #include "graph.h"
 #include "utility.h"
 
+
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
 /*-------------- NETWORK: ADJACENCY LIST -------------*/
@@ -252,3 +253,57 @@ config_model::config_model(std::vector<int> degreelist, rng_t& engine){
             ++multiedges;
     }
 }
+
+//--------------------------------------
+//--------SCALE FREE NETWORK------------
+//--------------------------------------
+/**
+ * @brief Power Law Network using Barabasi-Albert model.
+ *
+ * The degree distribution scales with k^-3.
+ */
+scale_free::scale_free(int size, rng_t& engine){
+
+    //Initialisation: Create the first node with no links.
+    
+    //To avoid biases in the nodes when doing the next reaction scheme, we shuffle the nodes
+    // so that there is no correlation in the labels.
+    std::vector<node_t> mixed_nodes;
+    for( int i = 0; i < size; i++ )
+       mixed_nodes.push_back(i);
+    std::shuffle (mixed_nodes.begin(), mixed_nodes.end(), engine);
+    
+    adjacencylist.resize(size);
+
+//    adjacencylist[mixed_nodes[0]].push_back(mixed_nodes[1]);
+//    adjacencylist[mixed_nodes[1]].push_back(mixed_nodes[0]);
+    
+    // i is the current number of nodes
+    for (int i=1; i<size; i++) {
+        
+        const node_t new_node = mixed_nodes[i];
+         
+        
+        // find who is connected to the new node by generating a rand. num. between 0 and i-1
+        // where the neighbour will be mixed_node[ rand. num.]
+        // the probability weights are the current degree (Bara-Alb model)
+        
+        std::vector<double> prob(i);
+        
+        for (int j = 0; j<i; j++) {
+            const auto degree = adjacencylist[mixed_nodes[j]].size();
+            prob[j]=degree;
+        }
+
+        std::discrete_distribution<int> distr(prob.begin(),prob.end());
+        
+        const int index = distr(engine);
+        
+        const node_t neighbour = mixed_nodes[index];
+        
+        adjacencylist[new_node].push_back(neighbour);
+        adjacencylist[neighbour].push_back(new_node);
+    }
+    
+    
+};

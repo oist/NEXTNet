@@ -222,3 +222,5 @@ double pdf_log_normal(double t,double mean ,double variance);
 
 double cdf_log_normal(double t,double mean,double variance);
 
+
+int zipf(int alpha, int n,rng_t& engine);

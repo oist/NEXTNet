@@ -206,3 +206,55 @@ double cdf_log_normal(double t,double mean,double variance){
 }
 
 
+//generate zipf rqndom numbers.
+int zipf(int alpha, int n,rng_t& engine)
+{
+    static int first = 1;// Static first time flag
+    static double harmonic= 0;
+    static std::vector<double> c(n+1,0);  // cumulant function
+    double z;                     // Uniform random number (0 < z < 1)
+    int zipf_value;            // Computed exponential value to be returned
+    int low = 1;
+    int high = n;
+    int mid;           // Binary-search bounds
+    
+    
+    // Compute normalization constant on first call only
+    if (first == 1)
+    {
+        for (int i = 1; i <= n; i++) {
+            harmonic += 1 / pow(i,alpha);
+        }
+        
+        c[0]=0;
+        for (int i=1; i<=n; i++)
+            c[i] = c[i-1] + 1.0 / (pow(i,alpha+1)*harmonic);
+
+        first = 0;
+    }
+
+    // Pull a uniform random number (0 < z < 1)
+    do
+    {
+        z = rand(0,1,engine);
+    }
+    while ((z == 0) || (z == 1));
+
+    
+    while (true) {
+        mid = floor((low+high)/2);
+        if (c[mid-1] < z && z <= c[mid] ) {
+            zipf_value = mid;
+            break;
+        } else if (c[mid] >= z) {
+            high = mid-1;
+        } else {
+            low = mid+1;
+        }
+    }
+
+  // Assert that zipf_value is between 1 and N
+  assert((zipf_value >=1) && (zipf_value <= n));
+
+  return(zipf_value);
+}
