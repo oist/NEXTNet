@@ -12,7 +12,7 @@
 #include "graph.h"
 #include "nMGA.h"
 #include "NextReaction.h"
-
+#include "gnuplot-iostream.h"
 using namespace std;
 
 /*  MersenneTwister random number generator */
@@ -21,64 +21,84 @@ using namespace std;
 
 int main(int argc, const char * argv[]) {
 
-    int size = 10000;
-//    int degree = 3;
+    engine.seed(1);
+    cout << "start...\n";
+
+    int size = 1000000;
+
     double mean = 10;
     double variance = 1.0;
-    int threshold = 100;
-
-    // User's input
-    if(argc == 2){
-        size = atoi(argv[1]);
-    } else if (argc == 3){
-        size = atoi(argv[1]);
-        threshold = atoi(argv[2]);
-    } else if (argc == 3){
-        size = atoi(argv[1]);
-        threshold = atoi(argv[2]);
-        variance = atoi(argv[3]);
-    }
-    
-    cout << "start...\n";
+    transmission_time_lognormal psi(mean, variance);
     
     scale_free network(size, engine);
-    
-    string path("/Users/curesamuelcyrus/Desktop/");
-    
+
+    cout << "network generated \n";   
     std::vector<long> degree;
     for (int i=0; i<network.adjacencylist.size(); i++) {
         degree.push_back(network.adjacencylist[i].size());
     }
-    
+
     ofstream out;
 
-    out.open(path+string("degree.dat"));
+    out.open(string("degree.dat"));
  
     for (int i =0; i<degree.size(); i++){
         out << degree[i] << "\n";
     }
     out.close();
-    
-    cout << "network generated \n";
-    transmission_time_lognormal psi(mean, variance);
-    simulate_next_reaction simulation(network, psi);
-    
-    vector<double> time_trajectory({});
-    
-    simulation.add_infections({ std::make_pair(0, 0.0)});
-    
-    for (int i =0 ; i< size; i++) {
-        auto point = simulation.step(engine);
-        if (point.second != INFINITY) {
-            time_trajectory.push_back(point.second);
-            continue;
+
+    // number_of_simulations:
+    int n = 1000;
+
+    vector<double> time_trajectory({0.0});
+    for (int i = 0; i < n; i++)
+    {
+        cout << i << "\n" ;
+        simulate_next_reaction simulation(network, psi);
+        std::uniform_int_distribution<int> dist(0,size-1);
+
+        node_t initial_infected = dist(engine);
+        simulation.add_infections({ std::make_pair(initial_infected, 0.0)});
+        for (int i =0 ; i< size; i++) {
+            auto point = simulation.step(engine);
+            if (point.second != INFINITY) {
+
+                auto it = std::upper_bound(time_trajectory.cbegin(),time_trajectory.cend(),point.second);
+                time_trajectory.insert(it,point.second);
+                continue;
+            }
+            break;
         }
-        cout << time_trajectory.size() << "\n";
-        break;
+
     }
-    std::string filename ="BA";
-    std::string ext= ".dat";
-    exportData(time_trajectory,path+filename+ext);
+
+    out.open(string("average_trajectory.dat"));
+ 
+    for (int i =0; i<time_trajectory.size(); i++){
+        out << time_trajectory[i] << " " << double(1/n) << "\n";
+    }
+    out.close();
+    
+//     cout << "network generated \n";
+    
+//     simulate_next_reaction simulation(network, psi);
+    
+//     vector<double> time_trajectory({});
+    
+//     simulation.add_infections({ std::make_pair(0, 0.0)});
+    
+//     for (int i =0 ; i< size; i++) {
+//         auto point = simulation.step(engine);
+//         if (point.second != INFINITY) {
+//             time_trajectory.push_back(point.second);
+//             continue;
+//         }
+//         cout << time_trajectory.size() << "\n";
+//         break;
+//     }
+//     std::string filename ="BA";
+//     std::string ext= ".dat";
+//     exportData(time_trajectory,path+filename+ext);
 
     
     
