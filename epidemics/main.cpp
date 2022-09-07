@@ -24,7 +24,7 @@ int main(int argc, const char * argv[]) {
     engine.seed(1);
     cout << "start...\n";
 
-    int size = 1000000;
+    int size = 100000;
 
     double mean = 10;
     double variance = 1.0;
@@ -62,20 +62,21 @@ int main(int argc, const char * argv[]) {
         for (int i =0 ; i< size; i++) {
             auto point = simulation.step(engine);
             if (point.second != INFINITY) {
-
-                auto it = std::upper_bound(time_trajectory.cbegin(),time_trajectory.cend(),point.second);
-                time_trajectory.insert(it,point.second);
+                time_trajectory.push_back(point.second);
                 continue;
             }
             break;
         }
 
     }
+    cout << "sorting....\n";
+    sort(time_trajectory.begin(),time_trajectory.end());
+
 
     out.open(string("average_trajectory.dat"));
  
     for (int i =0; i<time_trajectory.size(); i++){
-        out << time_trajectory[i] << " " << double(1/n) << "\n";
+        out << time_trajectory[i] << " " << double(i/double(n)) << "\n";
     }
     out.close();
     

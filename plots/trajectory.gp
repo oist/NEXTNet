@@ -23,4 +23,4 @@ set key bottom right
 set datafile separator ","
 plot 0.7*exp(0.2934*x) dashtype '.-_' lt -1 title " EL",\
 0.7*exp(0.351101*x) dashtype 2 lt -1 title "extended EL",\
-"datahetero.csv" lt -1 notitle
+"average_trajectory.dat" lt -1 notitle
