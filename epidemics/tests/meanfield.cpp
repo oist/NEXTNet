@@ -273,7 +273,7 @@ TEST_CASE("Plot large-population mean-field solution for Gamma transmission time
 }
 #endif
 
-#if ENABLE_PLOTTING
+#if ENABLE_PLOTTING && 0
 TEST_CASE("Plot different mean-field large-population limits for Gamma transmission times", "[meanfield]") {
     using namespace std::string_literals;
     std::mt19937 engine;

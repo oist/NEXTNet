@@ -199,12 +199,11 @@ index_t acyclic::outdegree(node_t node) {
 }
 
 
-
-/*----------------------------------------------------*/
-/*----------------------------------------------------*/
-/*-------- NETWORK: CONFIGURATION MODEL --------------*/
-/*----------------------------------------------------*/
-/*----------------------------------------------------*/
+//----------------------------------------------------
+//----------------------------------------------------
+//-------- NETWORK: CONFIGURATION MODEL --------------
+//----------------------------------------------------
+//----------------------------------------------------
 
 config_model::config_model(std::vector<int> degreelist, rng_t& engine){
 
@@ -217,13 +216,14 @@ config_model::config_model(std::vector<int> degreelist, rng_t& engine){
     // Generate the list of all stubs (i.e. half edge without end point e.g. i--?)
     std::vector<node_t> stubs;
     stubs.reserve(total_degree);
-    for (int i=0; i < size ; i++){
-        for (int j=0; j<degreelist[i]; j++)
+    for (size_t i=0; i < size ; i++){
+        for (size_t j=0; j<degreelist[i]; j++)
             stubs.push_back(i);
     }
 
     // Shuffle the list of stubs in order to sample without replacement
     std::shuffle(stubs.begin(), stubs.end(), engine);
+
 
     // set to keep track of multi-edges
     std::unordered_set<edge_t, pair_hash> edges = {};
@@ -253,15 +253,102 @@ config_model::config_model(std::vector<int> degreelist, rng_t& engine){
             ++multiedges;
     }
 }
+//----------------------------------------------------
+//----------------------------------------------------
+//-------- NETWORK: CM CORRELATED------ --------------
+//----------------------------------------------------
+//----------------------------------------------------
+
+config_model_correlated::config_model_correlated(std::vector<int> degreelist, rng_t& engine,bool assortative){
+
+    //Step 0: Generate uncorrelated network
+
+
+    config_model nk(degreelist,engine);
+
+    adjacencylist = nk.adjacencylist;
+
+    //Step 1: Link Selection
+    // Choose at random two links
+    // label the 4 nodes a,b,c,d s.t:
+    // deg(a)<= deg(b)<= deg(c)<= deg(d)
+
+    std::vector<edge_t> vec_edges({});
+
+    vec_edges.reserve(nk.edges.size());
+    for (auto it = nk.edges.begin(); it != nk.edges.end(); ) {
+        vec_edges.push_back(std::move(nk.edges.extract(it++).value()));
+    }
+
+    std::uniform_int_distribution<> dist(0,(int) vec_edges.size());
+  
+    std::vector<std::pair<int,node_t>> selected_nodes({});
+    
+    for (int i = 0; i < 2; i++){
+        const edge_t e = vec_edges[dist(engine)];
+        const std::pair<int,node_t> pair_first ={adjacencylist[e.first].size(),e.first};
+        const std::pair<int,node_t> pair_second ={adjacencylist[e.second].size(),e.second};
+
+        // break the existing links
+        // https://stackoverflow.com/questions/3385229/c-erase-vector-element-by-value-rather-than-by-position
+        adjacencylist[e.first].erase(std::remove(adjacencylist[e.first].begin(), adjacencylist[e.first].end(), e.second), adjacencylist[e.first].end());
+        adjacencylist[e.second].erase(std::remove(adjacencylist[e.second].begin(), adjacencylist[e.second].end(), e.first), adjacencylist[e.second].end());
+
+        selected_nodes.push_back(pair_first);
+        selected_nodes.push_back(pair_second);
+    }
+    
+    std::sort(selected_nodes.begin(), selected_nodes.end());
+    
+    node_t a = selected_nodes[0].second;
+    node_t b = selected_nodes[1].second;
+    node_t c = selected_nodes[2].second;
+    node_t d = selected_nodes[3].second;
+
+    //Step 3: Rewiring
+
+    if (assortative==true)
+    {
+        // we check whether the particular rewiring leads to multi-links.
+        // If it does, we reject it, returning to Step 1.
+        // const edge_t e = (a < b) ? edge_t(a, b) : edge_t(b, a);
+        // const bool is_in = edges.find(e) != edges.end();
+        // if (is_in)
+        //     continue;
+
+        adjacencylist.at(a).push_back(b);
+        adjacencylist.at(b).push_back(a);
+
+        const edge_t e1 = (a < b) ? edge_t(a, b) : edge_t(b, a);
+        bool is_in = nk.edges.find(e1) != nk.edges.end();
+        if (is_in)
+            std::cout << 1 << "\n";
+
+        adjacencylist.at(c).push_back(d);
+        adjacencylist.at(d).push_back(c);
+
+        const edge_t e2 = (c < d) ? edge_t(c, d) : edge_t(d, c);
+        is_in = nk.edges.find(e2) != nk.edges.end();
+        if (is_in)
+            std::cout << 1 << "\n";
+    } else {
+        adjacencylist.at(a).push_back(d);
+        adjacencylist.at(d).push_back(a);
+
+        adjacencylist.at(c).push_back(b);
+        adjacencylist.at(b).push_back(c);
+    }
+    
+
+
+    
+}
+
 
 //--------------------------------------
 //--------SCALE FREE NETWORK------------
 //--------------------------------------
-/**
- * @brief Power Law Network using Barabasi-Albert model.
- *
- * The degree distribution scales with k^-3.
- */
+
 scale_free::scale_free(int size, rng_t& engine){
     
     adjacencylist.resize(size);
@@ -285,7 +372,7 @@ scale_free::scale_free(int size, rng_t& engine){
 }
 
 
-////OLD VERSION, CORRECT AND TESTED BUT TOO SLOW
+////OLD VERSION, CORRECT AND TESTED BUT TOO SLOW: 
 //scale_free::scale_free(int size, rng_t& engine){
 //
 //    //Initialisation: Create the first node with no links.
@@ -333,3 +420,142 @@ scale_free::scale_free(int size, rng_t& engine){
 //
 //
 //};
+
+
+
+//--------------------------------------
+//--------IMPORTED NETWORK----------
+//--------------------------------------
+
+int imported_network::file_size(std::string path_to_file){
+    
+    std::ifstream file(path_to_file);
+    std::string line;
+
+    int size = 0;
+    while (std::getline(file, line))
+        size++;
+    return size;
+}
+
+imported_network::imported_network(std::string path_to_file){
+
+    std::ifstream file(path_to_file);
+
+    int size = file_size(path_to_file);
+    
+    adjacencylist.resize(size);
+
+    std::string line, value;
+    int i = 0;
+    while (std::getline(file,line)) {
+
+        size_t start;
+        size_t end = 0;
+        while ((start = line.find_first_not_of(",", end)) != std::string::npos) {
+            end = line.find(",", start);
+            int value = stoi(line.substr(start, end - start));
+            adjacencylist[i].push_back(value);
+            // std::cout << value << ",";
+        }
+        // std::cout << "\n";
+        i++;
+    }
+}
+        // std::string j;
+        // while (std::getline(line, j[0],","))
+        // {
+        //     int num = std::stoi(j);
+        //     adjacencylist[i].push_back(num );
+        //     adjacencylist[num].push_back( i );
+
+        //     std::cout << num << " ";
+        // }
+        // std::cout << "\n";
+        
+        // // read an entire row and
+        // // store it in a string variable 'line'
+        // std::getline(fin,line);
+  
+        // // used for breaking words
+        // std::stringstream s(line);
+
+        
+        // // read every column data of a row and
+        // // store it in a string variable, 'word'
+        // while (std::getline(s, word, ', ')) {
+  
+        //     // add all the column data
+        //     // of a row to a vector
+        //     adjacencylist[i].push_back(std::stoi(word));
+
+//------------------------------------------------
+//-----Measure degree correlation in a network----
+//------------------------------------------------
+
+std::vector<double> knn(graph_adjacencylist& nk){
+
+    std::vector<std::vector<int>> nn_degree({});
+    nn_degree.resize(nk.adjacencylist.size()); // k_max <= size of network
+    int k_max = 0;
+
+    for (node_t node = 0; node < nk.adjacencylist.size(); node++)
+    {
+        const int k = nk.adjacencylist[node].size();
+        k_max = std::max(k,k_max);
+
+        for (node_t neigh = 0; neigh < k; neigh++)
+        {
+            const int neigh_k = nk.adjacencylist[neigh].size();
+            nn_degree[k].push_back(neigh_k);
+        }
+        
+    }
+
+    std::vector<double> result({});
+    // compute average degree of the vertices connected to a vertex of degree k
+    for (int k = 0; k <= k_max; k++)
+    {
+        if (nn_degree[k].size() == 0)
+        {
+            result.push_back(0);
+            continue;
+        }
+        double average = 0;
+        for (int i = 0; i < nn_degree[k].size(); i++)
+        {
+            average += nn_degree[k][i];
+        }
+        result.push_back(average /= nn_degree[k].size());
+
+    }
+
+    return result;
+
+
+}
+
+double assortativity(graph_adjacencylist& nk)
+{
+    double num = 0.0;
+    double den = 0.0;
+
+    // number of edges
+    int m = 0;
+    for (std::vector<node_t> neighbours : nk.adjacencylist)
+    {
+        m += neighbours.size();
+    }
+
+  
+    for (int i = 0; i < nk.adjacencylist.size(); i++)
+    {
+        for (int j = 0; j < i; j++)
+        {
+            const int Aij = std::find(nk.adjacencylist[i].begin(), nk.adjacencylist[i].end(), j) != nk.adjacencylist[i].end();
+            num += Aij - nk.outdegree(i)*nk.outdegree(j)/ (2 * m);
+            den += nk.outdegree(i)*Aij - nk.outdegree(i)*nk.outdegree(j)/ (2 * m);  
+        }
+    }
+    return num/den;
+}

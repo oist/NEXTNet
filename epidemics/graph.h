@@ -10,6 +10,7 @@
 #include "stdafx.h"
 #include "types.h"
 #include "random.h"
+#include "utility.h"
 
 //--------------------------------------
 //--------------NETWORKS----------------
@@ -57,7 +58,7 @@ public:
 };
 
 //--------------------------------------
-//--------------ERDOS REYNI GRAPH----------------
+//--------ERDOS REYNI GRAPH-------------
 //--------------------------------------
 
 /**
@@ -69,7 +70,7 @@ public:
 };
 
 //--------------------------------------
-//-------FULLY CONNECTED----------------
+//----------FULLY CONNECTED-------------
 //--------------------------------------
 
 /**
@@ -117,7 +118,7 @@ private:
 
 
 //--------------------------------------
-//------CONFIGURATION MODEL-------------
+//---------CONFIGURATION MODEL----------
 //--------------------------------------
 /**
  * @brief Network from arbitrary degree distribution. 
@@ -125,6 +126,23 @@ private:
 class config_model : public graph_adjacencylist {
 public:
     config_model(std::vector<int> degreelist, rng_t& engine);
+
+    std::size_t selfloops = 0;
+    std::size_t multiedges = 0;
+    std::unordered_set<edge_t, pair_hash> edges = {};
+
+};
+
+//------------------------------------------
+//--CONFIG MODEL: WITH CORRELATED DEGREES---
+//------------------------------------------
+/**
+ * @brief Network from arbitrary degree distribution. 
+ * 
+ */
+class config_model_correlated : public graph_adjacencylist {
+public:
+    config_model_correlated(std::vector<int> degreelist, rng_t& engine,bool assortative);
 
     std::size_t selfloops = 0;
     std::size_t multiedges = 0;
@@ -143,3 +161,44 @@ public:
     scale_free(int size, rng_t& engine);
 
 };
+
+
+//--------------------------------------
+//--------IMPORTED NETWORK----------
+//--------------------------------------
+/**
+ * @brief Network generated from an adjacency list
+ * 
+ * the file must be an adjacency list, i.e., a list of lists;
+ */
+class imported_network : public graph_adjacencylist {
+public:
+    imported_network(std::string path_to_file);
+
+private:
+    int file_size(std::string path_to_file);
+
+};
+
+
+//------------------------------------------------
+//-----Measure degree correlation in a network----
+//------------------------------------------------
+
+
+/**
+ * @brief Average degree of the nearest neighbors of vertices of degree k.
+ * 
+ * A measure of degree correlation: when the network is uncorrelated,
+ * knn(k) should be independent of k.
+ *  
+ */
+std::vector<double> knn(graph_adjacencylist& nk);
+
+/**
+ * @brief Pearson correlation to measure the assortativity of a network
+ * 
+ * assortativity a = [ sum_ij (A[i,j]-k_i k_j/(2m) ) ] / [ sum_ij (k_i A[i,j] - k_i k_j/(2m) ) ]
+ *  
+ */
+double assortativity(graph_adjacencylist& nk);

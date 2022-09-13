@@ -261,3 +261,87 @@ TEST_CASE("Configuration model networks","[graph]") {
         nw_degree += nw.adjacencylist[i].size();
     REQUIRE(std::abs((long)total_degree - (long)nw_degree) < 0.00001);
 }
+
+
+
+/**
+ * @brief Test case to verify `knn`
+ *
+ * When the network is uncorrelated knn(k) should be
+ * independent of k. In the case of a ER network,
+ * knn(k) should be approx constant and equal to <k^2>/<k>
+ * as N-> infinity.
+ */
+TEST_CASE("Measuring average neighbour degree","[graph]") {
+    std::mt19937 engine;
+    int size = 1000000;
+    double avg_degree = 3;
+
+    erdos_reyni network(size, avg_degree,engine);
+
+    // double k1 = 0;
+    // double k2 = 0;
+    // for (node_t node = 0; node < size; node++){
+    //     k1 += network.outdegree(node);
+    //     k2 += std::pow(network.outdegree(node),2);
+    // }
+    std::vector<double> vec = knn(network);
+    double mean = 0;
+    for (size_t i = 1; i < vec.size(); i++)
+    {
+        mean += vec[i]/vec.size(); 
+    }
+    
+
+    REQUIRE(std::abs( knn(network)[3]-mean )/mean < 0.4);
+    REQUIRE(std::abs( knn(network)[5]-mean )/mean < 0.4);
+    REQUIRE(std::abs( knn(network)[10]-mean)/mean < 0.4);
+
+    
+}
+
+
+/**
+ * @brief Test case to verify `assortativity`
+ *
+ * When the network is uncorrelated the assortativity should be
+ * close to 0 as N-> infty. In the case of a ER network,
+ * the assortativity should tend to 0;
+ */
+TEST_CASE("Measuring degree correlation","[graph]") {
+    std::mt19937 engine;
+    int size = 10000;
+    erdos_reyni nk(size,3.0,engine);
+    double r = assortativity(nk);
+    REQUIRE(std::abs(r) < 0.3);
+
+
+    // Generate a Poisson graph with the configuration model
+    std::poisson_distribution<> poisson(3);    
+    std::vector<int> degreeList(size,0);
+    std::size_t total_degree = 0;
+    for (int i = 0; i < size; i++)
+    {
+        const int k = poisson(engine); 
+        degreeList[i] = k;
+        total_degree += k;
+    }
+
+    // make sure the total degree is even, otherwise no graph can exist
+    while (total_degree % 2 == 1) {
+        // re-generate a random degree
+        const std::size_t i = std::uniform_int_distribution<>(0, size-1)(engine);
+        const int d = degreeList[i];
+        const int dp = poisson(engine);
+        degreeList[i] = dp;
+        total_degree += dp - d;
+    }
+
+    config_model nw(degreeList, engine); 
+
+    r = assortativity(nw);
+    REQUIRE(std::abs(r) < 0.05);
+}
+
+
+
