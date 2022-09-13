@@ -24,7 +24,7 @@ int main(int argc, const char * argv[]) {
     
     cout << "start...\n";
 
-    int size = 1000;
+    int size = 1000000;
 
     // number_of_simulations:
     int n = 1;
@@ -69,13 +69,13 @@ int main(int argc, const char * argv[]) {
         std::uniform_int_distribution<int> dist(0,size-1);
 
         node_t initial_infected = dist(engine);
-        path.push_back(initial_infected);
+       // path.push_back(initial_infected);
         simulation.add_infections({ std::make_pair(initial_infected, 0.0)});
         for (int i =0 ; i< size; i++) {
             auto point = simulation.step(engine);
             if (point.second != INFINITY) {
                 time_trajectory.push_back(point.second);
-                path.push_back(point.first);
+                //path.push_back(point.first);
                 continue;
             }
             break;
