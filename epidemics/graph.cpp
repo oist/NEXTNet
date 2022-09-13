@@ -280,69 +280,71 @@ config_model_correlated::config_model_correlated(std::vector<int> degreelist, rn
         vec_edges.push_back(std::move(nk.edges.extract(it++).value()));
     }
 
-    std::uniform_int_distribution<> dist(0,(int) vec_edges.size());
-  
-    std::vector<std::pair<int,node_t>> selected_nodes({});
+    std::uniform_int_distribution<> dist(0,(int) vec_edges.size()-1);
     
-    for (int i = 0; i < 2; i++){
-        const edge_t e = vec_edges[dist(engine)];
-        const std::pair<int,node_t> pair_first ={adjacencylist[e.first].size(),e.first};
-        const std::pair<int,node_t> pair_second ={adjacencylist[e.second].size(),e.second};
+    for (int iter=0; iter < 100; iter++){
+        std::vector<std::pair<int,node_t>> selected_nodes({});
+        
+        for (int i = 0; i < 2; i++){
+            const edge_t e = vec_edges[dist(engine)];
+            const std::pair<int,node_t> pair_first ={adjacencylist[e.first].size(),e.first};
+            const std::pair<int,node_t> pair_second ={adjacencylist[e.second].size(),e.second};
 
-        // break the existing links
-        // https://stackoverflow.com/questions/3385229/c-erase-vector-element-by-value-rather-than-by-position
-        adjacencylist[e.first].erase(std::remove(adjacencylist[e.first].begin(), adjacencylist[e.first].end(), e.second), adjacencylist[e.first].end());
-        adjacencylist[e.second].erase(std::remove(adjacencylist[e.second].begin(), adjacencylist[e.second].end(), e.first), adjacencylist[e.second].end());
+            // break the existing links
+            // https://stackoverflow.com/questions/3385229/c-erase-vector-element-by-value-rather-than-by-position
+            adjacencylist[e.first].erase(std::remove(adjacencylist[e.first].begin(), adjacencylist[e.first].end(), e.second), adjacencylist[e.first].end());
+            adjacencylist[e.second].erase(std::remove(adjacencylist[e.second].begin(), adjacencylist[e.second].end(), e.first), adjacencylist[e.second].end());
 
-        selected_nodes.push_back(pair_first);
-        selected_nodes.push_back(pair_second);
+            selected_nodes.push_back(pair_first);
+            selected_nodes.push_back(pair_second);
+        }
+        
+        std::sort(selected_nodes.begin(), selected_nodes.end());
+        
+        node_t a = selected_nodes[0].second;
+        node_t b = selected_nodes[1].second;
+        node_t c = selected_nodes[2].second;
+        node_t d = selected_nodes[3].second;
+
+        //Step 3: Rewiring
+
+        if (assortative==true)
+        {
+            // we check whether the particular rewiring leads to multi-links.
+            // If it does, we reject it, returning to Step 1.
+            // const edge_t e = (a < b) ? edge_t(a, b) : edge_t(b, a);
+            // const bool is_in = edges.find(e) != edges.end();
+            // if (is_in)
+            //     continue;
+
+            adjacencylist.at(a).push_back(b);
+            adjacencylist.at(b).push_back(a);
+
+            const edge_t e1 = (a < b) ? edge_t(a, b) : edge_t(b, a);
+            bool is_in = nk.edges.find(e1) != nk.edges.end();
+            if (is_in)
+                std::cout << 1 << "\n";
+
+            adjacencylist.at(c).push_back(d);
+            adjacencylist.at(d).push_back(c);
+
+            const edge_t e2 = (c < d) ? edge_t(c, d) : edge_t(d, c);
+            adjacencylist.at(c).push_back(b);
+            adjacencylist.at(b).push_back(c);
+        }
     }
-    
-    std::sort(selected_nodes.begin(), selected_nodes.end());
-    
-    node_t a = selected_nodes[0].second;
-    node_t b = selected_nodes[1].second;
-    node_t c = selected_nodes[2].second;
-    node_t d = selected_nodes[3].second;
-
-    //Step 3: Rewiring
-
-    if (assortative==true)
-    {
-        // we check whether the particular rewiring leads to multi-links.
-        // If it does, we reject it, returning to Step 1.
-        // const edge_t e = (a < b) ? edge_t(a, b) : edge_t(b, a);
-        // const bool is_in = edges.find(e) != edges.end();
-        // if (is_in)
-        //     continue;
-
-        adjacencylist.at(a).push_back(b);
-        adjacencylist.at(b).push_back(a);
-
-        const edge_t e1 = (a < b) ? edge_t(a, b) : edge_t(b, a);
-        bool is_in = nk.edges.find(e1) != nk.edges.end();
-        if (is_in)
-            std::cout << 1 << "\n";
-
-        adjacencylist.at(c).push_back(d);
-        adjacencylist.at(d).push_back(c);
-
-        const edge_t e2 = (c < d) ? edge_t(c, d) : edge_t(d, c);
-        is_in = nk.edges.find(e2) != nk.edges.end();
-        if (is_in)
-            std::cout << 1 << "\n";
-    } else {
-        adjacencylist.at(a).push_back(d);
-        adjacencylist.at(d).push_back(a);
-
-        adjacencylist.at(c).push_back(b);
-        adjacencylist.at(b).push_back(c);
-    }
-    
-
-
-    
 }
+
+
+// }
+// }           is_in = nk.edges.find(e2) != nk.edges.end();
+//             if (is_in)
+//                 std::cout << 1 << "\n";
+//         } else {
+//             adjacencylist.at(a).push_back(d);
+//             adjacencylist.at(d).push_back(a);
+
+//  
 
 
 //--------------------------------------

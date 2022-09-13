@@ -22,17 +22,34 @@ int main(int argc, const char * argv[]) {
 
     engine.seed(1);
     
-    imported_network network(std::string("/home/sam/Documents/Epidemics-On-Networks/build/adjalist.csv"));
+    int size = 1000;
 
-    cout << "r=" << assortativity(network) << endl;
-
-    vector<double> w=knn(network);
-
-    for (double kn : w)
+    // Generate a Poisson graph with the configuration model
+    std::poisson_distribution<> poisson(3);    
+    std::vector<int> degreeList(size,0);
+    std::size_t total_degree = 0;
+    for (int i = 0; i < size; i++)
     {
-        cout << kn << endl;
+        const int k = poisson(engine); 
+        degreeList[i] = k;
+        total_degree += k;
     }
-        
+
+    // make sure the total degree is even, otherwise no graph can exist
+    while (total_degree % 2 == 1) {
+        // re-generate a random degree
+        const std::size_t i = std::uniform_int_distribution<>(0, size-1)(engine);
+        const int d = degreeList[i];
+        const int dp = poisson(engine);
+        degreeList[i] = dp;
+        total_degree += dp - d;
+    }
+
+    config_model nw(degreeList, engine);
+    //config_model_correlated nwk(degreeList, engine,true);
+
+    export_adjacency_list(nw.adjacencylist,"network.txt"); 
+    //export_adjacency_list(nwk.adjacencylist,"correlated_network.txt"); 
 
     // cout << "start...\n";
 
