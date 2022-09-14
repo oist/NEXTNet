@@ -21,33 +21,20 @@ using namespace std;
 int main(int argc, const char * argv[]) {
 
     engine.seed(1);
+//    std::string path( std::filesystem::current_path() );
+//    cout << path ;
+//    for (int letter=0; letter<std::string("epidemics").size(); letter++) {
+//        path.pop_back();
+//    }
+    cout << "starts"<< endl;
+    imported_network nw(string("/Users/curesamuelcyrus/Documents/epidemics/mathematica/adjacency_list_mathematica.csv"));
+    cout << "done"<< endl;
     
-    int size = 1000;
-
-    // Generate a Poisson graph with the configuration model
-    std::poisson_distribution<> poisson(3);    
-    std::vector<int> degreeList(size,0);
-    std::size_t total_degree = 0;
-    for (int i = 0; i < size; i++)
-    {
-        const int k = poisson(engine); 
-        degreeList[i] = k;
-        total_degree += k;
-    }
-
-    // make sure the total degree is even, otherwise no graph can exist
-    while (total_degree % 2 == 1) {
-        // re-generate a random degree
-        const std::size_t i = std::uniform_int_distribution<>(0, size-1)(engine);
-        const int d = degreeList[i];
-        const int dp = poisson(engine);
-        degreeList[i] = dp;
-        total_degree += dp - d;
-    }
-
-    config_model nw(degreeList, engine);
-    //config_model_correlated nwk(degreeList, engine,true);
-
+    cout << " old r : " <<  assortativity(nw) << endl ;
+    
+    add_correlation(0.4,nw,engine);
+    
+    cout << " new r : " <<  assortativity(nw) << endl ;
     export_adjacency_list(nw.adjacencylist,"network.txt"); 
     //export_adjacency_list(nwk.adjacencylist,"correlated_network.txt"); 
 

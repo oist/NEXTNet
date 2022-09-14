@@ -218,7 +218,7 @@ config_model::config_model(std::vector<int> degreelist, rng_t& engine){
     stubs.reserve(total_degree);
     for (size_t i=0; i < size ; i++){
         for (size_t j=0; j<degreelist[i]; j++)
-            stubs.push_back(i);
+            stubs.push_back((int) i);
     }
 
     // Shuffle the list of stubs in order to sample without replacement
@@ -253,99 +253,6 @@ config_model::config_model(std::vector<int> degreelist, rng_t& engine){
             ++multiedges;
     }
 }
-//----------------------------------------------------
-//----------------------------------------------------
-//-------- NETWORK: CM CORRELATED------ --------------
-//----------------------------------------------------
-//----------------------------------------------------
-
-config_model_correlated::config_model_correlated(std::vector<int> degreelist, rng_t& engine,bool assortative){
-
-    //Step 0: Generate uncorrelated network
-
-
-    config_model nk(degreelist,engine);
-
-    adjacencylist = nk.adjacencylist;
-
-    //Step 1: Link Selection
-    // Choose at random two links
-    // label the 4 nodes a,b,c,d s.t:
-    // deg(a)<= deg(b)<= deg(c)<= deg(d)
-
-    std::vector<edge_t> vec_edges({});
-
-    vec_edges.reserve(nk.edges.size());
-    for (auto it = nk.edges.begin(); it != nk.edges.end(); ) {
-        vec_edges.push_back(std::move(nk.edges.extract(it++).value()));
-    }
-
-    std::uniform_int_distribution<> dist(0,(int) vec_edges.size()-1);
-    
-    for (int iter=0; iter < 100; iter++){
-        std::vector<std::pair<int,node_t>> selected_nodes({});
-        
-        for (int i = 0; i < 2; i++){
-            const edge_t e = vec_edges[dist(engine)];
-            const std::pair<int,node_t> pair_first ={adjacencylist[e.first].size(),e.first};
-            const std::pair<int,node_t> pair_second ={adjacencylist[e.second].size(),e.second};
-
-            // break the existing links
-            // https://stackoverflow.com/questions/3385229/c-erase-vector-element-by-value-rather-than-by-position
-            adjacencylist[e.first].erase(std::remove(adjacencylist[e.first].begin(), adjacencylist[e.first].end(), e.second), adjacencylist[e.first].end());
-            adjacencylist[e.second].erase(std::remove(adjacencylist[e.second].begin(), adjacencylist[e.second].end(), e.first), adjacencylist[e.second].end());
-
-            selected_nodes.push_back(pair_first);
-            selected_nodes.push_back(pair_second);
-        }
-        
-        std::sort(selected_nodes.begin(), selected_nodes.end());
-        
-        node_t a = selected_nodes[0].second;
-        node_t b = selected_nodes[1].second;
-        node_t c = selected_nodes[2].second;
-        node_t d = selected_nodes[3].second;
-
-        //Step 3: Rewiring
-
-        if (assortative==true)
-        {
-            // we check whether the particular rewiring leads to multi-links.
-            // If it does, we reject it, returning to Step 1.
-            // const edge_t e = (a < b) ? edge_t(a, b) : edge_t(b, a);
-            // const bool is_in = edges.find(e) != edges.end();
-            // if (is_in)
-            //     continue;
-
-            adjacencylist.at(a).push_back(b);
-            adjacencylist.at(b).push_back(a);
-
-            const edge_t e1 = (a < b) ? edge_t(a, b) : edge_t(b, a);
-            bool is_in = nk.edges.find(e1) != nk.edges.end();
-            if (is_in)
-                std::cout << 1 << "\n";
-
-            adjacencylist.at(c).push_back(d);
-            adjacencylist.at(d).push_back(c);
-
-            const edge_t e2 = (c < d) ? edge_t(c, d) : edge_t(d, c);
-            adjacencylist.at(c).push_back(b);
-            adjacencylist.at(b).push_back(c);
-        }
-    }
-}
-
-
-// }
-// }           is_in = nk.edges.find(e2) != nk.edges.end();
-//             if (is_in)
-//                 std::cout << 1 << "\n";
-//         } else {
-//             adjacencylist.at(a).push_back(d);
-//             adjacencylist.at(d).push_back(a);
-
-//  
-
 
 //--------------------------------------
 //--------SCALE FREE NETWORK------------
@@ -374,57 +281,6 @@ scale_free::scale_free(int size, rng_t& engine){
 }
 
 
-////OLD VERSION, CORRECT AND TESTED BUT TOO SLOW: 
-//scale_free::scale_free(int size, rng_t& engine){
-//
-//    //Initialisation: Create the first node with no links.
-//
-//    //To avoid biases in the nodes when doing the next reaction scheme, we shuffle the nodes
-//    // so that there is no correlation in the labels.
-//    std::vector<node_t> mixed_nodes;
-//    for( int i = 0; i < size; i++ )
-//       mixed_nodes.push_back(i);
-//    std::shuffle (mixed_nodes.begin(), mixed_nodes.end(), engine);
-//
-//    adjacencylist.resize(size);
-//
-////    adjacencylist[mixed_nodes[0]].push_back(mixed_nodes[1]);
-////    adjacencylist[mixed_nodes[1]].push_back(mixed_nodes[0]);
-//
-//
-//
-//    // i is the current number of nodes
-//    for (int i=1; i<size; i++) {
-//
-//        const node_t new_node = mixed_nodes[i];
-//
-//
-//        // find who is connected to the new node by generating a rand. num. between 0 and i-1
-//        // where the neighbour will be mixed_node[ rand. num.]
-//        // the probability weights are the current degree (Bara-Alb model)
-//
-//        std::vector<double> prob(i);
-//
-//        for (int j = 0; j<i; j++) {
-//            const auto degree = adjacencylist[mixed_nodes[j]].size();
-//            prob[j]=degree;
-//        }
-//
-//        std::discrete_distribution<int> distr(prob.begin(),prob.end());
-//
-//        const int index = distr(engine);
-//
-//        const node_t neighbour = mixed_nodes[index];
-//
-//        adjacencylist[new_node].push_back(neighbour);
-//        adjacencylist[neighbour].push_back(new_node);
-//    }
-//
-//
-//};
-
-
-
 //--------------------------------------
 //--------IMPORTED NETWORK----------
 //--------------------------------------
@@ -443,23 +299,25 @@ int imported_network::file_size(std::string path_to_file){
 imported_network::imported_network(std::string path_to_file){
 
     std::ifstream file(path_to_file);
-
     int size = file_size(path_to_file);
+    std::cout << "file size :" << size << "\n";
     
-    adjacencylist.resize(size);
-
     std::string line, value;
     int i = 0;
     while (std::getline(file,line)) {
-
+        std::vector<node_t> neighbours({});
+//        adjacencylist.push_back( );
         size_t start;
         size_t end = 0;
         while ((start = line.find_first_not_of(",", end)) != std::string::npos) {
             end = line.find(",", start);
-            int value = stoi(line.substr(start, end - start));
-            adjacencylist[i].push_back(value);
+            node_t value = stoi(line.substr(start, end - start));
+            
+//            adjacencylist[i].push_back(value);
+            neighbours.push_back(value);
             // std::cout << value << ",";
         }
+        adjacencylist.push_back(neighbours);
         // std::cout << "\n";
         i++;
     }
@@ -491,24 +349,141 @@ imported_network::imported_network(std::string path_to_file){
         //     // of a row to a vector
         //     adjacencylist[i].push_back(std::stoi(word));
 
+
+//---------------------------------------------------
+//-----ADD DEGREE CORRELATION TO THE NETWORK---------
+//---------------------------------------------------
+
+void add_correlation(double r,graph_adjacencylist& nw,rng_t& engine){
+    
+    int size = (int) nw.adjacencylist.size();
+    
+    std::uniform_int_distribution<> random_node(0,size-1);
+    
+    
+    for (int iteration=0; iteration < 300000; iteration++) {
+        if (iteration % 10000 == 0)
+        {
+            //double r_emp = assortativity(nw);
+            //std::cout << iteration / 1000 <<", " << r_emp << "\n";
+            if (abs(assortativity(nw)-r)/abs(r) < 0.1)
+                break;
+        }
+        //STEP 1 : Link Selection
+        // Choose at random two links
+        // label the 4 nodes a,b,c,d s.t:
+        // deg(a)>= deg(b)>= deg(c)>= deg(d)
+        
+        std::vector<std::pair<int,node_t>> sampled_nodes;
+        std::vector<edge_t> edges;
+        for (node_t node=0; node<2; node++) {
+            node_t source= random_node(engine);
+            
+            while ( nw.adjacencylist[source].size()==0 )
+                source = random_node(engine);
+            
+            std::uniform_int_distribution<> random_neighbour(0,(int) nw.adjacencylist[source].size());
+            const node_t target = random_neighbour(engine);
+            
+            const edge_t e = {source,target};
+            edges.push_back(e);
+            
+            sampled_nodes.push_back(std::make_pair(nw.outdegree(source),source));
+            sampled_nodes.push_back(std::make_pair(nw.outdegree(target),target));
+
+        }
+        
+        std::sort(sampled_nodes.begin(), sampled_nodes.end());
+        
+        node_t a = sampled_nodes[0].second;
+        node_t b = sampled_nodes[1].second;
+        node_t c = sampled_nodes[2].second;
+        node_t d = sampled_nodes[3].second;
+ 
+        
+        // STEP 2 : REWIRING
+        
+        if (r>0) {
+            // STEP 2A: Assortative
+            // pair low (c & d) and pair high (a & b)
+            bool cd_exists = std::find(nw.adjacencylist[c].begin(), nw.adjacencylist[c].end(), d) != nw.adjacencylist[c].end();
+            if (cd_exists) // rewiring leads to multi-links
+                continue; // Therefore go back to step 1;
+            
+            bool ab_exists = std::find(nw.adjacencylist[a].begin(), nw.adjacencylist[a].end(), b) != nw.adjacencylist[a].end();
+            if (ab_exists) // rewiring leads to multi-links
+                continue; // Therefore go back to step 1;
+            
+            // Rewiring does not lead to multilinks, lets continue!
+            
+            // Break the old links
+            for (edge_t e : edges) {
+                // Erase the remove idiom
+                // https://stackoverflow.com/questions/3385229/c-erase-vector-element-by-value-rather-than-by-position
+                
+                nw.adjacencylist[e.first].erase(std::remove(nw.adjacencylist[e.first].begin(), nw.adjacencylist[e.first].end(), e.second), nw.adjacencylist[e.first].end());
+                
+                nw.adjacencylist[e.second].erase(std::remove(nw.adjacencylist[e.second].begin(), nw.adjacencylist[e.second].end(), e.first), nw.adjacencylist[e.second].end());
+            }
+            
+            // Add the new links
+            nw.adjacencylist[c].push_back(d);
+            nw.adjacencylist[d].push_back(c);
+            nw.adjacencylist[a].push_back(b);
+            nw.adjacencylist[b].push_back(a);
+            
+        } else {
+        // STEP 2B: Disassortative
+        // Pair the highest and the lowest degree nodes
+        //(a with d and b with c)
+            
+            bool ad_exists = std::find(nw.adjacencylist[a].begin(), nw.adjacencylist[a].end(), d) != nw.adjacencylist[a].end();
+            if (ad_exists) // rewiring leads to multi-links
+                continue; // Therefore go back to step 1;
+            
+            bool bc_exists = std::find(nw.adjacencylist[b].begin(), nw.adjacencylist[b].end(), c) != nw.adjacencylist[b].end();
+            if (bc_exists) // rewiring leads to multi-links
+                continue; // Therefore go back to step 1;
+            
+            // Rewiring does not lead to multilinks, lets continue!
+            
+            // Break the old links
+            for (edge_t e : edges) {
+                // Erase the remove idiom
+                // https://stackoverflow.com/questions/3385229/c-erase-vector-element-by-value-rather-than-by-position
+                nw.adjacencylist[e.first].erase(std::remove(nw.adjacencylist[e.first].begin(), nw.adjacencylist[e.first].end(), e.second), nw.adjacencylist[e.first].end());
+            }
+            
+            // Add the new links
+            nw.adjacencylist[a].push_back(d);
+            nw.adjacencylist[d].push_back(a);
+            nw.adjacencylist[c].push_back(b);
+            nw.adjacencylist[b].push_back(c);
+            
+        }
+    
+    }
+
+}
+
 //------------------------------------------------
 //-----Measure degree correlation in a network----
 //------------------------------------------------
 
-std::vector<double> knn(graph_adjacencylist& nk){
+std::vector<double> knn(graph_adjacencylist& nw){
 
     std::vector<std::vector<int>> nn_degree({});
-    nn_degree.resize(nk.adjacencylist.size()); // k_max <= size of network
+    nn_degree.resize(nw.adjacencylist.size()); // k_max <= size of network
     int k_max = 0;
 
-    for (node_t node = 0; node < nk.adjacencylist.size(); node++)
+    for (node_t node = 0; node < nw.adjacencylist.size(); node++)
     {
-        const int k = nk.adjacencylist[node].size();
+        const int k = (int) nw.adjacencylist[node].size();
         k_max = std::max(k,k_max);
 
         for (node_t neigh = 0; neigh < k; neigh++)
         {
-            const int neigh_k = nk.adjacencylist[neigh].size();
+            const int neigh_k = (int) nw.adjacencylist[neigh].size();
             nn_degree[k].push_back(neigh_k);
         }
         
@@ -537,27 +512,99 @@ std::vector<double> knn(graph_adjacencylist& nk){
 
 }
 
-double assortativity(graph_adjacencylist& nk)
+//------------------------------------------------
+//-----Measure degree correlation in a network----
+//------------------------------------------------
+
+
+
+
+//
+// assortativity a = num/den
+// num = sum_kk' [ w(k,k') * k * k' ] - ( sum_k [ w(k) * k ] ) ^ 2
+//den = sum_k [ w(k) * k ^ 2] - ( sum_k [ w(k) * k ] ) ^ 2
+
+double assortativity(graph_adjacencylist& nw)
 {
-    double num = 0.0;
-    double den = 0.0;
-
-    // number of edges
-    int m = 0;
-    for (std::vector<node_t> neighbours : nk.adjacencylist)
-    {
-        m += neighbours.size();
-    }
-
-  
-    for (int i = 0; i < nk.adjacencylist.size(); i++)
-    {
-        for (int j = 0; j < i; j++)
-        {
-            const int Aij = std::find(nk.adjacencylist[i].begin(), nk.adjacencylist[i].end(), j) != nk.adjacencylist[i].end();
-            num += Aij - nk.outdegree(i)*nk.outdegree(j)/ (2 * m);
-            den += nk.outdegree(i)*Aij - nk.outdegree(i)*nk.outdegree(j)/ (2 * m);  
+    std::vector<std::vector<double>> wkk = Wkk(nw);
+    std::vector<double> wk = Wk(wkk);
+    
+    double k1 = 0.0;
+    double k2 = 0.0;
+    double kk = 0.0;
+    for (int k =0; k<(int) wk.size(); k++) {
+        k1 += wk[k] * k;
+        k2 += wk[k] * k * k;
+        
+        for (int k_prime = 0; k_prime<(int) wk.size(); k_prime++) {
+            kk += wkk[k][k_prime] * k * k_prime;
         }
     }
+    
+    double num = kk - k1*k1;
+    double den = k2 - k1 *k1;
+    
     return num/den;
+    
+
+}
+//    double num = 0.0;
+//    double den = 0.0;
+//
+//    // number of edges
+//    int m = 0;
+//    for (std::vector<node_t> neighbours : nw.adjacencylist)
+//    {
+//        m += neighbours.size();
+//    }
+//
+//
+//    for (int i = 0; i < nw.adjacencylist.size(); i++)
+//    {
+//        for (int j = 0; j < i; j++)
+//        {
+//            const int Aij = std::find(nw.adjacencylist[i].begin(), nw.adjacencylist[i].end(), j) != nw.adjacencylist[i].end();
+//            num += Aij - nw.outdegree(i)*nw.outdegree(j)/ (m);
+//            den += nw.outdegree(i)*Aij - nw.outdegree(i)*nw.outdegree(j)/ (m);
+//        }
+//    }
+//    return num/den;
+//}
+
+//Fraction of links that connect a node of deg k to a node of deg k'
+std::vector<std::vector<double>> Wkk(graph_adjacencylist& nw){
+    
+    //Determine k_max (Figured that it was the most sane option and the most readable,
+    // at the cost of going through all nodes once more.
+    int k_max = 0;
+    double total_edges = 0.0;
+    for (node_t node = 0; node < (int) nw.adjacencylist.size(); node++){
+        const int nb_edges = (int) nw.adjacencylist[node].size();
+        k_max = std::max(k_max,nb_edges);
+        total_edges += nb_edges;
+    }
+    //total_edges /= 2; //Avoid double counting
+    
+    std::vector<std::vector<double>> w(k_max + 1, std::vector<double> (k_max + 1, 0.0));
+
+    for (node_t node = 0; node < (int) nw.adjacencylist.size(); node++) {
+        
+        const int k = (int) nw.adjacencylist[node].size();
+        
+        for (node_t neigh : nw.adjacencylist[node])
+        {
+            const int k_prime = (int) nw.adjacencylist.at(neigh).size();
+            w.at(k ).at( k_prime) += 1.0 / total_edges;
+        }
+        
+    }
+    
+    return w;
+}
+
+std::vector<double> Wk(std::vector<std::vector<double>>& wkk){
+    std::vector<double> wk({});
+    for (std::vector<double> v: wkk)
+        wk.push_back(std::accumulate(v.cbegin(), v.cend(), 0.0));
+    return wk;
 }

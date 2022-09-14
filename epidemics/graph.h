@@ -180,6 +180,16 @@ private:
 
 };
 
+//------------------------------------------
+//--ADD DEGREE CORRELATION TO THE NETWORK---
+//------------------------------------------
+/**
+ * @brief Add correlation to the network by rewiring its links.
+ *
+ */
+void add_correlation(double r,graph_adjacencylist& nw,rng_t& engine);
+
+
 
 //------------------------------------------------
 //-----Measure degree correlation in a network----
@@ -193,12 +203,26 @@ private:
  * knn(k) should be independent of k.
  *  
  */
-std::vector<double> knn(graph_adjacencylist& nk);
+std::vector<double> knn(graph_adjacencylist& nw);
+
+
+
 
 /**
  * @brief Pearson correlation to measure the assortativity of a network
- * 
- * assortativity a = [ sum_ij (A[i,j]-k_i k_j/(2m) ) ] / [ sum_ij (k_i A[i,j] - k_i k_j/(2m) ) ]
- *  
+ *
+ * assortativity a = num/den
+ * num = sum_kk' [ w(k,k') * k * k' ] - ( sum_k [ w(k) * k ] ) ^ 2
+ * den = sum_k [ w(k) * k ^ 2] - ( sum_k [ w(k) * k ] ) ^ 2
+ *
  */
-double assortativity(graph_adjacencylist& nk);
+double assortativity(graph_adjacencylist& nw);
+
+
+/**
+ * @brief fraction of non-self links in the network that connect a node of degree k
+ * to a node of degree k prime
+ *
+ */
+std::vector<std::vector<double>> Wkk(graph_adjacencylist& nw);
+std::vector<double> Wk(std::vector<std::vector<double>>& wkk);
