@@ -21,95 +21,90 @@ using namespace std;
 int main(int argc, const char * argv[]) {
 
     engine.seed(1);
-//    std::string path( std::filesystem::current_path() );
-//    cout << path ;
-//    for (int letter=0; letter<std::string("epidemics").size(); letter++) {
-//        path.pop_back();
-//    }
-    cout << "starts"<< endl;
-    imported_network nw(string("/Users/curesamuelcyrus/Documents/epidemics/mathematica/adjacency_list_mathematica.csv"));
-    cout << "done"<< endl;
+    int size = 1000;
+    double r_aim = 0;
+    double r;
+    bool assor = false;
     
-    cout << " old r : " <<  assortativity(nw) << endl ;
-    
-    add_correlation(0.4,nw,engine);
-    
-    cout << " new r : " <<  assortativity(nw) << endl ;
-    export_adjacency_list(nw.adjacencylist,"network.txt"); 
-    //export_adjacency_list(nwk.adjacencylist,"correlated_network.txt"); 
+    // number_of_simulations:
+    int nb_sim = 1;
 
-    // cout << "start...\n";
+    // User's input
+    if(argc == 2){
+        size = atoi(argv[1]);
+    } else if (argc == 3){
+        size = atoi(argv[1]);
+        nb_sim = atoi(argv[2]);
+    } else if (argc == 4){
+        size = atoi(argv[1]);
+        nb_sim = atoi(argv[2]);
+        r_aim = stod(argv[3]);
+        assor = true;
+    }
 
-    // int size = 1000000;
+    erdos_reyni nw(size,4,engine);
 
-    // // number_of_simulations:
-    // int n = 1;
+    if (assor){
+        add_correlation(r_aim,nw,engine);
+        r = assortativity(nw);
+        cout << "assor : " << r << "\n";
+    }
 
-    // // User's input
-    // if(argc == 2){
-    //     size = atoi(argv[1]);
-    // } else if (argc == 3){
-    //     size = atoi(argv[1]);
-    //     n = atoi(argv[2]);
-    // }
+    export_adjacency_list(nw.adjacencylist,"network.adj"); 
 
-    // double mean = 10;
-    // double variance = 1.0;
-    // transmission_time_lognormal psi(mean, variance);
-
-    // scale_free network(size, engine);
-
-    // cout << "network generated \n";
-    // std::vector<long> degree;
-    // for (int i=0; i<network.adjacencylist.size(); i++) {
-    //     degree.push_back(network.adjacencylist[i].size());
-    // }
-
-    // ofstream out;
-
-    // out.open(string("degree.dat"));
-
-    // for (int i =0; i<degree.size(); i++){
-    //     out << degree[i] << "\n";
-    // }
-    // out.close();
+    double mean = 6;
+    double variance = 2.0;
+    transmission_time_lognormal psi(mean, variance);
 
 
+    std::vector<long> degree;
+    for (long i=0; i< (long) nw.adjacencylist.size(); i++) {
+        degree.push_back( (long) nw.adjacencylist[i].size());
+    }
 
-    // vector<double> time_trajectory({0.0});
+    ofstream out;
+
+    out.open(string("degree.dat"));
+
+    for (long i =0; i<degree.size(); i++){
+        out << degree[i] << "\n";
+    }
+    out.close();
+
+    vector<double> time_trajectory({0.0});
     // vector<int> path({});
-    // for (int i = 0; i < n; i++)
-    // {
-    //     cout << i << "\n" ;
-    //     simulate_next_reaction simulation(network, psi);
-    //     std::uniform_int_distribution<int> dist(0,size-1);
+    for (int i = 0; i < n; i++)
+    {
+        cout << i << "\n" ;
+        simulate_next_reaction simulation(nw, psi);
+        std::uniform_int_distribution<int> dist(0,size-1);
 
-    //     node_t initial_infected = dist(engine);
-    //    // path.push_back(initial_infected);
-    //     simulation.add_infections({ std::make_pair(initial_infected, 0.0)});
-    //     for (int i =0 ; i< size; i++) {
-    //         auto point = simulation.step(engine);
-    //         if (point.second != INFINITY) {
-    //             time_trajectory.push_back(point.second);
-    //             //path.push_back(point.first);
-    //             continue;
-    //         }
-    //         break;
-    //     }
+        node_t initial_infected = dist(engine);
+       // path.push_back(initial_infected);
+        simulation.add_infections({ std::make_pair(initial_infected, 0.0)});
+        for (int i =0 ; i< size; i++) {
+            auto point = simulation.step(engine);
+            if (point.second != INFINITY) {
+                time_trajectory.push_back(point.second);
+                //path.push_back(point.first);
+                continue;
+            }
+            break;
+        }
 
-    // }
-    // cout << "sorting....\n";
-    // sort(time_trajectory.begin(),time_trajectory.end());
+    }
+    cout << "sorting....\n";
+    sort(time_trajectory.begin(),time_trajectory.end());
 
 
-    // out.open(string("average_trajectory.dat"));
+    out.open(string("average.traj"));
 
-    // for (int i =0; i<time_trajectory.size(); i++){
-    //     out << time_trajectory[i] << " " << double(i/double(n)) << "\n";
-    // }
-    // out.close();
+    for (long i =0; i<time_trajectory.size(); i++){
+        out << time_trajectory[i] << " " << double(i/double(n)) << "\n";
+    }
+    out.close();
     
-    // out.open(string("path.dat"));
+    // out.open(string("path.traj"));
 
     // for (int i =0; i<time_trajectory.size(); i++){
     //     out << path[i] << "\n";
