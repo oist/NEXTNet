@@ -189,7 +189,8 @@ private:
  */
 void add_correlation(double r,graph_adjacencylist& nw,rng_t& engine);
 
-
+// Helper function to verify whether an edge exists or not
+bool edge_exists(node_t a, node_t b, const graph_adjacencylist& nw);
 
 //------------------------------------------------
 //-----Measure degree correlation in a network----
