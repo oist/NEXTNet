@@ -24,7 +24,7 @@
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Weverything"
 #include <boost/math/distributions.hpp>
-#include <boost/math/tools/univariate_statistics.hpp>
+#include <boost/math/statistics/univariate_statistics.hpp>
 #include <boost/math/tools/roots.hpp>
 #include <boost/program_options.hpp> // in order to add the options
 #pragma clang diagnostic pop
