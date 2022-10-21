@@ -31,12 +31,9 @@ void simulatePaths_MeanField(double mean, double variance, int degree,int nb_pat
         std::vector<double> time_trajectory({});
         std::vector<double> vertex_path({});
         for (int i =0 ; i< size; i++) {
-            auto point = simulation.step(engine);
-            if (point.second != INFINITY) {
-                time_trajectory.push_back(point.second);
-                continue;
-            }
-            break;
+			std::optional<event_t> ev = simulation.step(engine);
+			if (!ev) break;
+			time_trajectory.push_back(ev->time);
         }
         std::cout << path<< std::endl;
         std::string filename("data");
@@ -106,12 +103,9 @@ void generatePaths_next_reaction(double mean, double variance, int degree,int nb
         std::vector<double> time_trajectory({});
         std::vector<double> vertex_path({});
         for (int i =0 ; i< size; i++) {
-            auto point = simulation.step(engine);
-            if (point.second != INFINITY) {
-                time_trajectory.push_back(point.second);
-                continue;
-            }
-            break;
+            std::optional<event_t> ev = simulation.step(engine);
+			if (!ev) break;
+			time_trajectory.push_back(ev->time);
         }
         std::cout << path<< std::endl;
         exportData(time_trajectory,filename+file_nb+ext);

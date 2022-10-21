@@ -2,24 +2,43 @@
 
 #include "stdafx.h"
 #include "types.h"
+#include "algorithm.h"
+#include "random.h"
 #include "graph.h"
 
-class simulate_next_reaction {
+class simulate_next_reaction : public simulation_algorithm {
 public:
-    graph& network;
-    transmission_time& psi;
-    std::unordered_set<node_t> infected;
-    
-    simulate_next_reaction(class graph& nw, class transmission_time& psi_)
-        :network(nw), psi(psi_)
+	simulate_next_reaction(graph& nw, class transmission_time& psi_,
+                           class transmission_time* rho_ = nullptr)
+        :network(nw), psi(psi_), rho(rho_)
     {}
+
+    virtual graph& get_network();
+
+    virtual class transmission_time& transmission_time();
+
+    virtual class transmission_time* reset_time();
+
+    virtual void add_infections(const std::vector<std::pair<node_t, absolutetime_t>>& v);
     
-    void add_infections(const std::vector<std::pair<node_t, absolutetime_t>>& v);
-    
-    std::pair<node_t, absolutetime_t> step(rng_t& engine);
+    virtual std::optional<event_t> step(rng_t& engine);
+
+    virtual bool is_infected(node_t);
     
 private:
+    graph& network;
+    class transmission_time& psi;
+    class transmission_time* rho;
+    std::unordered_set<node_t> infected;
+    
     struct active_edges_entry {
+        /*
+         * Event kind represented by this edge (infection or reset)
+         * Reset events are self-loops, a consequently they obey
+         * source_node=-1, neighbour_index=-1, neighbours_remaining=0.
+         */
+        event_kind kind;
+
         /*
          * Absolute time of infection
          */
@@ -32,11 +51,12 @@ private:
         
         /*
          * Source node that causes the node's infection, it's
-         * original infection time, and the node's neighbour
-         * index within the souce node
+         * original infection time, it's reset time, and the
+         * node's neighbour index within the souce node
          */
         absolutetime_t source_time = INFINITY;
         node_t source_node = -1;
+        absolutetime_t source_reset = INFINITY;
         index_t neighbour_index = -1;
         index_t neighbours_remaining = 0;
         
@@ -51,4 +71,8 @@ private:
     std::priority_queue<active_edges_entry, std::deque<active_edges_entry>,
                         std::greater<active_edges_entry>>
       active_edges;
+	
+	std::optional<event_t> step_infection(const active_edges_entry& next, rng_t& engine);
+	
+	std::optional<event_t> step_reset(const active_edges_entry& next, rng_t& engine);
 };
