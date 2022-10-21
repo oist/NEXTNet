@@ -49,7 +49,7 @@ namespace {
             using namespace std::complex_literals;
             // Compute q-th power of p-ths roots w, and poles in the Laplace plane a
             for(unsigned int i=0; i < qp.second; ++i) {
-                w.at(i) = std::exp(1i * 2.0 * M_PI * (double)i * (double)qp.first / (double)qp.second);
+                w.at(i) = std::exp(1.0i * 2.0 * M_PI * (double)i * (double)qp.first / (double)qp.second);
                 a.at(i) = rho * (s * w[i] - 1.0);
                 r += w.at(i) / a.at(i);
             }
