@@ -26,6 +26,8 @@ public:
     const double pinfinity = 0.0;
 
     transmission_time(double pinf = 0.0);
+    
+    ~transmission_time();
 
     /**
      * Samples from the distribution with survival function Psi( tau | t,m ) and pdf psi(tau)
