@@ -19,13 +19,21 @@
 /**
  * @brief Abstract interface to a "network", i.e. a (directed) graph.
  * 
- * Provides two functions `neighbour()` and `outdegree()`, which can be used
- * to query the network. `outdegree(n)` must return the number of outgoing edges
- * of node n, and `neighbour(n, i)` must return the target of the i-th outgoing
- * edge.
+ * Provides three functions `nodes`, `neighbour()` and `outdegree()`, which can be used
+ * to query the network. `nodes` returns the number of nodes, `outdegree(n)` must return
+ * the number of outgoing edges of node n, and `neighbour(n, i)` must return the target
+ * of the i-th outgoing edge.
  */
 class graph {
-public:    
+public: 
+    virtual ~graph();
+    
+    /**
+     * @brief Return the number of nodes in the graph. If the number is
+     * infinite or unknown, -1 is returned.
+     */
+    virtual node_t nodes();
+
     /**
      * @brief Returns the target of the i-th outgoing edge of node n.
      */
@@ -49,6 +57,8 @@ public:
  */
 class graph_adjacencylist : public graph {
 public:
+    virtual node_t nodes();
+
     virtual node_t neighbour(node_t node, int neighbour_index);
 
     virtual index_t outdegree(node_t node);
@@ -79,6 +89,8 @@ public:
 class fully_connected : public graph {
 public:
     fully_connected(int size, rng_t& engine);
+
+    virtual node_t nodes();
 
     virtual node_t neighbour(node_t node, int neighbour_index);
 
@@ -140,13 +152,16 @@ public:
  * @brief Network from arbitrary degree distribution. 
  * 
  */
+// TODO: Clean this up
+#if 0
 class config_model_correlated : public graph_adjacencylist {
 public:
-    config_model_correlated(std::vector<int> degreelist, rng_t& engine,bool assortative);
+    config_model_correlated(std::vector<int> degreelist, rng_t& engine, bool assortative);
 
     std::size_t selfloops = 0;
     std::size_t multiedges = 0;
 };
+#endif
 
 //--------------------------------------
 //--------SCALE FREE NETWORK------------

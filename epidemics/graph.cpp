@@ -10,12 +10,28 @@
 #include "graph.h"
 #include "utility.h"
 
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+/*-------------- NETWORK: BASE CLASS -----------------*/
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+
+node_t graph::nodes() {
+    return -1;
+}
+
+graph::~graph()
+{}
 
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
 /*-------------- NETWORK: ADJACENCY LIST -------------*/
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
+
+node_t graph_adjacencylist::nodes() {
+    return (node_t)adjacencylist.size();
+}    
 
 node_t graph_adjacencylist::neighbour(node_t node, int neighbour_index) {
     const auto& n = adjacencylist.at(node);
@@ -73,6 +89,10 @@ fully_connected::fully_connected(int size, rng_t& engine_)
     :engine(engine_)
     ,neighbours(size, std::vector<node_t>({}))
 {}
+
+node_t fully_connected::nodes() {
+    return (node_t)neighbours.size();
+}    
 
 node_t fully_connected::neighbour(node_t node, int neighbour_index) {
     // index has to be in the range [0, size - 1]
