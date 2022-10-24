@@ -17,6 +17,7 @@
 #include <unordered_set>
 #include <queue>
 #include <deque>
+#include <optional>
 #include <utility>
 #include <numeric>
 #include <chrono>
