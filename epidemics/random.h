@@ -27,7 +27,7 @@ public:
 
     transmission_time(double pinf = 0.0);
     
-    ~transmission_time();
+    virtual ~transmission_time();
 
     /**
      * Samples from the distribution with survival function Psi( tau | t,m ) and pdf psi(tau)
