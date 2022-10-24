@@ -13,7 +13,9 @@
 #include "random.h"
 #include "graph.h"
 
-class simulation_algorithm {
+struct simulation_algorithm {
+    virtual ~simulation_algorithm() {};
+    
     virtual graph& get_network() = 0;
 
     virtual class transmission_time& transmission_time() = 0;
