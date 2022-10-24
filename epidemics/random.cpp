@@ -128,69 +128,102 @@ double transmission_time_exponential::survivalquantile(double u, interval_t t, i
     return -mean/m * log(u);
 }
 
-std::vector<double> rgamma( int n, double a, double b, std::mt19937& mersenneTwister){
-    
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+/*----------- VARIOUS HELPER FUNCTIONS ---------------*/
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+
+std::vector<double> rgamma( int n, double a, double b, rng_t& engine) {
     std::gamma_distribution<double> gam(a,b);
     
     std::vector<double> vec(n,0.0); // Initialise empty vector of size n.
-
     for (int i = 0; i< n; i++)
-        vec[i] = gam(mersenneTwister);
+        vec[i] = gam(engine);
 
     return vec;
 }
 
-double rgamma(double a, double b, std::mt19937& mersenneTwister){
+double rgamma(double a, double b, rng_t& engine) {
     std::gamma_distribution<double> gam(a,b);
-    return gam(mersenneTwister);
+    return gam(engine);
 }
 
-
-/*  Create uniformly distributed random numbers using the Mersenne Twister algorithm. */
-std::vector<double> rand( int n, std::mt19937& mersenneTwister){
+std::vector<double> rand( int n, rng_t& engine) {
     std::vector<double> vec(n,0.0);
     std::uniform_real_distribution<> dis(0,1);
     for (int i =0; i<n; i++) {
-        vec[i]=dis(mersenneTwister);
+        vec[i]=dis(engine);
     }
     return vec;
 }
 
-double rand(double a, double b, std::mt19937& mersenneTwister){
+double rand(double a, double b, rng_t& engine) {
     std::uniform_real_distribution<> dis(a,b);
-    return dis(mersenneTwister);
+    return dis(engine);
 }
 
-int poissrnd(double lambda, std::mt19937& mersenneTwister) {
-    // poisson_distribution<int>(lambda)(mersenneTwister)
+int poissrnd(double lambda, rng_t& engine) {
     typedef std::poisson_distribution<int> pois_int_t;
     pois_int_t pois(lambda);
-    return(pois(mersenneTwister));
+    return(pois(engine));
 }
 
-
-//void initialise_adjacency_matrix(vector<vector<int>>& A,vector<int>& K,int n, double degree,mt19937& mersenneTwister){
-//    //vector<vector<int>> A(n, vector<int>(n)); //adjacency matrix n by n;
-//    
-//    vector<double> r =rand(n*n,mersenneTwister);
-//    vector<double> infection_times = beta_normalised(n, Tau, mersenneTwister);
-//    double p = degree/n;
-//    for (int i=0; i<n; i++) {
-//        for (int j=0; j<n; j++) {
-//            if (r[i*n+j]>p) {
-//                A[i][j]=0;
-//            }
-//            else{
-//                A[i][j]=
-//                K[i]+=1; // Count Neighbours
-//            }
-//        }
-//    }
-//}
+int zipf(int alpha, int n, rng_t& engine)
+{
+  static int first = 1;// Static first time flag
+  static double harmonic= 0;
+  static std::vector<double> c(n+1,0);  // cumulant function
+  double z;                     // Uniform random number (0 < z < 1)
+  int zipf_value;            // Computed exponential value to be returned
+  int low = 1;
+  int high = n;
+  int mid;           // Binary-search bounds
+  
+  
+  // Compute normalization constant on first call only
+  if (first == 1)
+  {
+    for (int i = 1; i <= n; i++) {
+      harmonic += 1 / pow(i,alpha);
+    }
+    
+    c[0]=0;
+    for (int i=1; i<=n; i++)
+      c[i] = c[i-1] + 1.0 / (pow(i,alpha+1)*harmonic);
+    
+    first = 0;
+  }
+  
+  // Pull a uniform random number (0 < z < 1)
+  do
+  {
+    z = rand(0,1,engine);
+  }
+  while ((z == 0) || (z == 1));
+  
+  
+  while (true) {
+    mid = floor((low+high)/2);
+    if (c[mid-1] < z && z <= c[mid] ) {
+      zipf_value = mid;
+      break;
+    } else if (c[mid] >= z) {
+      high = mid-1;
+    } else {
+      low = mid+1;
+    }
+  }
+  
+  // Assert that zipf_value is between 1 and N
+  assert((zipf_value >=1) && (zipf_value <= n));
+  
+  return(zipf_value);
+}
 
 const double PI = 3.1415926535897932384626433832795028842;
 
-double pdf_log_normal(double t,double mean,double variance){
+double pdf_log_normal(double t,double mean, double variance) {
     if (t==0) {
         return 0;
     }
@@ -200,65 +233,11 @@ double pdf_log_normal(double t,double mean,double variance){
     
     return 1/ (t*sigma*sqrt(2*PI)) * exp( -pow(log(t)-mu,2) / (2*sigma*sigma) );
 }
-double cdf_log_normal(double t,double mean,double variance){
+double cdf_log_normal(double t,double mean, double variance) {
     if (t==0) {
         return 0;
     }
     double mu = 2 * log(mean) - 0.5 * log( pow(mean,2.0) + variance );
     double sigma = sqrt( log( 1 + variance/pow(mean,2.0)));
     return 0.5 * (1 + erf( (log(t)-mu) / (sqrt(2)*sigma) ));
-}
-
-
-//generate zipf rqndom numbers.
-int zipf(int alpha, int n,rng_t& engine)
-{
-    static int first = 1;// Static first time flag
-    static double harmonic= 0;
-    static std::vector<double> c(n+1,0);  // cumulant function
-    double z;                     // Uniform random number (0 < z < 1)
-    int zipf_value;            // Computed exponential value to be returned
-    int low = 1;
-    int high = n;
-    int mid;           // Binary-search bounds
-    
-    
-    // Compute normalization constant on first call only
-    if (first == 1)
-    {
-        for (int i = 1; i <= n; i++) {
-            harmonic += 1 / pow(i,alpha);
-        }
-        
-        c[0]=0;
-        for (int i=1; i<=n; i++)
-            c[i] = c[i-1] + 1.0 / (pow(i,alpha+1)*harmonic);
-
-        first = 0;
-    }
-
-    // Pull a uniform random number (0 < z < 1)
-    do
-    {
-        z = rand(0,1,engine);
-    }
-    while ((z == 0) || (z == 1));
-
-    
-    while (true) {
-        mid = floor((low+high)/2);
-        if (c[mid-1] < z && z <= c[mid] ) {
-            zipf_value = mid;
-            break;
-        } else if (c[mid] >= z) {
-            high = mid-1;
-        } else {
-            low = mid+1;
-        }
-    }
-
-  // Assert that zipf_value is between 1 and N
-  assert((zipf_value >=1) && (zipf_value <= n));
-
-  return(zipf_value);
 }
