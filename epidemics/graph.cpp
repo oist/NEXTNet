@@ -217,7 +217,7 @@ config_model::config_model(std::vector<int> degreelist, rng_t& engine){
     std::vector<node_t> stubs;
     stubs.reserve(total_degree);
     for (size_t i=0; i < size ; i++){
-        for (size_t j=0; j<degreelist[i]; j++)
+        for (int j=0; j < degreelist[i]; j++)
             stubs.push_back((int) i);
     }
 
@@ -369,7 +369,7 @@ void add_correlation(double r,graph_adjacencylist& nw,rng_t& engine){
     // To sample an edge a uniform random without generating the entire list of edges
     // we can sample a node from a discrete distr with their degree as the prob. weights.
     std::vector<double> degree_list({});
-    for (node_t node = 0; node < nw.adjacencylist.size(); node ++)
+    for (node_t node = 0; node < (node_t)nw.adjacencylist.size(); node ++)
         degree_list.push_back(nw.adjacencylist[node].size());
     
     std::discrete_distribution<int> sample_source_node(degree_list.begin(),degree_list.end());
@@ -543,13 +543,13 @@ void add_correlation(double r,graph_adjacencylist& nw,rng_t& engine){
 //-----Measure degree correlation in a network----
 //------------------------------------------------
 
-std::vector<double> knn(graph_adjacencylist& nw){
+std::vector<double> knn(graph_adjacencylist& nw) {
 
     std::vector<std::vector<int>> nn_degree({});
     nn_degree.resize(nw.adjacencylist.size()); // k_max <= size of network
     int k_max = 0;
 
-    for (node_t node = 0; node < nw.adjacencylist.size(); node++)
+    for (node_t node = 0; node < (node_t)nw.adjacencylist.size(); node++)
     {
         const int k = (int) nw.adjacencylist[node].size();
         k_max = std::max(k,k_max);
@@ -572,7 +572,7 @@ std::vector<double> knn(graph_adjacencylist& nw){
             continue;
         }
         double average = 0;
-        for (int i = 0; i < nn_degree[k].size(); i++)
+        for (int i = 0; i < (int)nn_degree[k].size(); i++)
         {
             average += nn_degree[k][i];
         }

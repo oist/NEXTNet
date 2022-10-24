@@ -21,7 +21,7 @@ std::pair<unsigned int, unsigned int> fraction(double x, unsigned int L)
         assert((b <= L) && (d <= L));
 
         // Next approximation is x' = p/q = (a+c) / (b+d)
-        const int p = a+c, q = b+d;
+        const unsigned int p = a+c, q = b+d;
         const double xp = (double)p / q;
         if (x == xp) {
             // We hit x exactly, optimal approximation is one of
