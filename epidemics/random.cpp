@@ -51,7 +51,7 @@ double transmission_time::survivalprobability(interval_t tau, interval_t t, int 
         throw std::range_error("m must be positive");
     // By default compute the conditional survival probability
     // using the unconditional survival function Psi(tau) based on
-    // Psi(tau | t, m) = (Psi(t + tau) / Psi(t))^m
+    // Psi(tau | t, m) = (Psi(t + tau) / Psi(t))^m
     return std::pow((this->survivalprobability(t + tau) / this->survivalprobability(t)), m);
 }
 
