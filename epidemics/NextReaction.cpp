@@ -73,6 +73,7 @@ std::optional<event_t> simulate_next_reaction::step_infection(const active_edges
         if (t < next.source_reset) {
             assert(std::isfinite(t));
             active_edges_entry e;
+            e.kind = event_kind::infection;
             e.time = t;
             e.node = sibling;
             e.source_time = next.source_time;
@@ -119,6 +120,7 @@ std::optional<event_t> simulate_next_reaction::step_infection(const active_edges
         if (t < node_reset_time) {
             assert(std::isfinite(t));
             active_edges_entry e;
+            e.kind = event_kind::infection;
             e.time = t;
             e.node = neighbour;
             e.source_time = next.time;
@@ -148,6 +150,7 @@ std::optional<event_t> simulate_next_reaction::step_reset(const active_edges_ent
 void simulate_next_reaction::add_infections(const std::vector<std::pair<node_t, absolutetime_t>>& v) {
     for(const auto& ve: v) {
         active_edges_entry e;
+        e.kind = event_kind::infection;
         e.time = ve.second;
         e.node = ve.first;
         active_edges.push(e);

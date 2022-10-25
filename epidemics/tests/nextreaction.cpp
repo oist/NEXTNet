@@ -29,10 +29,10 @@ TEST_CASE("Plot infection times for next reaction scheme on Erdös-Reyni", "[nex
     std::vector<double> times_nextreaction = {};
     while (true) {
         auto point = sim_nextreaction.step(engine);
-        if (point.second == INFINITY)
+        if (!point)
             break;
-        REQUIRE((times_nextreaction.empty() || (times_nextreaction.back() <= point.second)));
-        times_nextreaction.push_back(point.second);
+        REQUIRE((times_nextreaction.empty() || (times_nextreaction.back() <= point -> time)));
+        times_nextreaction.push_back(point -> time);
     }
     std::vector<double> y_nextreaction(times_nextreaction.size(), 0);
     std::iota(y_nextreaction.begin(), y_nextreaction.end(), 1);

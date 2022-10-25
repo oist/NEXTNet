@@ -20,9 +20,9 @@ enum class event_kind {
 };
 
 struct event_t {
-    event_kind kind;
-    node_t node;
-    absolutetime_t time;
+    event_kind kind = event_kind::none;
+    node_t node = -1;
+    absolutetime_t time = INFINITY;
 };
 
 /******************************
