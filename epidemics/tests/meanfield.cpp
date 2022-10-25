@@ -140,6 +140,49 @@ namespace {
 
         return std::make_pair(t, y);
     }
+
+
+    /**
+     * @brief simulate and return transmission times
+     * @param engine RNG engine
+     * @param psi transmission time distribution
+     * @param T stopping time
+     * @param args parameters to pass to the network
+     * @return a pair of pairs containing (1) ordered transmission times
+     *         and (2) total number of infections
+     */
+    template<typename N, typename S, typename ...Args>
+    void
+    simulate_SIS(rng_t& engine, transmission_time& psi, transmission_time& rho,
+                 std::vector<absolutetime_t> &times, std::vector<double> &infections, std::vector<double>& infected,
+                 absolutetime_t T, Args&&...args)
+{
+        N nw(std::forward<Args>(args)..., engine);
+        S sim(nw, psi, &rho);
+        sim.add_infections({ std::make_pair(0, 0.0)});
+        int current_infected = 0, total_infected = 0;
+        // Run simulation, collect transmission times
+        while (true) {
+    
+            auto point = sim.step(engine);
+            if (!point || (point -> time > T))
+                break;
+            
+            switch (point-> kind) {
+                case event_kind::infection:
+                    ++total_infected;
+                    ++current_infected;
+                    break;
+                case event_kind::reset:
+                    --current_infected;
+                    break;
+            }
+
+            times.push_back(point->time);
+            infections.push_back(total_infected);
+            infected.push_back(current_infected);
+        }
+    }
 }
 
 #if ENABLE_PLOTTING && 0
@@ -234,6 +277,52 @@ TEST_CASE("Plot large-population mean-field solution for Gamma transmission time
 }
 #endif
 
+#if ENABLE_PLOTTING 
+TEST_CASE("Plot SIS large-population mean-field solution for Gamma transmission times on an fully connected network", "[meanfield]") {
+       using namespace std::string_literals;
+    std::mt19937 engine;
+
+    const std::size_t N = 5000;
+    const std::size_t T = 2000;
+    const std::size_t X = 400;
+    const double R0 = 5;
+    // Every infecteced node has N-1 neighbours, of which in the large-population limit N-2 are susceptible.
+    // To trigger subsequent infections amgonst these N-2 susceptible neighbours, we must infect each neighbour
+    // with probability R0/(N-2). Note that for the first infected node, this is not strictly speaking correct,
+    // since it's infection has no source, and it will thus create R0(N-1)/(N-2) > R0 subsequent infections.
+    // This only causes a relative error of |1 - (N-1)/(N-2)| =~= 1/N though.
+    const double p = R0/(N-2);
+
+    const double MEAN = 10;
+    const double VARIANCE = 50;
+    const double MEAN_rho = 70;
+    const double VARIANCE_rho = 1;
+    transmission_time_gamma psi(MEAN, VARIANCE, 1.0-p);
+    transmission_time_gamma rho(MEAN_rho, VARIANCE_rho);
+
+    /* Simulate using next reaction M times */
+    std::vector<double> t_sim, y_sim_new, y_sim_total;
+
+    simulate_SIS<fully_connected, simulate_next_reaction>(engine, psi,rho,t_sim, y_sim_new,y_sim_total, T, N);
+    /* Evaluate analytical solution */
+    std::vector<double> t_analytical;
+    std::vector<double> y_analytical;
+    
+    for(std::size_t i=0; i < X; ++i) {
+        const double t = (double)T * i / (X-1);
+        t_analytical.push_back(t);
+        y_analytical.push_back(N*(1-1/R0));
+    }
+
+    plt::figure_size(800, 600);
+    plt::named_plot("next reaction", t_sim, y_sim_total);
+    plt::named_plot("analytical", t_analytical, y_analytical);
+    plt::title("Large-population SIS mean-field solution for Gamma transmission times on a fully connected network");
+    plt::legend();
+    plt::show();
+}
+#endif
+   
 #if ENABLE_PLOTTING && 0
 TEST_CASE("Plot large-population mean-field solution for Gamma transmission times on an acyclic network", "[meanfield]") {
     using namespace std::string_literals;
