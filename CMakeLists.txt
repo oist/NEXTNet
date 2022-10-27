@@ -16,6 +16,8 @@ set(LIB_HEADERS
     epidemics/graph.h
     epidemics/random.h
     epidemics/algorithm.h
+    epidemics/NextReaction.h
+    epidemics/nMGA.h
     epidemics/simulation.h
     epidemics/utility.h)
 
