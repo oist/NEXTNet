@@ -130,6 +130,34 @@ double transmission_time_exponential::survivalquantile(double u, interval_t t, i
 
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
+/*-----------SUB RNGS---------------------------------*/
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+
+struct sub_seed_adapter {
+    typedef std::uint_least32_t result_type;
+
+    sub_seed_adapter(rng_t& engine_) :engine(engine_) {}
+
+    template<typename It>
+    void generate(It begin, It end) {
+        for(It i = begin; i != end; ++i)
+            *i = engine();
+    }
+
+    rng_t& engine;
+};
+
+sub_rngs::sub_rngs(std::size_t n, rng_t& engine) {
+    // Generate RNGs
+    rngs.reserve(n);
+    sub_seed_adapter s(engine);
+    for(std::size_t i = 0; i < n; ++i)
+        rngs.emplace_back(s);
+}
+
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
 /*----------- VARIOUS HELPER FUNCTIONS ---------------*/
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/

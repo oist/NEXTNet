@@ -196,6 +196,30 @@ public:
 
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
+/*-----------SUB RNGS---------------------------------*/
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+
+/**
+ * @brief Creates n sub-RNGs from a root random number generator
+ *
+ * This can be used to make code that depends on randum numbers
+ * parallelizlable. Typically, n is the number of work units,
+ * and the work unit i would then use RNG i.
+ */
+struct sub_rngs {
+    sub_rngs(std::size_t n, rng_t& engine);
+
+    rng_t& operator[](std::size_t i) {
+        return rngs[i];
+    }
+
+private:
+    std::vector<rng_t> rngs;
+};
+
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
 /*----------- VARIOUS HELPER FUNCTIONS ---------------*/
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
