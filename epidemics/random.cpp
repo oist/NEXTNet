@@ -30,7 +30,7 @@ transmission_time::~transmission_time() {
 * redefined in herited classes then they are they ones being used and
 * not the by-default implementations.*/
 
-interval_t transmission_time::sample(rng_t& rng, interval_t t, int m) {
+interval_t transmission_time::sample(rng_t& rng, interval_t t, int m) const {
     if ((t < 0) || !std::isfinite(t))
         throw std::range_error("t must be non-negative and finite");
     if (m < 1)
@@ -40,11 +40,11 @@ interval_t transmission_time::sample(rng_t& rng, interval_t t, int m) {
     return this->survivalquantile(u, t, m);
 }
 
-double transmission_time::hazardrate(interval_t tau) {
+double transmission_time::hazardrate(interval_t tau) const {
     return this->density(tau) / this->survivalprobability(tau);
 }
 
-double transmission_time::survivalprobability(interval_t tau, interval_t t, int m) {
+double transmission_time::survivalprobability(interval_t tau, interval_t t, int m) const {
     if ((t < 0) || !std::isfinite(t))
         throw std::range_error("t must be non-negative and finite");
     if (m < 1)
@@ -55,7 +55,7 @@ double transmission_time::survivalprobability(interval_t tau, interval_t t, int 
     return std::pow((this->survivalprobability(t + tau) / this->survivalprobability(t)), m);
 }
 
-interval_t transmission_time::survivalquantile(double u) {
+interval_t transmission_time::survivalquantile(double u) const {
     if ((u < 0) || (u > 1) || !std::isfinite(u))
         throw std::range_error("u-quantile undefined for u not in [0,1]");
     // pinfinity() is the lower bound of survivalprobability(), so the u-quantile
@@ -66,14 +66,14 @@ interval_t transmission_time::survivalquantile(double u) {
     return inverse_survival_function(u, 1e-6, [&] (double tau) { return this->survivalprobability(tau); });
 }
 
-interval_t transmission_time::survivalquantile(double u, interval_t t, int m) {
+interval_t transmission_time::survivalquantile(double u, interval_t t, int m) const {
     if ((t < 0) || !std::isfinite(t))
         throw std::range_error("t must be non-negative and finite");
     if (m < 1)
         throw std::range_error("m must be positive");
     /* We consider i.i.d. tau_1, ..., tau_m and ask for the probability
      *
-     *   p(tau) = P[ tau_1, ..., tau_m >= t + tau | tau_1, ..., tau_m >= t ].
+     *   p(tau) = P[ tau_1, ..., tau_m >= t + tau | tau_1, ..., tau_m >= t ].
      *
      * In terms of the (unconditional) CDF F of tau this yields
      *
@@ -104,27 +104,27 @@ interval_t transmission_time::survivalquantile(double u, interval_t t, int m) {
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
 
-double transmission_time_exponential::density(interval_t tau) {
+double transmission_time_exponential::density(interval_t tau) const {
     return lambda*exp(-lambda*tau);
 }
 
-double transmission_time_exponential::hazardrate(interval_t tau) {
+double transmission_time_exponential::hazardrate(interval_t tau) const {
     return lambda;
 }
 
-double transmission_time_exponential::survivalprobability(interval_t tau) {
+double transmission_time_exponential::survivalprobability(interval_t tau) const {
     return exp(-lambda*tau);
 }
 
-double transmission_time_exponential::survivalprobability(interval_t tau, interval_t t, int m) {
+double transmission_time_exponential::survivalprobability(interval_t tau, interval_t t, int m) const {
     return exp(-lambda * m * tau);
 }
 
-double transmission_time_exponential::survivalquantile(double u) {
+double transmission_time_exponential::survivalquantile(double u) const {
     return -mean * log(u);
 }
 
-double transmission_time_exponential::survivalquantile(double u, interval_t t, int m) {
+double transmission_time_exponential::survivalquantile(double u, interval_t t, int m) const {
     return -mean/m * log(u);
 }
 

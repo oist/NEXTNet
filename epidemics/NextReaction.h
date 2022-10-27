@@ -8,27 +8,27 @@
 
 class simulate_next_reaction : public simulation_algorithm {
 public:
-	simulate_next_reaction(graph& nw, class transmission_time& psi_,
-                           class transmission_time* rho_ = nullptr)
+    simulate_next_reaction(graph& nw, const class transmission_time& psi_,
+                           const class transmission_time* rho_ = nullptr)
         :network(nw), psi(psi_), rho(rho_)
     {}
 
-    virtual graph& get_network();
+    virtual graph& get_network() const;
 
-    virtual class transmission_time& transmission_time();
+    virtual const class transmission_time& transmission_time() const;
 
-    virtual class transmission_time* reset_time();
+    virtual const class transmission_time* reset_time() const;
 
     virtual void add_infections(const std::vector<std::pair<node_t, absolutetime_t>>& v);
     
     virtual std::optional<event_t> step(rng_t& engine);
 
-    virtual bool is_infected(node_t);
+    virtual bool is_infected(node_t) const;
     
 private:
     graph& network;
-    class transmission_time& psi;
-    class transmission_time* rho;
+    const class transmission_time& psi;
+    const class transmission_time* rho;
     std::unordered_set<node_t> infected;
     
     struct active_edges_entry {

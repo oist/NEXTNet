@@ -157,18 +157,18 @@ void simulate_next_reaction::add_infections(const std::vector<std::pair<node_t, 
     }
 }
 
-bool simulate_next_reaction::is_infected(node_t node) {
+bool simulate_next_reaction::is_infected(node_t node) const {
     return (infected.find(node) != infected.end());
 }
 
-graph& simulate_next_reaction::get_network() {
+graph& simulate_next_reaction::get_network() const {
     return network;
 }
 
-transmission_time& simulate_next_reaction::transmission_time() {
+const transmission_time& simulate_next_reaction::transmission_time() const {
     return psi;
 }
 
-transmission_time* simulate_next_reaction::reset_time() {
+const transmission_time* simulate_next_reaction::reset_time() const {
     return rho;
 }
