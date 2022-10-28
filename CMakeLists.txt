@@ -61,6 +61,10 @@ include_directories(AFTER SYSTEM epidemics)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Hide symbols
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN true)
+
 # Enable all warnings
 add_compile_options(-Wall)
 
@@ -108,10 +112,10 @@ target_precompile_headers(tests
 set_source_files_properties(epidemics/tests/main.cpp
     PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
 if (TBB_FOUND)
-    message("Test parallelization: Enabled")
+    message("Thread Building Blocks: Enabled")
     target_link_libraries(tests TBB::tbb)
 else()
-    message("Test parallelization: Disabled")
+    message("Thread Building Blocks: Disabled")
 endif()
 if (Boost_FILESYSTEM_FOUND AND Boost_IOSTREAMS_FOUND)
     message("Test plots: Enabled")
