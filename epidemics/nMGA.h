@@ -13,9 +13,9 @@ private:
         double lambda;
     };
 
-    double current_time;
+    double current_time = NAN;
 
-    double lambda_total;
+    double lambda_total = NAN;
 
     std::vector<active_edges_entry> active_edges;
 
