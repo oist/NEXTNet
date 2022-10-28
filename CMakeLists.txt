@@ -34,6 +34,7 @@ set(SIMULATOR_HEADERS
 # *** Unit tests sources and headers
 set(TESTS_SOURCES
     epidemics/analysis.cpp
+    epidemics/tests/plot.cpp
     epidemics/tests/main.cpp
     epidemics/tests/graph.cpp
     epidemics/tests/random.cpp
@@ -44,6 +45,8 @@ set(TESTS_HEADERS
     epidemics/tests/simulate.h
     epidemics/tests/analytical.h
     epidemics/tests/parallel.h
+    epidemics/tests/plot.h
+    epidemics/tests/gnuplot-iostream.h
     epidemics/catch/catch.hpp)
 
 set(TESTS_PCH
@@ -61,15 +64,17 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Enable all warnings
 add_compile_options(-Wall)
 
-# Dependencies
-find_package(TBB)
+# *** Dependencies
 
-find_package(Boost REQUIRED)
+# Boost headers are mandatory, iostreamd and filesystem are optional
+# and allow plots to be generated during test runs
+find_package(Boost REQUIRED OPTIONAL_COMPONENTS iostreams filesystem)
 link_libraries(Boost::boost)
-
-find_package(Python3 COMPONENTS Interpreter Development NumPy)
-
 #include_directories(${Boost_INCLUDE_DIRS})
+
+# Intel Thread Building Blocks are optional, if present
+# they speed up the tests by executing simulations in parallel
+find_package(TBB)
 
 # *** Build command-line similator
 add_executable(simulator
@@ -103,13 +108,18 @@ target_precompile_headers(tests
 set_source_files_properties(epidemics/tests/main.cpp
     PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
 if (TBB_FOUND)
+    message("Test parallelization: Enabled")
     target_link_libraries(tests TBB::tbb)
+else()
+    message("Test parallelization: Disabled")
 endif()
-if (Python3_FOUND)
-    target_link_libraries(tests Python3::Python Python3::NumPy Python3::Module)
+if (Boost_FILESYSTEM_FOUND AND Boost_IOSTREAMS_FOUND)
+    message("Test plots: Enabled")
+    target_link_libraries(tests Boost::boost Boost::iostreams Boost::filesystem)
     target_compile_definitions(tests PRIVATE ENABLE_PLOTTING=1)
+else()
+    message("Test plots: Disabled")
 endif()
-
 
 # Enable address and undefined behaviour sanitizers for all builds
 #target_compile_options(tests PRIVATE

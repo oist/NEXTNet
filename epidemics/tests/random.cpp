@@ -2,12 +2,6 @@
 
 #include "random.h"
 
-#if ENABLE_PLOTTING
-#include "matplotlibcpp.h"
-
-namespace plt = matplotlibcpp;
-#endif
-
 template<typename Iterator>
 double mean(Iterator begin, Iterator end) {
     std::size_t n = 0;

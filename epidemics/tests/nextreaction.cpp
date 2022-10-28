@@ -1,16 +1,11 @@
 #include "tests/stdafx.h"
 #include "tests/simulate.h"
 #include "tests/analytical.h"
+#include "tests/plot.h"
 
 #include "random.h"
 #include "NextReaction.h"
 #include "nMGA.h"
-
-#if ENABLE_PLOTTING
-#include "matplotlibcpp.h"
-
-namespace plt = matplotlibcpp;
-#endif
 
 #if ENABLE_PLOTTING
 TEST_CASE("Plot large-population SIR mean-field (NextReaction)", "[nextreaction]") {
@@ -40,24 +35,20 @@ TEST_CASE("Plot large-population SIR mean-field (NextReaction)", "[nextreaction]
     auto rerdos = simulate_SIR<erdos_reyni, simulate_next_reaction>(engine, psi, T, M, 1, Nerdos, R0);
 
     /* Evaluate analytical solution */
-    std::vector<double> t_analytical;
-    std::vector<double> y_analytical;
+    std::pair<std::vector<double>, std::vector<double>> analytical;
     meanfield_infpop_gamma sol = meanfield_infpop_gamma::mean_variance(MEAN, VARIANCE, R0);
     for(std::size_t i=0; i < X; ++i) {
-        t_analytical.push_back((double)T * i / (X-1));
-        y_analytical.push_back(sol.N(t_analytical.back()));
+        const double t = (double)T * i / (X-1);
+        analytical.first.push_back(t);
+        analytical.second.push_back(sol.N(t));
     }
 
-    plt::figure_size(1600, 1200);
-    plt::named_plot("next reaction fully-connected (N="s + std::to_string(Nfully) + ")", rfully.first, rfully.second);
-    plt::named_plot("next reaction acyclic", racyclic.first, racyclic.second);
-    plt::named_plot("next reaction Erdös-Reyni (N="s + std::to_string(Nerdos) + ")", rerdos.first, rerdos.second);
-    plt::named_plot("analytical", t_analytical, y_analytical);
-    plt::title("Large-population SIR mean-field [NextReaction]");
-    plt::legend();
-    std::filesystem::create_directory("tests.out");
-    plt::save("tests.out/nextreaction.sir.mean.pdf");
-    plt::close();
+    plot("nextreaction.sir.mean.pdf", "Large-population SIR mean-field [NextReaction]", [&](auto& p) {
+        p.add_plot1d(rfully, "with lines title 'next reaction fully-connected (N="s + std::to_string(Nfully) + ")'"s);
+        p.add_plot1d(racyclic, "with lines title 'next reaction acyclic'"s);
+        p.add_plot1d(rerdos, "with lines title 'next reaction Erdös-Reyni (N="s + std::to_string(Nerdos) + ")'"s);
+        p.add_plot1d(analytical, "with lines title 'analytical'");
+    });
 }
 #endif
 
@@ -68,7 +59,6 @@ TEST_CASE("Plot SIS single trajectory (NextReaction)", "[nextreaction]") {
 
     const std::size_t N = 5000;
     const std::size_t T = 400;
-    const std::size_t X = 200;
     const double R0 = 5;
     // Every infecteced node has N-1 neighbours, of which in the large-population limit N-2 are susceptible.
     // To trigger subsequent infections amgonst these N-2 susceptible neighbours, we must infect each neighbour
@@ -88,23 +78,8 @@ TEST_CASE("Plot SIS single trajectory (NextReaction)", "[nextreaction]") {
     std::vector<double> t_sim, y_sim_new, y_sim_total;
     simulate_SIS<fully_connected, simulate_next_reaction>(engine, psi,rho, t_sim, y_sim_new,y_sim_total, T, N);
 
-    /* Evaluate analytical solution */
-    std::vector<double> t_analytical;
-    std::vector<double> y_analytical;
-
-    for(std::size_t i=0; i < X; ++i) {
-        const double t = (double)T * i / (X-1);
-        t_analytical.push_back(t);
-        y_analytical.push_back(N*(1-1/R0));
-    }
-
-    plt::figure_size(800, 600);
-    plt::named_plot("next reaction", t_sim, y_sim_total);
-    plt::named_plot("analytical", t_analytical, y_analytical);
-    plt::title("SIS single trajectory [NextReaction]");
-    plt::legend();
-    std::filesystem::create_directory("tests.out");
-    plt::save("tests.out/nextreaction.sis.single.pdf");
-    plt::close();
+    plot("nextreaction.sis.single.pdf", "SIS single trajectory [NextReaction]", [&](auto& p) {
+        p.add_plot1d(std::make_pair(t_sim, y_sim_total), "with lines title 'next reaction'"s);
+    });
 }
 #endif

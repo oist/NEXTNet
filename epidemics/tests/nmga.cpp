@@ -1,15 +1,10 @@
 #include "tests/stdafx.h"
 #include "tests/simulate.h"
 #include "tests/analytical.h"
+#include "tests/plot.h"
 
 #include "random.h"
 #include "nMGA.h"
-
-#if ENABLE_PLOTTING
-#include "matplotlibcpp.h"
-
-namespace plt = matplotlibcpp;
-#endif
 
 #if ENABLE_PLOTTING
 TEST_CASE("Plot large-population SIR mean-field (nMGA)", "[nMGA]") {
@@ -28,21 +23,17 @@ TEST_CASE("Plot large-population SIR mean-field (nMGA)", "[nMGA]") {
     auto racyclic = simulate_SIR<acyclic, simulate_nmga>(engine, psi, T, M, 1, R0+1, true);
 
     /* Evaluate analytical solution */
-    std::vector<double> t_analytical;
-    std::vector<double> y_analytical;
+    std::pair<std::vector<double>, std::vector<double>> analytical;
     meanfield_infpop_gamma sol = meanfield_infpop_gamma::mean_variance(MEAN, VARIANCE, R0);
     for(std::size_t i=0; i < X; ++i) {
-        t_analytical.push_back((double)T * i / (X-1));
-        y_analytical.push_back(sol.N(t_analytical.back()));
+        const double t = (double)T * i / (X-1);
+        analytical.first.push_back(t);
+        analytical.second.push_back(sol.N(t));
     }
 
-    plt::figure_size(1600, 1200);
-    plt::named_plot("next reaction (acyclic)", racyclic.first, racyclic.second);
-    plt::named_plot("analytical", t_analytical, y_analytical);
-    plt::title("Large-population SIR mean-field [nMGA]");
-    plt::legend();
-    std::filesystem::create_directory("tests.out");
-    plt::save("tests.out/ngma.sir.mean.pdf");
-    plt::close();
+    plot("ngma.sir.mean.pdf", "Large-population SIR mean-field [nMGA]", [&](auto& p) {
+        p.add_plot1d(racyclic, "with lines title 'next reaction acyclic'"s);
+        p.add_plot1d(analytical, "with lines title 'analytical'");
+    });
 }
 #endif
