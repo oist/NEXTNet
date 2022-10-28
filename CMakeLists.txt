@@ -62,12 +62,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_compile_options(-Wall)
 
 # Dependencies
+find_package(TBB)
+
 find_package(Boost REQUIRED)
 link_libraries(Boost::boost)
 
-find_package(Python3 COMPONENTS Interpreter Development NumPy REQUIRED)
-link_libraries(Python3::Python Python3::NumPy Python3::Module)
-add_compile_definitions(ENABLE_PLOTTING=1)
+find_package(Python3 COMPONENTS Interpreter Development NumPy)
 
 #include_directories(${Boost_INCLUDE_DIRS})
 
@@ -102,6 +102,14 @@ target_precompile_headers(tests
     PUBLIC ${TESTS_PCH})
 set_source_files_properties(epidemics/tests/main.cpp
     PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
+if (TBB_FOUND)
+    target_link_libraries(tests TBB::tbb)
+endif()
+if (Python3_FOUND)
+    target_link_libraries(tests Python3::Python Python3::NumPy Python3::Module)
+    target_compile_definitions(tests PRIVATE ENABLE_PLOTTING=1)
+endif()
+
 
 # Enable address and undefined behaviour sanitizers for all builds
 #target_compile_options(tests PRIVATE
