@@ -38,10 +38,12 @@ set(TESTS_SOURCES
     epidemics/tests/graph.cpp
     epidemics/tests/random.cpp
     epidemics/tests/nextreaction.cpp
-    epidemics/tests/nmga.cpp
-    epidemics/tests/meanfield.cpp)
+    epidemics/tests/nmga.cpp)
 
 set(TESTS_HEADERS
+    epidemics/tests/simulate.h
+    epidemics/tests/analytical.h
+    epidemics/tests/parallel.h
     epidemics/catch/catch.hpp)
 
 set(TESTS_PCH
