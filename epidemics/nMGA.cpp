@@ -5,7 +5,7 @@
 #include "types.h"
 #include "utility.h"
 
-double simulate_nmga::find_maximal_dt(transmission_time& psi) {
+double simulate_nmga::find_maximal_dt(const transmission_time& psi) {
     // We find dt such that F(t + dt) - F(t) < dp,
     // meaning such that moving from t to dt skips over
     // at most probability mass dp
@@ -96,7 +96,7 @@ auto simulate_nmga::draw_active_edge(rng_t& engine) -> std::vector<active_edges_
     throw std::logic_error("inconsistent state, failed to draw an edge");
 }
 
-std::pair<node_t, absolutetime_t> simulate_nmga::step(rng_t& engine)
+std::optional<event_t> simulate_nmga::step(rng_t& engine)
 {
     while (true) {
         /* If the current time wasn't yet set, start at the earliest time at which
@@ -108,11 +108,11 @@ std::pair<node_t, absolutetime_t> simulate_nmga::step(rng_t& engine)
             current_time = t;
         }
         
-        /* If there are no active edges, the next event is at infinity */
+        /* If there are no active edges, there is no next event */
         if (active_edges.empty())
             current_time = INFINITY;
         if (std::isinf(current_time))
-            return std::make_pair(-1, current_time);
+            return std::nullopt;
         
         /* Find the time of the next event */
         node_t node;
@@ -121,9 +121,9 @@ std::pair<node_t, absolutetime_t> simulate_nmga::step(rng_t& engine)
             /* Exact version */
 
             /* First, draw the time of the next event
-            * Note: This step does not use the harard rates lambda, we
-            * thus do not have to update them before drawing tau
-            */
+             * Note: This step does not use the harard rates lambda, we
+             * thus do not have to update them before drawing tau
+             */
             const double tau = next_time_exact(engine);
 
             /* Then, update the current time */
@@ -192,7 +192,7 @@ std::pair<node_t, absolutetime_t> simulate_nmga::step(rng_t& engine)
             add_active_edge(e);
         }
         
-        return std::make_pair(node, current_time);
+        return event_t { .kind = event_kind::infection, .node = node, .time = current_time };
     }
 }
 

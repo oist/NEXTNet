@@ -71,10 +71,10 @@ void generatePaths_NMGA(double mean, double variance, int degree,int nb_paths,do
         //std::vector<double> time_trajectory({});
         //std::vector<double> vertex_path({});
         for (int i =0 ; i< size; i++) {
-            auto point = simulation.step(engine);
-            if (point.second != INFINITY) {
-                //vertex_path.push_back(point.first);
-                //time_trajectory.push_back(point.second);
+            auto ev = simulation.step(engine);
+            if (ev) {
+                //vertex_path.push_back(ev->node);
+                //time_trajectory.push_back(ev->time);
                 continue;
             }
             break;
