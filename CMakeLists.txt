@@ -74,11 +74,33 @@ add_compile_options(-Wall)
 # and allow plots to be generated during test runs
 find_package(Boost REQUIRED OPTIONAL_COMPONENTS iostreams filesystem)
 link_libraries(Boost::boost)
-#include_directories(${Boost_INCLUDE_DIRS})
+if (Boost_FILESYSTEM_FOUND)
+    message("Boost filesystem: Found")
+else()
+    message("Boost filesystem: Not Found")
+endif()
+if (Boost_IOSTREAMS_FOUND)
+    message("Boost iostreams: Found")
+else()
+    message("Boost iostreams: Not Found")
+endif()
 
 # Intel Thread Building Blocks are optional, if present
 # they speed up the tests by executing simulations in parallel
 find_package(TBB)
+if (TBB_FOUND)
+    message("Thread Building Blocks: Found")
+else()
+    message("Thread Building Blocks: Not Found")
+endif()
+
+# Gnuplot is optional, if present can generate plos
+find_program(Gnuplot gnuplot)
+if (Gnuplot)
+    message("Gnuplot: Found (${Gnuplot})")
+else()
+    message("Gnuplot: Not Found")
+endif()
 
 # *** Build command-line similator
 add_executable(simulator
@@ -112,17 +134,17 @@ target_precompile_headers(tests
 set_source_files_properties(epidemics/tests/main.cpp
     PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
 if (TBB_FOUND)
-    message("Thread Building Blocks: Enabled")
     target_link_libraries(tests TBB::tbb)
-else()
-    message("Thread Building Blocks: Disabled")
 endif()
-if (Boost_FILESYSTEM_FOUND AND Boost_IOSTREAMS_FOUND)
-    message("Test plots: Enabled")
+if (Gnuplot AND Boost_FILESYSTEM_FOUND AND Boost_IOSTREAMS_FOUND)
+    message("Plotting during tests: Enabled")
     target_link_libraries(tests Boost::boost Boost::iostreams Boost::filesystem)
-    target_compile_definitions(tests PRIVATE ENABLE_PLOTTING=1)
+    target_compile_definitions(tests PRIVATE
+        ENABLE_PLOTTING=1
+        GNUPLOT_DEFAULT_COMMAND="${Gnuplot} -persist"
+     )
 else()
-    message("Test plots: Disabled")
+    message("Plotting during tests: Disabled")
 endif()
 
 # Enable address and undefined behaviour sanitizers for all builds
