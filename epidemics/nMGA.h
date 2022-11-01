@@ -64,21 +64,26 @@ private:
 public:
     graph& network;
     const transmission_time& psi;
+	const transmission_time* rho = nullptr;
+	bool shuffle_neighbours = true;
     int approximation_threshold = 100;
     double maximal_dt = NAN;
     double tau_precision = 1e-6;
     std::unordered_set<node_t> infected;
     
-    simulate_nmga(class graph& nw, const class transmission_time& psi_,
-                  int threshold = 100, double max_dt = NAN,
-                  double tauprec = 1e-6)
-        :network(nw), psi(psi_)
+	simulate_nmga(graph& nw, const class transmission_time& psi_,
+				  const class transmission_time* rho_ = nullptr,
+				  bool shuffle_neighbours_ = true,
+				  int threshold = 100, double max_dt = NAN,
+				  double tauprec = 1e-6)
+        :network(nw), psi(psi_), rho(rho_)
         ,approximation_threshold(threshold)
+		,shuffle_neighbours(shuffle_neighbours_)
         ,maximal_dt((std::isfinite(max_dt) && (max_dt > 0)) ?
                     max_dt : find_maximal_dt(psi_))
         ,tau_precision(tauprec)
     {}
-    
+	
     void add_infections(const std::vector<std::pair<node_t, absolutetime_t>>& v);
     
     std::optional<event_t> step(rng_t& engine);
