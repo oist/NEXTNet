@@ -158,7 +158,7 @@ void acyclic::generate_neighbours(node_t node) {
         throw std::range_error(std::string("invalid node ") + std::to_string(node));
     // get its adjacencies, possibly incomplete
     std::vector<node_t>& neighbours = adjacencylist[node];
-    if (neighbours.back() != incomplete_neighbours)
+    if (neighbours.empty() || (neighbours.back() != incomplete_neighbours))
         return;
 
     // neighbours not yet determined, so generate them
