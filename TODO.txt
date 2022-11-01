@@ -1,5 +1,4 @@
-[ OPEN ]    Fix Assortativity
-[ OPEN ]    implement and test degree correlated networks
+[ OPEN ]  Fix Assortativity
 [ OPEN ]	Add comments explaining the purpose of every class
 [ OPEN ]	Add corrected version of NMGA where exact simulation is used if tau is excessive
 [ OPEN ]	Implement recovery
