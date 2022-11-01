@@ -49,6 +49,9 @@ simulate_SIR(rng_t& engine, const transmission_time& psi, absolutetime_t T, std:
     // Sort transmission times (only necessary for Mn or Ms > 1)
     std::sort(t.begin(), t.end());
 
+    if (t.empty())
+        return std::make_pair(t, std::vector<double>());
+
     // Create vector representing the total number of infections
     // at each time point
     std::vector<double> y = { (1.0/Mn) * (1.0/Ms) };
