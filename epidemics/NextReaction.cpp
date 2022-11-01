@@ -54,11 +54,13 @@ std::optional<event_t> simulate_next_reaction::step_infection(const active_edges
      */
     if (next.neighbours_remaining > 0) {
         /* This only occurs for infection edges, reset self-loops have no neighbours */
-        const node_t sibling = network.neighbour(next.source_node, next.neighbour_index + 1);
+        const node_t neighbour_id = next.source_permutation[next.neighbour_index + 1];
+        const node_t sibling = network.neighbour(next.source_node, neighbour_id);
         if (sibling < 0) {
             /* This should never happen unless the graph reported the wrong number of outgoing edges */
-            throw std::logic_error(std::string("neighbour ") + std::to_string(next.neighbour_index + 1) +
-                                    " of node " + std::to_string(next.source_node) + " is invalid");
+            throw std::logic_error(std::string("neighbour ") + std::to_string(neighbour_id) +
+                                   " (index " + std::to_string(next.neighbour_index + 1) + ") " +
+                                   std::to_string(next.source_node) + " is invalid");
         }
         /* Create sibling's infection times entry and add to queue
          * When sampling transmission times, we pass the "current time" in a frame of reference where
@@ -80,6 +82,7 @@ std::optional<event_t> simulate_next_reaction::step_infection(const active_edges
             e.source_time = next.source_time;
             e.source_node = next.source_node;
             e.source_reset = next.source_reset;
+            e.source_permutation = std::move(next.source_permutation);
             e.neighbour_index = next.neighbour_index + 1;
             e.neighbours_remaining = next.neighbours_remaining - 1;
             active_edges.push(e);
@@ -109,10 +112,20 @@ std::optional<event_t> simulate_next_reaction::step_infection(const active_edges
      * see the code block above labelled "Activate the next sibling edges of the
      * edge that just fired".
      */
-    const node_t neighbour = network.neighbour(next.node, 0);
+
+    /* First, create a permutation to shuffle the neighbours if necessary */
+    const int neighbours_total = network.outdegree(next.node);
+    permutation<node_t> p;
+    if (shuffle_neighbours) {
+        if (neighbours_total < 0)
+            throw std::runtime_error("cannot shuffle neighbours if nodes have undefined or infinite degree");
+        p = permutation<node_t>(neighbours_total, engine);
+    }
+
+    /* Then start with whatever neighbour is the first in our permutation */
+    const node_t neighbour = network.neighbour(next.node, p[0]);
     if (neighbour >= 0) {
         /* Create target node's infection times entry and add to queue */
-        const int neighbours_total = network.outdegree(next.node);
         const double tau = psi.sample(engine, 0, neighbours_total);
         if (std::isnan(tau) || (tau < 0))
             throw std::logic_error("transmission times must be non-negative");
@@ -127,6 +140,7 @@ std::optional<event_t> simulate_next_reaction::step_infection(const active_edges
             e.source_time = next.time;
             e.source_node = next.node;
             e.source_reset = node_reset_time;
+            e.source_permutation = std::move(p);
             e.neighbour_index = 0;
             e.neighbours_remaining = neighbours_total - 1;
             active_edges.push(e);

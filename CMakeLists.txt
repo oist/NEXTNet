@@ -19,6 +19,7 @@ set(LIB_HEADERS
     epidemics/NextReaction.h
     epidemics/nMGA.h
     epidemics/simulation.h
+    epidemics/permutation.h
     epidemics/utility.h)
 
 SET(LIB_PCH epidemics/stdafx.h)

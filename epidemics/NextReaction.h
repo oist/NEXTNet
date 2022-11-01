@@ -2,6 +2,7 @@
 
 #include "stdafx.h"
 #include "types.h"
+#include "permutation.h"
 #include "algorithm.h"
 #include "random.h"
 #include "graph.h"
@@ -9,8 +10,9 @@
 class simulate_next_reaction : public simulation_algorithm {
 public:
     simulate_next_reaction(graph& nw, const class transmission_time& psi_,
-                           const class transmission_time* rho_ = nullptr)
-        :network(nw), psi(psi_), rho(rho_)
+                           const class transmission_time* rho_ = nullptr,
+                           bool shuffle_neighbours_ = true)
+        :network(nw), psi(psi_), rho(rho_), shuffle_neighbours(shuffle_neighbours_)
     {}
 
     virtual graph& get_network() const;
@@ -28,7 +30,8 @@ public:
 private:
     graph& network;
     const class transmission_time& psi;
-    const class transmission_time* rho;
+    const class transmission_time* rho = nullptr;
+    bool shuffle_neighbours = true;
     std::unordered_set<node_t> infected;
     
     struct active_edges_entry {
@@ -57,6 +60,7 @@ private:
         absolutetime_t source_time = INFINITY;
         node_t source_node = -1;
         absolutetime_t source_reset = INFINITY;
+        permutation<node_t> source_permutation;
         index_t neighbour_index = -1;
         index_t neighbours_remaining = 0;
         
