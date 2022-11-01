@@ -117,29 +117,21 @@ std::optional<event_t> simulate_nmga::step(rng_t& engine)
         /* Find the time of the next event */
         node_t node;
         std::vector<active_edges_entry>::iterator edge;
-        if ((approximation_threshold >= 0) && (active_edges.size() <= (unsigned int)approximation_threshold)) {
+        const bool use_exact_algorithm = ((approximation_threshold >= 0) && (active_edges.size() <= (unsigned int)approximation_threshold));
+
+        /* First, draw the time of the next event */
+        double tau = NAN;
+        if (use_exact_algorithm) {
             /* Exact version */
 
-            /* First, draw the time of the next event
-             * Note: This step does not use the harard rates lambda, we
+            /* Note: The exact version does not use the harard rates lambda, we
              * thus do not have to update them before drawing tau
              */
-            const double tau = next_time_exact(engine);
-
-            /* Then, update the current time */
-            current_time += tau;        
-
-            /* and update lambdas and lambda_total. */
-            update_active_edge_lambdas();
-
-            /* Now determine which event takes place */
-            edge = draw_active_edge(engine);
-            node = edge->target;
+            tau = next_time_exact(engine);
         } else {
             /* Approximate version */
 
-            /* The following fixes an issue in the original NMGA algorithm */
-            double tau = NAN;
+            /* The following loop fixes an issue in the original NMGA algorithm */
             while (true) {
                 /* First, update hazard rates lambda and lambda_total */
                 update_active_edge_lambdas();
@@ -152,13 +144,57 @@ std::optional<event_t> simulate_nmga::step(rng_t& engine)
                 tau = next_time_approximation(engine);
                 if (tau <= maximal_dt)
                     break;
-                
+
                 /* Make maximum allowed time step and try again */
                 current_time += maximal_dt;
             }
+        }
+
+        /* Check if we would jump over any outside infections,
+         * if so handle them instead. If there is an outside infection,
+         * we discard the tau we just generated but that's OK
+         */
+        while (!outside_infections.empty()) {
+            /* Check if the outside infection occurs before the generated tau */
+            const outside_infections_entry inf = outside_infections.top();
+            if (inf.time > current_time + tau)
+                break;
+
+            /* Check if the node is not already infected */
+            outside_infections.pop();
+            if (infected.find(inf.node) != infected.end())
+                break;
+
+            /* Advance time to time of outside infection, forget tau,
+             * mark node as infected. Note that its neighbours were already
+             * makde active by add_infections()
+             */
+            current_time = inf.time;
+            infected.insert(inf.node);
+
+            /* Report event */
+            return event_t { .kind = event_kind::outside_infection,
+                             .node = inf.node, .time = current_time };
+        }
+
+        /* Now determine which event takes place.*/
+        if (use_exact_algorithm) {
+            /* Exact version */
+
+            /* Then, update the current time */
+            current_time += tau;        
+
+            /* And update lambdas and lambda_total since we didn't do so before. */
+            update_active_edge_lambdas();
+
+            /* Now determine which event takes place */
+            edge = draw_active_edge(engine);
+            node = edge->target;
+        } else {
+            /* Approximate version */
             
-            /* Now determine which event takes place.
-            * Note that we do not recompute the hazard rates, which amounts
+           /* Note that we do not recompute the hazard rates that we
+            * updated before choosing tau above, which amounts
             * to doing the draw *before* updating the current time
             */
             edge = draw_active_edge(engine);
@@ -212,7 +248,13 @@ interval_t simulate_nmga::next_time_approximation(rng_t& engine)
 void simulate_nmga::add_infections(const std::vector<std::pair<node_t, absolutetime_t>>& v)
 {
     for(const auto& ve: v) {
-        /* Iterator over source node's neighbours */
+        /* Add infection to sorted list of outside infections */
+        outside_infections_entry inf;
+        inf.node = ve.first;
+        inf.time = ve.second;
+        outside_infections.push(inf);
+
+        /* Now add outgoing nodes to active edges */
         const int neighbours = network.outdegree(ve.first);
         for(int j=0; j < neighbours; ++j) {
             const node_t neighbour = network.neighbour(ve.first, j);

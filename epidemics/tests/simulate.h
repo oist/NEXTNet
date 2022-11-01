@@ -87,6 +87,7 @@ simulate_SIS(rng_t& engine, transmission_time& psi, transmission_time& rho,
 
         switch (point-> kind) {
             case event_kind::infection:
+            case event_kind::outside_infection:
                 ++total_infected;
                 ++current_infected;
                 break;

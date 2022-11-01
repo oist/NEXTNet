@@ -18,7 +18,8 @@ std::optional<event_t> simulate_next_reaction::step(rng_t& engine) {
         /* Perform event */
         std::optional<event_t> result;
         switch (next.kind) {
-			case event_kind::infection:
+            case event_kind::infection:
+            case event_kind::outside_infection:
 				result = step_infection(next, engine);
 				break;
 			case event_kind::reset:
@@ -133,7 +134,7 @@ std::optional<event_t> simulate_next_reaction::step_infection(const active_edges
     }
     
     /* Return the infection event */
-    return event_t { .kind = event_kind::infection, .node = next.node, .time = next.time };
+    return event_t { .kind = next.kind, .node = next.node, .time = next.time };
 }
 
 std::optional<event_t> simulate_next_reaction::step_reset(const active_edges_entry& next, rng_t& engine) {
@@ -150,7 +151,7 @@ std::optional<event_t> simulate_next_reaction::step_reset(const active_edges_ent
 void simulate_next_reaction::add_infections(const std::vector<std::pair<node_t, absolutetime_t>>& v) {
     for(const auto& ve: v) {
         active_edges_entry e;
-        e.kind = event_kind::infection;
+        e.kind = event_kind::outside_infection;
         e.time = ve.second;
         e.node = ve.first;
         active_edges.push(e);

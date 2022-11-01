@@ -16,7 +16,7 @@ typedef double absolutetime_t;
 typedef std::pair<node_t,node_t> edge_t;
 
 enum class event_kind {
-    none = 0, infection = 1, reset = 2
+    none = 0, infection = 1, outside_infection = 2, reset = 3
 };
 
 struct event_t {

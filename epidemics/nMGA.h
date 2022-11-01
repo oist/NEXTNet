@@ -13,9 +13,25 @@ private:
         double lambda;
     };
 
+    struct outside_infections_entry {
+        absolutetime_t time;
+        node_t node;
+
+        bool operator< (const outside_infections_entry& o) const { return time < o.time; }
+        bool operator<= (const outside_infections_entry& o) const { return time <= o.time; }
+        bool operator== (const outside_infections_entry& o) const { return time == o.time; }
+        bool operator!= (const outside_infections_entry& o) const { return time != o.time; }
+        bool operator>= (const outside_infections_entry& o) const { return time >= o.time; }
+        bool operator> (const outside_infections_entry& o) const { return time > o.time; }
+    };
+
     double current_time = NAN;
 
     double lambda_total = NAN;
+
+    std::priority_queue<outside_infections_entry, std::deque<outside_infections_entry>,
+                        std::greater<outside_infections_entry>>
+        outside_infections;
 
     std::vector<active_edges_entry> active_edges;
 
