@@ -19,6 +19,8 @@
 		98CFFC0327F4696F00A6E322 /* utility.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 98CFFC0227F4696F00A6E322 /* utility.cpp */; };
 		98CFFC0427F4696F00A6E322 /* utility.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 98CFFC0227F4696F00A6E322 /* utility.cpp */; };
 		F946A5E2281255F2000668F9 /* random.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F946A5E0281255F2000668F9 /* random.cpp */; };
+		F992992C2910E2B3001432FD /* plot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F99299272910E2B3001432FD /* plot.cpp */; };
+		F992992D2910E2B3001432FD /* nmga.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F99299292910E2B3001432FD /* nmga.cpp */; };
 		F9ADCB9B28128A6D00AEB3C0 /* nextreaction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F9ADCB9A28128A6D00AEB3C0 /* nextreaction.cpp */; };
 		F9D26B8927E229AB005A272D /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F99D7A9C27E21CC000200C18 /* main.cpp */; };
 		F9D26B8A27E229B0005A272D /* graph.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F99D7A9B27E21CC000200C18 /* graph.cpp */; };
@@ -72,6 +74,13 @@
 		F92123EE2902464200376961 /* algorithm.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = algorithm.h; sourceTree = "<group>"; };
 		F92123EF2902464200376961 /* matplotlibcpp.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = matplotlibcpp.h; sourceTree = "<group>"; };
 		F946A5E0281255F2000668F9 /* random.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = random.cpp; sourceTree = "<group>"; };
+		F99299252910E2B3001432FD /* simulate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = simulate.h; sourceTree = "<group>"; };
+		F99299262910E2B3001432FD /* gnuplot-iostream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "gnuplot-iostream.h"; sourceTree = "<group>"; };
+		F99299272910E2B3001432FD /* plot.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = plot.cpp; sourceTree = "<group>"; };
+		F99299282910E2B3001432FD /* plot.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = plot.h; sourceTree = "<group>"; };
+		F99299292910E2B3001432FD /* nmga.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = nmga.cpp; sourceTree = "<group>"; };
+		F992992A2910E2B3001432FD /* analytical.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = analytical.h; sourceTree = "<group>"; };
+		F992992B2910E2B3001432FD /* parallel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = parallel.h; sourceTree = "<group>"; };
 		F99D7A9827E21CC000200C18 /* catch.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = catch.hpp; sourceTree = "<group>"; };
 		F99D7A9A27E21CC000200C18 /* stdafx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stdafx.h; sourceTree = "<group>"; };
 		F99D7A9B27E21CC000200C18 /* graph.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = graph.cpp; sourceTree = "<group>"; };
@@ -166,10 +175,17 @@
 			isa = PBXGroup;
 			children = (
 				F9ADCB9A28128A6D00AEB3C0 /* nextreaction.cpp */,
-				F99D7A9C27E21CC000200C18 /* main.cpp */,
+				F99299292910E2B3001432FD /* nmga.cpp */,
+				F946A5E0281255F2000668F9 /* random.cpp */,
 				F99D7A9B27E21CC000200C18 /* graph.cpp */,
 				F99D7A9A27E21CC000200C18 /* stdafx.h */,
-				F946A5E0281255F2000668F9 /* random.cpp */,
+				F992992A2910E2B3001432FD /* analytical.h */,
+				F99299262910E2B3001432FD /* gnuplot-iostream.h */,
+				F992992B2910E2B3001432FD /* parallel.h */,
+				F99299282910E2B3001432FD /* plot.h */,
+				F99299272910E2B3001432FD /* plot.cpp */,
+				F99299252910E2B3001432FD /* simulate.h */,
+				F99D7A9C27E21CC000200C18 /* main.cpp */,
 			);
 			path = tests;
 			sourceTree = "<group>";
@@ -308,6 +324,8 @@
 				F9D26B8B27E229B9005A272D /* simulation.cpp in Sources */,
 				98B96F7D28111BB800A78600 /* nMGA.cpp in Sources */,
 				F946A5E2281255F2000668F9 /* random.cpp in Sources */,
+				F992992C2910E2B3001432FD /* plot.cpp in Sources */,
+				F992992D2910E2B3001432FD /* nmga.cpp in Sources */,
 				F9D26B8A27E229B0005A272D /* graph.cpp in Sources */,
 				F9D26B8C27E229B9005A272D /* random.cpp in Sources */,
 				98B96F7328111BAC00A78600 /* NextReaction.cpp in Sources */,
