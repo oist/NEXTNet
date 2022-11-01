@@ -12,13 +12,13 @@ struct permutation {
     permutation(index_t n, rng_t& engine) {
         /* Fill vector with 0, 1, ...  then shuffle */
         p.resize(n);
-        std::vector<node_t> p(n);
+        std::vector<node_t> p(n, -1);
         std::iota(p.begin(), p.end(), 0);
         std::shuffle(p.begin(), p.end(), engine);
     }
 
     index_t operator[](index_t i) const {
-        if ((i < 0) || (i >= (index_t)p.size()))
+        if ((i < 0) || (i >= p.size()))
             return i;
         else
             return p[i];

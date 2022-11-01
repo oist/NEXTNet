@@ -12,11 +12,11 @@ TEST_CASE("Plot large-population SIR mean-field (NextReaction)", "[nextreaction]
     using namespace std::string_literals;
     std::mt19937 engine;
 
-    const std::size_t M = 1000;
-    const std::size_t Nfully = 1000;
-    const std::size_t Nerdos = 1000;
-    const std::size_t T = 35;
-    const std::size_t X = 400;
+    const int M = 1000;
+    const int Nfully = 1000;
+    const int Nerdos = 1000;
+    const double T = 35;
+    const int X = 400;
     const double R0 = 2;
     // Every infecteced node has N-1 neighbours, of which in the large-population limit N-2 are susceptible.
     // To trigger subsequent infections amgonst these N-2 susceptible neighbours, we must infect each neighbour
@@ -57,8 +57,8 @@ TEST_CASE("Plot SIS single trajectory (NextReaction)", "[nextreaction]") {
        using namespace std::string_literals;
     std::mt19937 engine;
 
-    const std::size_t N = 5000;
-    const std::size_t T = 400;
+    const int N = 5000;
+    const double T = 400;
     const double R0 = 5;
     // Every infecteced node has N-1 neighbours, of which in the large-population limit N-2 are susceptible.
     // To trigger subsequent infections amgonst these N-2 susceptible neighbours, we must infect each neighbour
