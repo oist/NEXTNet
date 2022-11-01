@@ -18,6 +18,9 @@
 		98B96F7D28111BB800A78600 /* nMGA.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 98B96F7A28111BB800A78600 /* nMGA.cpp */; };
 		98CFFC0327F4696F00A6E322 /* utility.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 98CFFC0227F4696F00A6E322 /* utility.cpp */; };
 		98CFFC0427F4696F00A6E322 /* utility.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 98CFFC0227F4696F00A6E322 /* utility.cpp */; };
+		F91C25E129113CA900FFAE9C /* libboost_system.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F91C25DD29113CA800FFAE9C /* libboost_system.a */; };
+		F91C25E529113CA900FFAE9C /* libboost_iostreams.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F91C25DF29113CA900FFAE9C /* libboost_iostreams.a */; };
+		F91C25E72911401C00FFAE9C /* libboost_filesystem.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F91C25DE29113CA800FFAE9C /* libboost_filesystem.a */; };
 		F946A5E2281255F2000668F9 /* random.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F946A5E0281255F2000668F9 /* random.cpp */; };
 		F992992C2910E2B3001432FD /* plot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F99299272910E2B3001432FD /* plot.cpp */; };
 		F992992D2910E2B3001432FD /* nmga.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F99299292910E2B3001432FD /* nmga.cpp */; };
@@ -71,6 +74,10 @@
 		98B96F7B28111BB800A78600 /* nMGA.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = nMGA.h; sourceTree = "<group>"; };
 		98CFFC0127F4696F00A6E322 /* utility.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = utility.h; sourceTree = "<group>"; };
 		98CFFC0227F4696F00A6E322 /* utility.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = utility.cpp; sourceTree = "<group>"; };
+		F91C25DD29113CA800FFAE9C /* libboost_system.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_system.a; path = lib/libboost_system.a; sourceTree = BOOST_DIR; };
+		F91C25DE29113CA800FFAE9C /* libboost_filesystem.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_filesystem.a; path = lib/libboost_filesystem.a; sourceTree = BOOST_DIR; };
+		F91C25DF29113CA900FFAE9C /* libboost_iostreams.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_iostreams.a; path = lib/libboost_iostreams.a; sourceTree = BOOST_DIR; };
+		F91C25E8291140B000FFAE9C /* permutation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = permutation.h; sourceTree = "<group>"; };
 		F92123EE2902464200376961 /* algorithm.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = algorithm.h; sourceTree = "<group>"; };
 		F92123EF2902464200376961 /* matplotlibcpp.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = matplotlibcpp.h; sourceTree = "<group>"; };
 		F946A5E0281255F2000668F9 /* random.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = random.cpp; sourceTree = "<group>"; };
@@ -103,6 +110,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				F9D26B8F27E22A31005A272D /* libtestrunner.a in Frameworks */,
+				F91C25E529113CA900FFAE9C /* libboost_iostreams.a in Frameworks */,
+				F91C25E72911401C00FFAE9C /* libboost_filesystem.a in Frameworks */,
+				F91C25E129113CA900FFAE9C /* libboost_system.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -138,6 +148,7 @@
 		984A0C9E27C0DE5C004A0A96 /* epidemics */ = {
 			isa = PBXGroup;
 			children = (
+				F91C25E8291140B000FFAE9C /* permutation.h */,
 				984A0CA827C0DF3B004A0A96 /* stdafx.h */,
 				986328CC27D728F30029F31F /* types.h */,
 				98CFFC0227F4696F00A6E322 /* utility.cpp */,
@@ -193,6 +204,9 @@
 		F9D26B7727E2242B005A272D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				F91C25DE29113CA800FFAE9C /* libboost_filesystem.a */,
+				F91C25DF29113CA900FFAE9C /* libboost_iostreams.a */,
+				F91C25DD29113CA800FFAE9C /* libboost_system.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -382,6 +396,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				FRAMEWORK_SEARCH_PATHS = "$(BOOST_DIR)/lib";
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -397,7 +412,8 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				HEADER_SEARCH_PATHS = "$(BOOST_DIR)";
+				HEADER_SEARCH_PATHS = "$(BOOST_DIR)/include";
+				LIBRARY_SEARCH_PATHS = "$(BOOST_DIR)/lib";
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -445,6 +461,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				FRAMEWORK_SEARCH_PATHS = "$(BOOST_DIR)/lib";
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
@@ -454,7 +471,8 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				HEADER_SEARCH_PATHS = "$(BOOST_DIR)";
+				HEADER_SEARCH_PATHS = "$(BOOST_DIR)/include";
+				LIBRARY_SEARCH_PATHS = "$(BOOST_DIR)/lib";
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -487,18 +505,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					/opt/local/Library/Frameworks,
-				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = epidemics/tests/stdafx.h;
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					/opt/local/Library/Frameworks/Python.framework/Versions/3.10,
-					/opt/local/Library/Frameworks/Python.framework/Versions/3.10/lib,
-					"/opt/local/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/config-3.10-darwin",
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"ENABLE_PLOTTING=1",
+					"GNUPLOT_DEFAULT_COMMAND=\"\\\"$(GNUPLOT) -persist\\\"\"",
 				);
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -507,18 +521,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					/opt/local/Library/Frameworks,
-				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = epidemics/tests/stdafx.h;
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					/opt/local/Library/Frameworks/Python.framework/Versions/3.10,
-					/opt/local/Library/Frameworks/Python.framework/Versions/3.10/lib,
-					"/opt/local/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/config-3.10-darwin",
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					NDEBUG,
+					"ENABLE_PLOTTING=1",
+					"GNUPLOT_DEFAULT_COMMAND=\"\\\"$(GNUPLOT) -persist\\\"\"",
 				);
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
