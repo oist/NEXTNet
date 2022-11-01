@@ -18,7 +18,7 @@ struct meanfield_infpop_gamma {
     static meanfield_infpop_gamma mean_variance(double mean, double var, double r0, std::size_t max_terms=1000) {
         const double rho = mean / var;
         const double alpha = mean * rho;
-        return meanfield_infpop_gamma(alpha, rho, r0, max_terms);
+        return meanfield_infpop_gamma(alpha, rho, r0, (unsigned int)max_terms);
     }
 
     /**
@@ -30,7 +30,7 @@ struct meanfield_infpop_gamma {
      * @return a solution object
      */
     static meanfield_infpop_gamma alpha_rho(double alpha, double rho, double r0, std::size_t max_terms=1000) {
-        return meanfield_infpop_gamma(alpha, rho, r0, max_terms);
+        return meanfield_infpop_gamma(alpha, rho, r0, (unsigned int)max_terms);
     }
 
     meanfield_infpop_gamma(double alpha_, double rho_, double r0, unsigned int max_terms = 1000)
