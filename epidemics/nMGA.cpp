@@ -117,7 +117,8 @@ std::optional<event_t> simulate_nmga::step(rng_t& engine)
         /* Find the time of the next event */
         node_t node;
         std::vector<active_edges_entry>::iterator edge;
-        const bool use_exact_algorithm = ((approximation_threshold >= 0) && (active_edges.size() <= (unsigned int)approximation_threshold));
+        const bool use_exact_algorithm = ((approximation_threshold < 0) ||
+										  (active_edges.size() <= (unsigned int)approximation_threshold));
 
         /* First, draw the time of the next event */
         double tau = NAN;
