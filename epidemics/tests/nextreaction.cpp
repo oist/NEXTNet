@@ -43,7 +43,7 @@ TEST_CASE("Plot large-population SIR mean-field (NextReaction)", "[nextreaction]
         analytical.second.push_back(sol.N(t));
     }
 
-    plot("nextreaction.sir.mean.pdf", "Large-population SIR mean-field [NextReaction]", [&](auto& p) {
+    plot("nextreaction.sir.mean.pdf", "Large-population SIR mean-field [NextReaction]", [&](auto& gp, auto& p) {
         p.add_plot1d(rfully, "with lines title 'next reaction fully-connected (N="s + std::to_string(Nfully) + ")'"s);
         p.add_plot1d(racyclic, "with lines title 'next reaction acyclic'"s);
         p.add_plot1d(rerdos, "with lines title 'next reaction Erdös-Reyni (N="s + std::to_string(Nerdos) + ")'"s);
@@ -78,7 +78,7 @@ TEST_CASE("Plot SIS single trajectory (NextReaction)", "[nextreaction]") {
     std::vector<double> t_sim, y_sim_new, y_sim_total;
     simulate_SIS<fully_connected, simulate_next_reaction>(engine, psi,rho, t_sim, y_sim_new,y_sim_total, T, N);
 
-    plot("nextreaction.sis.single.pdf", "SIS single trajectory [NextReaction]", [&](auto& p) {
+    plot("nextreaction.sis.single.pdf", "SIS single trajectory [NextReaction]", [&](auto& gp, auto& p) {
         p.add_plot1d(std::make_pair(t_sim, y_sim_total), "with lines title 'next reaction'"s);
     });
 }

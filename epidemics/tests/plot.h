@@ -7,6 +7,6 @@
 
 namespace gp = gnuplotio;
 
-void plot(const std::string filename, const std::string title, std::function<void(gp::PlotGroup&)> body);
+void plot(const std::string filename, const std::string title, std::function<void(gp::Gnuplot&, gp::PlotGroup&)> body);
 
 #endif
