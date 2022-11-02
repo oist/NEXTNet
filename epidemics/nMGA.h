@@ -77,8 +77,8 @@ public:
 				  int threshold = 100, double max_dt = NAN,
 				  double tauprec = 1e-6)
         :network(nw), psi(psi_), rho(rho_)
+        ,shuffle_neighbours(shuffle_neighbours_)
         ,approximation_threshold(threshold)
-		,shuffle_neighbours(shuffle_neighbours_)
         ,maximal_dt((std::isfinite(max_dt) && (max_dt > 0)) ?
                     max_dt : find_maximal_dt(psi_))
         ,tau_precision(tauprec)

@@ -17,7 +17,7 @@ struct permutation {
     }
 
     index_t operator[](index_t i) const {
-        if ((i < 0) || (i >= p.size()))
+        if ((i < 0) || (i >= (index_t)p.size()))
             return i;
         else
             return p[i];
