@@ -12,7 +12,6 @@ struct permutation {
     permutation(index_t n, rng_t& engine) {
         /* Fill vector with 0, 1, ...  then shuffle */
         p.resize(n);
-        std::vector<node_t> p(n, -1);
         std::iota(p.begin(), p.end(), 0);
         std::shuffle(p.begin(), p.end(), engine);
     }
