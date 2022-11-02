@@ -144,13 +144,23 @@ public:
     }
 };
 
+// Define a specific policy:
+typedef bm::policies::policy<
+      bm::policies::overflow_error<bm::policies::ignore_error>,
+      bm::policies::underflow_error<bm::policies::ignore_error>
+> ignore_error_policy;
+
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
 /*-----------TRANSMISSION TIME:LOG NORMAL-------------*/
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
 
-class transmission_time_lognormal : public transmission_time_generic_boost<bm::lognormal> {
+typedef bm::lognormal_distribution<double, ignore_error_policy> boost_lognormal_dist;
+
+class transmission_time_lognormal
+    :public transmission_time_generic_boost<boost_lognormal_dist>
+{
     static double mu(const double mean, double variance) {
         return 2 * log(mean) - 0.5 * log( pow(mean,2.0)+ variance );
     }
@@ -164,7 +174,7 @@ public:
     const double variance;
 
     transmission_time_lognormal(double m, double v, double pinf = 0.0)
-        :transmission_time_generic_boost(bm::lognormal(mu(m, v), sigma(m, v)), pinf)
+        :transmission_time_generic_boost(boost_lognormal_dist(mu(m, v), sigma(m, v)), pinf)
         ,mean(m), variance(v)
     {}
 };
@@ -175,7 +185,11 @@ public:
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
 
-class transmission_time_gamma : public transmission_time_generic_boost<bm::gamma_distribution<double>> {
+typedef bm::gamma_distribution<double, ignore_error_policy> boost_gamma_dist;
+
+class transmission_time_gamma
+    :public transmission_time_generic_boost<boost_gamma_dist>
+{
     static double shape(const double mean, double variance) {
         return std::pow(mean, 2.0) / variance;
     }
@@ -189,7 +203,7 @@ public:
     const double variance;
 
     transmission_time_gamma(double m, double v, double pinf = 0.0)
-        :transmission_time_generic_boost(bm::gamma_distribution(shape(m, v), scale(m, v)), pinf)
+        :transmission_time_generic_boost(boost_gamma_dist(shape(m, v), scale(m, v)), pinf)
         ,mean(m), variance(v)
     {}
 };
