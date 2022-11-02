@@ -32,7 +32,7 @@ TEST_CASE("Plot large-population SIR mean-field (nMGA)", "[nMGA]") {
     }
 
     plot("nmga.sir.mean.pdf", "Large-population SIR mean-field [nMGA]", [&](auto& gp, auto& p) {
-        gp << "set logscale y";
+        gp << "set logscale y\n";
         p.add_plot1d(racyclic, "with lines title 'next reaction acyclic'"s);
         p.add_plot1d(analytical, "with lines title 'analytical'");
     });
