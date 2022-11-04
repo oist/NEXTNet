@@ -60,16 +60,29 @@ struct rng_t {
   
   static constexpr result_type max() { return UINT32_MAX; }
 
+  template<class Sseq>
+  explicit rng_t(Sseq& s)
+#if defined(RNG_STATE_TYPE)
+    : state(new state_type(s)) {}
+#else
+    { throw std::logic_error("not implemented"); }
+#endif
+
   result_type operator()();
   
 #if defined(RNG_STATE_TYPE)
   typedef RNG_STATE_TYPE state_type;
   
   typedef std::uniqie_ptr<state_type> state_ptr; 
+
+  template<typename Args...>
+  rng_t(Args... &&args) :state(new state_type(std::forward<Args>(args)...)) {}
   
   rng_t(state_ptr state_) :state(std::move(state_)) {}
   
   state_ptr state;
+#else
+  rng_t() {}
 #endif
 };
   
