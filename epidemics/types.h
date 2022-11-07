@@ -15,9 +15,19 @@ typedef double interval_t;
 typedef double absolutetime_t;
 typedef std::pair<node_t,node_t> edge_t;
 
-enum class event_kind {
+enum class event_kind : unsigned int {
     none = 0, infection = 1, outside_infection = 2, reset = 3
 };
+  
+inline const char* name(event_kind kind) {
+    switch (kind) {
+        case event_kind::none: return "none";
+        case event_kind::infection: return "infection";
+        case event_kind::outside_infection: return "outside_infection";
+        case event_kind::reset: return "reset";
+        default: return NULL;
+    }
+}
 
 struct event_t {
     event_kind kind = event_kind::none;
