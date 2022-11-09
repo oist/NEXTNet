@@ -7,7 +7,8 @@ set(LIB_SOURCES
     epidemics/graph.cpp
     epidemics/random.cpp
     epidemics/simulation.cpp
-    epidemics/NextReaction.cpp 
+    epidemics/NextReaction.cpp
+    epidemics/NextReactionMeanField.cpp
     epidemics/nMGA.cpp
     epidemics/utility.cpp)
 
@@ -17,6 +18,7 @@ set(LIB_HEADERS
     epidemics/random.h
     epidemics/algorithm.h
     epidemics/NextReaction.h
+    epidemics/NextReactionMeanField.h
     epidemics/nMGA.h
     epidemics/simulation.h
     epidemics/permutation.h

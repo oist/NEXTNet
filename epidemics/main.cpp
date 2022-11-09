@@ -11,7 +11,7 @@
 #include "simulation.h"
 #include "graph.h"
 #include "nMGA.h"
-#include "NextReaction.h"
+#include "NextReactionMeanField.h"
 
 using namespace std;
 
@@ -46,8 +46,7 @@ int main(int argc, const char * argv[]) {
 
     /* Simulate using next reaction once times */
     std::vector<double> times, infected;
-    erdos_reyni network(2, 1,engine);
-    simulate_next_reaction_mean_field simulate(network, N, R0, psi,&rho);
+    simulate_next_reaction_mean_field simulate(N, R0, psi,&rho);
     
     simulate.add_infections({ std::make_pair(0, 0.0)});
     double current_infected = 0;
