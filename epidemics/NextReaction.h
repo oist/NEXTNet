@@ -84,9 +84,9 @@ private:
 
 class simulate_next_reaction_mean_field : public simulation_algorithm {
 public:
-    simulate_next_reaction_mean_field(int N_, double R0_, const class transmission_time& psi_,
-                           const class transmission_time* rho_ = nullptr)
-        :N(N_), R0(R0_), psi(psi_), rho(rho_)
+    simulate_next_reaction_mean_field(graph& nw, int N_, double R0_, const class transmission_time& psi_,
+                                      const class transmission_time* rho_ = nullptr)
+        : network(nw), N(N_), R0(R0_), psi(psi_), rho(rho_)
     {}
     
     virtual const class transmission_time& transmission_time() const;
@@ -103,7 +103,10 @@ public:
     
     const double R0;
     
+    virtual graph& get_network() const;
+    
 private:
+    graph& network;
     const double p = R0 / (N - 1);
     const class transmission_time& psi;
     const class transmission_time* rho = nullptr;

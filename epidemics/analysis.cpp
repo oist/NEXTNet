@@ -17,6 +17,18 @@
 
 using namespace std;
 
+void exportData(vector<double>& X,vector<double>& Y,string filename) {
+    ofstream out;
+    out.open(filename);
+    int n = (int) X.size();
+    if (n != (int) Y.size()) throw std::logic_error("Arrays are not the same size.");
+    for (int i =0; i<n; i++){
+        out << X[i] <<" " << Y[i] <<"\n";
+    }
+    out.close();
+}
+
+
 void exportData(vector<double>& trajectory,string filename) {
     //create an ofstream
     ofstream out;

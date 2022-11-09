@@ -295,9 +295,9 @@ bool simulate_next_reaction_mean_field::is_infected(node_t node) const {
     return (infected.find(node) != infected.end());
 }
 
-// graph& simulate_next_reaction::get_network() const {
-//     return network;
-// }
+ graph& simulate_next_reaction_mean_field::get_network() const {
+     return network;
+ }
 
 const transmission_time& simulate_next_reaction_mean_field::transmission_time() const {
     return psi;
@@ -306,3 +306,5 @@ const transmission_time& simulate_next_reaction_mean_field::transmission_time() 
 const transmission_time* simulate_next_reaction_mean_field::reset_time() const {
     return rho;
 }
+
+
