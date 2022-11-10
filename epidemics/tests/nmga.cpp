@@ -12,9 +12,9 @@ TEST_CASE("Plot large-population SIR mean-field (nMGA)", "[nMGA]") {
     std::mt19937 engine;
 
     const std::size_t M = 1000;
-    const std::size_t T = 35;
+    const std::size_t T = 25;
     const std::size_t X = 400;
-    const double R0 = 2;
+    const double R0 = 3;
     const double MEAN = 10;
     const double VARIANCE = 1;
     transmission_time_gamma psi(MEAN, VARIANCE);
@@ -32,7 +32,6 @@ TEST_CASE("Plot large-population SIR mean-field (nMGA)", "[nMGA]") {
     }
 
     plot("nmga.sir.mean.pdf", "Large-population SIR mean-field [nMGA]", [&](auto& gp, auto& p) {
-        gp << "set logscale y\n";
         p.add_plot1d(racyclic, "with lines title 'next reaction acyclic'"s);
         p.add_plot1d(analytical, "with lines title 'analytical'");
     });

@@ -15,9 +15,9 @@ TEST_CASE("Plot large-population SIR mean-field (NextReaction)", "[nextreaction]
     const int M = 1000;
     const int Nfully = 1000;
     const int Nerdos = 1000;
-    const double T = 35;
+    const double T = 25;
     const int X = 400;
-    const double R0 = 2;
+    const double R0 = 3;
     // Every infecteced node has N-1 neighbours, of which in the large-population limit N-2 are susceptible.
     // To trigger subsequent infections amgonst these N-2 susceptible neighbours, we must infect each neighbour
     // with probability R0/(N-2). Note that for the first infected node, this is not strictly speaking correct,
@@ -57,26 +57,20 @@ TEST_CASE("Plot SIS single trajectory (NextReaction)", "[nextreaction]") {
        using namespace std::string_literals;
     std::mt19937 engine;
 
-    const int N = 5000;
-    const double T = 400;
-    const double R0 = 5;
-    // Every infecteced node has N-1 neighbours, of which in the large-population limit N-2 are susceptible.
-    // To trigger subsequent infections amgonst these N-2 susceptible neighbours, we must infect each neighbour
-    // with probability R0/(N-2). Note that for the first infected node, this is not strictly speaking correct,
-    // since it's infection has no source, and it will thus create R0(N-1)/(N-2) > R0 subsequent infections.
-    // This only causes a relative error of |1 - (N-1)/(N-2)| =~= 1/N though.
-    const double p = R0/(N-2);
+    const int N = 10000;
+    const double T = 200;
+    const double R0 = 3;
 
-    const double MEAN = 10;
-    const double VARIANCE = 50;
-    const double MEAN_rho = 70;
+    const double MEAN = 3;
+    const double VARIANCE = 1;
+    const double MEAN_rho = 10;
     const double VARIANCE_rho = 1;
-    transmission_time_gamma psi(MEAN, VARIANCE, 1.0-p);
+    transmission_time_gamma psi(MEAN, VARIANCE);
     transmission_time_gamma rho(MEAN_rho, VARIANCE_rho);
 
     /* Simulate using next reaction once times */
     std::vector<double> t_sim, y_sim_new, y_sim_total;
-    simulate_SIS<fully_connected, simulate_next_reaction>(engine, psi,rho, t_sim, y_sim_new,y_sim_total, T, N);
+    simulate_SIS<erdos_reyni, simulate_next_reaction>(engine, psi,rho, t_sim, y_sim_new,y_sim_total, T, N, R0);
 
     plot("nextreaction.sis.single.pdf", "SIS single trajectory [NextReaction]", [&](auto& gp, auto& p) {
         p.add_plot1d(std::make_pair(t_sim, y_sim_total), "with lines title 'next reaction'"s);
