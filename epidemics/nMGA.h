@@ -2,9 +2,10 @@
 
 #include "stdafx.h"
 #include "types.h"
+#include "algorithm.h"
 #include "graph.h"
 
-class simulate_nmga {
+class simulate_nmga : public simulation_algorithm  {
 private:
     struct active_edges_entry {
         absolutetime_t source_time;
@@ -39,32 +40,10 @@ private:
     std::vector<std::size_t> active_edges_infinite_lambdas;
     std::uniform_real_distribution<double> unif01_dist;
     
-    static double find_maximal_dt(const transmission_time& psi);
-    
-    void add_active_edge(const active_edges_entry& e) {
-        active_edges.push_back(e);
-    }
-    
-    void remove_active_edge(std::vector<active_edges_entry>::iterator it) {
-        /* We remove the element pointed to by <it> by swapping it with
-         * the last element and then removing the last element. This is
-         * faster then moving all element to the right of <it>. */
-        *it = active_edges.back();
-        active_edges.pop_back();
-    }
-    
-    double phi(absolutetime_t t, interval_t tau);
-
-    interval_t invphi(absolutetime_t t, double u);
-
-    void update_active_edge_lambdas();
-
-    std::vector<active_edges_entry>::iterator draw_active_edge(rng_t& engine);
-    
 public:
     graph& network;
-    const transmission_time& psi;
-	const transmission_time* rho = nullptr;
+    const class transmission_time& psi;
+	const class transmission_time* rho = nullptr;
 	bool shuffle_neighbours = true;
     int approximation_threshold = 100;
     double maximal_dt = NAN;
@@ -83,13 +62,44 @@ public:
                     max_dt : find_maximal_dt(psi_))
         ,tau_precision(tauprec)
     {}
+
+	virtual graph& get_network() const;
+
+	virtual const class transmission_time& transmission_time() const;
+
+	virtual const class transmission_time* reset_time() const;
+
+	virtual bool is_infected(node_t) const;
 	
-    void add_infections(const std::vector<std::pair<node_t, absolutetime_t>>& v);
-    
-    std::optional<event_t> step(rng_t& engine);
+	virtual void add_infections(const std::vector<std::pair<node_t, absolutetime_t>>& v);
+	
+	virtual std::optional<event_t> step(rng_t& engine);
 
-    interval_t next_time_exact(rng_t& engine);
+private:
+	static double find_maximal_dt(const class transmission_time& psi);
+	
+	void add_active_edge(const active_edges_entry& e) {
+		active_edges.push_back(e);
+	}
+	
+	void remove_active_edge(std::vector<active_edges_entry>::iterator it) {
+		/* We remove the element pointed to by <it> by swapping it with
+		 * the last element and then removing the last element. This is
+		 * faster then moving all element to the right of <it>. */
+		*it = active_edges.back();
+		active_edges.pop_back();
+	}
+	
+	double phi(absolutetime_t t, interval_t tau);
 
-    interval_t next_time_approximation(rng_t& engine);
+	interval_t invphi(absolutetime_t t, double u);
+
+	void update_active_edge_lambdas();
+
+	std::vector<active_edges_entry>::iterator draw_active_edge(rng_t& engine);
+
+	interval_t next_time_exact(rng_t& engine);
+
+	interval_t next_time_approximation(rng_t& engine);
 };
 
