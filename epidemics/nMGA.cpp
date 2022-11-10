@@ -41,6 +41,7 @@ void simulate_nmga::add_infections(const std::vector<std::pair<node_t, absolutet
 			}
 			/* Add future active edge */
 			active_edges_entry e;
+			e.kind = event_kind::outside_infection;
 			e.source_time = ve.second;
 			e.source = ve.first;
 			e.target = neighbour;
@@ -68,8 +69,7 @@ std::optional<event_t> simulate_nmga::step(rng_t& engine)
             return std::nullopt;
         
         /* Find the time of the next event */
-        node_t node;
-        std::vector<active_edges_entry>::iterator edge;
+        std::vector<active_edges_entry>::iterator edge_i;
         const bool use_exact_algorithm = ((approximation_threshold < 0) ||
 										  (active_edges.size() <= (unsigned int)approximation_threshold));
 
@@ -142,8 +142,7 @@ std::optional<event_t> simulate_nmga::step(rng_t& engine)
             update_active_edge_lambdas();
 
             /* Now determine which event takes place */
-            edge = draw_active_edge(engine);
-            node = edge->target;
+			edge_i = draw_active_edge(engine);
         } else {
             /* Approximate version */
             
@@ -151,38 +150,81 @@ std::optional<event_t> simulate_nmga::step(rng_t& engine)
             * updated before choosing tau above, which amounts
             * to doing the draw *before* updating the current time
             */
-            edge = draw_active_edge(engine);
-            node = edge->target;
+			edge_i = draw_active_edge(engine);
 
             /* Finally, update current time */
             current_time += tau;    
         }
         
-        /* Remove selected edge from active edge list */
-        remove_active_edge(edge);
-
-        /* If the node is already infected, ignore the event */
-        if (infected.find(node) != infected.end())
-            continue;
-
-        /* Mark node as infected and make outgoing edges active */
-        infected.insert(node);
-        const int neighbours = network.outdegree(node);
-        for(int j=0; j < neighbours; ++j) {
-            const node_t neighbour = network.neighbour(node, j);
-            if (neighbour < 0) {
-                /* This should never happen unless the graph reported the wrong number of outgoing edges */
-                throw std::logic_error(std::string("neighbour ") + std::to_string(j + 1) +
-                                        " of node " + std::to_string(node) + " is invalid");
-            }
-            active_edges_entry e;
-            e.source = node;
-            e.source_time = current_time;
-            e.target = neighbour;
-            add_active_edge(e);
-        }
+        /* Copy selected edge and remove from active edge list */
+		const active_edges_entry edge = *edge_i;
+        remove_active_edge(edge_i);
+		
+		switch (edge.kind) {
+			case event_kind::infection:
+			case event_kind::outside_infection: {
+				/* If the node is already infected, ignore the event */
+				if (infected.find(edge.target) != infected.end())
+					continue;
+				
+				/* Mark node as infected */
+				infected.insert(edge.target);
+				
+				/* Make recovery self-loop if there's a reset time distribution */
+				if (rho) {
+					active_edges_entry e;
+					e.kind = event_kind::reset;
+					e.source = edge.target;
+					e.source_time = current_time;
+					e.target = edge.target;
+					add_active_edge(e);
+				}
+				
+				/* and outgoing edges active */
+				const int neighbours = network.outdegree(edge.target);
+				for(int j=0; j < neighbours; ++j) {
+					const node_t neighbour = network.neighbour(edge.target, j);
+					if (neighbour < 0) {
+						/* This should never happen unless the graph reported the wrong number of outgoing edges */
+						throw std::logic_error(std::string("neighbour ") + std::to_string(j + 1) +
+												" of node " + std::to_string(edge.target) + " is invalid");
+					}
+					active_edges_entry e;
+					e.kind = event_kind::infection;
+					e.source = edge.target;
+					e.source_time = current_time;
+					e.target = neighbour;
+					add_active_edge(e);
+				}
+				break;
+			}
+				
+			case event_kind::reset: {
+				/* Reset event */
+				
+				/* Mark node as not infected */
+				infected.erase(edge.target);
+				
+				/* Remove active edges originating from the resetted node */
+				for(auto i = active_edges.begin(); i != active_edges.end();) {
+					/* Skip edges originating anywhere else */
+					if (i->source != edge.target) {
+						++i ;
+						continue;
+					}
+					
+					/* Remove edge, interator points to next element afterwards */
+					remove_active_edge(i);
+				}
+				break;
+			}
+				
+			default:
+				throw std::logic_error("unknown event kind");
+		}
+		
         
-        return event_t { .kind = event_kind::infection, .node = node, .time = current_time };
+        return event_t { .kind = edge.kind, .node = edge.target, .time = current_time };
     }
 }
 
@@ -219,6 +261,8 @@ double simulate_nmga::phi(absolutetime_t t, interval_t tau) {
 		return 0;
 	double r = 1;
 	for(const active_edges_entry& e: active_edges) {
+		// TODO: Handle recovery
+		
 		/* Translate t into the edge's frame of reference, i.e. into the
 		 * time since the edge's process started. Note that te will be
 		 * negative for edges which aren't active yet.
@@ -261,7 +305,19 @@ void simulate_nmga::update_active_edge_lambdas()
 		/* For edges not yet active, lambda is zero */
 		if (te >= 0) {
 			/* Compute lambda, check that it's valid and update */
-			const double lambda = psi.hazardrate(te);
+			double lambda = NAN;
+			switch (e.kind) {
+				case event_kind::outside_infection:
+				case event_kind::infection:
+					lambda = psi.hazardrate(te);
+					break;
+				case event_kind::reset:
+					assert(rho);
+					lambda = rho->hazardrate(te);
+					break;
+				default:
+					throw std::logic_error("unknown event kind");
+			}
 			if ((!std::isfinite(lambda) || (lambda < 0)))
 				throw std::domain_error("hazardrates must be non-negative and finite");
 			e.lambda = lambda;

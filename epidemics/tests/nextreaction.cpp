@@ -58,7 +58,7 @@ TEST_CASE("Plot SIS single trajectory (NextReaction)", "[nextreaction]") {
     std::mt19937 engine;
 
     const int N = 10000;
-    const double T = 200;
+    const double T = 100;
     const double R0 = 3;
 
     const double MEAN = 3;

@@ -8,10 +8,17 @@
 class simulate_nmga : public simulation_algorithm  {
 private:
     struct active_edges_entry {
-        absolutetime_t source_time;
-        node_t source;
-        node_t target;
-        double lambda;
+		/*
+		 * Event kind represented by this edge (infection or reset)
+		 * Reset events are self-loops, a consequently they obey
+		 * source_node=-1, neighbour_index=-1, neighbours_remaining=0.
+		 */
+		event_kind kind = event_kind::none;
+
+		absolutetime_t source_time = INFINITY;
+        node_t source = -1;
+        node_t target = -1;
+        double lambda = NAN;
     };
 
     struct outside_infections_entry {
@@ -82,12 +89,19 @@ private:
 		active_edges.push_back(e);
 	}
 	
-	void remove_active_edge(std::vector<active_edges_entry>::iterator it) {
+	void remove_active_edge(std::vector<active_edges_entry>::iterator& it) {
 		/* We remove the element pointed to by <it> by swapping it with
 		 * the last element and then removing the last element. This is
 		 * faster then moving all element to the right of <it>. */
-		*it = active_edges.back();
-		active_edges.pop_back();
+		if (it != active_edges.end() - 1) {
+			/* Removing any element that is not the last */
+			*it = active_edges.back();
+			active_edges.pop_back();
+		} else {
+			/* Removing the last element */
+			active_edges.pop_back();
+			it = active_edges.end();
+		}
 	}
 	
 	double phi(absolutetime_t t, interval_t tau);
