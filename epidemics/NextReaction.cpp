@@ -116,7 +116,7 @@ std::optional<event_t> simulate_next_reaction::step_infection(const active_edges
     /* First, create a permutation to shuffle the neighbours if necessary */
     const int neighbours_total = network.outdegree(next.node);
     permutation<node_t> p;
-    if (shuffle_neighbours) {
+    if (rho && shuffle_neighbours) {
         if (neighbours_total < 0)
             throw std::runtime_error("cannot shuffle neighbours if nodes have undefined or infinite degree");
         p = permutation<node_t>(neighbours_total, engine);
