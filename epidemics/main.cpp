@@ -17,65 +17,37 @@ using namespace std;
 
 int main(int argc, const char * argv[]) {
     rng_t engine;
-    
-    
-    
-    
-    
 
-    
-//    if (argc!=8 || argc!=9)
-//        throw logic_error("Not enough arguments");
-    
-    int N = atoi(argv[1]);
-    double R0 = atof(argv[2]);
-    double MEAN = atof(argv[3]);
-    double VARIANCE = atof(argv[4]);
-    double MEAN_rho = atof(argv[5]);
-    double VARIANCE_rho = atof(argv[6]);
-    double TMAX = atof(argv[7]);
-    string filename("trajectory.csv");
-    
-    if (argc==9)
-        filename = string(argv[8]);
-    
-    
-    
-    transmission_time_gamma psi(MEAN, VARIANCE);
-    transmission_time_gamma rho(MEAN_rho, VARIANCE_rho);
+    int method = atoi(argv[1]);
+    int SIM_MAX = atoi(argv[2]);
+    string filename = argv[3];
 
-    /* Simulate using next reaction once times */
-    std::vector<double> times, infected;
-    simulate_next_reaction_mean_field simulate(N, R0, psi,&rho);
-    
-    simulate.add_infections({ std::make_pair(0, 0.0)});
-    double current_infected = 0;
-    // Run simulation, collect transmission times
-    while (true) {
 
-        auto point = simulate.step(engine);
-        if (!point || (point -> time > TMAX))
-            break;
+    const double MEAN_INFECTION = 10;
+    const double VARIANCE_INFECTION = 1.0;
+    const double MEAN_RECOVERY = 20;
+    const double VARIANCE_RECOVERY = 1;
 
-        switch (point-> kind) {
-            case event_kind::infection:
-            case event_kind::outside_infection:
-                current_infected+=1;
-                break;
-            case event_kind::reset:
-                current_infected-=1;
-                break;
-            default:
-                throw std::logic_error("unexpected event kind");
-        }
+    transmission_time_lognormal psi(MEAN_INFECTION, VARIANCE_INFECTION);
+    transmission_time_lognormal rho(MEAN_RECOVERY, VARIANCE_RECOVERY);
 
-        times.push_back(point->time);
-        infected.push_back(current_infected/N);
+    switch (method)
+    {
+    case 0: // Next reaction + ER graph
+        measure_running_time_next_reaction_ER(engine,SIM_MAX,filename);
+        break;
+    case 1:
+        measure_running_time_next_reaction_BA(engine,SIM_MAX,filename);
+        break;
+    case 2:
+        measure_running_time_nMGA_ER(engine,SIM_MAX,filename);
+        break;
+    case 3:
+        measure_running_time_nMGA_BA(engine,SIM_MAX,filename);
+        break;
+   
+    default:
+        break;
     }
-    
-    exportData(times,infected,filename);
-    
-    
     return 0;
 }
-
