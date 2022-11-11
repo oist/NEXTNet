@@ -28,6 +28,17 @@ void exportData(vector<double>& X,vector<double>& Y,string filename) {
     out.close();
 }
 
+void exportData(vector<int>& X,vector<double>& Y,string filename) {
+    ofstream out;
+    out.open(filename);
+    int n = (int) X.size();
+    if (n != (int) Y.size()) throw std::logic_error("Arrays are not the same size.");
+    for (int i =0; i<n; i++){
+        out << X[i] <<" " << Y[i] <<"\n";
+    }
+    out.close();
+}
+
 
 void exportData(vector<double>& trajectory,string filename) {
     //create an ofstream
@@ -144,77 +155,242 @@ void print_matrix(const std::vector<std::vector<double>>& A){
     }
 }
 
+void measure_running_time_next_reaction_ER(rng_t& engine,int SMAX, string filename){
+    const double MEAN_INFECTION = 10;
+    const double VARIANCE_INFECTION = 1.0;
+    const double MEAN_RECOVERY = 20;
+    const double VARIANCE_RECOVERY = 1;
+    const double TMAX = INFINITY;
+    const double R0 = 3;
+    transmission_time_lognormal psi(MEAN_INFECTION, VARIANCE_INFECTION);
+    transmission_time_lognormal rho(MEAN_RECOVERY, VARIANCE_RECOVERY);
 
-double measure_running_time(graph_adjacencylist& network,rng_t& engine){
-    //long n0 = network.adjacencylist.size()* 3 / 10 ;
-    // initial nb of infected is 30% of the network to avoid epidemics that die out too quickly.
-    
-    double mean = 10;
-    double variance = 1.0;
-    
-    transmission_time_lognormal psi(mean, variance);
 
-    simulate_nmga simulation(network, psi);
-    simulation.approximation_threshold = 1000000;
-
-//    simulate_next_reaction simulation(network, psi);
-
-//    std::uniform_real_distribution<> dis(0,mean * 0.05);
-    
-    // Infect the first 30% of the network at early times
-//    for (int i=0; i<=n0; i++) {
-//        const double infection_time = dis(engine);
-//        const node_t node = i;
-//        simulation.add_infections({ std::make_pair(node, infection_time)});
-//    }
-
-    
-    // Start measuring performance
-    auto start = std::chrono::high_resolution_clock::now();
-
-    // Epidemic spreading
-    
-    //generatePaths_next_reaction(mean,variance,degree,1,size, engine);
-
-    auto stop = std::chrono::high_resolution_clock::now();
-    
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
-    
-    return (double) duration.count();
-}
-
-//simulate_nmga returnNMGA(graph_adjacencylist& network, transmission_time& psi){
-//    simulate_nmga simulation(network, psi);
-//    return simulation;
-//}
-//
-//simulate_next_reaction returnNextReac(graph_adjacencylist& network, transmission_time& psi){
-//    simulate_next_reaction simulation(network, psi);
-//    return simulation;
-//}
-
-void generate_data_running_time(rng_t& engine,int size,bool isNMGA){
-
-    vector<double> time_trajectory{};
-    double mean = 5.0;
-    double variance = 5.0;
-    int degree = 3;
-    
-    const auto start = std::chrono::high_resolution_clock::now();
-    
-    if (isNMGA == true) {
-        generatePaths_NMGA(mean,variance,degree,1,size,engine,100);
-    } else {
-        generatePaths_next_reaction(mean, variance,degree,1,size,engine);
+    //fill sizes
+    vector<int> sizes;
+    for (int i = 50; i < 15*1e6;)
+    {
+        sizes.push_back(i);
+        i = (int) floor(pow(i,1.1));
     }
     
-    
-    auto stop = std::chrono::high_resolution_clock::now();
-    
-    
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+    //fill times
+    vector<double> times;
+    for (int N : sizes){
+        cout << N << "\n";
+        double average = 0;
+        for (int i = 0; i < SMAX; i++)
+        {
 
-    const double time = duration.count() / 1000;
-    time_trajectory.push_back(time);
-    cout <<size << " "<< time << "\n";
+            erdos_reyni network(N,R0,engine);
+
+            // Start measuring performance
+            auto start = std::chrono::high_resolution_clock::now();
+
+            simulate_next_reaction simulate(network,psi);
+
+            const int N0 = floor(network.nodes() / 10); // 10% of the network will be infected at t=0;
+            for (node_t node = 0; node < N0; node++)
+            {
+                simulate.add_infections({ std::make_pair(node, 0.0)});
+            }
+            
+            // Run simulation, collect transmission times
+            while (true) {
+
+                auto point = simulate.step(engine);
+                if (!point || (point -> time > TMAX))
+                    break;
+            }
+        
+            auto stop = std::chrono::high_resolution_clock::now();
+            
+            auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+            const double time = duration.count() ;
+            average += time / SMAX;
+        }
+        times.push_back(average);
+    }
+        // export data
+    exportData(sizes,times,filename);
 }
+
+void measure_running_time_next_reaction_BA(rng_t& engine,int SMAX, string filename){
+    const double MEAN_INFECTION = 10;
+    const double VARIANCE_INFECTION = 1.0;
+    const double MEAN_RECOVERY = 20;
+    const double VARIANCE_RECOVERY = 1;
+    const double TMAX = INFINITY;
+    transmission_time_lognormal psi(MEAN_INFECTION, VARIANCE_INFECTION);
+    transmission_time_lognormal rho(MEAN_RECOVERY, VARIANCE_RECOVERY);
+
+
+    //fill sizes
+    vector<int> sizes;
+    for (int i = 50; i < 15*1e6;)
+    {
+        sizes.push_back(i);
+        i = (int) floor(pow(i,1.1));
+    }
+    
+    //fill times
+    vector<double> times;
+    for (int N : sizes){
+        cout << N << "\n";
+        double average = 0;
+        for (int i = 0; i < SMAX; i++)
+        {
+
+            scale_free network(N,engine);
+
+            // Start measuring performance
+            auto start = std::chrono::high_resolution_clock::now();
+
+            simulate_next_reaction simulate(network,psi);
+
+            const int N0 = floor(network.nodes() / 10); // 10% of the network will be infected at t=0;
+            for (node_t node = 0; node < N0; node++)
+            {
+                simulate.add_infections({ std::make_pair(node, 0.0)});
+            }
+            
+            // Run simulation, collect transmission times
+            while (true) {
+
+                auto point = simulate.step(engine);
+                if (!point || (point -> time > TMAX))
+                    break;
+            }
+        
+            auto stop = std::chrono::high_resolution_clock::now();
+            
+            auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+            const double time = duration.count() ;
+            average += time / SMAX;
+        }
+        times.push_back(average);
+    }
+        // export data
+    exportData(sizes,times,filename);
+}
+
+
+void measure_running_time_nMGA_ER(rng_t& engine,int SMAX, string filename){
+    const double MEAN_INFECTION = 10;
+    const double VARIANCE_INFECTION = 1.0;
+    const double MEAN_RECOVERY = 20;
+    const double VARIANCE_RECOVERY = 1;
+    const double TMAX = INFINITY;
+    const double R0 = 3;
+    transmission_time_lognormal psi(MEAN_INFECTION, VARIANCE_INFECTION);
+    transmission_time_lognormal rho(MEAN_RECOVERY, VARIANCE_RECOVERY);
+
+
+    //fill sizes
+    vector<int> sizes;
+    for (int i = 50; i < 2647355+1;)
+    {
+        sizes.push_back(i);
+        i = (int) floor(pow(i,1.1));
+    }
+    
+    //fill times
+    vector<double> times;
+    for (int N : sizes){
+        cout << N << "\n";
+        double average = 0;
+        for (int i = 0; i < SMAX; i++)
+        {
+
+            erdos_reyni network(N,R0,engine);
+
+            // Start measuring performance
+            auto start = std::chrono::high_resolution_clock::now();
+
+            simulate_nmga simulate(network,psi);
+
+            const int N0 = floor(network.nodes() / 10); // 10% of the network will be infected at t=0;
+            for (node_t node = 0; node < N0; node++)
+            {
+                simulate.add_infections({ std::make_pair(node, 0.0)});
+            }
+            
+            // Run simulation, collect transmission times
+            while (true) {
+
+                auto point = simulate.step(engine);
+                if (!point || (point -> time > TMAX))
+                    break;
+            }
+        
+            auto stop = std::chrono::high_resolution_clock::now();
+            
+            auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+            const double time = duration.count() ;
+            average += time / SMAX;
+        }
+        times.push_back(average);
+    }
+        // export data
+    exportData(sizes,times,filename);
+}
+
+void measure_running_time_nMGA_BA(rng_t& engine,int SMAX, string filename){
+    const double MEAN_INFECTION = 10;
+    const double VARIANCE_INFECTION = 1.0;
+    const double MEAN_RECOVERY = 20;
+    const double VARIANCE_RECOVERY = 1;
+    const double TMAX = INFINITY;
+    transmission_time_lognormal psi(MEAN_INFECTION, VARIANCE_INFECTION);
+    transmission_time_lognormal rho(MEAN_RECOVERY, VARIANCE_RECOVERY);
+
+
+    //fill sizes
+    vector<int> sizes;
+    for (int i = 50; i < 2647355+1;)
+    {
+        sizes.push_back(i);
+        i = (int) floor(pow(i,1.1));
+    }
+    
+    //fill times
+    vector<double> times;
+    for (int N : sizes){
+        cout << N << "\n";
+        double average = 0;
+        for (int i = 0; i < SMAX; i++)
+        {
+
+            scale_free network(N,engine);
+
+            // Start measuring performance
+            auto start = std::chrono::high_resolution_clock::now();
+
+            simulate_nmga simulate(network,psi);
+
+            const int N0 = floor(network.nodes() / 10); // 10% of the network will be infected at t=0;
+            for (node_t node = 0; node < N0; node++)
+            {
+                simulate.add_infections({ std::make_pair(node, 0.0)});
+            }
+            
+            // Run simulation, collect transmission times
+            while (true) {
+
+                auto point = simulate.step(engine);
+                if (!point || (point -> time > TMAX))
+                    break;
+            }
+        
+            auto stop = std::chrono::high_resolution_clock::now();
+            
+            auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+            const double time = duration.count() ;
+            average += time / SMAX;
+        }
+        times.push_back(average);
+    }
+        // export data
+    exportData(sizes,times,filename);
+}
+
