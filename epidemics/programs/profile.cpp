@@ -13,13 +13,19 @@ int program_profile(int argc, const char * argv[])
     // Parameters, which are network size (N), average number of contacts (K), 
     // mean infection transmission time (Mi) and variance (Vi),
     // mean reset time (Mr) and variance (Vr), number of steps to run (M)
-    const std::size_t M = (argc > 2) ? atoi(argv[1]) : 1000000;
-    const int N = 1000000;
+    const int N = (argc >= 3) ? atoi(argv[2]) : 1000000;
+    const std::size_t M = (argc >= 4) ? atoi(argv[3]) : 1000000;
     const int K = 5;
     const double Mi = 3;
     const double Vi = 30;
     const double Mr = 50;
     const double Vr = 20;
+    std::cerr << "Running with parameters:" << std::endl;
+    std::cerr << "      N: " << N << " (network size)" << std::endl;
+    std::cerr << "      K: " << N << " (average degree)" << std::endl;
+    std::cerr << "  Mi/Vi: " << Mi << " / " << Vi << " (Infection time mean / variance)" << std::endl;
+    std::cerr << "  Mr/Vr: " << Mr << " / " << Vr << " (Reset time mean / variance)" << std::endl;
+    std::cerr << "      M: " << M << " (number of steps)" << std::endl;
 
     // Create contact network graph
     auto nw = erdos_reyni(N, K, engine);
