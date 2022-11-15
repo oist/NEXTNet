@@ -9,20 +9,20 @@ int program_sis_meanfield_gamma_gamma(int argc, const char * argv[])
 {
     rng_t engine;
 
-    if (argc!=8 || argc!=9)
+    if (argc < 9)
         throw logic_error("Not enough arguments");
     
-    int N = atoi(argv[1]);
-    double R0 = atof(argv[2]);
-    double MEAN = atof(argv[3]);
-    double VARIANCE = atof(argv[4]);
-    double MEAN_rho = atof(argv[5]);
-    double VARIANCE_rho = atof(argv[6]);
-    double TMAX = atof(argv[7]);
+    int N = atoi(argv[2]);
+    double R0 = atof(argv[3]);
+    double MEAN = atof(argv[4]);
+    double VARIANCE = atof(argv[5]);
+    double MEAN_rho = atof(argv[6]);
+    double VARIANCE_rho = atof(argv[7]);
+    double TMAX = atof(argv[8]);
     string filename("trajectory.csv");
     
-    if (argc==9)
-        filename = string(argv[8]);
+    if (argc == 10)
+        filename = string(argv[9]);
     
     transmission_time_gamma psi(MEAN, VARIANCE);
     transmission_time_gamma rho(MEAN_rho, VARIANCE_rho);
