@@ -6,48 +6,55 @@
 //
 
 #include "stdafx.h"
-#include "random.h"
-#include "analysis.h"
-#include "simulation.h"
-#include "graph.h"
-#include "nMGA.h"
-#include "NextReactionMeanField.h"
 
-using namespace std;
+using namespace std::string_literals;
+
+struct dispatcher {
+    typedef int program_t(int argc, const char* argv[]);
+
+    dispatcher(const std::string& name, const program_t& program) {
+        table.insert({name, program});
+    }
+
+    static int dispatch(const std::string& name, int argc, const char* argv[]) {
+        const auto i = table.find(name);
+        if (i == table.end())
+            throw std::runtime_error("no program named "s + name);
+        return i->second(argc, argv);
+    }
+
+    static std::unordered_map<std::string, std::function<program_t>> table;
+};
+
+std::unordered_map<std::string, std::function<dispatcher::program_t>> dispatcher::table;
+
+#define STRINGIFY(v) STRINGIFY_(v)
+#define STRINGIFY_(v) #v
+
+#define DECLARE_PROGRAM(name) \
+    int program_ ## name(int argc, const char** argv); \
+    dispatcher dispatch_ ## name(STRINGIFY(name), program_ ## name)
+
+/*
+ * The main function decides which of a set of named "programs" to call
+ * based on the first argument. All arguments (including the first) are passed to
+ * the program.
+ *
+ * To add a new type of program named NAME, do the following
+ *   (1) Create a new file epidemics/programs/NAME.cpp
+ *   (2) Add a function int program_NAME(int argc, const char* argv[]) to that file
+ *   (3) Add a line DECLARE_PROGRAM(NAME) below
+ *   (4) Add epidemics/programs/NAME.CPP to SIMULATOR_SOURCES in CMakeLists.txt
+ */
+
+DECLARE_PROGRAM(sis_meanfield_gamma_gamma);
+DECLARE_PROGRAM(benchmark);
+DECLARE_PROGRAM(profile);
 
 int main(int argc, const char * argv[]) {
-    rng_t engine;
+    if (argc < 2)
+        throw std::runtime_error("no program name specified");
 
-    int method = atoi(argv[1]);
-    int SIM_MAX = atoi(argv[2]);
-    string filename = argv[3];
-
-
-    const double MEAN_INFECTION = 10;
-    const double VARIANCE_INFECTION = 1.0;
-    const double MEAN_RECOVERY = 20;
-    const double VARIANCE_RECOVERY = 1;
-
-    transmission_time_lognormal psi(MEAN_INFECTION, VARIANCE_INFECTION);
-    transmission_time_lognormal rho(MEAN_RECOVERY, VARIANCE_RECOVERY);
-
-    switch (method)
-    {
-    case 0: // Next reaction + ER graph
-        measure_running_time_next_reaction_ER(engine,SIM_MAX,filename);
-        break;
-    case 1:
-        measure_running_time_next_reaction_BA(engine,SIM_MAX,filename);
-        break;
-    case 2:
-        measure_running_time_nMGA_ER(engine,SIM_MAX,filename);
-        break;
-    case 3:
-        measure_running_time_nMGA_BA(engine,SIM_MAX,filename);
-        break;
-   
-    default:
-        break;
-    }
-    return 0;
+    const std::string name = argv[1];
+    return dispatcher::dispatch(name, argc, argv);
 }

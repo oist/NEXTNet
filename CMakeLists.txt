@@ -29,7 +29,10 @@ SET(LIB_PCH epidemics/stdafx.h)
 # *** Command-line simulator sources and headers
 set(SIMULATOR_SOURCES
     epidemics/analysis.cpp
-    epidemics/main.cpp)
+    epidemics/main.cpp
+    epidemics/programs/benchmark.cpp
+    epidemics/programs/sis_meanfield_gamma_gamma.cpp
+    epidemics/programs/profile.cpp)
 
 set(SIMULATOR_HEADERS
     epidemics/analysis.h)
