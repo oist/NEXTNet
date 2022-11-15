@@ -12,7 +12,7 @@ using namespace std::string_literals;
 struct dispatcher {
     typedef int program_t(int argc, const char* argv[]);
 
-    dispatcher(const std::string& name, const program_t& program) {
+    dispatcher(const std::string& name, const std::function<program_t>& program) {
         table.insert({name, program});
     }
 
