@@ -8,6 +8,7 @@
 #pragma once
 
 #include <iostream>
+#include <cstdlib>
 #include <cmath>
 #include <memory>
 #include <vector>
