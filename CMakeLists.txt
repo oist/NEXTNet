@@ -75,6 +75,8 @@ set(CMAKE_VISIBILITY_INLINES_HIDDEN true)
 # Enable all warnings
 add_compile_options(-Wall)
 
+add_definitions(${CMAKE_DEFINES})
+
 # *** Dependencies
 
 # Boost headers are mandatory, iostreamd and filesystem are optional
