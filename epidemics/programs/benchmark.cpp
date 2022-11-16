@@ -2,6 +2,7 @@
 #include "random.h"
 #include "analysis.h"
 #include "nMGA.h"
+#include "NextReaction.h"
 
 using namespace std;
 
@@ -26,8 +27,13 @@ int program_benchmark(int argc, const char * argv[]) {
     {
     case 0: // Next reaction + ER graph
 		measure_runtime(engine, [R0, psi, rho](rng_t& engine, int n) {
-			erdos_reyni network(n, R0, engine);
-			return new simulate_nmga(network,psi);
+			struct {
+				std::unique_ptr<graph> nw;
+				std::unique_ptr<simulation_algorithm> simulator;
+			} env;
+			env.nw.reset(new erdos_reyni(n, R0, engine));
+			env.simulator.reset(new simulate_next_reaction(*env.nw, psi));
+			return env;
 		}, SIM_MAX, INFINITY, filename);
         //measure_running_time_next_reaction_ER(engine,SIM_MAX,filename);
         break;
