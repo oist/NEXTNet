@@ -5,6 +5,10 @@
 #include "algorithm.h"
 #include "graph.h"
 
+struct all_rates_zero : std::underflow_error {
+	all_rates_zero() :underflow_error("all active edges report a hazardrate of zero") {};
+};
+
 class simulate_nmga : public simulation_algorithm  {
 private:
     struct active_edges_entry {

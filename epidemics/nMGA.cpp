@@ -85,22 +85,33 @@ std::optional<event_t> simulate_nmga::step(rng_t& engine)
         } else {
             /* Approximate version */
 
-            /* The following loop fixes an issue in the original NMGA algorithm */
-            while (true) {
-                /* First, update hazard rates lambda and lambda_total */
-                update_active_edge_lambdas();
-
-                /* Then, draw the time of the next event
-                 * Note: Here, this draw *does* depend on the hazard rates
-                 * Only accept time increments that dont exceed the maximum
-                 * allowed time step!
-                 */
-                tau = next_time_approximation(engine);
-                if (tau <= maximal_dt)
-                    break;
-
-                /* Make maximum allowed time step and try again */
-                current_time += maximal_dt;
+            /*
+			 * The following loop fixes an issue in the original NMGA algorithm
+			 * If we fail to draw a next event time, either because its unreasonably
+			 * large or because all the hazard rates are zero, we skip ahead a bit
+			 * and try again.
+			 */
+			for(;; current_time += maximal_dt) {
+				try {
+					/* First, update hazard rates lambda and lambda_total */
+					update_active_edge_lambdas();
+					
+					/* Then, draw the time of the next event
+					 * Note: Here, this draw *does* depend on the hazard rates
+					 * Only accept time increments that dont exceed the maximum
+					 * allowed time step!
+					 */
+					tau = next_time_approximation(engine);
+					if (tau <= maximal_dt)
+						break;
+				} catch (const all_rates_zero& e) {
+					/* All rates were zero. This typically happens if
+					 * the age distribution hasn't convereged when we switch
+					 * to the approximate algorithm. Since the rates are zero,
+					 * we assume it's going to be a while since the next event
+					 * occurs, and skip ahead maximal_dt time units.
+					 */
+				}
             }
         }
 
@@ -328,10 +339,10 @@ void simulate_nmga::update_active_edge_lambdas()
 	}
 	/* Update sum over all lambdas */
 	lambda_total = total;
+	if (!std::isfinite(lambda_total))
+		throw std::overflow_error("sum over all hazardrates is infinite or NAN");
 	if (lambda_total <= 0.0)
-		throw std::underflow_error("all active edges report a hazardrate of zero (or negative)");
-	else if (std::isinf(lambda_total))
-		throw std::overflow_error("sum over all hazardrates is infinite");
+		throw all_rates_zero();
 }
 
 auto simulate_nmga::draw_active_edge(rng_t& engine) -> std::vector<active_edges_entry>::iterator
