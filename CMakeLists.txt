@@ -32,7 +32,8 @@ set(SIMULATOR_SOURCES
     epidemics/main.cpp
     epidemics/programs/benchmark.cpp
     epidemics/programs/sis_meanfield_gamma_gamma.cpp
-    epidemics/programs/profile.cpp)
+    epidemics/programs/profile.cpp
+    epidemics/programs/benchmark_priorityqueue.cpp)
 
 set(SIMULATOR_HEADERS
     epidemics/analysis.h)

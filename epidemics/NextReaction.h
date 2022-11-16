@@ -27,7 +27,6 @@ public:
 
     virtual bool is_infected(node_t) const;
     
-private:
     graph& network;
     const class transmission_time& psi;
     const class transmission_time* rho = nullptr;

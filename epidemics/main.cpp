@@ -49,6 +49,7 @@ std::unordered_map<std::string, std::function<dispatcher::program_t>> dispatcher
 
 DECLARE_PROGRAM(sis_meanfield_gamma_gamma);
 DECLARE_PROGRAM(benchmark);
+DECLARE_PROGRAM(benchmark_priorityqueue);
 DECLARE_PROGRAM(profile);
 
 int main(int argc, const char * argv[]) {
