@@ -70,8 +70,8 @@ TEST_CASE("Plot SIS single trajectory (nMGA)", "[nMGA]") {
 	using namespace std::string_literals;
 	std::mt19937 engine;
 
-	const int N = 10000;
-	const double T = 100;
+	const int N = 1000;
+	const double T = 25;
 	const double R0 = 3;
 
 	const double MEAN = 3;
