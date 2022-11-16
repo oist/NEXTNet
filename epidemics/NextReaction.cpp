@@ -141,7 +141,7 @@ std::optional<event_t> simulate_next_reaction::step_infection(const active_edges
 		r = neighbours_total;
 	else if (neighbours_total >= 1)
 		/* Only handle the first neighbour here */
-		r = neighbours_total;
+		r = 1;
 	else
 		/* No neighbours */
 		r = 0;

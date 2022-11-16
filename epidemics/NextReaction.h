@@ -11,7 +11,7 @@ class simulate_next_reaction : public simulation_algorithm {
 public:
     simulate_next_reaction(graph& nw, const class transmission_time& psi_,
                            const class transmission_time* rho_ = nullptr,
-                           bool edges_concurrent_ = false, bool shuffle_neighbours_ = true)
+                           bool shuffle_neighbours_ = true, bool edges_concurrent_ = false)
         :network(nw), psi(psi_), rho(rho_),
 	     edges_concurrent(edges_concurrent_),
 	     shuffle_neighbours(shuffle_neighbours_ && !edges_concurrent_)
