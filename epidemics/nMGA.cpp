@@ -272,8 +272,6 @@ double simulate_nmga::phi(absolutetime_t t, interval_t tau) {
 		return 0;
 	double r = 1;
 	for(const active_edges_entry& e: active_edges) {
-		// TODO: Handle recovery
-		
 		/* Translate t into the edge's frame of reference, i.e. into the
 		 * time since the edge's process started. Note that te will be
 		 * negative for edges which aren't active yet.
@@ -295,7 +293,20 @@ double simulate_nmga::phi(absolutetime_t t, interval_t tau) {
 		 * equal to one.
 		 */
 		const double tp = std::max(te, 0.0);
-		const double p = psi.survivalprobability(te + tau - tp, tp, 1);
+		/* Pick correct distribution to compute the survival probability with */
+		double p;
+		switch (e.kind) {
+			case event_kind::outside_infection:
+			case event_kind::infection:
+				p = psi.survivalprobability(te + tau - tp, tp, 1);
+				break;
+			case event_kind::reset:
+				assert(rho);
+				p = rho->survivalprobability(te + tau - tp, tp, 1);
+				break;
+			default:
+				throw std::logic_error("unknown event kind");
+		}
 		/* Update result */
 		r *= p;
 	}
