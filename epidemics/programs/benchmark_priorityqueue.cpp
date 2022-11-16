@@ -103,6 +103,7 @@ int program_benchmark_priorityqueue(int argc, const char * argv[])
         if (ev)
             simtime = ev->time;
     }
+    next_batch();
 
     out->flush();
     file.close();
