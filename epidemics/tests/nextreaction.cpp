@@ -53,8 +53,8 @@ TEST_CASE("Plot large-population SIR mean-field (NextReaction)", "[nextreaction]
 #endif
 
 #if ENABLE_PLOTTING
-TEST_CASE("Plot SIS single trajectory (NextReaction)", "[nextreaction]") {
-       using namespace std::string_literals;
+TEST_CASE("Plot SIS average trajectory (NextReaction)", "[nextreaction]") {
+	using namespace std::string_literals;
     std::mt19937 engine;
 
 	const int M = 10;
@@ -93,7 +93,7 @@ TEST_CASE("Plot SIS single trajectory (NextReaction)", "[nextreaction]") {
 		return env;
 	}, t_sim_conc, y_sim_new_conc, y_sim_total_conc, T, M);
 
-    plot("nextreaction.sis.single.pdf", "SIS single trajectory [NextReaction]", [&](auto& gp, auto& p) {
+    plot("nextreaction.sis.mean.pdf", "SIS average trajectory [NextReaction]", [&](auto& gp, auto& p) {
         p.add_plot1d(std::make_pair(t_sim_seq, y_sim_total_seq), "with lines title 'next reaction (seq. edges)'"s);
 		p.add_plot1d(std::make_pair(t_sim_conc, y_sim_total_conc), "with lines title 'next reaction (conc. edges)'"s);
    });
