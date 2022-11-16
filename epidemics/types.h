@@ -9,16 +9,44 @@
 
 #include "stdafx.h"
 
+/**
+ * Represents a node in a graph
+ */
 typedef int node_t;
+
+/**
+ * Index into the neighbours of a node
+ */
 typedef int index_t;
+
+/**
+ * Represents a time interval
+ */
 typedef double interval_t;
+
+/**
+ * Represents an absolute time
+ */
 typedef double absolutetime_t;
+
+/**
+ * Represents an edge in a graph connecting two nodes;
+ */
 typedef std::pair<node_t,node_t> edge_t;
 
+/**
+ * Type of event that occured during a simulation
+ */
 enum class event_kind : unsigned int {
-    none = 0, infection = 1, outside_infection = 2, reset = 3
+    none = 0,
+	infection = 1,
+	outside_infection = 2,
+	reset = 3
 };
   
+/**
+ * Translate event kinds to their name
+ */
 inline const char* name(event_kind kind) {
     switch (kind) {
         case event_kind::none: return "none";
@@ -29,6 +57,9 @@ inline const char* name(event_kind kind) {
     }
 }
 
+/**
+ * Describes an event that occured
+ */
 struct event_t {
     event_kind kind = event_kind::none;
     node_t node = -1;
@@ -53,52 +84,56 @@ struct event_t {
 
 #if !defined(RNG) || (RNG == RNG_STDMT19937)
 
-/* Use C++ mersenne twister (default) */
-#define RNG RNG_STDMT19937
-typedef std::mt19937 rng_t;
+	/* C++ standard RNG */
+
+	/* Use C++ mersenne twister (default) */
+	#define RNG RNG_STDMT19937
+	typedef std::mt19937 rng_t;
 
 #elif RNG == RNG_CUSTOM
 
-/* Forward-declare state type */
-struct RNG_STATE_TYPE;
+	/* Curstom RNG */
 
-/* Custom RNG type. operator() must be implemented by the user */
-struct rng_t {
-  typedef std::uint32_t result_type;
+	/* Forward-declare state type */
+	struct RNG_STATE_TYPE;
 
-  static constexpr result_type min() { return 0; }
+	/* Custom RNG type. operator() must be implemented by the user */
+	struct rng_t {
+	  typedef std::uint32_t result_type;
+
+	  static constexpr result_type min() { return 0; }
+	  
+	  static constexpr result_type max() { return UINT32_MAX; }
+
+	  template<class Sseq>
+	  explicit rng_t(Sseq& s)
+	#if defined(RNG_STATE_TYPE)
+		: state(new state_type(s)) {}
+	#else
+		{ throw std::logic_error("not implemented"); }
+	#endif
+
+	  result_type operator()();
+	  
+	#if defined(RNG_STATE_TYPE)
+	  typedef RNG_STATE_TYPE state_type;
+	  
+	  typedef std::uniqie_ptr<state_type> state_ptr;
+
+	  template<typename Args...>
+	  rng_t(Args... &&args) :state(new state_type(std::forward<Args>(args)...)) {}
+	  
+	  rng_t(state_ptr state_) :state(std::move(state_)) {}
+	  
+	  state_ptr state;
+	#else
+	  rng_t() {}
+	#endif
+	};
   
-  static constexpr result_type max() { return UINT32_MAX; }
-
-  template<class Sseq>
-  explicit rng_t(Sseq& s)
-#if defined(RNG_STATE_TYPE)
-    : state(new state_type(s)) {}
 #else
-    { throw std::logic_error("not implemented"); }
-#endif
 
-  result_type operator()();
-  
-#if defined(RNG_STATE_TYPE)
-  typedef RNG_STATE_TYPE state_type;
-  
-  typedef std::uniqie_ptr<state_type> state_ptr; 
-
-  template<typename Args...>
-  rng_t(Args... &&args) :state(new state_type(std::forward<Args>(args)...)) {}
-  
-  rng_t(state_ptr state_) :state(std::move(state_)) {}
-  
-  state_ptr state;
-#else
-  rng_t() {}
-#endif
-};
-  
-#else
-
-/* Unknown RNG */
-#error "unknown RNG " ## RNG
+	/* Unknown RNG */
+	#error "unknown RNG " ## RNG
 
 #endif
