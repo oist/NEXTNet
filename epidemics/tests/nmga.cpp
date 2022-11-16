@@ -83,7 +83,15 @@ TEST_CASE("Plot SIS single trajectory (nMGA)", "[nMGA]") {
 
 	/* Simulate using nMGA once */
 	std::vector<double> t_sim, y_sim_new, y_sim_total;
-	simulate_SIS<erdos_reyni, simulate_nmga>(engine, psi,rho, t_sim, y_sim_new, y_sim_total, T, N, R0);
+	average_trajectories(engine, [&](rng_t& engine){
+		struct {
+			std::unique_ptr<graph> nw;
+			std::unique_ptr<simulation_algorithm> simulator;
+		} env;
+		env.nw.reset(new erdos_reyni(N, R0, engine));
+		env.simulator.reset(new simulate_nmga(*env.nw, psi, &rho));
+		return env;
+	}, t_sim, y_sim_new, y_sim_total, T);
 
 	plot("nmga.sis.single.pdf", "SIS single trajectory [nMGA]", [&](auto& gp, auto& p) {
 		p.add_plot1d(std::make_pair(t_sim, y_sim_total), "with lines title 'nMGA'"s);

@@ -5,6 +5,7 @@
 
 #include "types.h"
 #include "random.h"
+#include "algorithm.h"
 
 /**
  * @brief simulate and return transmission times
@@ -61,7 +62,6 @@ simulate_SIR(rng_t& engine, const transmission_time& psi, absolutetime_t T, std:
     return std::make_pair(t, y);
 }
 
-
 /**
  * @brief simulate and return transmission times
  * @param engine RNG engine
@@ -71,39 +71,82 @@ simulate_SIR(rng_t& engine, const transmission_time& psi, absolutetime_t T, std:
  * @return a pair of pairs containing (1) ordered transmission times
  *         and (2) total number of infections
  */
-template<typename N, typename S, typename ...Args>
+template<typename Factory>
 void
-simulate_SIS(rng_t& engine, transmission_time& psi, transmission_time& rho,
-             std::vector<absolutetime_t> &times, std::vector<double> &infections, std::vector<double>& infected,
-             absolutetime_t T, Args&&...args)
+average_trajectories(rng_t& engine, Factory factory,
+					 std::vector<absolutetime_t> &times,
+					 std::vector<double>& cumulative_infected,
+					 std::vector<double>& current_infected,
+					 absolutetime_t Tmax, int runs = 1, int output_every = -1)
 {
-    N nw(std::forward<Args>(args)..., engine);
-    S sim(nw, psi, &rho);
-    sim.add_infections({ std::make_pair(0, 0.0)});
-    int current_infected = 0, total_infected = 0;
-    // Run simulation, collect transmission times
-    while (true) {
+	typedef std::pair<double, double> pair_t;
+	typedef std::vector<pair_t> pairs_t;
+	
+	if (output_every < 0)
+		output_every = runs;
+	
+	// Run <runs> simulations, collect a large vector of
+	// (time, delta) pairs which allow easy averaging
+	auto results_par = parallel<pairs_t>(runs, engine, [factory, Tmax](rng_t& thread_engine) {
+		pairs_t r = {};
 
-        auto point = sim.step(engine);
-        if (!point || (point -> time > T))
-            break;
+		// Create simulation environment
+		auto s = factory(thread_engine);
+		simulation_algorithm& sim = *s.simulator;
+		sim.add_infections({ std::make_pair(0, 0.0)});
+		
+		// Run simulation, collect transmission times
+		while (true) {
+			auto point = sim.step(thread_engine);
+			if (!point || (point->time > Tmax))
+				break;
+			double delta;
+			switch (point-> kind) {
+				case event_kind::infection:
+				case event_kind::outside_infection:
+					delta = +1;
+					break;
+				case event_kind::reset:
+					delta = -1;
+					break;
+				default:
+					throw std::logic_error("unexpected event kind");
+			}
+			r.push_back({point->time, delta});
+		}
 
-        switch (point-> kind) {
-            case event_kind::infection:
-            case event_kind::outside_infection:
-                ++total_infected;
-                ++current_infected;
-                break;
-            case event_kind::reset:
-                --current_infected;
-                break;
-            default:
-                throw std::logic_error("unexpected event kind");
-        }
+		return r;
+	});
+	
+	// Merge results
+	pairs_t results;
+	for(const auto& r: results_par)
+	  std::copy(r.begin(), r.end(), std::back_inserter(results));
 
-        times.push_back(point->time);
-        infections.push_back(total_infected);
-        infected.push_back(current_infected);
-    }
+	// Sort by times
+	std::sort(results.begin(), results.end(), [](const pair_t& a, pair_t& b) {
+		return a.first < b.first;
+	});
+	
+	// Output results
+	int i = 0;
+	double cur_inf = 0.0;
+	double cum_inf = 0.0;
+	for(const pair_t& p: results) {
+		/* Track number of infected */
+		const double t = p.first;
+		const double d = p.second / (double)runs;
+		cur_inf += d;
+		cum_inf += std::max(d, 0.0);
+
+		/* Only output every <output_every>-th element */
+		if (++i != output_every)
+			continue;
+		i = 0;
+
+		times.push_back(t);
+		cumulative_infected.push_back(cum_inf);
+		current_infected.push_back(cur_inf);
+	}
 }
 

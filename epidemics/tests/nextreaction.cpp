@@ -57,6 +57,7 @@ TEST_CASE("Plot SIS single trajectory (NextReaction)", "[nextreaction]") {
        using namespace std::string_literals;
     std::mt19937 engine;
 
+	const int M = 10;
     const int N = 10000;
     const double T = 100;
     const double R0 = 3;
@@ -68,12 +69,33 @@ TEST_CASE("Plot SIS single trajectory (NextReaction)", "[nextreaction]") {
     transmission_time_gamma psi(MEAN, VARIANCE);
     transmission_time_gamma rho(MEAN_rho, VARIANCE_rho);
 
-    /* Simulate using next reaction once times */
-    std::vector<double> t_sim, y_sim_new, y_sim_total;
-    simulate_SIS<erdos_reyni, simulate_next_reaction>(engine, psi,rho, t_sim, y_sim_new,y_sim_total, T, N, R0);
+    /* Simulate using next reaction once, using sequential activation of edges */
+    std::vector<double> t_sim_seq, y_sim_new_seq, y_sim_total_seq;
+	average_trajectories(engine, [&](rng_t& engine){
+		struct {
+			std::unique_ptr<graph> nw;
+			std::unique_ptr<simulation_algorithm> simulator;
+		} env;
+		env.nw.reset(new erdos_reyni(N, R0, engine));
+		env.simulator.reset(new simulate_next_reaction(*env.nw, psi, &rho, true, false));
+		return env;
+	}, t_sim_seq, y_sim_new_seq, y_sim_total_seq, T, M);
+
+	/* Simulate using next reaction once times, using concurrent activation of edges */
+	std::vector<double> t_sim_conc, y_sim_new_conc, y_sim_total_conc;
+	average_trajectories(engine, [&](rng_t& engine){
+		struct {
+			std::unique_ptr<graph> nw;
+			std::unique_ptr<simulation_algorithm> simulator;
+		} env;
+		env.nw.reset(new erdos_reyni(N, R0, engine));
+		env.simulator.reset(new simulate_next_reaction(*env.nw, psi, &rho, false, true));
+		return env;
+	}, t_sim_conc, y_sim_new_conc, y_sim_total_conc, T, M);
 
     plot("nextreaction.sis.single.pdf", "SIS single trajectory [NextReaction]", [&](auto& gp, auto& p) {
-        p.add_plot1d(std::make_pair(t_sim, y_sim_total), "with lines title 'next reaction'"s);
-    });
+        p.add_plot1d(std::make_pair(t_sim_seq, y_sim_total_seq), "with lines title 'next reaction (seq. edges)'"s);
+		p.add_plot1d(std::make_pair(t_sim_conc, y_sim_total_conc), "with lines title 'next reaction (conc. edges)'"s);
+   });
 }
 #endif
