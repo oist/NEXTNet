@@ -28,9 +28,11 @@ int program_profile(int argc, const char * argv[])
     std::cerr << "      M: " << M << " (number of steps)" << std::endl;
 
     // Create contact network graph
+    std::cerr << "Creating network" << std::endl;
     auto nw = erdos_reyni(N, K, engine);
 
     // Create transmission and reset time distributions
+    std::cerr << "Creating simulator" << std::endl;
     const auto psi = transmission_time_lognormal(Mi, Vi);
     const auto rho = transmission_time_lognormal(Mr, Vr);
 
@@ -39,8 +41,11 @@ int program_profile(int argc, const char * argv[])
     sim.add_infections({{0, 0.0}});
 
     // Run simulation for M steps
-    for(std::size_t i=0; i < M; ++i)
+    for(std::size_t i=0; i < M; ++i) {
+        if ((i+1) % 100000 == 0)
+            std::cerr << "  Step " << (i+1) << " / " << M << std::endl;
         sim.step(engine);
+    }
     
     return 0;
 }
