@@ -53,6 +53,9 @@ std::optional<event_t> simulate_next_reaction::step_infection(const active_edges
      * edge.
      */
     if (next.neighbours_remaining > 0) {
+		/* Should never happen if we're making sibling edges active concurrently */
+		assert(!edges_concurrent);
+		
         /* This only occurs for infection edges, reset self-loops have no neighbours */
         const node_t neighbour_id = next.source_permutation[next.neighbour_index + 1];
         const node_t sibling = network.neighbour(next.source_node, neighbour_id);
@@ -72,7 +75,7 @@ std::optional<event_t> simulate_next_reaction::step_infection(const active_edges
         if (std::isnan(tau) || (tau < 0))
             throw std::logic_error("transmission times must be non-negative");
         const double t = next.time + tau;
-        /* Only queue if the infection occurs before the infeceting node's reset */
+        /* Only queue if the infection occurs before the infecting node's reset */
         if (t < next.source_reset) {
             assert(std::isfinite(t));
             active_edges_entry e;
@@ -117,20 +120,57 @@ std::optional<event_t> simulate_next_reaction::step_infection(const active_edges
     const int neighbours_total = network.outdegree(next.node);
     permutation<node_t> p;
     if (rho && shuffle_neighbours) {
-        if (neighbours_total < 0)
+		/* We should never shuffle neighbours if sibling edges are made active concurrently */
+		assert(!edges_concurrent);
+
+		if (neighbours_total < 0)
             throw std::runtime_error("cannot shuffle neighbours if nodes have undefined or infinite degree");
         p = permutation<node_t>(neighbours_total, engine);
     }
 
-    /* Then start with whatever neighbour is the first in our permutation */
-    const node_t neighbour = network.neighbour(next.node, p[0]);
-    if (neighbour >= 0) {
-        /* Create target node's infection times entry and add to queue */
-        const double tau = psi.sample(engine, 0, neighbours_total);
+	/* We now add either only the first (in our permutation) edge to the list
+	 * active edges (if !edges_concurrent), or we add all outgoing edges at the same
+	 * time (if edges_concurrent). For simplicity, we traverse the neighbours in
+	 * the order defined by the permutation in both cases, but note that if we add
+	 * edges concurrently, shuffle_neighbours is always false and so the permutation
+	 * is actually the identity map.
+	 */
+	int r;
+	if (edges_concurrent)
+		/* Interate over all neighbours */
+		r = neighbours_total;
+	else if (neighbours_total >= 1)
+		/* Only handle the first neighbour here */
+		r = neighbours_total;
+	else
+		/* No neighbours */
+		r = 0;
+	for(int neighbour_i = 0; neighbour_i < r; ++neighbour_i) {
+		/* Get i-th neighbour according to the permutation */
+		const node_t neighbour = network.neighbour(next.node, p[neighbour_i]);
+		
+		/* This should never happen unless the graph reported the wrong number
+		 * of outgoing edges */
+		if (neighbour < 0) {
+			throw std::logic_error(std::string("neighbour ") + std::to_string(neighbour) +
+								   " (index " + std::to_string(neighbour_i + 1) +
+								   ") " + std::to_string(next.node) + " is invalid");
+		}
+
+		/* Create target node's infection times entry and add to queue.
+		 * If we're adding edges sequentially, the distribution we sample
+		 * from is the *minimum* time taken over the remaining neighbours.
+		 * If we're adding edges concurrently, however, we simply sample
+		 * from the original psi distribution. The minimum in this case is
+		 * the implicit result of putting all the times into the reaction queue,
+		 * and processing it in order.
+		 */
+		const int m = edges_concurrent ? 1 : neighbours_total;
+		const double tau = psi.sample(engine, 0, m);
         if (std::isnan(tau) || (tau < 0))
             throw std::logic_error("transmission times must be non-negative");
         const double t = next.time + tau;
-        /* Only queue if the infection occurs before the infeceting node's reset */
+        /* Only queue if the infection occurs before the infecting node's reset */
         if (t < node_reset_time) {
             assert(std::isfinite(t));
             active_edges_entry e;
@@ -142,11 +182,11 @@ std::optional<event_t> simulate_next_reaction::step_infection(const active_edges
             e.source_reset = node_reset_time;
             e.source_permutation = std::move(p);
             e.neighbour_index = 0;
-            e.neighbours_remaining = neighbours_total - 1;
+			e.neighbours_remaining = m - 1;
             active_edges.push(e);
         }
     }
-    
+
     /* Return the infection event */
     return event_t { .kind = next.kind, .node = next.node, .time = next.time };
 }

@@ -11,8 +11,10 @@ class simulate_next_reaction : public simulation_algorithm {
 public:
     simulate_next_reaction(graph& nw, const class transmission_time& psi_,
                            const class transmission_time* rho_ = nullptr,
-                           bool shuffle_neighbours_ = true)
-        :network(nw), psi(psi_), rho(rho_), shuffle_neighbours(shuffle_neighbours_)
+                           bool edges_concurrent_ = false, bool shuffle_neighbours_ = true)
+        :network(nw), psi(psi_), rho(rho_),
+	     edges_concurrent(edges_concurrent_),
+	     shuffle_neighbours(shuffle_neighbours_ && !edges_concurrent_)
     {}
 
     virtual graph& get_network() const;
@@ -30,6 +32,7 @@ public:
     graph& network;
     const class transmission_time& psi;
     const class transmission_time* rho = nullptr;
+	bool edges_concurrent = false;
     bool shuffle_neighbours = true;
     std::unordered_set<node_t> infected;
     
