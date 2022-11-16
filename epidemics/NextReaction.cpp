@@ -12,8 +12,8 @@ std::optional<event_t> simulate_next_reaction::step(rng_t& engine) {
 			return std::nullopt;
 
         /* Fetch the next infection/reset time, i.e. the time where the next edge fires */
-        const auto next = active_edges.top();
-        active_edges.pop();
+        const auto next = top_edge();
+        pop_edge();
         
         /* Perform event */
         std::optional<event_t> result;
@@ -88,7 +88,7 @@ std::optional<event_t> simulate_next_reaction::step_infection(const active_edges
             e.source_permutation = std::move(next.source_permutation);
             e.neighbour_index = next.neighbour_index + 1;
             e.neighbours_remaining = next.neighbours_remaining - 1;
-            active_edges.push(e);
+			push_edge(e);
         }
     }
     
@@ -107,7 +107,7 @@ std::optional<event_t> simulate_next_reaction::step_infection(const active_edges
         e.kind = event_kind::reset;
         e.time = node_reset_time;
         e.node = next.node;
-        active_edges.push(e);
+		push_edge(e);
     }
     
     /* Activate the first outgoing edge of the newly infected node
@@ -183,7 +183,7 @@ std::optional<event_t> simulate_next_reaction::step_infection(const active_edges
             e.source_permutation = std::move(p);
             e.neighbour_index = 0;
 			e.neighbours_remaining = m - 1;
-            active_edges.push(e);
+			push_edge(e);
         }
     }
 
@@ -208,7 +208,7 @@ void simulate_next_reaction::add_infections(const std::vector<std::pair<node_t, 
         e.kind = event_kind::outside_infection;
         e.time = ve.second;
         e.node = ve.first;
-        active_edges.push(e);
+		push_edge(e);
     }
 }
 

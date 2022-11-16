@@ -74,9 +74,27 @@ public:
         bool operator> (const active_edges_entry& o) const { return time > o.time; }
     };
     
+#if NEXT_REACTION_QUEUE == STD_PRIORITY_QUEUE_DEQUE
     std::priority_queue<active_edges_entry, std::deque<active_edges_entry>,
                         std::greater<active_edges_entry>>
       active_edges;
+	
+	const active_edges_entry& top_edge() { return active_edges.top(); };
+
+	void pop_edge() { active_edges.pop(); };
+	
+	void push_edge(active_edges_entry e) { active_edges.push(e); };
+
+#elif NEXT_REACTION_QUEUE == EXT_PRIO_QUEUE
+	rollbear::prio_queue<32, absolutetime_t, active_edges_entry>
+	  active_edges;
+	
+	const active_edges_entry& top_edge() { return active_edges.top().second; };
+
+	void pop_edge() { active_edges.pop(); };
+	
+	void push_edge(active_edges_entry e) { active_edges.push(e.time, e); };
+#endif
 	
 	std::optional<event_t> step_infection(const active_edges_entry& next, rng_t& engine);
 	

@@ -48,3 +48,14 @@
 
 /* Make boost::math available as simply bm */
 namespace bm = boost::math;
+
+#define STD_PRIORITY_QUEUE_DEQUE 1
+#define EXT_PRIO_QUEUE 2
+
+#ifndef NEXT_REACTION_QUEUE
+#define NEXT_REACTION_QUEUE STD_PRIORITY_QUEUE_DEQUE
+#endif
+
+#if NEXT_REACTION_QUEUE == EXT_PRIO_QUEUE
+#include "../ext/prio_queue/prio_queue.hpp"
+#endif
