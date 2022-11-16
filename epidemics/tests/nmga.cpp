@@ -6,6 +6,33 @@
 #include "random.h"
 #include "nMGA.h"
 
+TEST_CASE("Stability", "[nMGA]") {
+	using namespace std;
+	
+	const int N = 530;
+	const double MEAN_INFECTION = 10;
+	const double VARIANCE_INFECTION = 1.0;
+	const double MEAN_RECOVERY = 20;
+	const double VARIANCE_RECOVERY = 1;
+	const double R0 = 3;
+
+	transmission_time_lognormal psi(MEAN_INFECTION, VARIANCE_INFECTION);
+	transmission_time_lognormal rho(MEAN_RECOVERY, VARIANCE_RECOVERY);
+
+	rng_t engine;
+	erdos_reyni network(N, R0,engine);
+	simulate_nmga simulate(network, psi, nullptr, false, N/10);
+	const int N0 = floor(network.nodes() / 10); // 10% of the network will be infected at t=0;
+	for (node_t node = 0; node < N0; node++)
+		simulate.add_infections({ std::make_pair(node, 0.0)});
+			
+	while (true) {
+		auto point = simulate.step(engine);
+		if (!point)
+			break;
+	}
+}
+
 #if ENABLE_PLOTTING
 TEST_CASE("Plot large-population SIR mean-field (nMGA)", "[nMGA]") {
     using namespace std::string_literals;
