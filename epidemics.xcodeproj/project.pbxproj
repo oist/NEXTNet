@@ -88,6 +88,7 @@
 		F92123EF2902464200376961 /* matplotlibcpp.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = matplotlibcpp.h; sourceTree = "<group>"; };
 		F946A5E0281255F2000668F9 /* random.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = random.cpp; sourceTree = "<group>"; };
 		F95E340A2924A79700DBCE94 /* benchmark_priorityqueue.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = benchmark_priorityqueue.cpp; sourceTree = "<group>"; };
+		F95E34152925088200DBCE94 /* prio_queue.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = prio_queue.hpp; sourceTree = "<group>"; };
 		F99299252910E2B3001432FD /* simulate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = simulate.h; sourceTree = "<group>"; };
 		F99299262910E2B3001432FD /* gnuplot-iostream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "gnuplot-iostream.h"; sourceTree = "<group>"; };
 		F99299272910E2B3001432FD /* plot.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = plot.cpp; sourceTree = "<group>"; };
@@ -142,6 +143,7 @@
 			isa = PBXGroup;
 			children = (
 				984A0C9E27C0DE5C004A0A96 /* epidemics */,
+				F95E340E2925088200DBCE94 /* ext */,
 				984A0C9D27C0DE5C004A0A96 /* Products */,
 				F9D26B7727E2242B005A272D /* Frameworks */,
 			);
@@ -187,6 +189,22 @@
 				F99D7A9727E21CC000200C18 /* catch */,
 			);
 			path = epidemics;
+			sourceTree = "<group>";
+		};
+		F95E340E2925088200DBCE94 /* ext */ = {
+			isa = PBXGroup;
+			children = (
+				F95E340F2925088200DBCE94 /* prio_queue */,
+			);
+			path = ext;
+			sourceTree = "<group>";
+		};
+		F95E340F2925088200DBCE94 /* prio_queue */ = {
+			isa = PBXGroup;
+			children = (
+				F95E34152925088200DBCE94 /* prio_queue.hpp */,
+			);
+			path = prio_queue;
 			sourceTree = "<group>";
 		};
 		F99D7A9727E21CC000200C18 /* catch */ = {
