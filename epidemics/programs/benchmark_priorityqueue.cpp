@@ -21,18 +21,20 @@ int program_benchmark_priorityqueue(int argc, const char * argv[])
     const int LOG = 100000;
     const int N = (argc >= 3) ? atoi(argv[2]) : 1000000;
     const std::size_t M = (argc >= 4) ? atoi(argv[3]) : 1000000;
-    const std::optional<std::string> OUTFILE = (argc >= 5) ? std::optional<std::string>(argv[4]) : std::nullopt;
+    const bool edges_concurrent = (argc >= 5) ? ("true"s == argv[4]) : false;
+    const std::optional<std::string> OUTFILE = (argc >= 6) ? std::optional<std::string>(argv[5]) : std::nullopt;
     const int K = 5;
     const double Mi = 3;
     const double Vi = 30;
     const double Mr = 50;
     const double Vr = 20;
     std::cerr << "Running with parameters:" << std::endl;
-    std::cerr << "      N: " << N << " (network size)" << std::endl;
-    std::cerr << "      K: " << N << " (average degree)" << std::endl;
-    std::cerr << "  Mi/Vi: " << Mi << " / " << Vi << " (Infection time mean / variance)" << std::endl;
-    std::cerr << "  Mr/Vr: " << Mr << " / " << Vr << " (Reset time mean / variance)" << std::endl;
-    std::cerr << "      M: " << M << " (number of steps)" << std::endl;
+    std::cerr << "            N: " << N << " (network size)" << std::endl;
+    std::cerr << "            K: " << K << " (average degree)" << std::endl;
+    std::cerr << "        Mi/Vi: " << Mi << " / " << Vi << " (Infection time mean / variance)" << std::endl;
+    std::cerr << "        Mr/Vr: " << Mr << " / " << Vr << " (Reset time mean / variance)" << std::endl;
+    std::cerr << "            M: " << M << " (number of steps)" << std::endl;
+    std::cerr << "  Conc. edges: " << (edges_concurrent ? "YES"s : "NO"s) << std::endl;
     std::cerr << "Writing results to " << (OUTFILE ? *OUTFILE : "stdout"s) << std::endl;
 
     // Create contact network graph
@@ -45,7 +47,7 @@ int program_benchmark_priorityqueue(int argc, const char * argv[])
     const auto rho = transmission_time_lognormal(Mr, Vr);
 
     // Create simulation and specifiy initial set of infections
-    auto sim = simulate_next_reaction(nw, psi, &rho);
+    auto sim = simulate_next_reaction(nw, psi, &rho, true, edges_concurrent);
     sim.add_infections({{0, 0.0}});
 
     // Prepare output
@@ -59,35 +61,43 @@ int program_benchmark_priorityqueue(int argc, const char * argv[])
     }
     *out
         << "step\t"
+        << "queuestep\t"
         << "runtime\t"
         << "simtime\t"
         << "infected\t"
         << "active_edges\t"
         << "us_per_step\t"
+        << "us_per_qstep\t"
         << "\n";
     const auto start = std::chrono::high_resolution_clock::now();
     auto last = start;
     absolutetime_t simtime = NAN;
     std::size_t i = 0;
     std::size_t last_i = 0;
-    auto next_batch = [&i, &last_i, &start, &last, &sim, &simtime, &out]() {
+    std::size_t last_qstep = 0;
+    auto next_batch = [&i, &last_i, &last_qstep, &start, &last, &sim, &simtime, &out]() {
         const auto cur = std::chrono::high_resolution_clock::now();
         const auto ttime = cur - start;
         const auto btime = cur - last;
+        const double btime_us = duration_cast<usecs>(btime).count();
         const double bsteps = i - last_i;
+        const std::size_t qsteps = sim.queue_steps_total - last_qstep;
         last = cur;
         last_i = i;
+        last_qstep = sim.queue_steps_total;
 
         if (i == 0)
             return;
 
         *out
             << i << "\t"
+            << sim.queue_steps_total << "\t"
             << duration_cast<secs>(ttime).count() << "\t"
             << simtime << "\t"
             << sim.infected.size() << "\t"
             << sim.active_edges.size() << "\t"
-            << duration_cast<usecs>(btime).count() / bsteps
+            << btime_us / bsteps << "\t"
+            << btime_us / qsteps
             << "\n";
     };
 

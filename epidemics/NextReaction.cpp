@@ -14,6 +14,7 @@ std::optional<event_t> simulate_next_reaction::step(rng_t& engine) {
         /* Fetch the next infection/reset time, i.e. the time where the next edge fires */
         const auto next = top_edge();
         pop_edge();
+        ++queue_steps_total;
         
         /* Perform event */
         std::optional<event_t> result;

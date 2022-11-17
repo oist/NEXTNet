@@ -95,6 +95,8 @@ public:
 	
 	void push_edge(active_edges_entry e) { active_edges.push(e.time, e); };
 #endif
+
+    std::size_t queue_steps_total = 0;
 	
 	std::optional<event_t> step_infection(const active_edges_entry& next, rng_t& engine);
 	
