@@ -39,13 +39,13 @@ void measure_runtime(rng_t& engine, Factory factory,
 {
 	using namespace std;
 	
-	//fill sizes
-	vector<int> sizes;
-	for (int i = 50; i < 15*1e6;)
-	{
-		sizes.push_back(i);
-		i = (int) floor(pow(i,1.1));
-	}
+    //fill sizes
+    vector<int> sizes;
+    for (int k = 7; k <= 20; k++)
+    {
+        int i = (int) floor(pow(2,k));
+        sizes.push_back(i);
+    }
 	
 	//fill times
 	vector<double> times;

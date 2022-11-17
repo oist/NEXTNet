@@ -9,10 +9,9 @@ using namespace std;
 int program_benchmark(int argc, const char * argv[]) {
     rng_t engine;
 
-    int method = atoi(argv[1]);
-    int SIM_MAX = atoi(argv[2]);
-    string filename = argv[3];
-
+    int method = atoi(argv[2]);
+    int SIM_MAX = atoi(argv[3]);
+    string filename = argv[4];
 
     const double MEAN_INFECTION = 10;
     const double VARIANCE_INFECTION = 1.0;
@@ -37,14 +36,38 @@ int program_benchmark(int argc, const char * argv[]) {
 		}, SIM_MAX, INFINITY, filename);
         //measure_running_time_next_reaction_ER(engine,SIM_MAX,filename);
         break;
-    case 1:
-        measure_running_time_next_reaction_BA(engine,SIM_MAX,filename);
+    case 1: // Next reaction + BA graph
+        measure_runtime(engine, [psi, rho](rng_t& engine, int n) {
+			struct {
+				std::unique_ptr<graph> nw;
+				std::unique_ptr<simulation_algorithm> simulator;
+			} env;
+			env.nw.reset(new scale_free(n, engine));
+			env.simulator.reset(new simulate_next_reaction(*env.nw, psi));
+			return env;
+		}, SIM_MAX, INFINITY, filename);
         break;
-    case 2:
-        measure_running_time_nMGA_ER(engine,SIM_MAX,filename);
+    case 2: // NMGA + ER graph
+        measure_runtime(engine, [R0, psi, rho](rng_t& engine, int n) {
+			struct {
+				std::unique_ptr<graph> nw;
+				std::unique_ptr<simulation_algorithm> simulator;
+			} env;
+			env.nw.reset(new erdos_reyni(n, R0, engine));
+			env.simulator.reset(new simulate_nmga(*env.nw, psi));
+			return env;
+		}, SIM_MAX, INFINITY, filename);
         break;
-    case 3:
-        measure_running_time_nMGA_BA(engine,SIM_MAX,filename);
+    case 3: // NMGA + BA graph
+        measure_runtime(engine, [psi, rho](rng_t& engine, int n) {
+			struct {
+				std::unique_ptr<graph> nw;
+				std::unique_ptr<simulation_algorithm> simulator;
+			} env;
+			env.nw.reset(new scale_free(n, engine));
+			env.simulator.reset(new simulate_nmga(*env.nw, psi));
+			return env;
+		}, SIM_MAX, INFINITY, filename);
         break;
    
     default:

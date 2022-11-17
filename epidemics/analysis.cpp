@@ -289,10 +289,10 @@ void measure_running_time_nMGA_BA(rng_t& engine,int SMAX, string filename){
 
     //fill sizes
     vector<int> sizes;
-    for (int i = 50; i < 2647355+1;)
+    for (int k = 7; k <= 20;)
     {
+        int i = (int) floor(pow(2,k));
         sizes.push_back(i);
-        i = (int) floor(pow(i,1.1));
     }
     
     //fill times
