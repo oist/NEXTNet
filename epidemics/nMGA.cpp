@@ -256,7 +256,7 @@ double simulate_nmga::find_maximal_dt(const class transmission_time& psi) {
 	// We find dt such that F(t + dt) - F(t) < dp,
 	// meaning such that moving from t to dt skips over
 	// at most probability mass dp
-	const double dp = 0.1;
+	const double dp = 0.01;
 	double max_dt = INFINITY;
 	for(double p = 1; p - dp > 0; p -= dp) {
 		const double dt = psi.survivalquantile(p - dp ) - psi.survivalquantile(p);
