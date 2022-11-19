@@ -47,6 +47,92 @@ index_t graph_adjacencylist::outdegree(node_t node) {
 
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
+/*-------------- NETWORK: WATTS-STROGATZ -------------*/
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+
+
+
+watts_strogatz::watts_strogatz(int size, double p, rng_t& engine){
+    /* To generate a watts strogatz network, although more expensive on memory,
+    * it was easier to use an adjacency matrix in order to rewire edges
+    * instead of using an adjacency list
+    * However, since the number of edges is not that big (N edges for N nodes), a set might have been
+    * more appropriate to store the edges?
+     
+    */
+    std::uniform_real_distribution<> rewire(0, 1);
+    std::uniform_int_distribution<> random_node(0, size);
+    
+    // Create a 1D lattice:
+    // Instead of creating a multi dimensional array we create a 1D array
+    //and arr[i][j] is then represented as arr[i*n+j]
+    std::vector<int> adj_mat(size*size, 0);
+    
+    for (node_t node = 1; node < size - 1; node++){
+        adj_mat[node * size + (node+1)] = 1;
+        adj_mat[node * size + (node-1)] = 1;
+//        //Symmetric matrix. lines below not necessary.
+//        adj_mat[(node+1) * size + (node)] = 1;
+//        adj_mat[(node-1) * size + (node)] = 1;
+    }
+    //Close the lattice at the boundaries to turn it into a ring
+    adj_mat[0 * size + (size-1)]=1;
+    adj_mat[0 * size + (size+1)]=1;
+    adj_mat[(size-1) * size + (size-2)]=1;
+
+    
+        
+    // Replace each edge u-v with probability p by a new edge u-w where w is sampled uniformly.
+    // If u-w already exists sample a new w until the edge is new.
+    for (node_t u = 0; u < size; u++){
+        for (node_t v = 0; v < u; v++){
+            
+            // check if edge u-v exists.
+            if (adj_mat[u * size + v ]==0)
+                continue;
+            
+            // rewire with probability p
+            if (rewire(engine) < p){
+                
+                //sample node from 1 to u without having to intialise new distribution:
+                node_t w = round( random_node(engine) * u / size);
+                int existing_edge = adj_mat[u * size + w];
+                
+                //Safety check: if deg(u) is already maxed out, skip this rewiring.
+//                if (adjacencylist[u].size() >= size - 1)
+//                    continue;
+                
+                // avoid self-edge and multiple-edge
+                while (w==u || existing_edge==1) {
+                    node_t w = round( random_node(engine) * u / size);
+                    existing_edge = adj_mat[u * size + w];
+                }
+                
+                //delete edge u-v and add edge u-w
+                adj_mat[u * size + v] = 0;
+                adj_mat[u * size + w] = 1;
+            }
+    
+        }
+    }
+    
+    
+    // Finally, initialise adjacency list
+    adjacencylist.resize(size);
+    for (node_t i = 0; i < size; i++){
+        for (node_t j = 0; j < i; j++){
+            if (adj_mat[i*size + j]==0)
+                continue;
+            adjacencylist[i].push_back(j);
+            adjacencylist[j].push_back(i);
+        }
+    }
+}
+
+
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
 /*-------------- NETWORK: ERDÖS-REYNI ----------------*/
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/

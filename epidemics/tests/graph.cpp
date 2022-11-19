@@ -68,7 +68,7 @@ TEST_CASE("Erdös-Reyni networks", "[graph]") {
  * specified mean.
  */
 TEST_CASE("Acyclic networks with modified R0","[graph]") {
-    std::mt19937 engine; 
+    std::mt19937 engine;
 
     for(double mean = 2; mean < 4; ++mean){
 
@@ -76,7 +76,7 @@ TEST_CASE("Acyclic networks with modified R0","[graph]") {
 
         // std::vector<int> data({});
         std::poisson_distribution<> poisson( modified_r0 );
-        
+
         double s = 0.0;
         int n = 0;
         for(int i=0; i < 100000; ++i){
@@ -107,7 +107,7 @@ TEST_CASE("Acyclic networks without root degree reduction", "[graph]") {
 
     // number of networks to generate and test
     const int M = 1000;
-    // number of nodes of each network to scan 
+    // number of nodes of each network to scan
     const int N = 1 + K + K*(K-1);
     double total_neighbours = 0.0;
     double total_nodes = 0.0;
@@ -149,7 +149,7 @@ TEST_CASE("Acyclic networks without root degree reduction", "[graph]") {
                 REQUIRE(v == 0);
             else
                 REQUIRE(v == 1);
-            
+
         }
     }
 
@@ -172,7 +172,7 @@ TEST_CASE("Acyclic networks with root degree reduction", "[graph]") {
 
     // number of networks to generate and test
     const int M = 1000;
-    // number of nodes of each network to scan 
+    // number of nodes of each network to scan
     const int N = 1 + (K-1) + (K-1)*(K-1);
     double tota_outgoing_neighbours = 0.0;
     double total_nodes = 0.0;
@@ -228,19 +228,19 @@ TEST_CASE("Acyclic networks with root degree reduction", "[graph]") {
  *
  * The variance and mean degree of the resulting network should match
  * with the initial degree list that was the input.
- * 
+ *
  */
 TEST_CASE("Configuration model networks","[graph]") {
     std::mt19937 engine;
     const int size = 10000;
 
     // Generate a Poisson graph with the configuration model
-    std::poisson_distribution<> poisson(3);    
+    std::poisson_distribution<> poisson(3);
     std::vector<int> degreeList(size,0);
     std::size_t total_degree = 0;
     for (int i = 0; i < size; i++)
     {
-        const int k = poisson(engine); 
+        const int k = poisson(engine);
         degreeList[i] = k;
         total_degree += k;
     }
@@ -255,14 +255,34 @@ TEST_CASE("Configuration model networks","[graph]") {
         total_degree += dp - d;
     }
 
-    config_model nw(degreeList, engine); 
+    config_model nw(degreeList, engine);
     std::size_t nw_degree = 0;
     for (node_t i = 0; i < size; i++)
         nw_degree += nw.adjacencylist[i].size();
     REQUIRE(std::abs((long)total_degree - (long)nw_degree) < 0.00001);
 }
 
-
+/**
+ * @brief Test case to verify `watts_strogatz::watts_strogatz`
+ *
+ * The number of edges should be preserved and should be equal to n
+ *
+ */
+TEST_CASE("Watts-Strogatz model","[graph]") {
+    std::mt19937 engine;
+    const int size = 1000;
+    const double p = 0.2;
+    
+    watts_strogatz network(size, p,engine);
+    
+    int number_of_edges = 0;
+    for (std::vector<int> nei_list : network.adjacencylist){
+        number_of_edges += (int) nei_list.size();
+    }
+    REQUIRE(std::abs(number_of_edges - 2* size ) < 0.01);
+    
+    
+}
 
 /**
  * @brief Test case to verify `knn`
@@ -278,6 +298,7 @@ TEST_CASE("Measuring average neighbour degree","[graph]") {
     double avg_degree = 3;
 
     erdos_reyni network(size, avg_degree,engine);
+    
 
     // double k1 = 0;
     // double k2 = 0;
@@ -289,7 +310,7 @@ TEST_CASE("Measuring average neighbour degree","[graph]") {
     double mean = 0;
     for (size_t i = 1; i < vec.size(); i++)
     {
-        mean += vec[i]/vec.size(); 
+        mean += vec[i]/vec.size();
     }
     
 
@@ -317,12 +338,12 @@ TEST_CASE("Measuring degree correlation","[graph]") {
 
 
     // Generate a Poisson graph with the configuration model
-    std::poisson_distribution<> poisson(3);    
+    std::poisson_distribution<> poisson(3);
     std::vector<int> degreeList(size,0);
     std::size_t total_degree = 0;
     for (int i = 0; i < size; i++)
     {
-        const int k = poisson(engine); 
+        const int k = poisson(engine);
         degreeList[i] = k;
         total_degree += k;
     }
@@ -337,7 +358,7 @@ TEST_CASE("Measuring degree correlation","[graph]") {
         total_degree += dp - d;
     }
 
-    config_model nw(degreeList, engine); 
+    config_model nw(degreeList, engine);
 
     r = assortativity(nw);
     REQUIRE(std::abs(r) < 0.05);

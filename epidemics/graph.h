@@ -66,6 +66,19 @@ public:
     /* Adjacency list of the graph */
     std::vector<std::vector<node_t>>  adjacencylist;
 };
+//
+
+//--------------------------------------
+//--------WATTS STROGATZ GRAPH----------
+//--------------------------------------
+
+/**
+ * @brief A random Watts-Strogatz network
+ */
+class watts_strogatz : public graph_adjacencylist {
+public:
+    watts_strogatz(int size,double p, rng_t& engine);
+};
 
 //--------------------------------------
 //--------ERDOS REYNI GRAPH-------------
