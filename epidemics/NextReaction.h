@@ -29,13 +29,15 @@ public:
     virtual std::optional<event_t> step(rng_t& engine);
 
     virtual bool is_infected(node_t) const;
+
+    std::unordered_set<node_t> infected;
     
     graph& network;
     const class transmission_time& psi;
     const class transmission_time* rho = nullptr;
 	bool edges_concurrent = false;
     bool shuffle_neighbours = true;
-    std::unordered_set<node_t> infected;
+    
     bool SIR = false;
     int removed = 0; // number of nodes that have recovered and cannot be re infected. (only active in the SIR case).
 

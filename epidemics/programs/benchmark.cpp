@@ -30,7 +30,6 @@ int program_benchmark(int argc, const char * argv[]) {
 
     transmission_time_lognormal psi(MEAN_INFECTION, VARIANCE_INFECTION);
     transmission_time_lognormal rho(MEAN_RECOVERY, VARIANCE_RECOVERY);
-
     switch (method)
     {
     case 0: // Next reaction + ER graph

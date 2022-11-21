@@ -51,6 +51,7 @@ DECLARE_PROGRAM(sis_meanfield_gamma_gamma);
 DECLARE_PROGRAM(benchmark);
 DECLARE_PROGRAM(benchmark_priorityqueue);
 DECLARE_PROGRAM(profile);
+DECLARE_PROGRAM(trajectory);
 
 int main(int argc, const char * argv[]) {
     if (argc < 2)

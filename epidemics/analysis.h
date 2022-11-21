@@ -87,3 +87,53 @@ void measure_runtime(rng_t& engine, Factory factory,
 		// export data
 	exportData(sizes,times,filename);
 }
+
+
+template<typename Factory>
+void simulate_trajectory(rng_t& engine, Factory factory, double I0, double TMAX, std::string filename)
+{
+	using namespace std;
+		
+	//Initialise vectors containing the trajectory points
+	std::vector<double> times;
+	std::vector<double> infected;
+	int nb_infected = 0;
+
+	// Create simulation environment
+	auto s = factory(engine);
+	simulation_algorithm& simulation = *s.simulator;
+
+	// I0 % of the network will be infected at t=0;
+	const int N = simulation.get_network().nodes();
+	const int N0 = floor(N * I0 / 100);
+	for (node_t node = 0; node < N0; node++)
+	{
+		simulation.add_infections({ std::make_pair(node, 0.0)});
+	}
+
+	// Run simulation, collect transmission times
+	while (true) {
+
+		auto point = simulation.step(engine);
+		if (!point || (point -> time > TMAX))
+			break;
+		times.push_back(point -> time);
+
+		switch (point -> kind)
+		{
+		case event_kind::infection:
+		case event_kind::outside_infection:
+			nb_infected +=1;
+			break;
+		case event_kind::reset:
+			nb_infected -= 1;
+			break;
+		default: throw std::logic_error("invalid event kind");
+			break;
+		}
+		infected.push_back(nb_infected);
+	}
+
+	// export data
+	exportData(times,infected,filename);
+}
