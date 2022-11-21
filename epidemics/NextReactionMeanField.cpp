@@ -85,8 +85,14 @@ std::optional<event_t> simulate_next_reaction_mean_field::step_reset(const activ
     /* The node cannot yet have resetted */
     assert(is_infected(next.node));
     
-    /* Mark node as no longer infected */
-    infected.erase(next.node);
+    /* if SIR, increase counter of removed/recovered nodes, and leave the node as infected so that 
+    * the node cannot be reinfected. (just a trick to avoid creating a new state, the node is not actually infected anymore.)
+    * else, Mark node as no longer infected. In that case the node simply returns to the susceptible state and can get reinfected again later. */
+    if (SIR){
+        removed += 1;
+    } else {
+        infected.erase(next.node);
+    }
 
     /* Return the reset event */
     return event_t { .kind = event_kind::reset, .node = next.node, .time = next.time };

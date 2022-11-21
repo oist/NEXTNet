@@ -8,8 +8,8 @@
 class simulate_next_reaction_mean_field : public simulation_algorithm {
 public:
     simulate_next_reaction_mean_field(int N_, double R0_, const class transmission_time& psi_,
-                                      const class transmission_time* rho_ = nullptr)
-        : N(N_), R0(R0_), psi(psi_), rho(rho_)
+                                      const class transmission_time* rho_ = nullptr, bool SIR_ = false)
+        : N(N_), R0(R0_), psi(psi_), rho(rho_), SIR(SIR_)
     {}
     
     virtual const class transmission_time& transmission_time() const;
@@ -27,12 +27,18 @@ public:
     const double R0;
     
     virtual graph& get_network() const;
+
+    int current_nb_of_infected(){
+        return (int) infected.size() - removed;
+    }
     
 private:
     const double p = R0 / (N - 1);
     const class transmission_time& psi;
     const class transmission_time* rho = nullptr;
     std::unordered_set<node_t> infected;
+    bool SIR = false;
+    int removed = 0; // number of individuals that have recovered and cannot be re-infected. (only active in the SIR case).
     
     struct active_edges_entry {
         /*
