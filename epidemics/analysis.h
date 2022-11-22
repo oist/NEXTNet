@@ -35,13 +35,13 @@ void measure_running_time_nMGA_BA(rng_t& engine, int SMAX, std::string filename)
 
 template<typename Factory>
 void measure_runtime(rng_t& engine, Factory factory,
-					 int SMAX, double TMAX, std::string filename)
+					 int SMAX, double TMAX,int KMAX, std::string filename)
 {
 	using namespace std;
 	
     //fill sizes
     vector<int> sizes;
-    for (int k = 7; k <= 20; k++)
+    for (int k = 7; k <= KMAX; k++)
     {
         int i = (int) floor(pow(2,k));
         sizes.push_back(i);

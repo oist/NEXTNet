@@ -213,8 +213,20 @@ std::optional<event_t> simulate_nmga::step(rng_t& engine)
 			case event_kind::reset: {
 				/* Reset event */
 				
-				/* Mark node as not infected */
-				infected.erase(edge.target);
+
+    
+				/* if SIR, increase counter of removed/recovered nodes, and leave the node as infected so that 
+				* the node cannot be reinfected. 
+				* ( this is just a trick to avoid having to create a new state, the node is not actually infected anymore and does not generate new infections.)
+				* else, Mark node as no longer infected. In that case the node simply returns to the susceptible state and can get reinfected again later. */
+				if (SIR){
+					removed += 1;
+				} else { // SIS
+					/* Mark node as not infected */
+					infected.erase(edge.target);
+				}
+
+
 				
 				/* Remove active edges originating from the resetted node */
 				for(auto i = active_edges.begin(); i != active_edges.end();) {

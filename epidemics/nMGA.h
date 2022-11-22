@@ -63,10 +63,12 @@ public:
     
 	simulate_nmga(graph& nw, const class transmission_time& psi_,
 				  const class transmission_time* rho_ = nullptr,
+				  bool SIR_ = false,
 				  bool shuffle_neighbours_ = true,
 				  int threshold = 100, double max_dt = NAN,
 				  double tauprec = 1e-6)
         :network(nw), psi(psi_), rho(rho_)
+		,SIR(SIR_)
         ,shuffle_neighbours(shuffle_neighbours_)
         ,approximation_threshold(threshold)
         ,maximal_dt((std::isfinite(max_dt) && (max_dt > 0)) ?
@@ -87,6 +89,9 @@ public:
 	virtual std::optional<event_t> step(rng_t& engine);
 
 private:
+	bool SIR = false;
+	int removed = 0;
+
 	static double find_maximal_dt(const class transmission_time& psi);
 	
 	void add_active_edge(const active_edges_entry& e) {

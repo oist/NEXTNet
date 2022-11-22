@@ -195,9 +195,10 @@ std::optional<event_t> simulate_next_reaction::step_infection(const active_edges
 std::optional<event_t> simulate_next_reaction::step_reset(const active_edges_entry& next, rng_t& engine) {
     /* The node cannot yet have resetted */
     assert(is_infected(next.node));
-    
+
     /* if SIR, increase counter of removed/recovered nodes, and leave the node as infected so that 
-    * the node cannot be reinfected. (just a trick to avoid creating a new state, the node is not actually infected anymore.)
+    * the node cannot be reinfected. 
+    * ( this is just a trick to avoid having to create a new state, the node is not actually infected anymore and does not generate new infections.)
     * else, Mark node as no longer infected. In that case the node simply returns to the susceptible state and can get reinfected again later. */
     if (SIR){
         removed += 1;
