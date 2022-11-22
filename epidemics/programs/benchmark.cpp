@@ -16,12 +16,15 @@ int program_benchmark(int argc, const char * argv[]) {
     string filename = argv[6];
 	
 	bool SIR;
-	bool shuffle_neighbours = true;
+	bool shuffle_neighbours;
 
 	if (SIR_){
 		SIR = true;
 		shuffle_neighbours = false;
 		TMAX = INFINITY;
+	} else {
+		shuffle_neighbours = true;
+		SIR = false;
 	}
 
 
@@ -67,7 +70,7 @@ int program_benchmark(int argc, const char * argv[]) {
 			env.nw.reset(new erdos_reyni(n, R0, engine));
 			env.simulator.reset(new simulate_nmga(*env.nw, psi,&rho,SIR,shuffle_neighbours));
 			return env;
-		}, SIM_MAX, TMAX,SIR ? 13 : 12, filename);
+		}, SIM_MAX, TMAX,13, filename);
         break;
     case 3: // NMGA + BA graph
         measure_runtime(engine, [psi, rho,SIR,shuffle_neighbours,TMAX](rng_t& engine, int n) {
@@ -78,7 +81,7 @@ int program_benchmark(int argc, const char * argv[]) {
 			env.nw.reset(new scale_free(n, engine));
 			env.simulator.reset(new simulate_nmga(*env.nw, psi, &rho, SIR, shuffle_neighbours));
 			return env;
-		}, SIM_MAX, TMAX,SIR ? 13 : 12, filename);
+		}, SIM_MAX, TMAX,13, filename);
         break;
    
     default:
