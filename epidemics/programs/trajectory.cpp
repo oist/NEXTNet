@@ -21,8 +21,8 @@ int program_trajectory(int argc, const char * argv[]) {
     * erdos-renyi with mean degree K: "K" (K will be converted into a double)
     * Barabasi-Albert (scale-free): "BA"
     * */ 
-    // string nw = argv[3];
-    double R0 = atof(argv[3]);
+    string nw = argv[3];
+    double R0 = stod(nw);
     // if (nw != "MF" && nw != "BA")
     //     R0 = atof(argv[3]);
     /* Parameters for the epidemic*/ 
