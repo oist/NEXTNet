@@ -64,17 +64,17 @@ public:
     
 	simulate_nmga(graph& nw, const class transmission_time& psi_,
 				  const class transmission_time* rho_ = nullptr,
-				  bool SIR_ = false,
 				  bool shuffle_neighbours_ = true,
 				  int threshold = 100, double max_dt = NAN,
-				  double tauprec = 1e-6)
+				  double tauprec = 1e-6,
+				  bool SIR_ = false)
         :network(nw), psi(psi_), rho(rho_)
-		,SIR(SIR_)
         ,shuffle_neighbours(shuffle_neighbours_)
         ,approximation_threshold(threshold)
         ,maximal_dt((std::isfinite(max_dt) && (max_dt > 0)) ?
                     max_dt : find_maximal_dt(psi_))
         ,tau_precision(tauprec)
+		,SIR(SIR_)
     {}
 
 	virtual graph& get_network() const;

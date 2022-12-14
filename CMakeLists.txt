@@ -30,6 +30,7 @@ SET(LIB_PCH epidemics/stdafx.h)
 set(SIMULATOR_SOURCES
     epidemics/analysis.cpp
     epidemics/main.cpp
+    epidemics/programs/average.cpp
     epidemics/programs/benchmark.cpp
     epidemics/programs/trajectory.cpp
     epidemics/programs/customtrajectory.cpp
