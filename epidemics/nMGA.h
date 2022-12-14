@@ -59,6 +59,7 @@ public:
     int approximation_threshold = 100;
     double maximal_dt = NAN;
     double tau_precision = 1e-6;
+	bool SIR = false;
     std::unordered_set<node_t> infected;
     
 	simulate_nmga(graph& nw, const class transmission_time& psi_,
@@ -89,7 +90,6 @@ public:
 	virtual std::optional<event_t> step(rng_t& engine);
 
 private:
-	bool SIR = false;
 	int removed = 0;
 
 	static double find_maximal_dt(const class transmission_time& psi);

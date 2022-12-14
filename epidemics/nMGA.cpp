@@ -213,8 +213,6 @@ std::optional<event_t> simulate_nmga::step(rng_t& engine)
 			case event_kind::reset: {
 				/* Reset event */
 				
-
-    
 				/* if SIR, increase counter of removed/recovered nodes, and leave the node as infected so that 
 				* the node cannot be reinfected. 
 				* ( this is just a trick to avoid having to create a new state, the node is not actually infected anymore and does not generate new infections.)

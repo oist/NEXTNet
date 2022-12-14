@@ -8,25 +8,17 @@ using namespace std;
 
 int program_trajectory(int argc, const char * argv[]) {
     rng_t engine;
-
-
-
+    
     /* The first argument is the epidemic type
     * "SIS","SI","SIR"
     * */ 
     string method = argv[2];
 
-    /* The second argument is the network
-    * mean field: "MF"
-    * erdos-renyi with mean degree K: "K" (K will be converted into a double)
-    * Barabasi-Albert (scale-free): "BA"
-    * */ 
-    string nw = argv[3];
-    double R0 = stod(nw);
+    double R0 = atof(argv[3]);
     // if (nw != "MF" && nw != "BA")
     //     R0 = atof(argv[3]);
     /* Parameters for the epidemic*/ 
-
+    
 	double MEAN_INFECTION = atof(argv[4]);
     double VARIANCE_INFECTION = atof(argv[5]);
     double MEAN_RECOVERY = atof(argv[6]);

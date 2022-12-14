@@ -47,7 +47,7 @@ int program_benchmark(int argc, const char * argv[]) {
 			env.nw.reset(new erdos_reyni(n, R0, engine));
 			env.simulator.reset(new simulate_next_reaction(*env.nw, psi,&rho,shuffle_neighbours,false, SIR));
 			return env;
-		}, SIM_MAX, TMAX,20, filename);
+		}, SIM_MAX, TMAX,14, filename);
         //measure_running_time_next_reaction_ER(engine,SIM_MAX,filename);
         break;
     case 1: // Next reaction + BA graph
@@ -59,7 +59,7 @@ int program_benchmark(int argc, const char * argv[]) {
 			env.nw.reset(new scale_free(n, engine));
 			env.simulator.reset(new simulate_next_reaction(*env.nw, psi,&rho,shuffle_neighbours,false,SIR));
 			return env;
-		}, SIM_MAX, TMAX,20,filename);
+		}, SIM_MAX, TMAX,24,filename);
         break;
     case 2: // NMGA + ER graph
         measure_runtime(engine, [R0, psi, rho,SIR,shuffle_neighbours,TMAX](rng_t& engine, int n) {
@@ -70,7 +70,7 @@ int program_benchmark(int argc, const char * argv[]) {
 			env.nw.reset(new erdos_reyni(n, R0, engine));
 			env.simulator.reset(new simulate_nmga(*env.nw, psi,&rho,SIR,shuffle_neighbours));
 			return env;
-		}, SIM_MAX, TMAX,13, filename);
+		}, SIM_MAX, TMAX,14, filename);
         break;
     case 3: // NMGA + BA graph
         measure_runtime(engine, [psi, rho,SIR,shuffle_neighbours,TMAX](rng_t& engine, int n) {
@@ -81,7 +81,7 @@ int program_benchmark(int argc, const char * argv[]) {
 			env.nw.reset(new scale_free(n, engine));
 			env.simulator.reset(new simulate_nmga(*env.nw, psi, &rho, SIR, shuffle_neighbours));
 			return env;
-		}, SIM_MAX, TMAX,13, filename);
+		}, SIM_MAX, TMAX,14, filename);
         break;
    
     default:
