@@ -21,6 +21,7 @@
 #include <queue>
 #include <deque>
 #include <optional>
+#include <variant>
 #include <utility>
 #include <numeric>
 #include <chrono>

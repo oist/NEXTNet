@@ -255,3 +255,15 @@ double assortativity(graph_adjacencylist& nw);
  */
 std::vector<std::vector<double>> Wkk(graph_adjacencylist& nw);
 std::vector<double> Wk(std::vector<std::vector<double>>& wkk);
+
+//--------------------------------------
+//----------DYNAMIC NETWORKS------------
+//--------------------------------------
+
+struct dynamic_network : virtual graph {
+	virtual absolutetime_t next() = 0;
+
+	virtual std::optional<network_event_t> step(rng_t& engine, absolutetime_t nexttime = NAN) = 0;
+
+	virtual void notify_epidemic_event(event_t ev);
+};
