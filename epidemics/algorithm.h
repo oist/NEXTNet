@@ -25,7 +25,7 @@ struct simulation_algorithm {
 
     virtual const class transmission_time* reset_time() const = 0;
 	
-	virtual absolutetime_t next() = 0;
+	virtual absolutetime_t next(rng_t& engine) = 0;
 
     virtual std::optional<event_t> step(rng_t& engine, absolutetime_t nexttime = NAN,
 										event_filter_t event_filter = std::nullopt) = 0;
@@ -38,7 +38,7 @@ struct simulation_algorithm {
 };
 
 struct epidemic_on_dynamic_network_simulation {
-	absolutetime_t next();
+	absolutetime_t next(rng_t& engine);
 
 	std::optional<network_or_epidemic_event_t> step(rng_t& engine, absolutetime_t nexttime = NAN) ;
 	

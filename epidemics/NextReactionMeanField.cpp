@@ -4,7 +4,7 @@
 #include "types.h"
 #include "utility.h"
 
-absolutetime_t simulate_next_reaction_mean_field::next()
+absolutetime_t simulate_next_reaction_mean_field::next(rng_t& engine)
 {
 	if (active_edges.empty())
 		return INFINITY;

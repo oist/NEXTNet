@@ -10,12 +10,12 @@ using namespace std::string_literals;
 //------------------------------------------
 
 absolutetime_t
-epidemic_on_dynamic_network_simulation::next()
+epidemic_on_dynamic_network_simulation::next(rng_t& engine)
 {
 	if (std::isnan(network_next))
-		network_next = network->next();
+		network_next = network->next(engine);
 	if (std::isnan(simulation_next))
-		simulation_next = simulation->next();
+		simulation_next = simulation->next(engine);
 	
 	return std::min(network_next, simulation_next);
 }
@@ -25,7 +25,7 @@ epidemic_on_dynamic_network_simulation::step(rng_t& engine, absolutetime_t nextt
 {
 	while (true) {
 		if (std::isnan(nexttime))
-			nexttime = next();
+			nexttime = next(engine);
 		
 		if (std::isinf(nexttime))
 			return std::nullopt;

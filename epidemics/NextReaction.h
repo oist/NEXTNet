@@ -26,7 +26,7 @@ public:
 
     virtual void add_infections(const std::vector<std::pair<node_t, absolutetime_t>>& v);
     
-	virtual absolutetime_t next();
+	virtual absolutetime_t next(rng_t& engine);
 
 	virtual std::optional<event_t> step(rng_t& engine, absolutetime_t nexttime = NAN,
 										event_filter_t event_filter = std::nullopt);
