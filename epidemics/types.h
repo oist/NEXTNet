@@ -106,6 +106,16 @@ struct network_event_t {
  */
 typedef std::variant<event_t, network_event_t> network_or_epidemic_event_t;
 
+/**
+ * An event filter, i.e. a function that can decide whether an event should occur (true)
+ * or be blocked (false) by returning a boolean value.
+ */
+typedef std::optional<std::function<bool(event_t)>> event_filter_t;
+
+inline bool is_event_blocked(event_t ev, event_filter_t evf) {
+	return evf && !(*evf)(ev);
+}
+
 /******************************
  * rng_t - the RNG (random number generator) to use
  *
