@@ -261,7 +261,7 @@ std::vector<double> Wk(std::vector<std::vector<double>>& wkk);
 //--------------------------------------
 
 struct dynamic_network : virtual graph {
-	virtual absolutetime_t next() = 0;
+	virtual absolutetime_t next(rng_t& engine) = 0;
 
 	virtual std::optional<network_event_t> step(rng_t& engine, absolutetime_t nexttime = NAN) = 0;
 
