@@ -38,7 +38,7 @@ private:
     };
 
     double current_time = NAN;
-
+	
     double lambda_total = NAN;
 
     std::priority_queue<outside_infections_entry, std::deque<outside_infections_entry>,
@@ -61,6 +61,10 @@ public:
     double tau_precision = 1e-6;
 	bool SIR = false;
     std::unordered_set<node_t> infected;
+	
+	/** The time of the next event, as determined by the last call of next().
+	 * Reset to NAN once th event is handled, i.e. by step() */
+	double next_time = NAN;
     
 	simulate_nmga(graph& nw, const class transmission_time& psi_,
 				  const class transmission_time* rho_ = nullptr,
@@ -87,7 +91,12 @@ public:
 	
 	virtual void add_infections(const std::vector<std::pair<node_t, absolutetime_t>>& v);
 	
-	virtual std::optional<event_t> step(rng_t& engine);
+	virtual absolutetime_t next(rng_t& engine);
+
+	virtual std::optional<event_t> step(rng_t& engine, absolutetime_t nexttime = NAN,
+										event_filter_t event_filter = std::nullopt);
+	
+	virtual void notify_infected_node_neighbour_added(network_event_t event);
 
 private:
 	int removed = 0;
