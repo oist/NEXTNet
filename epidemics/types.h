@@ -64,6 +64,7 @@ inline const char* name(event_kind kind) {
  */
 struct event_t {
     event_kind kind = event_kind::none;
+	node_t source_node = -1;
     node_t node = -1;
     absolutetime_t time = INFINITY;
 };
@@ -94,8 +95,8 @@ inline const char* name(network_event_kind kind) {
  */
 struct network_event_t {
 	network_event_kind kind = network_event_kind::none;
-	node_t node = -1;
-	node_t neighbour = -1;
+	node_t source_node = -1;
+	node_t target_node = -1;
 	absolutetime_t time = INFINITY;
 };
 
