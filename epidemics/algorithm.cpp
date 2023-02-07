@@ -81,6 +81,7 @@ epidemic_on_dynamic_network_simulation::step(rng_t& engine, absolutetime_t nextt
 			std::function<bool(event_t)> evf = std::bind(&epidemic_on_dynamic_network_simulation::simulation_event_filter,
 														 this, std::placeholders::_1);
 			std::optional<event_t> maybe_ev = simulation->step(engine, nexttime, evf);
+			nexttime = NAN;
 			if (!maybe_ev)
 				continue;
 			/* Got a simulation event */
