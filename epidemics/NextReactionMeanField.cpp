@@ -4,8 +4,22 @@
 #include "types.h"
 #include "utility.h"
 
+absolutetime_t simulate_next_reaction_mean_field::next()
+{
+	if (active_edges.empty())
+		return INFINITY;
+	
+	/* Fetch the next infection/reset time, i.e. the time where the next edge fires */
+	const auto next = active_edges.top();
+	return next.time;
+}
 
-std::optional<event_t> simulate_next_reaction_mean_field::step(rng_t& engine) {
+std::optional<event_t> simulate_next_reaction_mean_field::step(rng_t& engine, absolutetime_t nexttime,
+															   event_filter_t evf)
+{
+	if (evf)
+		throw std::logic_error("event filters are not supported for mean field simulations");
+	
     while (true) {
         /* If there are no more infection times, stop */
         if (active_edges.empty())
@@ -13,6 +27,8 @@ std::optional<event_t> simulate_next_reaction_mean_field::step(rng_t& engine) {
 
         /* Fetch the next infection/reset time, i.e. the time where the next edge fires */
         const auto next = active_edges.top();
+		if (next.time > nexttime)
+			return std::nullopt;
         active_edges.pop();
         
         /* Perform event */
@@ -85,7 +101,7 @@ std::optional<event_t> simulate_next_reaction_mean_field::step_reset(const activ
     /* The node cannot yet have resetted */
     assert(is_infected(next.node));
     
-    /* if SIR, increase counter of removed/recovered nodes, and leave the node as infected so that 
+    /* if SIR, increase counter of removed/recovered nodes, and leave the node as infected so that
     * the node cannot be reinfected. (just a trick to avoid creating a new state, the node is not actually infected anymore.)
     * else, Mark node as no longer infected. In that case the node simply returns to the susceptible state and can get reinfected again later. */
     if (SIR){

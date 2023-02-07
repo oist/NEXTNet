@@ -5,14 +5,32 @@
 #include "types.h"
 #include "utility.h"
 
-std::optional<event_t> simulate_next_reaction::step(rng_t& engine) {
+absolutetime_t simulate_next_reaction::next()
+{
+	if (active_edges.empty())
+		return INFINITY;
+	
+	/* Fetch the next infection/reset time, i.e. the time where the next edge fires */
+	const auto next = top_edge();
+	return next.time;
+}
+
+std::optional<event_t>
+simulate_next_reaction::step(rng_t& engine, absolutetime_t nexttime, event_filter_t evf)
+{
     while (true) {
         /* If there are no more infection times, stop */
         if (active_edges.empty())
 			return std::nullopt;
 
-        /* Fetch the next infection/reset time, i.e. the time where the next edge fires */
+        /* Fetch the next infection/reset time, i.e. the time where the next edge fires.
+		 * Return before handling the event if it's time is larger than nexttime
+		 */
         const auto next = top_edge();
+		if (next.time > nexttime)
+			return std::nullopt;
+		
+		/* Dequeue event */
         pop_edge();
         ++queue_steps_total;
         
@@ -21,10 +39,10 @@ std::optional<event_t> simulate_next_reaction::step(rng_t& engine) {
         switch (next.kind) {
             case event_kind::infection:
             case event_kind::outside_infection:
-				result = step_infection(next, engine);
+				result = step_infection(next, evf, engine);
 				break;
 			case event_kind::reset:
-				result = step_reset(next, engine);
+				result = step_reset(next, evf, engine);
 				break;
             default: throw std::logic_error("invalid event kind");
         }
@@ -35,7 +53,13 @@ std::optional<event_t> simulate_next_reaction::step(rng_t& engine) {
     }
 }
 
-std::optional<event_t> simulate_next_reaction::step_infection(const active_edges_entry& next, rng_t& engine) {
+void simulate_next_reaction::notify_infected_node_neighbour_added(network_event_t event)
+{
+	throw std::logic_error("unimplemented");
+}
+
+std::optional<event_t> simulate_next_reaction::step_infection(const active_edges_entry& next, event_filter_t evf, rng_t& engine)
+{
     /*
      * Here, the variables have the following meaning:
      *   next.time: The current time, i.e. the time at which the edge fired
@@ -92,9 +116,12 @@ std::optional<event_t> simulate_next_reaction::step_infection(const active_edges
 			push_edge(e);
         }
     }
-    
-    /* Check if the putatively infected node is already infected, if so we're done */
-    if (is_infected(next.node))
+
+	/* Create event */
+	const event_t ev { .kind = next.kind, .node = next.node, .source_node = next.source_node, .time = next.time };
+
+    /* Check if event is blocked or putatively infected node is already infected, if so we're done */
+    if (is_event_blocked(ev, evf) || is_infected(next.node))
         return std::nullopt;
     
     /* Node becomes infected.
@@ -189,13 +216,18 @@ std::optional<event_t> simulate_next_reaction::step_infection(const active_edges
     }
 
     /* Return the infection event */
-    return event_t { .kind = next.kind, .node = next.node, .time = next.time };
+	return ev;
 }
 
-std::optional<event_t> simulate_next_reaction::step_reset(const active_edges_entry& next, rng_t& engine) {
+std::optional<event_t> simulate_next_reaction::step_reset(const active_edges_entry& next, event_filter_t evf, rng_t& engine) {
     /* The node cannot yet have resetted */
     assert(is_infected(next.node));
 
+	/* Create event and query filter */
+	const event_t ev { .kind = event_kind::reset, .node = next.node, .source_node = next.source_node, .time = next.time };
+	if (is_event_blocked(ev, evf))
+		return std::nullopt;
+	
     /* if SIR, increase counter of removed/recovered nodes, and leave the node as infected so that 
     * the node cannot be reinfected. 
     * ( this is just a trick to avoid having to create a new state, the node is not actually infected anymore and does not generate new infections.)
@@ -207,7 +239,7 @@ std::optional<event_t> simulate_next_reaction::step_reset(const active_edges_ent
     }
 
     /* Return the reset event */
-    return event_t { .kind = event_kind::reset, .node = next.node, .time = next.time };
+	return ev;
 }
 
 void simulate_next_reaction::add_infections(const std::vector<std::pair<node_t, absolutetime_t>>& v) {
