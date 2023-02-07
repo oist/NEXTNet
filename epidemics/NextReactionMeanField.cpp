@@ -50,6 +50,11 @@ std::optional<event_t> simulate_next_reaction_mean_field::step(rng_t& engine, ab
     }
 }
 
+void simulate_next_reaction_mean_field::notify_infected_node_neighbour_added(network_event_t event)
+{
+	throw std::logic_error("unimplemented");
+}
+
 std::optional<event_t> simulate_next_reaction_mean_field::step_infection(const active_edges_entry& next, rng_t& engine) {
     /*
      * Here, the variables have the following meaning:
