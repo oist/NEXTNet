@@ -65,7 +65,7 @@ set(TESTS_PCH
 # *** Global build settings
 
 # Includes are relative to the epidemics/ folder
-include_directories(AFTER SYSTEM epidemics)
+include_directories(AFTER SYSTEM epidemics ext/dyndist)
 
 # Use C++17
 set(CMAKE_CXX_STANDARD 17)

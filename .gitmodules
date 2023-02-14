@@ -1,3 +1,6 @@
 [submodule "ext/prio_queue"]
 	path = ext/prio_queue
 	url = git@github.com:rollbear/prio_queue.git
+[submodule "ext/dyndist"]
+	path = ext/dyndist
+	url = https://github.com/fgp/dyndist.git

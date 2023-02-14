@@ -60,3 +60,5 @@ namespace bm = boost::math;
 #if NEXT_REACTION_QUEUE == EXT_PRIO_QUEUE
 #include "../ext/prio_queue/prio_queue.hpp"
 #endif
+
+#include "dyndist/vector_distribution.h"

@@ -12,6 +12,7 @@
 
 #include "random.h"
 #include "graph.h"
+#include "dynamic_graph.h"
 
 /**
  * TODO: Rename to epidemic_simulation_algorithm
