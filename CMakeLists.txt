@@ -78,7 +78,7 @@ set(CMAKE_VISIBILITY_INLINES_HIDDEN true)
 # Enable all warnings
 add_compile_options(-Wall)
 
-add_definitions(${CMAKE_DEFINES})
+add_compile_definitions(${CMAKE_DEFINES})
 
 # *** Dependencies
 
