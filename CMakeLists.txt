@@ -126,7 +126,7 @@ target_precompile_headers(simulator
     PUBLIC ${LIB_PCH})
 
 # Enable address and undefined behaviour sanitizers for debug builds
-if (SANITIZE)
+if (SANITIZE STREQUAL "debug")
     message("Address and thread sanitizer during simulations: Debug builds")
     target_compile_options(simulator PRIVATE
         "$<$<CONFIG:DEBUG>:-fsanitize=address>"
@@ -134,6 +134,14 @@ if (SANITIZE)
     target_link_options(simulator PRIVATE
         "$<$<CONFIG:DEBUG>:-fsanitize=address>"
         "$<$<CONFIG:DEBUG>:-fsanitize=undefined>")
+elseif (SANITIZE STREQUAL "always")
+    message("Address and thread sanitizer during simulations: Always")
+    target_compile_options(simulator PRIVATE
+        "-fsanitize=address"
+        "-fsanitize=undefined")
+    target_link_options(simulator PRIVATE
+        "-fsanitize=address"
+        "-fsanitize=undefined")
 else()
     message("Address and thread sanitizer during simulations: Disabled")
 endif()
@@ -166,14 +174,22 @@ else()
 endif()
 
 # Enable address and undefined behaviour sanitizers for all builds
-if (SANITIZE)
-    message("Address and thread sanitizer during tests: Enabled")
+if (SANITIZE STREQUAL "debug")
+    message("Address and thread sanitizer during tests: Debug builds")
     target_compile_options(tests PRIVATE
-        -fsanitize=address
-        -fsanitize=undefined)
+        "$<$<CONFIG:DEBUG>:-fsanitize=address>"
+        "$<$<CONFIG:DEBUG>:-fsanitize=undefined>")
     target_link_options(tests PRIVATE
-        -fsanitize=address
-        -fsanitize=undefined)
+        "$<$<CONFIG:DEBUG>:-fsanitize=address>"
+        "$<$<CONFIG:DEBUG>:-fsanitize=undefined>")
+elseif (SANITIZE STREQUAL "always")
+    message("Address and thread sanitizer during tests: Always")
+    target_compile_options(tests PRIVATE
+        "-fsanitize=address"
+        "-fsanitize=undefined")
+    target_link_options(tests PRIVATE
+        "-fsanitize=address"
+        "-fsanitize=undefined")
 else()
     message("Address and thread sanitizer during tests: Disabled")
 endif()
