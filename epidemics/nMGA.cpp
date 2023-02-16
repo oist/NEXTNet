@@ -139,12 +139,16 @@ absolutetime_t simulate_nmga::next(rng_t& engine)
 	return next_time;
 }
 
-std::optional<event_t> simulate_nmga::step(rng_t& engine, absolutetime_t nexttime, event_filter_t evf)
+std::optional<event_t> simulate_nmga::step(rng_t& engine, absolutetime_t max_time, event_filter_t evf)
 {
     while (true) {
 		/* Find time of next event unless already done */
 		if (std::isnan(next_time))
 			next(engine);
+		
+		/* If we'd run past max_time, don't to anything */
+		if (next_time > max_time)
+			return std::nullopt;
 		
         /* Check if the next event is an outside infection */
         while (!outside_infections.empty()) {
