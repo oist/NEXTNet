@@ -26,6 +26,10 @@ dynamic_erdos_reyni::dynamic_erdos_reyni(int size, double avg_degree, double tim
 		edges_absent -= k;
 		edges_present += k;
 	}
+	assert(edges_present % 2 == 0);
+	edges_absent /= 2;
+	assert(edges_present % 2 == 0);
+	edges_present /= 2;
 }
 
 absolutetime_t dynamic_erdos_reyni::next(rng_t& engine) {
@@ -104,19 +108,33 @@ std::optional<network_event_t> dynamic_erdos_reyni::step(rng_t& engine, absolute
 }
 
 void dynamic_erdos_reyni::add_edge(node_t node, node_t neighbour) {
-	std::vector<node_t>& al = this->adjacencylist.at(node);
-	al.push_back(neighbour);
+	std::vector<node_t>& al_node = this->adjacencylist.at(node);
+	std::vector<node_t>& al_neighbour = this->adjacencylist.at(neighbour);
+	al_node.push_back(neighbour);
+	al_neighbour.push_back(node);
 	weighted_nodes[node] += 1;
+	weighted_nodes[neighbour] += 1;
+	edges_absent -= 1;
+	edges_present += 1;
 }
 
 void dynamic_erdos_reyni::remove_edge(node_t node, int neighbour_index) {
-	/* Remove neighbour by swapping with the last element and then removing it */
-	assert(weighted_nodes[node] > 0);
-	std::vector<node_t>& al = this->adjacencylist.at(node);
-	assert(!al.empty());
 	using std::swap;
-	swap(al[neighbour_index], al.back());
-	al.pop_back();
+	/* Remove forward edge */
+	assert(weighted_nodes[node] > 0);
+	std::vector<node_t>& al_node = this->adjacencylist.at(node);
+	assert(!al_node.empty());
+	const node_t neighbour = al_node[neighbour_index];
+	swap(al_node[neighbour_index], al_node.back());
+	al_node.pop_back();
 	weighted_nodes[node] -= 1;
+	/* Remove reverse edge */
+	std::vector<node_t>& al_neighbour = this->adjacencylist.at(neighbour);
+	auto i = std::find(al_neighbour.begin(), al_neighbour.end(), node);
+	swap(*i, al_neighbour.back());
+	al_neighbour.pop_back();
+	weighted_nodes[neighbour] -= 1;
+	edges_absent += 1;
+	edges_present -= 1;
 }
 
