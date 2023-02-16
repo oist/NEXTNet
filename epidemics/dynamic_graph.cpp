@@ -38,7 +38,7 @@ absolutetime_t dynamic_erdos_reyni::next(rng_t& engine) {
 	
 	/* Gillespie algorith: Draw time of next event */
 	const double rate = edges_absent * alpha + edges_present * beta;
-	next_time = std::exponential_distribution<>(rate)(engine);
+	next_time = current_time + std::exponential_distribution<>(rate)(engine);
 	return next_time;
 }
 
@@ -49,8 +49,12 @@ std::optional<network_event_t> dynamic_erdos_reyni::step(rng_t& engine, absolute
 	if (max_time < next_time)
 		return std::nullopt;
 	
+	/* Get time of next event */
 	const double event_time = next_time;
 	next_time = NAN;
+	
+	/* Update current time */
+	current_time = event_time;
 	
 	/* Draw type of event, edge appearing or disappearing */
 	const double p = alpha * edges_absent / (alpha*edges_absent + beta*edges_present);

@@ -41,6 +41,9 @@ struct dynamic_erdos_reyni : virtual dynamic_network, virtual erdos_reyni {
 	/* Rate with which present edges vanish */
 	const double beta;
 	
+	/* Current time (time of last event) */
+	absolutetime_t current_time = 0.0;
+	
 	/* Time of next edge appearing or vanishing */
 	absolutetime_t next_time = NAN;
 	
