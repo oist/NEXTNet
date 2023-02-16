@@ -67,8 +67,7 @@ std::optional<network_event_t> dynamic_erdos_reyni::step(rng_t& engine, absolute
 		 * TODO: This is inefficient if the graph is almost complete.
 		 */
 		node_t src, dst;
-		bool redo = false;
-		do {
+		while (true) {
 			std::uniform_int_distribution<node_t> uniform_node(0, this->adjacencylist.size()-1);
 			/* Draw source node */
 			src = uniform_node(engine);
@@ -76,16 +75,11 @@ std::optional<network_event_t> dynamic_erdos_reyni::step(rng_t& engine, absolute
 			do {
 				dst = uniform_node(engine);
 			} while (src == dst);
-			/* Check whether dst is already a neighbour of src, if so repeat */
-			redo = false;
+			/* Stop if the edge is indeed currently absent */
 			std::vector<node_t>& al = this->adjacencylist.at(src);
-			for(node_t nn: al) {
-				if (nn == dst) {
-					redo = true;
-					break;
-				}
-			}
-		} while(redo);
+			if (std::find(al.begin(), al.end(), dst) == al.end())
+				break;
+		};
 		/* Add edge and return event */
 		add_edge(src, dst);
 		return network_event_t {
