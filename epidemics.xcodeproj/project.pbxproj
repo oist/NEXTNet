@@ -45,6 +45,7 @@
 		F9D26B8F27E22A31005A272D /* libtestrunner.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F9D26B6C27E22410005A272D /* libtestrunner.a */; };
 		F9E1264A291CB5F100C9A221 /* NextReactionMeanField.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F9E12648291CB5F100C9A221 /* NextReactionMeanField.cpp */; };
 		F9E1264B291CB5F100C9A221 /* NextReactionMeanField.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F9E12648291CB5F100C9A221 /* NextReactionMeanField.cpp */; };
+		F9EACDE5299E7904009C2002 /* dynamic_graph.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F9EACDE4299E7904009C2002 /* dynamic_graph.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -122,6 +123,7 @@
 		F9D26B6C27E22410005A272D /* libtestrunner.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libtestrunner.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		F9E12648291CB5F100C9A221 /* NextReactionMeanField.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NextReactionMeanField.cpp; sourceTree = "<group>"; };
 		F9E12649291CB5F100C9A221 /* NextReactionMeanField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NextReactionMeanField.h; sourceTree = "<group>"; };
+		F9EACDE4299E7904009C2002 /* dynamic_graph.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = dynamic_graph.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -240,6 +242,7 @@
 				F99299292910E2B3001432FD /* nmga.cpp */,
 				F946A5E0281255F2000668F9 /* random.cpp */,
 				F99D7A9B27E21CC000200C18 /* graph.cpp */,
+				F9EACDE4299E7904009C2002 /* dynamic_graph.cpp */,
 				F99D7A9A27E21CC000200C18 /* stdafx.h */,
 				F992992A2910E2B3001432FD /* analytical.h */,
 				F99299262910E2B3001432FD /* gnuplot-iostream.h */,
@@ -414,6 +417,7 @@
 				98B96F7D28111BB800A78600 /* nMGA.cpp in Sources */,
 				F946A5E2281255F2000668F9 /* random.cpp in Sources */,
 				F921EC882952A7BF00667339 /* algorithm.cpp in Sources */,
+				F9EACDE5299E7904009C2002 /* dynamic_graph.cpp in Sources */,
 				F9E1264B291CB5F100C9A221 /* NextReactionMeanField.cpp in Sources */,
 				F992992C2910E2B3001432FD /* plot.cpp in Sources */,
 				F9CFD98B299B55A90078FD70 /* dynamic_graph.cpp in Sources */,
