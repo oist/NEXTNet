@@ -28,8 +28,9 @@ dynamic_erdos_reyni::dynamic_erdos_reyni(int size, double avg_degree, double tim
 	}
 	assert(edges_present % 2 == 0);
 	edges_absent /= 2;
-	assert(edges_present % 2 == 0);
+	assert(edges_absent % 2 == 0);
 	edges_present /= 2;
+	assert((edges_present + edges_absent) == size * (size - 1) / 2);
 }
 
 absolutetime_t dynamic_erdos_reyni::next(rng_t& engine) {
@@ -76,7 +77,7 @@ std::optional<network_event_t> dynamic_erdos_reyni::step(rng_t& engine, absolute
 				dst = uniform_node(engine);
 			} while (src == dst);
 			/* Stop if the edge is indeed currently absent */
-			std::vector<node_t>& al = this->adjacencylist.at(src);
+			const  std::vector<node_t>& al = this->adjacencylist.at(src);
 			if (std::find(al.begin(), al.end(), dst) == al.end())
 				break;
 		};
@@ -92,7 +93,7 @@ std::optional<network_event_t> dynamic_erdos_reyni::step(rng_t& engine, absolute
 		 * their degree, and then drawing a random neighbour of that node
 		 */
 		const node_t src = weighted_nodes(engine);
-		std::vector<node_t>& al = this->adjacencylist.at(src);
+		const std::vector<node_t>& al = this->adjacencylist.at(src);
 		std::uniform_int_distribution<node_t> uniform_neighbour(0, al.size()-1);
 		const int neighbour_index = uniform_neighbour(engine);
 		/* Remove edge */
@@ -106,18 +107,24 @@ std::optional<network_event_t> dynamic_erdos_reyni::step(rng_t& engine, absolute
 }
 
 void dynamic_erdos_reyni::add_edge(node_t node, node_t neighbour) {
+	/* add forward edge */
 	std::vector<node_t>& al_node = this->adjacencylist.at(node);
-	std::vector<node_t>& al_neighbour = this->adjacencylist.at(neighbour);
 	al_node.push_back(neighbour);
-	al_neighbour.push_back(node);
 	weighted_nodes[node] += 1;
+
+	/* add reverse edge */
+	std::vector<node_t>& al_neighbour = this->adjacencylist.at(neighbour);
+	al_neighbour.push_back(node);
 	weighted_nodes[neighbour] += 1;
+	
+	/* update counters */
 	edges_absent -= 1;
 	edges_present += 1;
 }
 
 void dynamic_erdos_reyni::remove_edge(node_t node, int neighbour_index) {
 	using std::swap;
+	
 	/* Remove forward edge */
 	assert(weighted_nodes[node] > 0);
 	std::vector<node_t>& al_node = this->adjacencylist.at(node);
@@ -126,12 +133,15 @@ void dynamic_erdos_reyni::remove_edge(node_t node, int neighbour_index) {
 	swap(al_node[neighbour_index], al_node.back());
 	al_node.pop_back();
 	weighted_nodes[node] -= 1;
+	
 	/* Remove reverse edge */
 	std::vector<node_t>& al_neighbour = this->adjacencylist.at(neighbour);
 	auto i = std::find(al_neighbour.begin(), al_neighbour.end(), node);
 	swap(*i, al_neighbour.back());
 	al_neighbour.pop_back();
 	weighted_nodes[neighbour] -= 1;
+	
+	/* update counters */
 	edges_absent += 1;
 	edges_present -= 1;
 }
