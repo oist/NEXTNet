@@ -13,24 +13,20 @@ void dynamic_network::notify_epidemic_event(event_t ev) {
 
 dynamic_erdos_reyni::dynamic_erdos_reyni(int size, double avg_degree, double timescale, rng_t& engine)
 	:erdos_reyni(size, avg_degree, engine)
-	,edge_probability(avg_degree / size)
+	,edge_probability(avg_degree / (size - 1))
 	,alpha(edge_probability * timescale)
 	,beta((1.0 - edge_probability) * timescale)
-	,edges_absent(size * (size - 1) / 2)
 	,edges_present(0)
 {
 	/* Initial degree-weights node distribution and present/absent edge counters */
 	for(node_t i = 0; i < this->adjacencylist.size(); ++i) {
 		const unsigned k = this->adjacencylist[i].size();
 		weighted_nodes.push_back(k);
-		edges_absent -= k;
 		edges_present += k;
 	}
-	assert(edges_present % 2 == 0);
-	edges_absent /= 2;
 	assert(edges_absent % 2 == 0);
 	edges_present /= 2;
-	assert((edges_present + edges_absent) == size * (size - 1) / 2);
+	edges_absent = size * (size - 1) / 2 - edges_present;
 }
 
 absolutetime_t dynamic_erdos_reyni::next(rng_t& engine) {
