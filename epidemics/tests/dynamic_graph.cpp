@@ -34,16 +34,16 @@ TEST_CASE("dynamic Erdös-Reyni", "[dynamic_graph]") {
 	std::array<std::vector<std::pair<double, bool>>, E> edge_presence;
 	
 	std::mt19937 engine;
-	dynamic_erdos_reyni g(N, N*P, TAU, engine);
+	dynamic_erdos_reyni g(N, (N-1)*P, TAU, engine);
 	
 	/* Initial edge_presence */
 	for(node_t a=0; a < N; ++a) {
 		const int k = g.outdegree(a);
 		for(int j=0; j < k; ++j) {
 			const node_t b = g.neighbour(a, j);
-			if (a > b)
-				break;
 			const int e = edge_index(a, b);
+			if (a > b)
+				continue;
 			REQUIRE(edge_presence[e].empty());
 			edge_presence[e].emplace_back(0, true);
 		}
@@ -60,10 +60,12 @@ TEST_CASE("dynamic Erdös-Reyni", "[dynamic_graph]") {
 		
 		switch (event.kind) {
 			case network_event_kind::neighbour_added:
+				REQUIRE(edge_presence[e].back().second == false);
 				edge_presence[e].emplace_back(event.time, true);
 				break;
 				
 			case network_event_kind::neighbour_removed:
+				REQUIRE(edge_presence[e].back().second == true);
 				edge_presence[e].emplace_back(event.time, false);
 				break;
 
