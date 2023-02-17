@@ -79,35 +79,38 @@ TEST_CASE("dynamic Erdös-Reyni", "[dynamic_graph]") {
 			continue;
 		
 		/* Compute present probability and times between events */
+		std::vector<double> times_present;
+		std::vector<double> times_absent;
 		double p_present = 0;
-		std::vector<double> time_present;
-		std::vector<double> time_absent;
 
 		const auto end = p.end();
 		auto curr = p.begin();
 		auto prev = curr++;
 		for(; curr != end; prev = curr++) {
+			const double dt = curr->first - prev->first;
 			REQUIRE(prev->second != curr->second);
 			if (curr->second) {
-				/* appears */
-				time_absent[curr->first - prev->first];
-			} else {
-				/* disappears */
-				time_present[curr->first - prev->first];
-				p_present += (curr->first - prev->first) / TMAX;
+				/* appeared */
+				times_absent.push_back(dt);
+			}
+			else{
+				/* disappeared */
+				times_present.push_back(dt);
+				p_present += dt / TMAX;
 			}
 		}
-		if (!prev->second) {
-			/* last event was disappear */
-			time_absent[TMAX - prev->first];
-		} else {
-			/* last event was appear */
-			time_present[TMAX - prev->first];
+		if (prev->second) {
+			/* last event: appeared */
 			p_present += (TMAX - prev->first) / TMAX;
 		}
-
 		
+		const double time_present = std::accumulate(times_present.begin(), times_present.end(), 0.0) / times_present.size();
+		const double time_absent = std::accumulate(times_absent.begin(), times_absent.end(), 0.0) / times_absent.size();
+
 		/* TODO: Check that time_present, time_absent is exponentially distributed */
-		std::cout << "p: " << p_present << std::endl;
+		std::cout << "event: " << (times_present.size() + times_absent.size()) << ", ";
+		std::cout << "present: " << std::setprecision(3) << time_present << ", ";
+		std::cout << "absent: " << std::setprecision(3) << time_absent << ", ";
+		std::cout << "P(present): " << std::setprecision(3) << p_present << std::endl;
 	}
 }
