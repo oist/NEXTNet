@@ -15,7 +15,7 @@ dynamic_erdos_reyni::dynamic_erdos_reyni(int size, double avg_degree, double tim
 	:erdos_reyni(size, avg_degree, engine)
 	,edge_probability(avg_degree / size)
 	,alpha(edge_probability * timescale)
-	,beta(edge_probability * timescale)
+	,beta((1.0 - edge_probability) * timescale)
 	,edges_absent(size * (size - 1) / 2)
 	,edges_present(0)
 {
