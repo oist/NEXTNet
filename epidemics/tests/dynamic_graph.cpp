@@ -37,10 +37,10 @@ inline double ztest(double mean_obs, double sd_true, double mean_true) {
  * @brief Test case to verify `dynamic_erdos_reyni`
  */
 TEST_CASE("dynamic Erdös-Reyni", "[dynamic_graph]") {
-	const int N = 100;
+	const int N = 20;
 	const int E = N*(N-1)/2;
-	const double P = 0.5;
-	const double TAU = 10;
+	const double P = 0.1;
+	const double TAU = 1;
 	const double TMAX = 10000/TAU;
 	
 	/* Keep a list of pairs (t, f) for every edge which stores the times
