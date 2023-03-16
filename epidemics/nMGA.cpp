@@ -174,7 +174,7 @@ std::optional<event_t> simulate_nmga::step(rng_t& engine, absolutetime_t max_tim
 
             /* Report event */
             return event_t { .kind = event_kind::outside_infection,
-                             .node = inf.node, .source_node = -1,
+                             .source_node = -1, .node = inf.node,
 							 .time = current_time };
         }
 
@@ -213,7 +213,7 @@ std::optional<event_t> simulate_nmga::step(rng_t& engine, absolutetime_t max_tim
         remove_active_edge(edge_i);
 		
 		/* Create event and query filter */
-		event_t ev { .kind = edge.kind, .node = edge.target, .source_node = edge.source, .time = current_time };
+		event_t ev { .kind = edge.kind, .source_node = edge.source, .node = edge.target, .time = current_time };
 		if (is_event_blocked(ev, evf))
 			continue;
 		

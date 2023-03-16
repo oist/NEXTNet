@@ -118,7 +118,7 @@ std::optional<event_t> simulate_next_reaction::step_infection(const active_edges
     }
 
 	/* Create event */
-	const event_t ev { .kind = next.kind, .node = next.node, .source_node = next.source_node, .time = next.time };
+	const event_t ev { .kind = next.kind, .source_node = next.source_node, .node = next.node, .time = next.time };
 
     /* Check if event is blocked or putatively infected node is already infected, if so we're done */
     if (is_event_blocked(ev, evf) || is_infected(next.node))
@@ -224,7 +224,7 @@ std::optional<event_t> simulate_next_reaction::step_reset(const active_edges_ent
     assert(is_infected(next.node));
 
 	/* Create event and query filter */
-	const event_t ev { .kind = event_kind::reset, .node = next.node, .source_node = next.source_node, .time = next.time };
+	const event_t ev { .kind = event_kind::reset, .source_node = next.source_node, .node = next.node, .time = next.time };
 	if (is_event_blocked(ev, evf))
 		return std::nullopt;
 	
