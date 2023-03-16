@@ -5,6 +5,7 @@ project(Epidemics-On-Networks LANGUAGES CXX)
 # *** Simulation library sources and headers
 set(LIB_SOURCES
     epidemics/graph.cpp
+    epidemics/dynamic_graph.cpp
     epidemics/random.cpp
     epidemics/simulation.cpp
     epidemics/NextReaction.cpp
@@ -15,6 +16,7 @@ set(LIB_SOURCES
 set(LIB_HEADERS
     epidemics/types.h
     epidemics/graph.h
+    epidemics/dynamic_graph.h
     epidemics/random.h
     epidemics/algorithm.h
     epidemics/NextReaction.h
@@ -47,6 +49,7 @@ set(TESTS_SOURCES
     epidemics/tests/plot.cpp
     epidemics/tests/main.cpp
     epidemics/tests/graph.cpp
+    epidemics/tests/dynamic_graph.cpp
     epidemics/tests/random.cpp
     epidemics/tests/nextreaction.cpp
     epidemics/tests/nmga.cpp)
