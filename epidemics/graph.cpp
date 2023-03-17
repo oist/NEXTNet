@@ -56,14 +56,14 @@ index_t graph_adjacencylist::outdegree(node_t node) {
 watts_strogatz::watts_strogatz(node_t size, int k, double p, rng_t& engine) {
     if (k % 2 != 0)
         throw std::range_error("k must be even for Watts-Strogatz networks");
-
+	
     /* First, create circular 1D lattice. For nodes labelled 0,...,n-1, each node is connected
      * to k/2 neighbours on each side, i.e. i to i-k/2,...,i-1,i+1,...,i+k/2/. We
      * actually insert a self-loop into the neighbour set here as well, that will avoid
      * checking for self-loops later, and we'll ignore them we constructing the actual
      * adjacency list.
      */
-    std::vector<interger_set<node_t>> nodes_neighbours;
+    std::vector<integer_set<node_t>> nodes_neighbours;
     nodes_neighbours.resize(size);
     for(node_t i=0; i < size; ++i) {
         for (node_t j=i-k/2; j <= i+k/2; ++j)
@@ -71,17 +71,18 @@ watts_strogatz::watts_strogatz(node_t size, int k, double p, rng_t& engine) {
     }
 
     /* Replace each edge u-v with probability p by a new edge u-w where w is sampled uniformly. */
+	std::bernoulli_distribution rewire(p);
     for (node_t u = 0; u < size; u++) {
         /* Copy neighbours into a vector */
-        const auto& u_neighbours = nodes_neighbours[u];
+        auto& u_neighbours = nodes_neighbours[u];
         std::vector<node_t> vs;
-        vs.reserve(u_neighbours.size);
-        u_neighbours.copy_to(std::back_inserter(vs));
+        vs.reserve(u_neighbours.size());
+		std::copy(u_neighbours.begin(), u_neighbours.end(), std::back_inserter(vs));
 
         /* Iterate over neighbours and rewire */
         for(node_t v: vs) {
             /* Rewire with probability p (and skip self-loops inserted above) */
-            if ((v != u) || !rewire(engine))
+            if ((v == u) || !rewire(engine))
                 continue;
 
             /* Draw replacement w, delete u-v, add u-w.
@@ -99,9 +100,12 @@ watts_strogatz::watts_strogatz(node_t size, int k, double p, rng_t& engine) {
     }
     
     /* Finally, initialise adjacency list */
-    adjacencylis.resize(size);
-    for (node_t i = 0; i < size; i++)
-        nodes_neighbours[i].copy_to(std::back_inserter(adjacencylist[i]));
+    adjacencylist.resize(size);
+	for (node_t i = 0; i < size; i++) {
+		adjacencylist[i].reserve(nodes_neighbours[i].size());
+		std::copy(nodes_neighbours[i].begin(), nodes_neighbours[i].end(),
+				  std::back_inserter(adjacencylist[i]));
+	}
 }
 
 

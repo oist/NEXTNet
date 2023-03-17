@@ -65,12 +65,42 @@ double inverse_survival_function(double u, double precision, T f, Args... args) 
 }
 
 template<typename T>
-struct interger_set {
+struct integer_set {
+	typedef T element_type;
+	
+private:
+	struct range {
+		range() :first(0), last(0) {}
+		
+		range(element_type f, element_type l)
+			:first(f), last(l)
+		{}
+
+		element_type first;
+		element_type last;		
+	};
+	
+	struct range_cmp {
+		typedef void is_transparent;
+		
+		bool operator()(const range& a, const range& b) const {
+			return (a.last < b.last) || ((a.last == b.last) && (a.first < b.first));
+		}
+		
+		bool operator()(const range& a, const element_type b) const {
+			return (a.last < b);
+		}
+	};
+
+	std::size_t ntotal;
+	std::set<range, range_cmp> ranges;
+	
+public:
     std::size_t size() const {
-        return size;
+        return ntotal;
     }
 
-    bool insert(T e) {
+    bool insert(element_type e) {
         /* The possible cases of existing ranges are:
          *    I: [a,     e-1]  [c > e+1, d] ==> extend [a, e-1] to [a, e]
          *   II: [a, b < e-1]  [e+1    , d] ==> extend [e+1, d] to [e, d]
@@ -91,7 +121,7 @@ struct interger_set {
         if ((i == ranges.end()) || (i->first > e + 1)) {
             const range r(e, e);
             ranges.insert(r);
-            size++;
+			ntotal++;
             return true;
         }
 
@@ -103,14 +133,14 @@ struct interger_set {
             assert(i->last == e - 1);
 
             /* III. Before we extend the range, check whether we would create two adjacent ranges */
-            const s = std::next(i);
+            const auto s = std::next(i);
             if ((s != ranges.end()) && (s->first == e + 1)) {
                 /* Next range is adjacent, i.e. we have [a, e - 1], [ e, b ]. Merge ranges. */
                 const range r(i->first, s->last);
                 ranges.erase(i);
                 ranges.erase(s);
                 ranges.insert(r);
-                size++;
+				ntotal++;
                 return true;
             }
 
@@ -118,26 +148,26 @@ struct interger_set {
             const range r(i->first, e);
             ranges.erase(i);
             ranges.insert(r);
-            size++;
+			ntotal++;
             return true;
         }
 
         /* Vb. The range contains e, we're done */
         if (i->first <= e) {
-            assert(i->second >= e);
+            assert(i->last >= e);
             return false;
         }
 
         /* II. Extend the range. */
         assert(i->first == e + 1);
-        const range r(e, i->second);
+        const range r(e, i->last);
         ranges.erase(i);
         ranges.insert(r);
-        size++;
+		ntotal++;
         return true;
     }
 
-    bool erase(T e) {
+    bool erase(element_type e) {
         /* The possible cases are:
          *    Ia: [a < e, e]      ==> restrict to [a, e-1]
          *    Ib: [e, b > e]      ==> restrict to [e+1, b]
@@ -156,38 +186,39 @@ struct interger_set {
         /* IIIa or IIIb. Do nothing */
         if ((i == ranges.end()) || (i->first > e))
             return false;
-        assert(i->second >= e);
+        assert(i->last >= e);
 
         /* Ia or Ic. Restrict range */
-        if (i->second == e) {
+        if (i->last == e) {
+			const element_type f = i->first;
             ranges.erase(i);
             /* Ia. Insert restricted range if non-empty */
-            if (i->first < e) {
-                const range r(i->first, e-1);
+            if (f < e) {
+                const range r(f, e-1);
                 ranges.insert(r);
             }
-            size--;
+			ntotal--;
             return true;
         }
 
         /* Ib. Restrict range */
         if (i->first == e) {
-            const range r(e+1, i->second);
+            const range r(e+1, i->last);
             ranges.erase(i);
             ranges.insert(r);
-            size--;
+			ntotal--;
             return true;
         }
 
         /* II. Split range */
         assert(i->first <= e-1);
-        assert(i->second >= e+1);
+        assert(i->last >= e+1);
         const range r1(i->first, e-1);
-        const range r2(e+1, i->second);
+        const range r2(e+1, i->last);
         ranges.erase(i);
         ranges.insert(r1);
         ranges.insert(r2);
-        size--;
+		ntotal--;
         return true;
     }
 
@@ -198,7 +229,7 @@ struct interger_set {
         for(const auto& r: ranges) {
             /* Compute fraction q covered by ranges up to the current one */
             l += (r.last - r.first + 1);
-            const double q = (double)l / size;
+            const double q = (double)l / ntotal;
             /* If that fraction exceeds p, we found our range */
             if (q > p) {
                 /* Pick uniformly random from the range */
@@ -209,25 +240,26 @@ struct interger_set {
         throw std::logic_error("draw_present() failed due to internal inconsistency");
     }
 
-    T draw_absent(T lb, T ub, rng_t& engine) {
-        if (!ranges.empty() && (ranges.first().first < lb))
+    T draw_absent(element_type lb, element_type ub, rng_t& engine) {
+        if (!ranges.empty() && (ranges.begin()->first < lb))
             throw std::range_error("lower bound is larger than smallest element of integer_set");
-        if (!ranges.empty() && (ranges.last().second > ub))
+        if (!ranges.empty() && (ranges.rbegin()->last > ub))
             throw std::range_error("upper bound is smaller than largest element of integer_set");
 
         /* Draw random gap between ranges, with probabilities prop. to the gaps' lengths */
         const double p = std::uniform_real_distribution<>(0, 1)(engine);
-        const std::size_t size_gaps = ((st::size_t)(ub - lb) + 1 - size);
-        const std::size_t l = 0;
-        const T a = lb;
-        auto i = ranges.begin();
-        const auto e = ranges.end();
+        const std::size_t size_gaps = ((std::size_t)(ub - lb) + 1 - ntotal);
+		auto i = ranges.begin();
+		const auto e = ranges.end();
+        std::size_t l = 0;
+        T a = lb;
+		bool done = false;
         do {
             /* Gap extends to beginning of next range or upper bound for last range */
             range gap;
             if (i != e) {
                 gap = range(a, i->first - 1);
-                a = i->second + 1;
+                a = i->last + 1;
                 i++;
             } else {
                 gap = range(a, ub);
@@ -239,22 +271,57 @@ struct interger_set {
             /* If that fraction exceeds p, we found our range */
             if (q > p) {
                 /* Pick uniformly random from the gap */
-                return std::uniform_int_distribution<T>(gap.first, gap.second)(engine);
+                return std::uniform_int_distribution<T>(gap.first, gap.last)(engine);
             }
         } while (!done);
 
         throw std::logic_error("draw_present() failed due to internal inconsistency");
     }
 
-private:
-    struct range {
-        range(T f, T l) :first(f), last(l)
-        {}
+	struct const_iterator {
+		typedef typename std::set<range>::const_iterator range_iterator;
+		
+		const_iterator(range_iterator rng, std::size_t idx)
+			:current_range(rng), current_index(idx)
+		{}
+		
+		T operator*() const { return current_range->first + current_index; }
+		
+		const_iterator& operator++() {
+			const std::size_t last_index = (current_range->last - current_range->first);
+			if (current_index == last_index) {
+				++current_range;
+				current_index = 0;
+			} else
+				++current_index;
+			return *this;
+		}
+		const_iterator operator++(int) { const_iterator r = *this; *this++; return r; }
 
-        T first;
-        T last;
-    };
-
-    std::size_t size;
-    std::set<range> ranges;
+		const_iterator& operator--() {
+			if (current_index == 0) {
+				--current_range;
+				current_index = (current_range->last - current_range->first);
+			} else
+				--current_index;
+			return *this;
+		}
+		const_iterator operator--(int) { const_iterator r = *this; *this--; return r; }
+		
+		bool operator==(const const_iterator& other) const {
+			return (this->current_range == other.current_range) &&
+			       (this->current_index == other.current_index);
+		}
+		
+		bool operator!=(const const_iterator& other) const {
+			return !(*this == other);
+		}
+		
+	private:
+		range_iterator current_range;
+		std::size_t current_index;
+	};
+	
+	const_iterator begin() const { return const_iterator(ranges.begin(), 0); }
+	const_iterator end() const { return const_iterator(ranges.end(), 0); }
 };
