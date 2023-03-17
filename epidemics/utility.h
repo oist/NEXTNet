@@ -285,7 +285,7 @@ public:
 			:current_range(rng), current_index(idx)
 		{}
 		
-		T operator*() const { return current_range->first + current_index; }
+		T operator*() const { return current_range->first + (element_type)current_index; }
 		
 		const_iterator& operator++() {
 			const std::size_t last_index = (current_range->last - current_range->first);
