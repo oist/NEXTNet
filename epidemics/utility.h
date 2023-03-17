@@ -64,11 +64,28 @@ double inverse_survival_function(double u, double precision, T f, Args... args) 
     return (l + r) / 2;
 }
 
+/**
+ * @brief Represents a set of integers the allows random elements and non-elements to be sampled
+ *
+ * Operations `insert()` and `erase()` take time O(log n) where n is the number of elements in the set.
+ * Operations `draw_present()` and `draw_absent()` take time O(k) where k is the number of
+ * consecutive ranges of elements in the set.
+ *
+ * NOTE: The performance of `draw_element()` and `draw_complement()` could be improved to
+ * almost O(1) by using a dynamic distribution to draw the range. This is a possible future improvement.
+ */
 template<typename T>
 struct integer_set {
+	/**
+	 * @brief The type of the set elements. Must be an integer type.
+	 */
 	typedef T element_type;
+	typedef T value_type;
 	
 private:
+	/**
+	 * @brief A range of consecutive elements
+	 */
 	struct range {
 		range() :first(0), last(0) {}
 		
@@ -80,6 +97,12 @@ private:
 		element_type last;		
 	};
 	
+	/**
+	 * @brief Comparisom functor for `range`
+	 *
+	 * Sorts lexicographically by (`last`, `first`). Also allows comparison with single integers, in
+	 * which case they are compared against `last`.
+	 */
 	struct range_cmp {
 		typedef void is_transparent;
 		
@@ -92,15 +115,111 @@ private:
 		}
 	};
 
-	std::size_t ntotal;
+	std::size_t ntotal = 0;
 	std::set<range, range_cmp> ranges;
 	
 public:
+	/**
+	 * @brief Interator for interating over the members of a `integer_set`
+	 *
+	 * Conforms to BidirectionalIterator. Only a const iterator is provided since
+	 * the semantics of iterating while replacing individual elements of a
+	 * `integer_set` are not well-defined.
+	 */
+	struct const_iterator {
+		typedef typename std::set<range>::const_iterator range_iterator;
+		
+		const_iterator(range_iterator rng, std::size_t idx)
+			:current_range(rng), current_index(idx)
+		{}
+		
+		T operator*() const { return current_range->first + (element_type)current_index; }
+		
+		const_iterator& operator++() {
+			const std::size_t last_index = (current_range->last - current_range->first);
+			if (current_index == last_index) {
+				++current_range;
+				current_index = 0;
+			} else
+				++current_index;
+			return *this;
+		}
+		const_iterator operator++(int) { const_iterator r = *this; *this++; return r; }
+
+		const_iterator& operator--() {
+			if (current_index == 0) {
+				--current_range;
+				current_index = (current_range->last - current_range->first);
+			} else
+				--current_index;
+			return *this;
+		}
+		const_iterator operator--(int) { const_iterator r = *this; *this--; return r; }
+		
+		bool operator==(const const_iterator& other) const {
+			return (this->current_range == other.current_range) &&
+				   (this->current_index == other.current_index);
+		}
+		
+		bool operator!=(const const_iterator& other) const {
+			return !(*this == other);
+		}
+		
+	private:
+		friend struct integer_set;
+		
+		range_iterator current_range;
+		std::size_t current_index;
+	};
+
+	/**
+	 * @brief For compatibility with STL algorithms
+	 */
+	using iterator = const_iterator;
+	
+	/**
+	 * @brief Returns an iterator to the first element.
+	 */
+	const_iterator begin() const { return const_iterator(ranges.begin(), 0); }
+
+	/**
+	 * @brief Returns an iterator past the last element.
+	 */
+	const_iterator end() const { return const_iterator(ranges.end(), 0); }
+
+	/**
+	 * @brief Creates an empty `integer_set`
+	 */
+	integer_set() {};
+
+	/**
+	 * @brief Creates a set containg the elements between iterators `first` and `last`.
+	 */
+	template<typename It>
+	integer_set(It first, It last) {
+		std::copy(first, last, std::inserter(*this, end()));
+	}
+
+	/**
+	 * @brief Creates a set containg the specified elements
+	 */
+	integer_set(std::initializer_list<T> init)
+		:integer_set(init.begin(), init.end())
+	{}
+
+	/**
+	 * @brief Number of elements of the set
+	 */
     std::size_t size() const {
         return ntotal;
     }
 
-    bool insert(element_type e) {
+	/**
+	 * @brief Inserts the interger into the set unless it is already a member
+	 * @return `true` if the integer was inserted, `false` if it was already a member.
+	 * @throw `std::range_error` if the element is too large or small to be inserted
+	 */
+    std::pair<const_iterator, bool> insert(element_type e) {
         /* The possible cases of existing ranges are:
          *    I: [a,     e-1]  [c > e+1, d] ==> extend [a, e-1] to [a, e]
          *   II: [a, b < e-1]  [e+1    , d] ==> extend [e+1, d] to [e, d]
@@ -120,16 +239,16 @@ public:
         /* IVa or IVb. Just insert [e, e] */
         if ((i == ranges.end()) || (i->first > e + 1)) {
             const range r(e, e);
-            ranges.insert(r);
+            const auto i2 = ranges.insert(r).first;
 			ntotal++;
-            return true;
+			return { const_iterator(i2, 0), true };
         }
 
         /* I, III or Va. If the range contains e - 1, extend or merge it */
         if (i->first <= e - 1) {
             /* Va. If it already extends past e, we're done */
             if (i->last >= e)
-                return false;
+                return { const_iterator(i, (std::size_t)(e - i->first)), false };
             assert(i->last == e - 1);
 
             /* III. Before we extend the range, check whether we would create two adjacent ranges */
@@ -139,35 +258,51 @@ public:
                 const range r(i->first, s->last);
                 ranges.erase(i);
                 ranges.erase(s);
-                ranges.insert(r);
+                const auto i2 = ranges.insert(r).first;
 				ntotal++;
-                return true;
+                return { const_iterator(i2, (std::size_t)(e - i2->first)), true };
             }
 
             /* I. Finally, extend the range */
             const range r(i->first, e);
             ranges.erase(i);
-            ranges.insert(r);
+            const auto i2 = ranges.insert(r).first;
 			ntotal++;
-            return true;
+			return { const_iterator(i2, (std::size_t)(e - i2->first)), true };
         }
 
         /* Vb. The range contains e, we're done */
         if (i->first <= e) {
             assert(i->last >= e);
-            return false;
+			return { const_iterator(i, (std::size_t)(e - i->first)), false };
         }
 
         /* II. Extend the range. */
         assert(i->first == e + 1);
         const range r(e, i->last);
         ranges.erase(i);
-        ranges.insert(r);
+        const auto i2 = ranges.insert(r).first;
 		ntotal++;
-        return true;
+		return { const_iterator(i2, (std::size_t)(e - i2->first)), true };
     }
-
-    bool erase(element_type e) {
+	
+	/**
+	 * @brief Inserts the interger into the set unless it is already a member. The hint is ignored.
+	 * @return `true` if the integer was inserted, `false` if it was already a member.
+	 * @throw `std::range_error` if the element is too large or small to be inserted
+	 *
+	 * This exists only to be compatible with `std::set`. The hint for the insertion position is currently ignored.
+	 */
+	const_iterator insert(const_iterator hint, element_type e) {
+		return insert(e).first;
+	}
+	
+	/**
+	 * @brief Removes the interger from the set if it is currently  a member
+	 * @return Number of elements removed (0 or 1)
+	 * @throw `std::range_error` if the element is too large or small to be contained in the set.
+	 */
+    std::size_t erase(element_type e) {
         /* The possible cases are:
          *    Ia: [a < e, e]      ==> restrict to [a, e-1]
          *    Ib: [e, b > e]      ==> restrict to [e+1, b]
@@ -185,7 +320,7 @@ public:
 
         /* IIIa or IIIb. Do nothing */
         if ((i == ranges.end()) || (i->first > e))
-            return false;
+            return 0;
         assert(i->last >= e);
 
         /* Ia or Ic. Restrict range */
@@ -198,7 +333,7 @@ public:
                 ranges.insert(r);
             }
 			ntotal--;
-            return true;
+            return 1;
         }
 
         /* Ib. Restrict range */
@@ -207,7 +342,7 @@ public:
             ranges.erase(i);
             ranges.insert(r);
 			ntotal--;
-            return true;
+            return 1;
         }
 
         /* II. Split range */
@@ -219,10 +354,61 @@ public:
         ranges.insert(r1);
         ranges.insert(r2);
 		ntotal--;
-        return true;
+        return 1;
     }
 
-    T draw_present(rng_t& engine) {
+	/**
+	 * @brief Removes the element pointed to by the iterator
+	 * @return Iterator to the first element past the removed one (can be end()).
+	 */
+	const_iterator erase(const const_iterator& i) {
+		return erase(i, std::next(i));
+	}
+
+	/**
+	 * @brief Removes the elements between the two iterators ([first, last)]
+	 * @return Iterator to the first element past the last removed one (can be end()).
+	 */
+	const_iterator erase(const_iterator a, const const_iterator& b) {
+		/* Nothing to do for empty range of elements */
+		if (a == b)
+			return b;
+		
+		while (a.current_range != b.current_range) {
+			/* Remove remaining part of current range of a */
+			const range r(a.current_range->first, *a - 1);
+			const auto i2 = ranges.erase(a.current_range);
+			if (r.first <= r.last)
+				ranges.insert(r);
+			/* Let iterator point to first element of next range */
+			a = const_iterator(i2, 0);
+		}
+		
+		/* Sanity check */
+		if (a.current_index >= b.current_index)
+			std::logic_error("iterators don't form a valid range of elements");
+		
+		/* If b point to the first element of a range or end(), we're done */
+		if (b.current_index == 0)
+			return b;
+		
+		/* Remove part between a (inclusive) and b (exclusive) by splitting */
+		const range r1(a.current_range->first, *a - 1);
+		const range r2(*b, b.current_range->last);
+		assert(r1.last + 1 < r2.first);
+		ranges.erase(a.current_range);
+		if (r1.first <= r1.last)
+			ranges.insert(r1);
+		const auto i2 = ranges.insert(r2).first;
+		return const_iterator(i2, 0);
+	}
+	
+	/**
+	 * @brief Draws a random element from the set
+	 * @return The element selected
+	 * @throw `std::runtime_error` if the set is empty
+	 */
+    T draw_element(rng_t& engine) {
 		if (ntotal == 0)
 			throw std::runtime_error("cannot draw a present element from an empty integer_set");
 		
@@ -243,7 +429,13 @@ public:
         throw std::logic_error("draw_present() failed due to internal inconsistency");
     }
 
-    T draw_absent(element_type lb, element_type ub, rng_t& engine) {
+	/**
+	 * @brief Draws a random integer [lb, ub] that is not an element of the set
+	 * @return The integer selected
+	 * @throw `std::runtime_error` if the set contains all integers [lb, ub].
+	 *        `std::range_error` if the lower or upper bound is invalid.
+	 */
+    T draw_complement(element_type lb, element_type ub, rng_t& engine) {
 		if (lb > ub)
 			throw std::range_error("lower bound exceeds upper bound");
 		if (!ranges.empty() && (ranges.begin()->first < lb))
@@ -285,53 +477,10 @@ public:
         throw std::logic_error("draw_present() failed due to internal inconsistency");
     }
 
-	struct const_iterator {
-		typedef typename std::set<range>::const_iterator range_iterator;
-		
-		const_iterator(range_iterator rng, std::size_t idx)
-			:current_range(rng), current_index(idx)
-		{}
-		
-		T operator*() const { return current_range->first + (element_type)current_index; }
-		
-		const_iterator& operator++() {
-			const std::size_t last_index = (current_range->last - current_range->first);
-			if (current_index == last_index) {
-				++current_range;
-				current_index = 0;
-			} else
-				++current_index;
-			return *this;
-		}
-		const_iterator operator++(int) { const_iterator r = *this; *this++; return r; }
-
-		const_iterator& operator--() {
-			if (current_index == 0) {
-				--current_range;
-				current_index = (current_range->last - current_range->first);
-			} else
-				--current_index;
-			return *this;
-		}
-		const_iterator operator--(int) { const_iterator r = *this; *this--; return r; }
-		
-		bool operator==(const const_iterator& other) const {
-			return (this->current_range == other.current_range) &&
-			       (this->current_index == other.current_index);
-		}
-		
-		bool operator!=(const const_iterator& other) const {
-			return !(*this == other);
-		}
-		
-	private:
-		range_iterator current_range;
-		std::size_t current_index;
-	};
-	
-	const_iterator begin() const { return const_iterator(ranges.begin(), 0); }
-	const_iterator end() const { return const_iterator(ranges.end(), 0); }
-	
+	/**
+	 * @brief Finds the specified element in the set.
+	 * @return An iterator pointing to the element, or `end()` if the element is not in the set.
+	 */
 	const_iterator find(element_type e) const {
 		/* The possible cases are:
 		 *   Ia:                  ==> not found
@@ -348,5 +497,5 @@ public:
 		
 		/* II. Found */
 		return const_iterator(i, (std::size_t)(e - i->first));
-	}	
+	}
 };
