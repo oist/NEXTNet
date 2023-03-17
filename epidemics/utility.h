@@ -71,7 +71,7 @@ double inverse_survival_function(double u, double precision, T f, Args... args) 
  * Operations `draw_present()` and `draw_absent()` take time O(k) where k is the number of
  * consecutive ranges of elements in the set.
  *
- * NOTE: The performance of `draw_present()` and `draw_absent()` could be improved to
+ * NOTE: The performance of `draw_element()` and `draw_complement()` could be improved to
  * almost O(1) by using a dynamic distribution to draw the range. This is a possible future improvement.
  */
 template<typename T>
@@ -166,10 +166,12 @@ public:
 		}
 		
 	private:
+		friend struct integer_set;
+		
 		range_iterator current_range;
 		std::size_t current_index;
 	};
-	
+
 	/**
 	 * @brief For compatibility with STL algorithms
 	 */
@@ -360,17 +362,45 @@ public:
 	 * @return Iterator to the first element past the removed one (can be end()).
 	 */
 	const_iterator erase(const const_iterator& i) {
-		const const_iterator j = i;
-		++j;
-		return erase(i, j);
+		return erase(i, std::next(i));
 	}
 
 	/**
 	 * @brief Removes the elements between the two iterators ([first, last)]
 	 * @return Iterator to the first element past the last removed one (can be end()).
 	 */
-	const_iterator erase(const const_iterator& first, const const_iterator& last) {
-		throw std::logic_error("implement me");
+	const_iterator erase(const_iterator a, const const_iterator& b) {
+		/* Nothing to do for empty range of elements */
+		if (a == b)
+			return b;
+		
+		while (a.current_range != b.current_range) {
+			/* Remove remaining part of current range of a */
+			const range r(a.current_range->first, *a - 1);
+			const auto i2 = ranges.erase(a.current_range);
+			if (r.first <= r.last)
+				ranges.insert(r);
+			/* Let iterator point to first element of next range */
+			a = const_iterator(i2, 0);
+		}
+		
+		/* Sanity check */
+		if (a.current_index >= b.current_index)
+			std::logic_error("iterators don't form a valid range of elements");
+		
+		/* If b point to the first element of a range or end(), we're done */
+		if (b.current_index == 0)
+			return b;
+		
+		/* Remove part between a (inclusive) and b (exclusive) by splitting */
+		const range r1(a.current_range->first, *a - 1);
+		const range r2(*b, b.current_range->last);
+		assert(r1.last + 1 < r2.first);
+		ranges.erase(a.current_range);
+		if (r1.first <= r1.last)
+			ranges.insert(r1);
+		const auto i2 = ranges.insert(r2).first;
+		return const_iterator(i2, 0);
 	}
 	
 	/**
@@ -378,7 +408,7 @@ public:
 	 * @return The element selected
 	 * @throw `std::runtime_error` if the set is empty
 	 */
-    T draw_present(rng_t& engine) {
+    T draw_element(rng_t& engine) {
 		if (ntotal == 0)
 			throw std::runtime_error("cannot draw a present element from an empty integer_set");
 		
@@ -405,7 +435,7 @@ public:
 	 * @throw `std::runtime_error` if the set contains all integers [lb, ub].
 	 *        `std::range_error` if the lower or upper bound is invalid.
 	 */
-    T draw_absent(element_type lb, element_type ub, rng_t& engine) {
+    T draw_complement(element_type lb, element_type ub, rng_t& engine) {
 		if (lb > ub)
 			throw std::range_error("lower bound exceeds upper bound");
 		if (!ranges.empty() && (ranges.begin()->first < lb))

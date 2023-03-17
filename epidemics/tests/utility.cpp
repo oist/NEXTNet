@@ -99,6 +99,20 @@ TEST_CASE("integer_set", "[utility]") {
 	set_t s3 { 1, 3, 4, 2, 6 };
 	std::vector<int> v18; std::copy(s3.begin(), s3.end(), std::back_inserter(v18));
 	REQUIRE(v18 == std::vector { 1, 2, 3, 4, 6 });
+	
+	const auto i1 = s3.find(2);
+	REQUIRE(*i1 == 2);
+	const auto i2 = s3.find(4);
+	REQUIRE(*i2 == 4);
+	const auto i3 = s3.erase(i1, i2);
+	REQUIRE(*i3 == 4);
+	s3.insert(5);
+	std::vector<int> v19; std::copy(s3.begin(), s3.end(), std::back_inserter(v19));
+	REQUIRE(v19 == std::vector { 1, 4, 5, 6 });
+	const auto i4 = s3.erase(s3.find(1), s3.find(5));
+	REQUIRE(*i4 == 5);
+	std::vector<int> v20; std::copy(s3.begin(), s3.end(), std::back_inserter(v20));
+	REQUIRE(v20 == std::vector { 5, 6 });
 }
 
 TEST_CASE("integer_set draw_present", "[utility]") {
@@ -118,7 +132,7 @@ TEST_CASE("integer_set draw_present", "[utility]") {
 	auto e = s.end(); --e;
 	counts.resize(*e + 1);
 	for(int i=0; i < N; ++i) {
-		const int r = s.draw_present(rng);
+		const int r = s.draw_element(rng);
 		counts.at(r) += 1;
 	}
 	
@@ -149,7 +163,7 @@ TEST_CASE("integer_set draw_absent", "[utility]") {
 	std::vector<int> counts;
 	counts.resize(K+1);
 	for(int i=0; i < N; ++i) {
-		const int r = s.draw_absent(0, 10, rng);
+		const int r = s.draw_complement(0, 10, rng);
 		counts.at(r) += 1;
 	}
 	

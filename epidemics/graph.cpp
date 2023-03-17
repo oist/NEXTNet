@@ -90,7 +90,7 @@ watts_strogatz::watts_strogatz(node_t size, int k, double p, rng_t& engine) {
             /* Draw replacement w, delete u-v, add u-w.
              * The self-loops ensure that we don't draw w == u
              */
-            const node_t w = u_neighbours.draw_absent(0, size-1, engine);
+            const node_t w = u_neighbours.draw_complement(0, size-1, engine);
             const bool s1 = u_neighbours.erase(v); assert(s1);
             const bool s2 = nodes_neighbours[v].erase(u); assert(s2);
             const bool s3 = u_neighbours.insert(w).second; assert(s3);
