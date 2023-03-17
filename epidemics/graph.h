@@ -77,7 +77,11 @@ public:
  */
 class watts_strogatz : public graph_adjacencylist {
 public:
-    watts_strogatz(int size,double p, rng_t& engine);
+	watts_strogatz(node_t size, int k, double p, rng_t& engine);
+
+	watts_strogatz(int size, double p, rng_t& engine)
+		:watts_strogatz(size, 2, p, engine)
+	{}
 };
 
 //--------------------------------------
