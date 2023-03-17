@@ -223,6 +223,9 @@ public:
     }
 
     T draw_present(rng_t& engine) {
+		if (ntotal == 0)
+			throw std::runtime_error("cannot draw a present element from an empty integer_set");
+		
         /* Draw random range, with probabilities prop. to the ranges' lengths */
         const double p = std::uniform_real_distribution<>(0, 1)(engine);
         std::size_t l = 0;
@@ -241,10 +244,14 @@ public:
     }
 
     T draw_absent(element_type lb, element_type ub, rng_t& engine) {
-        if (!ranges.empty() && (ranges.begin()->first < lb))
+		if (lb > ub)
+			throw std::range_error("lower bound exceeds upper bound");
+		if (!ranges.empty() && (ranges.begin()->first < lb))
             throw std::range_error("lower bound is larger than smallest element of integer_set");
         if (!ranges.empty() && (ranges.rbegin()->last > ub))
             throw std::range_error("upper bound is smaller than largest element of integer_set");
+		if (ntotal == (ub - lb + 1))
+			throw std::runtime_error("cannot draw from empty integer_set");
 
         /* Draw random gap between ranges, with probabilities prop. to the gaps' lengths */
         const double p = std::uniform_real_distribution<>(0, 1)(engine);
