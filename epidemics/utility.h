@@ -291,8 +291,8 @@ public:
 	 *
 	 * This exists only to be compatible with `std::set`. The hint for the insertion position is currently ignored.
 	 */
-	std::pair<const_iterator, bool> insert(const_iterator hint, element_type e) {
-		return insert(e);
+	const_iterator insert(const_iterator hint, element_type e) {
+		return insert(e).first;
 	}
 	
 	/**

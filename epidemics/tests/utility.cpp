@@ -96,7 +96,7 @@ TEST_CASE("integer_set", "[utility]") {
 	std::vector<int> v17; std::copy(s2.begin(), s2.end(), std::back_inserter(v17));
 	REQUIRE(v17.begin() == v17.end());
 	
-	//set_t s3 { 1, 3, 4, 2, 6 };
+	set_t s3 { 1, 3, 4, 2, 6 };
 }
 
 TEST_CASE("integer_set draw_present", "[utility]") {
