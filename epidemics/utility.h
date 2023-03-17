@@ -225,7 +225,7 @@ public:
     T draw_present(rng_t& engine) {
         /* Draw random range, with probabilities prop. to the ranges' lengths */
         const double p = std::uniform_real_distribution<>(0, 1)(engine);
-        const std::size_t l = 0;
+        std::size_t l = 0;
         for(const auto& r: ranges) {
             /* Compute fraction q covered by ranges up to the current one */
             l += (r.last - r.first + 1);
@@ -324,4 +324,22 @@ public:
 	
 	const_iterator begin() const { return const_iterator(ranges.begin(), 0); }
 	const_iterator end() const { return const_iterator(ranges.end(), 0); }
+	
+	const_iterator find(element_type e) const {
+		/* The possible cases are:
+		 *   Ia:                  ==> not found
+		 *   Ib: [a > e, b > e]   ==> not found
+		 *   II: [a <= e, b >= e] ==> found
+		 */
+		
+		/* Find the first range [x, y] that does not wholly lie left of e, i.e. where y >= e*/
+		const auto i = ranges.lower_bound(e);
+		
+		/* Ia or Ib. Not found */
+		if ((i == ranges.end()) || (i->first > e))
+			return end();
+		
+		/* II. Found */
+		return const_iterator(i, (std::size_t)(e - i->first));
+	}	
 };
