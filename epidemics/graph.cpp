@@ -53,81 +53,61 @@ index_t graph_adjacencylist::outdegree(node_t node) {
 
 
 
-watts_strogatz::watts_strogatz(int size, double p, rng_t& engine){
-    /* To generate a watts strogatz network, although more expensive on memory,
-    * it was easier to use an adjacency matrix in order to rewire edges
-    * instead of using an adjacency list
-    * However, since the number of edges is not that big (N edges for N nodes), a set might have been
-    * more appropriate to store the edges?
-     
-    */
-    std::uniform_real_distribution<> rewire(0, 1);
-    std::uniform_int_distribution<> random_node(0, size);
-    
-    // Create a 1D lattice:
-    // Instead of creating a multi dimensional array we create a 1D array
-    //and arr[i][j] is then represented as arr[i*n+j]
-    std::vector<int> adj_mat(size*size, 0);
-    
-    for (node_t node = 1; node < size - 1; node++){
-        adj_mat[node * size + (node+1)] = 1;
-        adj_mat[node * size + (node-1)] = 1;
-//        //Symmetric matrix. lines below not necessary.
-//        adj_mat[(node+1) * size + (node)] = 1;
-//        adj_mat[(node-1) * size + (node)] = 1;
+watts_strogatz::watts_strogatz(node_t size, int k, double p, rng_t& engine) {
+    if (k % 2 != 0)
+        throw std::range_error("k must be even for Watts-Strogatz networks");
+	
+    /* First, create circular 1D lattice. For nodes labelled 0,...,n-1, each node is connected
+     * to k/2 neighbours on each side, i.e. i to i-k/2,...,i-1,i+1,...,i+k/2/. We
+     * actually insert a self-loop into the neighbour set here as well, that will avoid
+     * checking for self-loops later, and we'll ignore them we constructing the actual
+     * adjacency list.
+     */
+    std::vector<integer_set<node_t>> nodes_neighbours;
+    nodes_neighbours.resize(size);
+    for(node_t i=0; i < size; ++i) {
+        for (node_t j=i-k/2; j <= i+k/2; ++j)
+            nodes_neighbours[i].insert((size + j) % size);
     }
-    //Close the lattice at the boundaries to turn it into a ring
-    adj_mat[0 * size + (size-1)]=1;
-    adj_mat[0 * size + (size+1)]=1;
-    adj_mat[(size-1) * size + (size-2)]=1;
 
-    
-        
-    // Replace each edge u-v with probability p by a new edge u-w where w is sampled uniformly.
-    // If u-w already exists sample a new w until the edge is new.
-    for (node_t u = 0; u < size; u++){
-        for (node_t v = 0; v < u; v++){
-            
-            // check if edge u-v exists.
-            if (adj_mat[u * size + v ]==0)
+    /* Replace each edge u-v with probability p by a new edge u-w where w is sampled uniformly. */
+	std::bernoulli_distribution rewire(p);
+    for (node_t u = 0; u < size; u++) {
+        /* Copy neighbours into a vector */
+        auto& u_neighbours = nodes_neighbours[u];
+        std::vector<node_t> vs;
+        vs.reserve(u_neighbours.size());
+		std::copy(u_neighbours.begin(), u_neighbours.end(), std::back_inserter(vs));
+
+        /* Iterate over neighbours and rewire */
+        for(node_t v: vs) {
+            /* Rewire with probability p (and skip self-loops inserted above)
+			 * Also skip if the node is already connected to every node
+			 */
+            if ((v == u) || (u_neighbours.size() == size) || !rewire(engine))
                 continue;
-            
-            // rewire with probability p
-            if (rewire(engine) < p){
-                
-                //sample node from 1 to u without having to intialise new distribution:
-                node_t w = round( random_node(engine) * u / size);
-                int existing_edge = adj_mat[u * size + w];
-                
-                //Safety check: if deg(u) is already maxed out, skip this rewiring.
-//                if (adjacencylist[u].size() >= size - 1)
-//                    continue;
-                
-                // avoid self-edge and multiple-edge
-                while (w==u || existing_edge==1) {
-                    node_t w = round( random_node(engine) * u / size);
-                    existing_edge = adj_mat[u * size + w];
-                }
-                
-                //delete edge u-v and add edge u-w
-                adj_mat[u * size + v] = 0;
-                adj_mat[u * size + w] = 1;
-            }
-    
+
+            /* Draw replacement w, delete u-v, add u-w.
+             * The self-loops ensure that we don't draw w == u
+             */
+            const node_t w = u_neighbours.draw_complement(0, size-1, engine);
+            const bool s1 = u_neighbours.erase(v); assert(s1);
+            const bool s2 = nodes_neighbours[v].erase(u); assert(s2);
+            const bool s3 = u_neighbours.insert(w).second; assert(s3);
+            const bool s4 = nodes_neighbours[w].insert(u).second; assert(s4);
         }
+
+        /* Remove self-loop */
+        u_neighbours.erase(u);
     }
     
-    
-    // Finally, initialise adjacency list
+    /* Finally, initialise adjacency list */
     adjacencylist.resize(size);
-    for (node_t i = 0; i < size; i++){
-        for (node_t j = 0; j < i; j++){
-            if (adj_mat[i*size + j]==0)
-                continue;
-            adjacencylist[i].push_back(j);
-            adjacencylist[j].push_back(i);
-        }
-    }
+	for (node_t i = 0; i < size; i++) {
+		adjacencylist[i].reserve(nodes_neighbours[i].size());
+		std::copy(nodes_neighbours[i].begin(), nodes_neighbours[i].end(),
+				  std::back_inserter(adjacencylist[i]));
+	}
 }
 
 
