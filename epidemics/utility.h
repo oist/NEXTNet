@@ -30,6 +30,18 @@ struct pair_hash {
  */
 std::pair<unsigned int, unsigned int> fraction(double x, unsigned int L);
 
+/**
+ * @brief Inverts a survivial function on [0, infinity), i.e. a decreasing function with f(0)=1, f(infinity)=c > 0.
+ *
+ * Uses bisection to invert a survival function of a probability distribution. Bisection is numerically stable
+ * and accurate, but slower than gradient-based method such as Newton-Raphson.
+ *
+ * @param u the at wich to evalutate f^-1, i.e. for which to solve u = f(x).
+ * @param precision the absolute precision up to which to determine u
+ * @param f the function (or other callable object) to invert
+ * @param args additional arguments to pass to f
+ * @return the value f^-1(u), i.e. x such that f(x, args...) = u.
+ */
 template<typename T, typename ...Args>
 double inverse_survival_function(double u, double precision, T f, Args... args) {
     if ((u > 1) || (u < 0))
