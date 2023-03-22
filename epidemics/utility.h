@@ -29,14 +29,12 @@ inline std::size_t hash_combine(std::size_t seed, const T& v, Rest... rest) {
 /**
  * @brief Hashing support for std::pair, required for use in std::unorderedet_map
  * 
- * The C++ standard library weirdly enough does not provide this. Simply
- * XOR-ing the two hashes is pretty silly, for it seems sufficient for the
- * std::unordered_map declared below.
+ * The C++ standard library weirdly enough does not provide this.
  */
 struct pair_hash {
     template<typename T, typename U>
     std::size_t operator () (const std::pair<T,U> &p) const {
-        return std::hash<T>{}(p.first) ^ std::hash<U>{}(p.second);
+        return hash_combine(0, p.first, p.second);
     }
 };  
 
