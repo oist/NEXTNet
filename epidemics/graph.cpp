@@ -54,9 +54,13 @@ index_t graph_adjacencylist::outdegree(node_t node) {
 
 
 watts_strogatz::watts_strogatz(node_t size, int k, double p, rng_t& engine) {
+    if (k <= 0)
+        throw std::range_error("k must be positive for Watts-Strogatz networks");
     if (k % 2 != 0)
         throw std::range_error("k must be even for Watts-Strogatz networks");
-	
+    if (k > size)
+        throw std::range_error("k cannot exceed size for Watts-Strogatz networks");
+
     /* First, create circular 1D lattice. For nodes labelled 0,...,n-1, each node is connected
      * to k/2 neighbours on each side, i.e. i to i-k/2,...,i-1,i+1,...,i+k/2/. We
      * actually insert a self-loop into the neighbour set here as well, that will avoid
