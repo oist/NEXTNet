@@ -113,6 +113,12 @@ TEST_CASE("integer_set", "[utility]") {
 	REQUIRE(*i4 == 5);
 	std::vector<int> v20; std::copy(s3.begin(), s3.end(), std::back_inserter(v20));
 	REQUIRE(v20 == std::vector { 5, 6 });
+
+	set_t s4(-1, 3);
+	REQUIRE_NOTHROW(s4.insert(-1));
+	REQUIRE_NOTHROW(s4.insert(3));
+	REQUIRE_THROWS_AS(s4.insert(-2), std::range_error);
+	REQUIRE_THROWS_AS(s4.insert(4), std::range_error);
 }
 
 TEST_CASE("integer_set draw_present", "[utility]") {
@@ -138,8 +144,8 @@ TEST_CASE("integer_set draw_present", "[utility]") {
 	
 	const double M = N / s.size();
 	const double SD = sqrt(M);
-	for(int i=0; i < counts.size(); ++i) {
-		if (s.find(i) != s.end())
+	for(std::size_t i=0; i < counts.size(); ++i) {
+		if (s.find((int)i) != s.end())
 			REQUIRE(ztest(counts[i], SD, M) >= 0.01);
 		else
 			REQUIRE(counts[i] == 0);
@@ -149,7 +155,7 @@ TEST_CASE("integer_set draw_present", "[utility]") {
 TEST_CASE("integer_set draw_absent", "[utility]") {
 	typedef integer_set<int> set_t;
 	
-	set_t s;
+	set_t s(0,10);
 	s.insert(1);
 	s.insert(2);
 	s.insert(3);
@@ -163,13 +169,13 @@ TEST_CASE("integer_set draw_absent", "[utility]") {
 	std::vector<int> counts;
 	counts.resize(K+1);
 	for(int i=0; i < N; ++i) {
-		const int r = s.draw_complement(0, 10, rng);
+		const int r = s.draw_complement(rng);
 		counts.at(r) += 1;
 	}
 	
 	const double M = N / (K + 1 - s.size());
 	const double SD = sqrt(M);
-	for(int i=0; i < counts.size(); ++i) {
+	for(std::size_t i=0; i < counts.size(); ++i) {
 		if (s.find(i) == s.end())
 			REQUIRE(ztest(counts[i], SD, M) >= 0.01);
 		else

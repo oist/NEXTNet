@@ -54,9 +54,13 @@ index_t graph_adjacencylist::outdegree(node_t node) {
 
 
 watts_strogatz::watts_strogatz(node_t size, int k, double p, rng_t& engine) {
+    if (k <= 0)
+        throw std::range_error("k must be positive for Watts-Strogatz networks");
     if (k % 2 != 0)
         throw std::range_error("k must be even for Watts-Strogatz networks");
-	
+    if (k > size)
+        throw std::range_error("k cannot exceed size for Watts-Strogatz networks");
+
     /* First, create circular 1D lattice. For nodes labelled 0,...,n-1, each node is connected
      * to k/2 neighbours on each side, i.e. i to i-k/2,...,i-1,i+1,...,i+k/2/. We
      * actually insert a self-loop into the neighbour set here as well, that will avoid
@@ -64,8 +68,9 @@ watts_strogatz::watts_strogatz(node_t size, int k, double p, rng_t& engine) {
      * adjacency list.
      */
     std::vector<integer_set<node_t>> nodes_neighbours;
-    nodes_neighbours.resize(size);
+    nodes_neighbours.reserve(size);
     for(node_t i=0; i < size; ++i) {
+        nodes_neighbours.emplace_back(0, size-1);
         for (node_t j=i-k/2; j <= i+k/2; ++j)
             nodes_neighbours[i].insert((size + j) % size);
     }
@@ -84,13 +89,13 @@ watts_strogatz::watts_strogatz(node_t size, int k, double p, rng_t& engine) {
             /* Rewire with probability p (and skip self-loops inserted above)
 			 * Also skip if the node is already connected to every node
 			 */
-            if ((v == u) || (u_neighbours.size() == size) || !rewire(engine))
+			if ((v == u) || ((node_t)u_neighbours.size() == size) || !rewire(engine))
                 continue;
 
             /* Draw replacement w, delete u-v, add u-w.
              * The self-loops ensure that we don't draw w == u
              */
-            const node_t w = u_neighbours.draw_complement(0, size-1, engine);
+            const node_t w = u_neighbours.draw_complement(engine);
             const bool s1 = u_neighbours.erase(v); assert(s1);
             const bool s2 = nodes_neighbours[v].erase(u); assert(s2);
             const bool s3 = u_neighbours.insert(w).second; assert(s3);
