@@ -46,6 +46,7 @@ set(TESTS_SOURCES
     epidemics/analysis.cpp
     epidemics/tests/plot.cpp
     epidemics/tests/main.cpp
+    epidemics/tests/utility.cpp
     epidemics/tests/graph.cpp
     epidemics/tests/random.cpp
     epidemics/tests/nextreaction.cpp
