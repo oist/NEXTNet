@@ -8,6 +8,24 @@
 #include "stdafx.h"
 #include "types.h"
 
+inline std::size_t hash_combine(std::size_t seed) { return seed; }
+
+/**
+ * @brief Updates the `seed` with the hash values of the other parameters
+ *
+ * All parameter types must have a working specialization of `std::hash`.
+ *
+ * Based on: https://stackoverflow.com/questions/2590677/how-do-i-combine-hash-values-in-c0x
+ *
+ * @param seed seed value to update
+ * @param v first object whose hash to update the seed with
+ * @param rest next object(s) whose hash to update the seed with
+ */
+template <typename T, typename... Rest>
+inline std::size_t hash_combine(std::size_t seed, const T& v, Rest... rest) {
+    return hash_combine(seed ^ (std::hash<T>()(v) + 0x9e3779b9 + (seed<<6) + (seed>>2)), rest...);
+}
+
 /**
  * @brief Hashing support for std::pair, required for use in std::unorderedet_map
  * 
