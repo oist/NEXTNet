@@ -144,8 +144,8 @@ TEST_CASE("integer_set draw_present", "[utility]") {
 	
 	const double M = N / s.size();
 	const double SD = sqrt(M);
-	for(int i=0; i < counts.size(); ++i) {
-		if (s.find(i) != s.end())
+	for(std::size_t i=0; i < counts.size(); ++i) {
+		if (s.find((int)i) != s.end())
 			REQUIRE(ztest(counts[i], SD, M) >= 0.01);
 		else
 			REQUIRE(counts[i] == 0);
@@ -175,7 +175,7 @@ TEST_CASE("integer_set draw_absent", "[utility]") {
 	
 	const double M = N / (K + 1 - s.size());
 	const double SD = sqrt(M);
-	for(int i=0; i < counts.size(); ++i) {
+	for(std::size_t i=0; i < counts.size(); ++i) {
 		if (s.find(i) == s.end())
 			REQUIRE(ztest(counts[i], SD, M) >= 0.01);
 		else
