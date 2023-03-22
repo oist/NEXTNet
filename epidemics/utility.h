@@ -127,13 +127,19 @@ public:
 	 * `integer_set` are not well-defined.
 	 */
 	struct const_iterator {
+		typedef element_type value_type;
+		typedef const element_type& reference;
+		typedef void difference_type;
+		typedef void pointer;
+		typedef std::bidirectional_iterator_tag iterator_category;
+
 		typedef typename std::set<range>::const_iterator range_iterator;
-		
+
 		const_iterator(range_iterator rng, std::size_t idx)
 			:current_range(rng), current_index(idx)
 		{}
 		
-		T operator*() const { return current_range->first + (element_type)current_index; }
+		value_type operator*() const { return current_range->first + (element_type)current_index; }
 		
 		const_iterator& operator++() {
 			const std::size_t last_index = (current_range->last - current_range->first);
