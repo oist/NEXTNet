@@ -149,7 +149,7 @@ TEST_CASE("integer_set draw_present", "[utility]") {
 TEST_CASE("integer_set draw_absent", "[utility]") {
 	typedef integer_set<int> set_t;
 	
-	set_t s;
+	set_t s(0,10);
 	s.insert(1);
 	s.insert(2);
 	s.insert(3);
@@ -163,7 +163,7 @@ TEST_CASE("integer_set draw_absent", "[utility]") {
 	std::vector<int> counts;
 	counts.resize(K+1);
 	for(int i=0; i < N; ++i) {
-		const int r = s.draw_complement(0, 10, rng);
+		const int r = s.draw_complement(rng);
 		counts.at(r) += 1;
 	}
 	

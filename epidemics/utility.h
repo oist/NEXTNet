@@ -115,6 +115,8 @@ private:
 		}
 	};
 
+	element_type lowerbound = std::numeric_limits<element_type>::min()+1;
+	element_type upperbound = std::numeric_limits<element_type>::max()-1;
 	std::size_t ntotal = 0;
 	std::set<range, range_cmp> ranges;
 	
@@ -194,12 +196,35 @@ public:
 	const_iterator end() const { return const_iterator(ranges.end(), 0); }
 
 	/**
-	 * @brief Creates an empty `integer_set`
+	 * @brief Creates an empty `integer_set` whose domain is maximal
+	 *
+	 * Note that the maximal domain is [min+1, max-1] where min and max
+	 * are the minimal and maximal finite value that the underlying integer
+	 * type can hold.
 	 */
-	integer_set() {};
+	integer_set() {}
 
 	/**
-	 * @brief Creates a set containg the elements between iterators `first` and `last`.
+	 * @brief Creates an empty `integer_set` over the domain [`lb`, `ub`]
+	 *
+	 * Note that lb and ub are restricted to lb >= max+1 and ub <= min-1
+	 * where min and max are the minimal and maximal finite value that the
+	 * underlying integer type can hold.
+	 *
+	 */
+	integer_set(element_type lb, element_type ub)
+		:lowerbound(lb), upperbound(ub)
+	{
+		if (lowerbound > upperbound)
+			throw std::range_error("lower bound exceeds upper bound");
+		if (lowerbound == std::numeric_limits<element_type>::min())
+			throw std::range_error("lower bound must be larget than minimal value of underlying integer type");
+		if (upperbound == std::numeric_limits<element_type>::max())
+			throw std::range_error("upper bound must be smaller than maximal value of underlying integer type");
+	}
+
+	/**
+	 * @brief Creates a set over maximal domain containg the elements between iterators `first` and `last`.
 	 */
 	template<typename It>
 	integer_set(It first, It last) {
@@ -207,11 +232,29 @@ public:
 	}
 
 	/**
-	 * @brief Creates a set containg the specified elements
+	 * @brief Creates a set with domain [`lb`, `ub`] containg the elements between iterators `first` and `last`.
+	 */
+	template<typename It>
+	integer_set(element_type lb, element_type ub, It first, It last)
+		:integer_set(lb, ub)
+	{
+		std::copy(first, last, std::inserter(*this, end()));
+	}
+
+	/**
+	 * @brief Creates a set with maximal domain containg the specified elements
 	 */
 	integer_set(std::initializer_list<T> init)
 		:integer_set(init.begin(), init.end())
 	{}
+
+	/**
+	 * @brief Creates a set with domain [`lb`, `ub`] containg the specified elements
+	 */
+	integer_set(element_type lb, element_type ub, std::initializer_list<T> init)
+		:integer_set(lb, ub, init.begin(), init.end())
+	{}
+
 
 	/**
 	 * @brief Number of elements of the set
@@ -236,8 +279,8 @@ public:
          *   Vb: [e       , b >= e]         ==> do nothing
          */
 
-        if ((e == std::numeric_limits<T>::min()) || (e == std::numeric_limits<T>::max()))
-            throw std::range_error("element in a integer_set cannot be maximum or minimum of type's domain");
+        if ((e < lowerbound) || (e > upperbound))
+            throw std::range_error("element lies outside of the set's domain");
 
         /* Find the first range [x, y] that does not wholly lie left of e - 1, i.e. where y >= e - 1*/
         const auto i = ranges.lower_bound(e - 1);
@@ -414,9 +457,9 @@ public:
 	 * @return The element selected
 	 * @throw `std::runtime_error` if the set is empty
 	 */
-    T draw_element(rng_t& engine) {
+	T draw_element(rng_t& engine) const {
 		if (ntotal == 0)
-			throw std::runtime_error("cannot draw a present element from an empty integer_set");
+			throw std::runtime_error("cannot draw from an empty set");
 		
         /* Draw random range, with probabilities prop. to the ranges' lengths */
         const double p = std::uniform_real_distribution<>(0, 1)(engine);
@@ -436,28 +479,22 @@ public:
     }
 
 	/**
-	 * @brief Draws a random integer [lb, ub] that is not an element of the set
+	 * @brief Draws a random integer that is not an element of the set
 	 * @return The integer selected
 	 * @throw `std::runtime_error` if the set contains all integers [lb, ub].
 	 *        `std::range_error` if the lower or upper bound is invalid.
 	 */
-    T draw_complement(element_type lb, element_type ub, rng_t& engine) {
-		if (lb > ub)
-			throw std::range_error("lower bound exceeds upper bound");
-		if (!ranges.empty() && (ranges.begin()->first < lb))
-            throw std::range_error("lower bound is larger than smallest element of integer_set");
-        if (!ranges.empty() && (ranges.rbegin()->last > ub))
-            throw std::range_error("upper bound is smaller than largest element of integer_set");
-        if (ntotal == (std::size_t)(ub - lb + 1))
-			throw std::runtime_error("cannot draw from empty integer_set");
+	T draw_complement(rng_t& engine) const {
+		if (ntotal == (std::size_t)(upperbound - lowerbound + 1))
+			throw std::runtime_error("cannot draw from an empty complement");
 
         /* Draw random gap between ranges, with probabilities prop. to the gaps' lengths */
         const double p = std::uniform_real_distribution<>(0, 1)(engine);
-        const std::size_t size_gaps = ((std::size_t)(ub - lb) + 1 - ntotal);
+        const std::size_t size_gaps = ((std::size_t)(upperbound - lowerbound) + 1 - ntotal);
 		auto i = ranges.begin();
 		const auto e = ranges.end();
         std::size_t l = 0;
-        T a = lb;
+        T a = lowerbound;
 		bool done = false;
         do {
             /* Gap extends to beginning of next range or upper bound for last range */
@@ -467,7 +504,7 @@ public:
                 a = i->last + 1;
                 i++;
             } else {
-                gap = range(a, ub);
+                gap = range(a, upperbound);
                 done = true;
             }
             /* Compute fraction q covered by gaps up to the current one */
@@ -494,6 +531,10 @@ public:
 		 *   II: [a <= e, b >= e] ==> found
 		 */
 		
+		/* Outside the set's range */
+		if ((e < lowerbound) || (e > upperbound))
+			return end();
+
 		/* Find the first range [x, y] that does not wholly lie left of e, i.e. where y >= e*/
 		const auto i = ranges.lower_bound(e);
 		
