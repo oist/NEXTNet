@@ -113,6 +113,12 @@ TEST_CASE("integer_set", "[utility]") {
 	REQUIRE(*i4 == 5);
 	std::vector<int> v20; std::copy(s3.begin(), s3.end(), std::back_inserter(v20));
 	REQUIRE(v20 == std::vector { 5, 6 });
+
+	set_t s4(-1, 3);
+	REQUIRE_NOTHROW(s4.insert(-1));
+	REQUIRE_NOTHROW(s4.insert(3));
+	REQUIRE_THROWS_AS(s4.insert(-2), std::range_error);
+	REQUIRE_THROWS_AS(s4.insert(4), std::range_error);
 }
 
 TEST_CASE("integer_set draw_present", "[utility]") {
