@@ -84,7 +84,7 @@ watts_strogatz::watts_strogatz(node_t size, int k, double p, rng_t& engine) {
             /* Rewire with probability p (and skip self-loops inserted above)
 			 * Also skip if the node is already connected to every node
 			 */
-            if ((v == u) || (u_neighbours.size() == size) || !rewire(engine))
+			if ((v == u) || ((node_t)u_neighbours.size() == size) || !rewire(engine))
                 continue;
 
             /* Draw replacement w, delete u-v, add u-w.

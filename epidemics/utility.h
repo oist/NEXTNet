@@ -448,7 +448,7 @@ public:
             throw std::range_error("lower bound is larger than smallest element of integer_set");
         if (!ranges.empty() && (ranges.rbegin()->last > ub))
             throw std::range_error("upper bound is smaller than largest element of integer_set");
-		if (ntotal == (ub - lb + 1))
+        if (ntotal == (std::size_t)(ub - lb + 1))
 			throw std::runtime_error("cannot draw from empty integer_set");
 
         /* Draw random gap between ranges, with probabilities prop. to the gaps' lengths */
