@@ -6,6 +6,7 @@ project(Epidemics-On-Networks LANGUAGES CXX)
 set(LIB_SOURCES
     epidemics/graph.cpp
     epidemics/dynamic_graph.cpp
+    epidemics/algorithm.cpp
     epidemics/random.cpp
     epidemics/simulation.cpp
     epidemics/NextReaction.cpp
