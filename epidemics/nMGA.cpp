@@ -29,61 +29,50 @@ void simulate_nmga::add_infections(const std::vector<std::pair<node_t, absolutet
 		inf.node = ve.first;
 		inf.time = ve.second;
 		outside_infections.push(inf);
-
-		/* Now add outgoing nodes to active edges */
-		const int neighbours = network.outdegree(ve.first);
-		for(int j=0; j < neighbours; ++j) {
-			const node_t neighbour = network.neighbour(ve.first, j);
-			if (neighbour < 0) {
-				/* This should never happen unless the graph reported the wrong number of outgoing edges */
-				throw std::logic_error(std::string("neighbour ") + std::to_string(j + 1) +
-										" of node " + std::to_string(ve.first) + " is invalid");
-			}
-			/* Add future active edge */
-			active_edges_entry e;
-			e.kind = event_kind::outside_infection;
-			e.source_time = ve.second;
-			e.source = ve.first;
-			e.target = neighbour;
-			active_edges.push_back(e);
-		}
 	}
 }
 
 absolutetime_t simulate_nmga::next(rng_t& engine)
 {
-	/* First, make sure current_time is setup */
-	if (std::isnan(current_time)) {
-		/* If not set, set to the earliest infection time of any node */
-		double t = INFINITY;
-		for(const active_edges_entry& e: active_edges)
-			t = std::min(t, e.source_time);
-		current_time = t;
-	}
-	
-	/* Second, if the current time is infinite, we're done */
-	if (std::isinf(current_time))
-		return INFINITY;
-	
-	/* Third, if we have already determined the time of the next event, return it */
-	if (!std::isnan(next_time))
-		return next_time;
+    /* If the next event was already determined, just return it */
+    if (next_event)
+        return next_event->time;
 
-	/* Now, find the time until the next event */
-	double tau = NAN;
-	const bool use_exact_algorithm = ((approximation_threshold < 0) ||
-									  (active_edges.size() <= (unsigned int)approximation_threshold));
+    /* If the current time wasn't yet set, start at the earliest time at which
+    * and edge becomes active. */
+    if (std::isnan(current_time)) {
+        double t = outside_infections.empty() ? INFINITY : outside_infections.top().time;
+        for(const active_edges_entry& e: active_edges)
+            t = std::min(t, e.source_time);
+        current_time = t;
+    }
 
-	/* First, draw the time until the next event */
-	if (use_exact_algorithm) {
-		/* Exact version */
+    /* If there are no active edges and no outside infections, there is no next event */
+    if (active_edges.empty() && outside_infections.empty())
+        current_time = INFINITY;
+    if (std::isinf(current_time))
+        return INFINITY;
 
-		/* Note: The exact version does not use the harard rates lambda, we
-		 * thus do not have to update them before drawing tau
-		 */
-		tau = next_time_exact(engine);
-	} else {
-		/* Approximate version */
+    /* Find the time of the next event */
+    active_edges_t::iterator edge_i;
+    const bool use_exact_algorithm = ((approximation_threshold < 0) ||
+                                      (active_edges.size() <= (unsigned int)approximation_threshold));
+
+    /* First, draw the time of the next event */
+    double tau = NAN;
+    if (active_edges.empty()) {
+        /* No active edges, but there are outside infections (see below) */
+
+        tau = INFINITY;
+    } else if (use_exact_algorithm) {
+        /* Exact version */
+
+        /* Note: The exact version does not use the harard rates lambda, we
+         * thus do not have to update them before drawing tau
+         */
+        tau = next_time_exact(engine);
+    } else {
+        /* Approximate version */
 
 		/*
 		 * The following loop fixes an issue in the original NMGA algorithm
@@ -94,8 +83,8 @@ absolutetime_t simulate_nmga::next(rng_t& engine)
 		for(;; current_time += maximal_dt) {
 			try {
 				/* First, update hazard rates lambda and lambda_total */
-				update_active_edge_lambdas();
-				
+				update_active_edge_lambdas(current_time);
+
 				/* Then, draw the time of the next event
 				 * Note: Here, this draw *does* depend on the hazard rates
 				 * Only accept time increments that dont exceed the maximum
@@ -115,46 +104,271 @@ absolutetime_t simulate_nmga::next(rng_t& engine)
 		}
 	}
 
-	/* Check if we would jump over any outside infections,
-	 * if return the time of the earliest one instead.
-	 */
-	while (!outside_infections.empty()) {
-		/* Check if the outside infection occurs before the generated tau */
-		const outside_infections_entry inf = outside_infections.top();
-		if (inf.time > current_time + tau)
-			break;
+    /* Check if we would jump over any outside infections. If there is an
+     * outside infection, we discard the tau we just generated but that's OK.
+     */
+    while (!outside_infections.empty()) {
+        /* Check if the outside infection occurs before the generated tau */
+        const outside_infections_entry inf = outside_infections.top();
+        if (inf.time > current_time + tau)
+            break;
 
-		/* Check if the node is not already infected */
-		outside_infections.pop();
-		if (infected.find(inf.node) != infected.end())
-			break;
+        /* Skip and remove if the node is already infected */
+        if (infected.find(inf.node) != infected.end()) {
+            outside_infections.pop();
+            continue;
+        }
 
-		/* Forget previously generated tau, return time of outside infection instead */
-		next_time = inf.time;
-		return inf.time;
-	}
-	
-	/* Return time of next infection */
-	next_time = current_time + tau;
-	return next_time;
+        /* Found next event, store & return its time */
+        next_event = event_t {
+                .kind = event_kind::outside_infection,
+                .source_node = -1, .node = inf.node,
+                .time = inf.time
+        };
+        return next_event->time;
+    }
+
+    /* Now determine which event takes place.*/
+    assert((tau >= 0) && (tau < INFINITY));
+    const double next_time = current_time + tau;
+    if (use_exact_algorithm) {
+        /* Exact version */
+
+        /* Update lambdas and lambda_total for current_time since we didn't do so before. */
+        update_active_edge_lambdas(next_time);
+
+		/* Now determine which event takes place */
+		edge_i = draw_active_edge(engine);
+	} else {
+		/* Approximate version */
+
+       /* Note that we do not recompute the hazard rates that we
+        * updated before choosing tau above, which amounts
+        * to doing the draw *before* updating the current time
+        */
+        edge_i = draw_active_edge(engine);
+    }
+
+    /* Found next event, store & return its time */
+    assert(edge_i->kind != event_kind::outside_infection);
+    next_event = event_t {
+            .kind = edge_i->kind,
+            .source_node = edge_i->source, .node = edge_i->target,
+            .time = next_time
+    };
+    return next_event->time;
 }
 
-std::optional<event_t> simulate_nmga::step(rng_t& engine, absolutetime_t max_time, event_filter_t evf)
+std::optional<event_t> simulate_nmga::step(rng_t& engine, absolutetime_t nexttime, event_filter_t evf)
 {
     while (true) {
-		/* Find time of next event unless already done */
-		if (std::isnan(next_time))
-			next(engine);
-		
-		/* If we'd run past max_time, don't to anything */
-		if (next_time > max_time)
-			return std::nullopt;
-		
-        /* Check if the next event is an outside infection */
+        /* Determine next event */
+        if (!next_event)
+            next(engine);
+
+        /* If there is no event or we'd move past nexttime */
+        if (!next_event || (next_event->time > nexttime))
+            return std::nullopt;
+
+		/* Event will be handled or skipped, so reset next_event */
+		const event_t ev = *next_event;
+		next_event = std::nullopt;
+
+		/* Remove corresponding active edge or outside infection */
+		switch (ev.kind) {
+			case event_kind::outside_infection: {
+				if (outside_infections.empty() || (outside_infections.top().time != ev.time) || (outside_infections.top().node != ev.node))
+					throw std::logic_error("next outside infection changed between next() and step()");
+				outside_infections.pop();
+				break;
+			}
+
+			case event_kind::infection:
+			case event_kind::reset: {
+				/* Re-find active edge.
+				 * NOTE: It would be more efficient to pass the iterator from next() to here. However,
+				 * that would make it impossible to check whether the edge is actually still part of the
+				 * active edges set, which is a reasonable safe-guard against coding mistakes
+				 */
+				const active_edges_entry ev_edge = { .kind = ev.kind, .source = ev.source_node, .target = ev.node };
+				active_edges_t::iterator edge_i = active_edges.find(ev_edge);
+				if (edge_i == active_edges.end())
+					throw std::logic_error("edge became inactive between next() and step()");
+				remove_active_edge(edge_i);
+				break;
+			}
+
+			default:
+				throw std::logic_error("unknown event kind");
+		}
+
+		/* Query filter and skip event if indicated */
+		if (is_event_blocked(ev, evf))
+			continue;
+
+		/* Handle event */
+		switch (ev.kind) {
+			case event_kind::infection:
+			case event_kind::outside_infection: {
+				/* Infection event */
+
+				/* If the node is already infected, ignore the event */
+				if (infected.find(ev.node) != infected.end())
+					continue;
+
+				/* Mark node as infected */
+				infected.insert(ev.node);
+
+				/* Make recovery self-loop if there's a reset time distribution ... */
+				if (rho) {
+					active_edges_entry e;
+					e.kind = event_kind::reset;
+					e.source = ev.node;
+					e.source_time = current_time;
+					e.target = ev.node;
+					add_active_edge(e);
+				}
+
+				/* ... and outgoing edges active */
+				const int neighbours = network.outdegree(ev.node);
+				for(int j=0; j < neighbours; ++j) {
+					const node_t neighbour = network.neighbour(ev.node, j);
+					if (neighbour < 0) {
+						/* This should never happen unless the graph reported the wrong number of outgoing edges */
+						throw std::logic_error(std::string("neighbour ") + std::to_string(j + 1) +
+												" of node " + std::to_string(ev.node) + " is invalid");
+					}
+					active_edges_entry e;
+					e.kind = event_kind::infection;
+					e.source = ev.node;
+					e.source_time = current_time;
+					e.target = neighbour;
+					add_active_edge(e);
+				}
+				break;
+			}
+
+			case event_kind::reset: {
+				/* Reset event */
+
+				/* In SIR mode, reset events do not make nodes susceptible again, but only terminate the infections
+				 * phase early. We implement that via the following hack that leaves the node marked as "infected"
+				 * (of which a more appropriate name is this mode would be recovered).
+				 * NOTE: This hack should eventually be removed, and be replaced by a separate class that uses
+				 * event filters to implement SIR mode. Through an appropriate filter, nodes would be added to a
+				 * "removed" set upon receiving a reset event, and that set would be queried before allowing
+				 * infections to proceed.
+				 */
+				if (SIR) {
+					/* SIR mode, just could the number of removed nodes */
+					removed += 1;
+				} else {
+					/* SIS mode, mark node as not infected */
+					infected.erase(ev.node);
+				}
+
+				/* Remove active edges originating from the resetted node */
+				for(auto i = active_edges.begin(); i != active_edges.end();) {
+					/* Skip edges originating anywhere else */
+					if (i->source != ev.node) {
+						++i ;
+						continue;
+					}
+
+					/* Remove edge, interator points to next element afterwards */
+					remove_active_edge(i);
+				}
+				break;
+			}
+
+			default:
+				throw std::logic_error("unknown event kind");
+		}
+
+        /* Return handled event */
+        return ev;
+    }
+}
+
+void simulate_nmga::notify_infected_node_neighbour_added(network_event_t event)
+{
+    throw std::logic_error("unimplemented");
+}
+
+#if 0
+std::optional<event_t> simulate_nmga::step(rng_t& engine)
+{
+    while (true) {
+        /* If the current time wasn't yet set, start at the earliest time at which
+        * and edge becomes active. */
+        if (std::isnan(current_time)) {
+            double t = INFINITY;
+            for(const active_edges_entry& e: active_edges)
+                t = std::min(t, e.source_time);
+            current_time = t;
+        }
+        
+        /* If there are no active edges, there is no next event */
+        if (active_edges.empty())
+            current_time = INFINITY;
+        if (std::isinf(current_time))
+            return std::nullopt;
+        
+        /* Find the time of the next event */
+        active_edges_t::iterator edge_i;
+        const bool use_exact_algorithm = ((approximation_threshold < 0) ||
+										  (active_edges.size() <= (unsigned int)approximation_threshold));
+
+        /* First, draw the time of the next event */
+        double tau = NAN;
+        if (use_exact_algorithm) {
+            /* Exact version */
+
+            /* Note: The exact version does not use the harard rates lambda, we
+             * thus do not have to update them before drawing tau
+             */
+            tau = next_time_exact(engine);
+        } else {
+            /* Approximate version */
+
+            /*
+			 * The following loop fixes an issue in the original NMGA algorithm
+			 * If we fail to draw a next event time, either because its unreasonably
+			 * large or because all the hazard rates are zero, we skip ahead a bit
+			 * and try again.
+			 */
+			for(;; current_time += maximal_dt) {
+				try {
+					/* First, update hazard rates lambda and lambda_total */
+					update_active_edge_lambdas();
+					
+					/* Then, draw the time of the next event
+					 * Note: Here, this draw *does* depend on the hazard rates
+					 * Only accept time increments that dont exceed the maximum
+					 * allowed time step!
+					 */
+					tau = next_time_approximation(engine);
+					if (tau <= maximal_dt)
+						break;
+				} catch (const all_rates_zero& e) {
+					/* All rates were zero. This typically happens if
+					 * the age distribution hasn't convereged when we switch
+					 * to the approximate algorithm. Since the rates are zero,
+					 * we assume it's going to be a while since the next event
+					 * occurs, and skip ahead maximal_dt time units.
+					 */
+				}
+            }
+        }
+
+        /* Check if we would jump over any outside infections,
+         * if so handle them instead. If there is an outside infection,
+         * we discard the tau we just generated but that's OK
+         */
         while (!outside_infections.empty()) {
             /* Check if the outside infection occurs before the generated tau */
             const outside_infections_entry inf = outside_infections.top();
-            if (inf.time > next_time)
+            if (inf.time > current_time + tau)
                 break;
 
             /* Check if the node is not already infected */
@@ -162,14 +376,11 @@ std::optional<event_t> simulate_nmga::step(rng_t& engine, absolutetime_t max_tim
             if (infected.find(inf.node) != infected.end())
                 break;
 
-            /* Advance time to time of outside infection, forget next_time
-			 * so that we generate a new one next time. Note that the neighbours
-			 * of the node that gets infected here were already made active by add_infections()
+            /* Advance time to time of outside infection, forget tau,
+             * mark node as infected. Note that its neighbours were already
+             * makde active by add_infections()
              */
-			assert(current_time <= inf.time);
-			assert(next_time == inf.time);
             current_time = inf.time;
-			next_time = NAN;
             infected.insert(inf.node);
 
             /* Report event */
@@ -179,15 +390,11 @@ std::optional<event_t> simulate_nmga::step(rng_t& engine, absolutetime_t max_tim
         }
 
         /* Now determine which event takes place.*/
-		const bool use_exact_algorithm = ((approximation_threshold < 0) ||
-										  (active_edges.size() <= (unsigned int)approximation_threshold));
-		std::vector<active_edges_entry>::iterator edge_i;
         if (use_exact_algorithm) {
             /* Exact version */
 
-            /* Then, update the current time, reset next_time */
-            current_time = next_time;
-			next_time = NAN;
+            /* Then, update the current time */
+            current_time += tau;        
 
             /* And update lambdas and lambda_total since we didn't do so before. */
             update_active_edge_lambdas();
@@ -203,9 +410,8 @@ std::optional<event_t> simulate_nmga::step(rng_t& engine, absolutetime_t max_tim
             */
 			edge_i = draw_active_edge(engine);
 
-            /* Finally, update current time, reset next_time */
-            current_time = next_time;
-			next_time = NAN;
+            /* Finally, update current time */
+            current_time += tau;    
         }
         
         /* Copy selected edge and remove from active edge list */
@@ -291,15 +497,11 @@ std::optional<event_t> simulate_nmga::step(rng_t& engine, absolutetime_t max_tim
 				throw std::logic_error("unknown event kind");
 		}
 		
-        /* Return event */
-		return ev;
+        
+        return event_t { .kind = edge.kind, .node = edge.target, .time = current_time };
     }
 }
-
-void simulate_nmga::notify_infected_node_neighbour_added(network_event_t event)
-{
-	throw std::logic_error("unimplemented");
-}
+#endif
 
 interval_t simulate_nmga::next_time_exact(rng_t& engine) {
     /* Determine time of next event by inverting the global survival function phi */
@@ -379,13 +581,24 @@ interval_t simulate_nmga::invphi(absolutetime_t t, double u) {
 	return inverse_survival_function(u, tau_precision, [&,t] (double tau) { return phi(t, tau); });
 }
 
-void simulate_nmga::update_active_edge_lambdas()
+void simulate_nmga::update_active_edge_lambdas(double time)
 {
 	double total = 0;
 	/* Recompute lambda for every active edge */
-	for(active_edges_entry& e: active_edges) {
+	for(const active_edges_entry& ec: active_edges) {
+		/* Sets only provide const iterators since elements in a set are immutable.
+		 * However, it's actually safe to modify elements provided that the modifications
+		 * affect neither the hash value (as computed by the hasher specified in the set's
+		 * type) nor equality with other set elements (as defined by the comparator specied
+		 * in the set's type). Therefore, the following const cast is safe, provided that we
+		 *
+		 * DO NOT MODIFIY ANY FIELD USED BY active_edges_hash OR active_edges_cmp!
+		 *
+		 * Since we only update lambda below, we're OK.
+		 */
+		active_edges_entry& e = const_cast<active_edges_entry&>(ec);
 		/* Translate t into the edge's frame of reference */
-		const double te = current_time - e.source_time;
+		const double te = time - e.source_time;
 		/* For edges not yet active, lambda is zero */
 		if (te >= 0) {
 			/* Compute lambda, check that it's valid and update */
@@ -418,7 +631,7 @@ void simulate_nmga::update_active_edge_lambdas()
 		throw all_rates_zero();
 }
 
-auto simulate_nmga::draw_active_edge(rng_t& engine) -> std::vector<active_edges_entry>::iterator
+auto simulate_nmga::draw_active_edge(rng_t& engine) -> active_edges_t::iterator
 {
 	const double q = unif01_dist(engine) * lambda_total;
 	double l = 0.0;
