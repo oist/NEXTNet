@@ -39,22 +39,21 @@ absolutetime_t simulate_nmga::next(rng_t& engine)
         return next_event->time;
 
     /* If the current time wasn't yet set, start at the earliest time at which
-    * and edge becomes active. */
-    if (std::isnan(current_time)) {
-        double t = outside_infections.empty() ? INFINITY : outside_infections.top().time;
+     * and edge becomes active. */
+    absolutetime_t base_time = current_time;
+    if (std::isnan(base_time)) {
+        base_time = outside_infections.empty() ? INFINITY : outside_infections.top().time;
         for(const active_edges_entry& e: active_edges)
-            t = std::min(t, e.source_time);
-        current_time = t;
+            base_time = std::min(base_time, e.source_time);
     }
 
     /* If there are no active edges and no outside infections, there is no next event */
     if (active_edges.empty() && outside_infections.empty())
-        current_time = INFINITY;
-    if (std::isinf(current_time))
+        base_time = INFINITY;
+    if (std::isinf(base_time))
         return INFINITY;
 
     /* Find the time of the next event */
-    active_edges_t::iterator edge_i;
     const bool use_exact_algorithm = ((approximation_threshold < 0) ||
                                       (active_edges.size() <= (unsigned int)approximation_threshold));
 
@@ -80,10 +79,10 @@ absolutetime_t simulate_nmga::next(rng_t& engine)
 		 * large or because all the hazard rates are zero, we skip ahead a bit
 		 * and try again.
 		 */
-		for(;; current_time += maximal_dt) {
+		for(;; base_time += maximal_dt) {
 			try {
 				/* First, update hazard rates lambda and lambda_total */
-				update_active_edge_lambdas(current_time);
+				update_active_edge_lambdas(base_time);
 
 				/* Then, draw the time of the next event
 				 * Note: Here, this draw *does* depend on the hazard rates
@@ -110,7 +109,7 @@ absolutetime_t simulate_nmga::next(rng_t& engine)
     while (!outside_infections.empty()) {
         /* Check if the outside infection occurs before the generated tau */
         const outside_infections_entry inf = outside_infections.top();
-        if (inf.time > current_time + tau)
+        if (inf.time > base_time + tau)
             break;
 
         /* Skip and remove if the node is already infected */
@@ -127,27 +126,16 @@ absolutetime_t simulate_nmga::next(rng_t& engine)
         };
         return next_event->time;
     }
-
-    /* Now determine which event takes place.*/
     assert((tau >= 0) && (tau < INFINITY));
-    const double next_time = current_time + tau;
-    if (use_exact_algorithm) {
-        /* Exact version */
+    const double next_time = base_time + tau;
 
-        /* Update lambdas and lambda_total for current_time since we didn't do so before. */
+    /* Now determine which event takes place.
+     * Since the exact algorithm for drawing the next time does not update the hazard rates, do so now.
+     * But in case of the approximate algorith, re-use the hazard rates that were used to draw tau.
+     */
+    if (use_exact_algorithm)
         update_active_edge_lambdas(next_time);
-
-		/* Now determine which event takes place */
-		edge_i = draw_active_edge(engine);
-	} else {
-		/* Approximate version */
-
-       /* Note that we do not recompute the hazard rates that we
-        * updated before choosing tau above, which amounts
-        * to doing the draw *before* updating the current time
-        */
-        edge_i = draw_active_edge(engine);
-    }
+    const active_edges_t::iterator edge_i = draw_active_edge(engine);
 
     /* Found next event, store & return its time */
     assert(edge_i->kind != event_kind::outside_infection);
@@ -172,6 +160,7 @@ std::optional<event_t> simulate_nmga::step(rng_t& engine, absolutetime_t nexttim
 
 		/* Event will be handled or skipped, so reset next_event */
 		const event_t ev = *next_event;
+		current_time = next_event->time;
 		next_event = std::nullopt;
 
 		/* Remove corresponding active edge or outside infection */
