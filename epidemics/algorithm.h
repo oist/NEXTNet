@@ -41,15 +41,12 @@ struct simulation_algorithm {
 struct epidemic_on_dynamic_network_simulation {
 	absolutetime_t next(rng_t& engine);
 
-	std::optional<network_or_epidemic_event_t> step(rng_t& engine, absolutetime_t nexttime = NAN) ;
+	std::optional<network_or_epidemic_event_t> step(rng_t& engine, absolutetime_t maxtime = INFINITY) ;
 	
 	bool simulation_event_filter(event_t ev);
 	
 	dynamic_network* network;
 	simulation_algorithm* simulation;
-	
-	absolutetime_t network_next = NAN;
-	absolutetime_t simulation_next = NAN;
 	
 	typedef std::unordered_map<node_t, bool> neighbour_state_t;
 	std::unordered_map<node_t, neighbour_state_t> infected_neighbour_state;

@@ -12,35 +12,29 @@ using namespace std::string_literals;
 absolutetime_t
 epidemic_on_dynamic_network_simulation::next(rng_t& engine)
 {
-	if (std::isnan(network_next))
-		network_next = network->next(engine);
-	if (std::isnan(simulation_next))
-		simulation_next = simulation->next(engine);
-	
-	return std::min(network_next, simulation_next);
+	return std::min(network->next(engine), simulation->next(engine));
 }
 
 std::optional<network_or_epidemic_event_t>
-epidemic_on_dynamic_network_simulation::step(rng_t& engine, absolutetime_t nexttime)
+epidemic_on_dynamic_network_simulation::step(rng_t& engine, absolutetime_t maxtime)
 {
 	while (true) {
-		if (std::isnan(nexttime))
-			nexttime = next(engine);
-		
-		if (std::isinf(nexttime))
+		const absolutetime_t nexttime = next(engine);
+		if (nexttime > maxtime)
 			return std::nullopt;
-		
-		if (nexttime == network_next) {
-			/* Next event is a network event, and the event cannot be empty */
+
+		if (nexttime == network->next(engine)) {
+			/* Next event is a network event. Since we don't specify an event filter,
+			 * we should get an event for exactly nexttime.
+			 */
 			const network_event_t ev = network->step(engine, nexttime).value();
 			assert(ev.time == nexttime);
-			nexttime = NAN;
 			switch (ev.kind) {
 				case network_event_kind::neighbour_added: {
 					/* Check if the source node is infected */
 					auto it = infected_neighbour_state.find(ev.source_node);
 					if (it != infected_neighbour_state.end()) {
-						/* Source node is infected. Check if the new neighbour was previously known */
+						/* Source node is infected. Check if the new neighbour was previosly registered */
 						neighbour_state_t& neighbours = it->second;
 						auto it2 = neighbours.find(ev.target_node);
 						if (it2 == neighbours.end()) {
@@ -48,7 +42,7 @@ epidemic_on_dynamic_network_simulation::step(rng_t& engine, absolutetime_t nextt
 							simulation->notify_infected_node_neighbour_added(ev, engine);
 						}
 						else {
-							/* Neighbour previously existed. Edge was removed and is now re-added, unmask it (false) */
+							/* Neighbour already registered. Edge was removed and is now re-added, unmask it (false) */
 							if (it2->second == false)
 								throw std::logic_error("duplicate neighbour_added event");
 							it2->second = false ;
@@ -71,7 +65,7 @@ epidemic_on_dynamic_network_simulation::step(rng_t& engine, absolutetime_t nextt
 					throw std::logic_error("invalid network event kind: "s + name(ev.kind));
 			}
 			return ev;
-		} else if (nexttime == simulation_next) {
+		} else if (nexttime == simulation->next(engine)) {
 			/* Next event is a simulation event, event cannot be empty
 			 * We specify an event filter that ensures that infections traversing
 			 * masked edges are blocked. Note that since we specify a filter, there
@@ -81,7 +75,6 @@ epidemic_on_dynamic_network_simulation::step(rng_t& engine, absolutetime_t nextt
 			std::function<bool(event_t)> evf = std::bind(&epidemic_on_dynamic_network_simulation::simulation_event_filter,
 														 this, std::placeholders::_1);
 			std::optional<event_t> maybe_ev = simulation->step(engine, nexttime, evf);
-			nexttime = NAN;
 			if (!maybe_ev)
 				continue;
 			/* Got a simulation event */
@@ -90,11 +83,11 @@ epidemic_on_dynamic_network_simulation::step(rng_t& engine, absolutetime_t nextt
 				case event_kind::outside_infection:
 				case event_kind::infection: {
 					/* New infection. Create empty neighbour table which implicitly marks all neighours as unmasked */
-					infected_neighbour_state.emplace(ev.source_node, neighbour_state_t());
+					infected_neighbour_state.emplace(ev.node, neighbour_state_t());
 				}
 				case event_kind::reset: {
 					/* Remove node's neighbour table */
-					const std::size_t r = infected_neighbour_state.erase(ev.source_node);
+					const std::size_t r = infected_neighbour_state.erase(ev.node);
 					assert(r == 1);
 					break;
 				}
