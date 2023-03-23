@@ -147,18 +147,21 @@ absolutetime_t simulate_nmga::next(rng_t& engine)
     return next_event->time;
 }
 
-std::optional<event_t> simulate_nmga::step(rng_t& engine, absolutetime_t nexttime, event_filter_t evf)
+std::optional<event_t> simulate_nmga::step(rng_t& engine, absolutetime_t maxtime, event_filter_t evf)
 {
+    if (std::isnan(maxtime))
+        throw std::range_error("maxtime must be finite or +INFINITY");
+
     while (true) {
         /* Determine next event */
         if (!next_event)
             next(engine);
 
         /* If there is no event or we'd move past nexttime */
-        if (!next_event || (next_event->time > nexttime))
+        if (!next_event || (next_event->time > maxtime))
             return std::nullopt;
 
-		/* Event will be handled or skipped, so reset next_event */
+		/* Event will be handled or skipped, so update current_time and reset next_event */
 		const event_t ev = *next_event;
 		current_time = next_event->time;
 		next_event = std::nullopt;

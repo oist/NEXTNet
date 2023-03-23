@@ -28,7 +28,7 @@ struct simulation_algorithm {
 	
 	virtual absolutetime_t next(rng_t& engine) = 0;
 
-    virtual std::optional<event_t> step(rng_t& engine, absolutetime_t nexttime = NAN,
+	virtual std::optional<event_t> step(rng_t& engine, absolutetime_t maxtime = INFINITY,
 										event_filter_t event_filter = std::nullopt) = 0;
 	
 	virtual void notify_infected_node_neighbour_added(network_event_t event) = 0;

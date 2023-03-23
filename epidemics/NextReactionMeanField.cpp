@@ -14,10 +14,12 @@ absolutetime_t simulate_next_reaction_mean_field::next(rng_t& engine)
 	return next.time;
 }
 
-std::optional<event_t> simulate_next_reaction_mean_field::step(rng_t& engine, absolutetime_t nexttime,
+std::optional<event_t> simulate_next_reaction_mean_field::step(rng_t& engine, absolutetime_t maxtime,
 															   event_filter_t evf)
 {
-	if (evf)
+    if (std::isnan(maxtime))
+        throw std::range_error("maxtime must be finite or +INFINITY");
+    if (evf)
 		throw std::logic_error("event filters are not supported for mean field simulations");
 	
     while (true) {
@@ -27,7 +29,7 @@ std::optional<event_t> simulate_next_reaction_mean_field::step(rng_t& engine, ab
 
         /* Fetch the next infection/reset time, i.e. the time where the next edge fires */
         const auto next = active_edges.top();
-		if (next.time > nexttime)
+        if (next.time > maxtime)
 			return std::nullopt;
         active_edges.pop();
         

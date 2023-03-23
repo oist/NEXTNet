@@ -16,8 +16,11 @@ absolutetime_t simulate_next_reaction::next(rng_t& engine)
 }
 
 std::optional<event_t>
-simulate_next_reaction::step(rng_t& engine, absolutetime_t nexttime, event_filter_t evf)
+simulate_next_reaction::step(rng_t& engine, absolutetime_t maxtime, event_filter_t evf)
 {
+    if (std::isnan(maxtime))
+        throw std::range_error("maxtime must be finite or +INFINITY");
+
     while (true) {
         /* If there are no more infection times, stop */
         if (active_edges.empty())
@@ -27,7 +30,7 @@ simulate_next_reaction::step(rng_t& engine, absolutetime_t nexttime, event_filte
 		 * Return before handling the event if it's time is larger than nexttime
 		 */
         const auto next = top_edge();
-		if (next.time > nexttime)
+        if (next.time > maxtime)
 			return std::nullopt;
 		
 		/* Dequeue event */
