@@ -58,6 +58,7 @@ public:
     int current_nb_of_infected(){
         return (int) infected.size() - removed;
     }
+
     struct active_edges_entry {
         /*
          * Event kind represented by this edge (infection or reset)
