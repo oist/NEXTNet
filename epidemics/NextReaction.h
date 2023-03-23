@@ -35,7 +35,16 @@ public:
 
     virtual bool is_infected(node_t) const;
 
-    std::unordered_set<node_t> infected;
+    struct infected_state_t {
+        infected_state_t(absolutetime_t inf, absolutetime_t res)
+            :infection_time(inf), reset_time(res)
+        {}
+
+        absolutetime_t infection_time;
+        absolutetime_t reset_time;
+    };
+    typedef std::unordered_map<node_t, infected_state_t> infected_nodes_t;
+    infected_nodes_t infected;
     
     graph& network;
     const class transmission_time& psi;

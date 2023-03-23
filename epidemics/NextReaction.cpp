@@ -130,7 +130,6 @@ std::optional<event_t> simulate_next_reaction::step_infection(const active_edges
     /* Node becomes infected.
      * Mark the node as infected, generate reset time, insert recovery self-loop
      */
-    infected.insert(next.node);
     const interval_t tau_reset = (rho ? rho->sample(engine, 0, 1) : INFINITY);
     const absolutetime_t node_reset_time = next.time + tau_reset;
     if (tau_reset < INFINITY) {
@@ -140,7 +139,8 @@ std::optional<event_t> simulate_next_reaction::step_infection(const active_edges
         e.node = next.node;
 		push_edge(e);
     }
-    
+    infected.emplace(next.node, infected_state_t(next.time, node_reset_time));
+
     /* Activate the first outgoing edge of the newly infected node
      * Further edges are activated iteratively after the previously one fired,
      * see the code block above labelled "Activate the next sibling edges of the
