@@ -282,7 +282,7 @@ std::optional<event_t> simulate_nmga::step(rng_t& engine, absolutetime_t maxtime
     }
 }
 
-void simulate_nmga::notify_infected_node_neighbour_added(network_event_t event)
+void simulate_nmga::notify_infected_node_neighbour_added(network_event_t event, rng_t& engine)
 {
     throw std::logic_error("unimplemented");
 }

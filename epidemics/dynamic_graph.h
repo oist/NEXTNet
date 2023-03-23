@@ -21,7 +21,7 @@ struct dynamic_network : virtual graph {
 
 	virtual std::optional<network_event_t> step(rng_t& engine, absolutetime_t nexttime = NAN) = 0;
 
-	virtual void notify_epidemic_event(event_t ev);
+	virtual void notify_epidemic_event(event_t ev, rng_t& engine);
 };
 
 struct dynamic_erdos_reyni : virtual dynamic_network, virtual erdos_reyni {

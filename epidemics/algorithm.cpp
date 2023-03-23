@@ -44,8 +44,8 @@ epidemic_on_dynamic_network_simulation::step(rng_t& engine, absolutetime_t nextt
 						neighbour_state_t& neighbours = it->second;
 						auto it2 = neighbours.find(ev.target_node);
 						if (it2 == neighbours.end()) {
-							/* Previously unknown neighbour. Edge can't be active, just activate it */
-							simulation->notify_infected_node_neighbour_added(ev);
+							/* Unregistered neighbour. Edge can't be active, just activate it */
+							simulation->notify_infected_node_neighbour_added(ev, engine);
 						}
 						else {
 							/* Neighbour previously existed. Edge was removed and is now re-added, unmask it (false) */
@@ -102,7 +102,7 @@ epidemic_on_dynamic_network_simulation::step(rng_t& engine, absolutetime_t nextt
 					throw std::logic_error("invalid epidemic event kind: "s + name(ev.kind));
 			}
 			/* Inform the graph in case it wants to react */
-			network->notify_epidemic_event(ev);
+			network->notify_epidemic_event(ev, engine);
 			return ev;
 		} else {
 			throw std::logic_error("invalid next event time");

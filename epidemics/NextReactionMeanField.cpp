@@ -52,7 +52,7 @@ std::optional<event_t> simulate_next_reaction_mean_field::step(rng_t& engine, ab
     }
 }
 
-void simulate_next_reaction_mean_field::notify_infected_node_neighbour_added(network_event_t event)
+void simulate_next_reaction_mean_field::notify_infected_node_neighbour_added(network_event_t event, rng_t& engine)
 {
 	throw std::logic_error("unimplemented");
 }

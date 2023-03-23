@@ -7,7 +7,7 @@
 
 #include "dynamic_graph.h"
 
-void dynamic_network::notify_epidemic_event(event_t ev) {
+void dynamic_network::notify_epidemic_event(event_t ev, rng_t& engine) {
 	/* Do nothing by default */
 }
 
