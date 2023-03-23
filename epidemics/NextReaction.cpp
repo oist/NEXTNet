@@ -270,15 +270,21 @@ std::optional<event_t> simulate_next_reaction::step_reset(const active_edges_ent
 	if (is_event_blocked(ev, evf))
 		return std::nullopt;
 	
-    /* if SIR, increase counter of removed/recovered nodes, and leave the node as infected so that 
-    * the node cannot be reinfected. 
-    * ( this is just a trick to avoid having to create a new state, the node is not actually infected anymore and does not generate new infections.)
-    * else, Mark node as no longer infected. In that case the node simply returns to the susceptible state and can get reinfected again later. */
-    if (SIR){
-        removed += 1;
-    } else {
-        infected.erase(next.node);
-    }
+	/* In SIR mode, reset events do not make nodes susceptible again, but only terminate the infections
+	 * phase early. We implement that via the following hack that leaves the node marked as "infected"
+	 * (of which a more appropriate name is this mode would be recovered).
+	 * NOTE: This hack should eventually be removed, and be replaced by a separate class that uses
+	 * event filters to implement SIR mode. Through an appropriate filter, nodes would be added to a
+	 * "removed" set upon receiving a reset event, and that set would be queried before allowing
+	 * infections to proceed.
+	 */
+	if (SIR) {
+		/* SIR mode, just could the number of removed nodes */
+		removed += 1;
+	} else {
+		/* SIS mode, mark node as not infected */
+		infected.erase(ev.node);
+	}
 
     /* Return the reset event */
 	return ev;
