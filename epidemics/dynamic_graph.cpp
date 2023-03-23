@@ -19,7 +19,7 @@ dynamic_erdos_reyni::dynamic_erdos_reyni(int size, double avg_degree, double tim
 	,edges_present(0)
 {
 	/* Initial degree-weights node distribution and present/absent edge counters */
-	for(node_t i = 0; i < this->adjacencylist.size(); ++i) {
+	for(node_t i = 0; (std::size_t)i < this->adjacencylist.size(); ++i) {
 		const unsigned k = this->adjacencylist[i].size();
 		weighted_nodes.push_back(k);
 		edges_present += k;
