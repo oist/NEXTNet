@@ -56,9 +56,47 @@ simulate_next_reaction::step(rng_t& engine, absolutetime_t maxtime, event_filter
     }
 }
 
-void simulate_next_reaction::notify_infected_node_neighbour_added(network_event_t event)
+void simulate_next_reaction::notify_infected_node_neighbour_added(network_event_t event, rng_t& engine)
 {
-	throw std::logic_error("unimplemented");
+	/* A neighbour was added to an already infected node. We have to add an active edge
+	 * that corresponds to the new neighbour. However, remember our underlying model for
+	 * dynamic networks: The network is, in principle, always a complete graph whose edges
+	 * switch between an "active" and an "inactive" state. Once a node becomes infected,
+	 * each outgoing edge (regardless of its current state) gets assigned an (independent)
+	 * tranmission time, and successfully passes on the infection if the edge happens to
+	 * be in state "active" at the time of transmission. When adding an active edge *after*
+	 * a node has become infected, we thus have to account for the possibility that the edge
+	 * actually fired *before* the edge was activated. Only if that is not the case should
+	 * we activate the edge.
+	 */
+
+	/* Query state of source node */
+	const auto source_state = infected.find(event.source_node);
+	if (source_state == infected.end())
+		throw std::logic_error("failed to query state of infected node");
+
+	/* Generate firing time of the newly added edge */
+	const double tau = psi.sample(engine, 0, 1);
+	if (std::isnan(tau) || (tau < 0))
+		throw std::logic_error("transmission times must be non-negative");
+	const double t = source_state->second.infection_time + tau;
+
+	/* If the edge fires before it was added or after the node has resetted it has no effect */
+	if ((t < event.time) || (t > source_state->second.reset_time))
+		return;
+
+	/* Add edge */
+	assert(std::isfinite(t));
+	active_edges_entry e;
+	e.kind = event_kind::infection;
+	e.time = t;
+	e.node = event.target_node;
+	e.source_time = source_state->second.infection_time;
+	e.source_node = event.source_node;
+	e.source_reset = source_state->second.reset_time;
+	e.neighbour_index = 0;
+	e.neighbours_remaining = 0;
+	push_edge(e);
 }
 
 std::optional<event_t> simulate_next_reaction::step_infection(const active_edges_entry& next, event_filter_t evf, rng_t& engine)
