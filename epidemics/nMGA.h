@@ -118,7 +118,7 @@ private:
 	}
 	
 	void remove_active_edge(active_edges_t::iterator& it) {
-		active_edges.erase(it);
+		it = active_edges.erase(it);
 	}
 	
 	double phi(absolutetime_t t, interval_t tau);
