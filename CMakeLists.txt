@@ -103,11 +103,13 @@ endif()
 
 # Intel Thread Building Blocks are optional, if present
 # they speed up the tests by executing simulations in parallel
-find_package(TBB)
-if (TBB_FOUND)
-    message("Thread Building Blocks: Found")
-else()
-    message("Thread Building Blocks: Not Found")
+if (NOT SERIALIZE)
+    find_package(TBB)
+    if (TBB_FOUND)
+        message("Thread Building Blocks: Found")
+    else()
+        message("Thread Building Blocks: Not Found")
+    endif()
 endif()
 
 # Gnuplot is optional, if present can generate plos
@@ -154,8 +156,13 @@ target_precompile_headers(tests
     PUBLIC ${TESTS_PCH})
 set_source_files_properties(epidemics/tests/main.cpp
     PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
-if (TBB_FOUND)
+if ((NOT SERIALIZE) AND TBB_FOUND)
+    message("Parallelization: Enabled")
     target_link_libraries(tests TBB::tbb)
+    add_definitions(-DPARALLELIZE=1)
+else()
+    message("Parallelization: Disabled")
+    add_definitions(-DPARALLELIZE=0)
 endif()
 if (Gnuplot AND Boost_FILESYSTEM_FOUND AND Boost_IOSTREAMS_FOUND)
     message("Plotting during tests: Enabled")

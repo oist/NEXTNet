@@ -15,7 +15,7 @@ std::vector<R> parallel(std::size_t n, rng_t& engine, std::function<R(rng_t&)> b
 
     /* Execute work units, in parallel if possible */
     typedef boost::counting_iterator<std::size_t> count_it;
-#if HAVE_STD_EXECUTION
+#if PARALLELIZE && HAVE_STD_EXECUTION
     /* Parallel execution policy should be available */
     std::transform(std::execution::par_unseq,
                    count_it(0), count_it(n), r.begin(),
