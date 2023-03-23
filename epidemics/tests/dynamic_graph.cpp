@@ -133,17 +133,17 @@ TEST_CASE("dynamic Erdös-Reyni", "[dynamic_graph]") {
 		 *   Avg(absent) : Average of exponentially distributed waiting times with mean 1/(TAU*P)
 		 * We use a simple z-test, i.e. assume normality and known variance of all tested quantities!
 		 */
-		const double events = times_present.size() + times_absent.size();
-		const double alpha = P*TAU, beta = (1-P)*TAU;
-		const double mu = 1/alpha + 1/beta;
-		const double sigma2 = 1/pow(alpha, 2) + 1/pow(beta, 2);
-		const double pval_events = ztest(events, sqrt(TMAX*sigma2/pow(mu, 3)), TMAX/mu);
 		/* TODO: This test fails for unknown reasons. Figure out why. */
+		//const double events = times_present.size() + times_absent.size();
+		//const double alpha = P*TAU, beta = (1-P)*TAU;
+		//const double mu = 1/alpha + 1/beta;
+		//const double sigma2 = 1/pow(alpha, 2) + 1/pow(beta, 2);
+		//const double pval_events = ztest(events, sqrt(TMAX*sigma2/pow(mu, 3)), TMAX/mu);
 		//REQUIRE(pval_events >= 0.001);
 		const double pval_tpresent = ztest(time_present, 1 / (TAU*(1-P)*sqrt(times_present.size())), 1.0 / (TAU*(1-P)));
 		REQUIRE(pval_tpresent >= 0.01 / E);
 		const double pval_tabsent = ztest(time_absent, 1 / (TAU*P*sqrt(times_absent.size())), 1.0 / (TAU*P));
-		REQUIRE(pval_tpresent >= 0.01 / E);
+		REQUIRE(pval_tabsent >= 0.01 / E);
 		/* TODO: Figure out the correct mean and variance of p_present */
 		//const double pval_ppresent = ztest(p_present, ?, P);
 		//REQUIRE(pval_ppresent > 0.01);
