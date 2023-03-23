@@ -249,7 +249,8 @@ std::optional<event_t> simulate_next_reaction::step_infection(const active_edges
             e.source_time = next.time;
             e.source_node = next.node;
             e.source_reset = node_reset_time;
-            e.source_permutation = std::move(p);
+            if (!edges_concurrent)
+                e.source_permutation = std::move(p);
             e.neighbour_index = 0;
 			e.neighbours_remaining = m - 1;
 			push_edge(e);
