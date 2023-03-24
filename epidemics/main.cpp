@@ -54,9 +54,13 @@ DECLARE_PROGRAM(profile);
 DECLARE_PROGRAM(trajectory);
 DECLARE_PROGRAM(customtrajectory);
 DECLARE_PROGRAM(average);
+DECLARE_PROGRAM(scale_free);
 
 
 int main(int argc, const char * argv[]) {
+
+
+
     if (argc < 2)
         throw std::runtime_error("no program name specified");
 
