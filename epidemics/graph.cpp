@@ -373,18 +373,23 @@ scale_free::scale_free(int size, rng_t& engine){
     adjacencylist.resize(size);
     adjacencylist[mixed_nodes[0]].push_back(mixed_nodes[1]);
     adjacencylist[mixed_nodes[1]].push_back(mixed_nodes[0]);
+    // adjacencylist[0].push_back(1);
+    // adjacencylist[1].push_back(0);
 
     // There are only two nodes in the network, both with degree 1.
     repeated_nodes.push_back(mixed_nodes[0]);
     repeated_nodes.push_back(mixed_nodes[1]);
+    // repeated_nodes.push_back(0);
+    // repeated_nodes.push_back(1);
     
     int len = (int) repeated_nodes.size();
 
     // i is the current number of nodes in the graph
-    for (int i=1; i<size; i++) {
+    for (int i=2; i<size; i++) {
 
         // Select next node to be added to the network;
         const node_t new_node = mixed_nodes[i];
+        // const node_t new_node = i;
 
         // Determine who it will be attached to.
         const double x = distribution(engine);
@@ -678,13 +683,13 @@ std::vector<double> knn(graph_adjacencylist& nw) {
         int k = nw.outdegree(node);
         
         kmax = std::max(k,kmax);
-
         for (node_t neigh : nw.adjacencylist[node])
         {
-            const int k_neigh = (int) nw.outdegree(neigh);
+            const double k_neigh = (double) nw.outdegree(neigh);
             knn_degree[k] += k_neigh;
             nb_with_degree[k] += 1;
         }
+
     }
 
     while ((int) knn_degree.size() > kmax + 1){
@@ -692,10 +697,14 @@ std::vector<double> knn(graph_adjacencylist& nw) {
         nb_with_degree.pop_back();
     }
     
-    for (int k=0; k < kmax; k++)
+    for (int k=0; k < kmax+1; k++)
     {
-        if (nb_with_degree[k]!=0)
+        if (nb_with_degree[k]!=0){
             knn_degree[k] =  knn_degree[k]/nb_with_degree[k];
+        }
+        // else {
+        //     knn_degree[k]=0;
+        // }
     }
     return knn_degree;
 
