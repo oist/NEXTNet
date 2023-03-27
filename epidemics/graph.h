@@ -224,10 +224,10 @@ void add_correlation(double r,graph_adjacencylist& nw,rng_t& engine);
 // Helper function to verify whether an edge exists or not
 bool edge_exists(node_t a, node_t b, const graph_adjacencylist& nw);
 
+
 //------------------------------------------------
 //-----Measure degree correlation in a network----
 //------------------------------------------------
-
 
 /**
  * @brief Average degree of the nearest neighbors of vertices of degree k.
@@ -237,8 +237,6 @@ bool edge_exists(node_t a, node_t b, const graph_adjacencylist& nw);
  *  
  */
 std::vector<double> knn(graph_adjacencylist& nw);
-
-
 
 
 /**
@@ -258,4 +256,3 @@ double assortativity(graph_adjacencylist& nw);
  *
  */
 std::vector<std::vector<double>> Wkk(graph_adjacencylist& nw);
-std::vector<double> Wk(std::vector<std::vector<double>>& wkk);

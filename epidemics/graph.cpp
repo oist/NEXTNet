@@ -665,45 +665,39 @@ void add_correlation(double r,graph_adjacencylist& nw,rng_t& engine){
 //-----Measure degree correlation in a network----
 //------------------------------------------------
 
+// Average neighbour's degree for a node of degree k
 std::vector<double> knn(graph_adjacencylist& nw) {
 
-    std::vector<std::vector<int>> nn_degree({});
-    nn_degree.resize(nw.adjacencylist.size()); // k_max <= size of network
-    int k_max = 0;
+    int size = (int) nw.adjacencylist.size();
+    std::vector<double> knn_degree(size, 0);
+    std::vector<double> nb_with_degree(size,0);
 
-    for (node_t node = 0; node < (node_t)nw.adjacencylist.size(); node++)
-    {
-        const int k = (int) nw.adjacencylist[node].size();
-        k_max = std::max(k,k_max);
-
-        for (node_t neigh = 0; neigh < k; neigh++)
-        {
-            const int neigh_k = (int) nw.adjacencylist[neigh].size();
-            nn_degree[k].push_back(neigh_k);
-        }
+    int kmax = 0;
+    for (node_t node = 0; node < size; node++){
         
+        int k = nw.outdegree(node);
+        
+        kmax = std::max(k,kmax);
+
+        for (node_t neigh : nw.adjacencylist[node])
+        {
+            const int k_neigh = (int) nw.outdegree(neigh);
+            knn_degree[k] += k_neigh;
+            nb_with_degree[k] += 1;
+        }
     }
 
-    std::vector<double> result({});
-    // compute average degree of the vertices connected to a vertex of degree k
-    for (int k = 0; k <= k_max; k++)
+    while ((int) knn_degree.size() > kmax + 1){
+        knn_degree.pop_back();
+        nb_with_degree.pop_back();
+    }
+    
+    for (int k=0; k < kmax; k++)
     {
-        if (nn_degree[k].size() == 0)
-        {
-            result.push_back(0);
-            continue;
-        }
-        double average = 0;
-        for (int i = 0; i < (int)nn_degree[k].size(); i++)
-        {
-            average += nn_degree[k][i];
-        }
-        result.push_back(average /= nn_degree[k].size());
-
+        if (nb_with_degree[k]!=0)
+            knn_degree[k] =  knn_degree[k]/nb_with_degree[k];
     }
-
-    return result;
-
+    return knn_degree;
 
 }
 
@@ -712,62 +706,46 @@ std::vector<double> knn(graph_adjacencylist& nw) {
 //------------------------------------------------
 
 
-
-
-//
-// assortativity a = num/den
-// num = sum_kk' [ w(k,k') * k * k' ] - ( sum_k [ w(k) * k ] ) ^ 2
-//den = sum_k [ w(k) * k ^ 2] - ( sum_k [ w(k) * k ] ) ^ 2
-
+// From the definition of the assortativity, after simple manipulations we can rewrite:
+// r = (<k^2 knn(k)>/<k> - mu^2 ) / (<k^3>/<k> - mu^2)
+// where mu^2 = <k^2>/<k>
+// However <k^2 knn(k)> is tricky to measure, instead, we measure the fraction of links that connect deg i to deg j, W(i,j)
 double assortativity(graph_adjacencylist& nw)
 {
-    std::vector<std::vector<double>> wkk = Wkk(nw);
-    std::vector<double> wk = Wk(wkk);
+    
+    int size = (int) nw.adjacencylist.size();
+    std::vector<double> Knn = knn(nw);
     
     double k1 = 0.0;
     double k2 = 0.0;
-    double kk = 0.0;
-    for (int k =0; k<(int) wk.size(); k++) {
-        k1 += wk[k] * k;
-        k2 += wk[k] * k * k;
-        
-        for (int k_prime = 0; k_prime<(int) wk.size(); k_prime++) {
-            kk += wkk[k][k_prime] * k * k_prime;
+    double k3 = 0.0;
+    double kkWkk = 0.0;
+
+    for( int i = 0; i < size; i++ ){
+        int k = nw.outdegree(i);
+        k1 += (double) k / size;
+        k2 += (double) k*k / size;
+        k3 += (double) k*k*k / size;
+    }
+    auto wkk = Wkk(nw);
+
+    for (int i = 1; i < wkk.size(); i++){
+        for (int j = 1; j < wkk[i].size(); j++)
+        {
+            kkWkk += i*j* wkk[i][j];
         }
     }
+
+    double mu = k2/k1;
+
+    double sigma2 = k3/k1 - mu*mu;
     
-    double num = kk - k1*k1;
-    double den = k2 - k1 *k1;
-    double r = num/den;
-    if (abs(r)>1) {
-        throw std::range_error(std::string("correlation stronger than ± 1:  r=") + std::to_string(r));
-    }
-    return r ;
-    
+    double r = (kkWkk - mu*mu) / sigma2;
+
+    return r;
 
 }
-//    double num = 0.0;
-//    double den = 0.0;
-//
-//    // number of edges
-//    int m = 0;
-//    for (std::vector<node_t> neighbours : nw.adjacencylist)
-//    {
-//        m += neighbours.size();
-//    }
-//
-//
-//    for (int i = 0; i < nw.adjacencylist.size(); i++)
-//    {
-//        for (int j = 0; j < i; j++)
-//        {
-//            const int Aij = std::find(nw.adjacencylist[i].begin(), nw.adjacencylist[i].end(), j) != nw.adjacencylist[i].end();
-//            num += Aij - nw.outdegree(i)*nw.outdegree(j)/ (m);
-//            den += nw.outdegree(i)*Aij - nw.outdegree(i)*nw.outdegree(j)/ (m);
-//        }
-//    }
-//    return num/den;
-//}
+
 
 //Fraction of links that connect a node of deg k to a node of deg k'
 std::vector<std::vector<double>> Wkk(graph_adjacencylist& nw){
@@ -798,11 +776,4 @@ std::vector<std::vector<double>> Wkk(graph_adjacencylist& nw){
     }
     
     return w;
-}
-
-std::vector<double> Wk(std::vector<std::vector<double>>& wkk){
-    std::vector<double> wk({});
-    for (std::vector<double> v: wkk)
-        wk.push_back(std::accumulate(v.cbegin(), v.cend(), 0.0));
-    return wk;
 }

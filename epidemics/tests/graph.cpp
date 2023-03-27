@@ -300,23 +300,21 @@ TEST_CASE("Measuring average neighbour degree","[graph]") {
     erdos_reyni network(size, avg_degree,engine);
     
 
-    // double k1 = 0;
-    // double k2 = 0;
-    // for (node_t node = 0; node < size; node++){
-    //     k1 += network.outdegree(node);
-    //     k2 += std::pow(network.outdegree(node),2);
-    // }
-    std::vector<double> vec = knn(network);
-    double mean = 0;
-    for (size_t i = 1; i < vec.size(); i++)
-    {
-        mean += vec[i]/vec.size();
+    double k1 = 0;
+    double k2 = 0;
+    for (node_t node = 0; node < size; node++){
+        k1 += network.outdegree(node);
+        k2 += std::pow(network.outdegree(node),2);
     }
+    std::vector<double> vec = knn(network);
+    double mu = k2/k1;
     
+    int mu_ER = 4;
 
-    REQUIRE(std::abs( knn(network)[3]-mean )/mean < 0.4);
-    REQUIRE(std::abs( knn(network)[5]-mean )/mean < 0.4);
-    REQUIRE(std::abs( knn(network)[10]-mean)/mean < 0.4);
+    REQUIRE(std::abs( mu-mu_ER )/mu_ER < 0.05);
+    REQUIRE(std::abs( knn(network)[3]-mu )/mu < 0.05);
+    REQUIRE(std::abs( knn(network)[5]-mu )/mu < 0.05);
+    REQUIRE(std::abs( knn(network)[10]-mu)/mu < 0.05);
 
     
 }
@@ -331,10 +329,11 @@ TEST_CASE("Measuring average neighbour degree","[graph]") {
  */
 TEST_CASE("Measuring degree correlation","[graph]") {
     std::mt19937 engine;
-    int size = 10000;
+    int size = 100000;
     erdos_reyni nk(size,3.0,engine);
+
     double r = assortativity(nk);
-    REQUIRE(std::abs(r) < 0.3);
+    REQUIRE(std::abs(r) < 0.05);
 
 
     // Generate a Poisson graph with the configuration model
