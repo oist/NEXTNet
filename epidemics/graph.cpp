@@ -350,71 +350,55 @@ config_model::config_model(std::vector<int> degreelist, rng_t& engine){
 //--------------------------------------
 
 scale_free::scale_free(int size, rng_t& engine){
-    
-    adjacencylist.resize(size);
-    
-/* This code below was introduced as a 'hacky' way
-* to generate a Barabasi-Albert network without
-* having to update the distribution at every step.
-* However, despite being scale-free, it seems to generate a disconnected graph, which is not desirable: in the BA model for m=1, the graph is always a connected tree.
- * THEREFORE, for now, we revert to the original algorithm, even if it is slow to generate one...
- */
-    
-//    std::vector<node_t> M(2*size,0);
-//
-//    for (node_t v=0; v<size; v++) {
-//        //node_t node = mixed_nodes[v];
-//        M[2*v]=v;
-//        std::uniform_int_distribution<> dist(0,2*v);
-//        int r = dist(engine);
-//        M[2*v+1]=M[r];
-//    }
-//
-//    for (int i=0; i<size; i++) {
-//        adjacencylist[M[2*i]].push_back(M[2*i+1]);
-//        adjacencylist[M[2*i+1]].push_back(M[2*i]);
-//    }
 
-// ORIGINAL CODE:
+    // To generate efficiently a BA network, we used the approached used in the python library networkx.
+    // -> instead of re-initialising the distribution at every step by updating the weights, 
+    // we sample at uniform random from a list, but each node is duplicated k times where k is their degree.
+    // This will mimic a random sample over a weighted distribution.
     
-    //Initialisation: Create the first node with no links.
+    std::vector<node_t> repeated_nodes;
+    std::uniform_real_distribution<double> distribution(0.0,1.0);
+    // In the BA algorithm, there is a negative correlation between the label of the node and their degree.
+    // In the NR scheme, we fetch the next neighbour in order of their label. 
+    // Therefore we wish to make the degree of a node independent of their label.
+    // To do so, we introduce 'mixed_nodes'.
 
-    //In the original next-reaction, we pick the next neighbours in order. However in the original BA algorithm, nodes with low labels (i.e. node 0, node 1, node 2...) typically have the highest degrees. Therefore, to avoid a bias, we shuffle the nodes, so that there is no correlation between their label, and their degree.
     std::vector<node_t> mixed_nodes;
     for( int i = 0; i < size; i++ )
        mixed_nodes.push_back(i);
     std::shuffle (mixed_nodes.begin(), mixed_nodes.end(), engine);
 
+
+    // Initialise the adjacency list by adding the first two nodes. (no need to sample a random number for the first step.)
     adjacencylist.resize(size);
+    adjacencylist[mixed_nodes[0]].push_back(mixed_nodes[1]);
+    adjacencylist[mixed_nodes[1]].push_back(mixed_nodes[0]);
 
-//    adjacencylist[mixed_nodes[0]].push_back(mixed_nodes[1]);
-//    adjacencylist[mixed_nodes[1]].push_back(mixed_nodes[0]);
+    // There are only two nodes in the network, both with degree 1.
+    repeated_nodes.push_back(mixed_nodes[0]);
+    repeated_nodes.push_back(mixed_nodes[1]);
+    
+    int len = (int) repeated_nodes.size();
 
-    // i is the current number of nodes
+    // i is the current number of nodes in the graph
     for (int i=1; i<size; i++) {
 
+        // Select next node to be added to the network;
         const node_t new_node = mixed_nodes[i];
 
+        // Determine who it will be attached to.
+        const double x = distribution(engine);
+        const index_t index = floor(x * len);
+        const node_t selected_node = repeated_nodes[index];
 
-        // find who is connected to the new node by generating a rand. num. between 0 and i-1
-        // where the neighbour will be mixed_node[ rand. num.]
-        // the probability weights are the current degree (Bara-Alb model)
+        adjacencylist[new_node].push_back(selected_node);
+        adjacencylist[selected_node].push_back(new_node);
 
-        std::vector<double> prob(i);
+        // Update the weights of the preferential attachement
+        repeated_nodes.push_back(new_node);
+        repeated_nodes.push_back(selected_node);
+        len += 2;
 
-        for (int j = 0; j<i; j++) {
-            const auto degree = adjacencylist[mixed_nodes[j]].size();
-            prob[j]=degree;
-        }
-
-        std::discrete_distribution<int> distr(prob.begin(),prob.end());
-
-        const int index = distr(engine);
-
-        const node_t neighbour = mixed_nodes[index];
-
-        adjacencylist[new_node].push_back(neighbour);
-        adjacencylist[neighbour].push_back(new_node);
     }   
 }
 
