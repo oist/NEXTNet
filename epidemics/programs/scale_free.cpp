@@ -16,15 +16,16 @@ int program_scale_free(int argc, const char * argv[]) {
     engine.seed(seed_number);
 
     // Network size, e.g. 1e6;
-    int size = atoi(argv[3]);
+    double size = stod(argv[3]);
 
     /* Parameters for the epidemic*/ 
 	double MEAN_INFECTION = atof(argv[4]);
     double VARIANCE_INFECTION = atof(argv[5]);
 
     int nb_simulation = atoi(argv[6]);
-    string output_filename = argv[7];
+     string output_filename = argv[7];
     
+    // string output_filename = std::to_string(size)+string("_")+to_string(MEAN_INFECTION)+string("_")+to_string(VARIANCE_INFECTION)+string("_s")+to_string(seed_number);
 
     transmission_time_gamma psi(MEAN_INFECTION, VARIANCE_INFECTION);
 
@@ -32,10 +33,11 @@ int program_scale_free(int argc, const char * argv[]) {
     
     cout << "generating network...\n";
 
-    // scale_free network(size,engine);
-    // imported_network network(string("~/Desktop/adjalist.csv"));
-    erdos_reyni network(size,3,engine);    
-    add_correlation(0.1,network,engine);
+    scale_free network(size,engine);
+    
+    // erdos_reyni network(size,3,engine);    
+    // // export_adjacency_list(network.adjacencylist ,string("adjalist.csv"));
+    // add_correlation(-0.2,network,engine);
     double r = assortativity(network);
 
     double k1 = 0;
@@ -48,8 +50,9 @@ int program_scale_free(int argc, const char * argv[]) {
         k1 += k ;
         k2 +=  pow(k,2) ;
         k3 +=  pow(k,3) ;
-        k4 += pow(k,4); 
+        k4 +=  pow(k,4); 
     }
+
 
     // Export parameters
     string parameters ("parameters.dat");
@@ -58,7 +61,7 @@ int program_scale_free(int argc, const char * argv[]) {
     
     out << "r " << r << "\n";
     out << "k1 " << k1/size << "\n";
-    out << "k2 " << k2 /size << "\n";
+    out << "k2 " << k2/size << "\n";
     out << "k3 " << k3/size << "\n";
     out << "k4 " << k4/size << "\n";
     
@@ -72,13 +75,19 @@ int program_scale_free(int argc, const char * argv[]) {
     for (int s = 0; s < nb_simulation; s++)
         {
 
-            cout <<  s <<' / ' << nb_simulation  << " %" << "\r";
+            cout <<  s <<" / " << nb_simulation << "\r";
             std::cout.flush();
             
-            simulate_next_reaction simulation(network, psi);
+            simulate_next_reaction simulation(network, psi,nullptr,true,true,false);
 
-            node_t rand_node = dis(engine);
-            simulation.add_infections({ std::make_pair(rand_node, 0.0)});
+            for (node_t i = 0; i < 1; i++)
+            {
+                node_t rand_node = dis(engine);
+                simulation.add_infections({ std::make_pair(rand_node, 0.0)});
+            }
+            
+
+
                             
             while (true) {
                 auto point = simulation.step(engine);
