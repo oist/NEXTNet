@@ -24,6 +24,7 @@
 		F91C25E72911401C00FFAE9C /* libboost_filesystem.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F91C25DE29113CA800FFAE9C /* libboost_filesystem.a */; };
 		F921EC872952A7BF00667339 /* algorithm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F921EC862952A7BF00667339 /* algorithm.cpp */; };
 		F921EC882952A7BF00667339 /* algorithm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F921EC862952A7BF00667339 /* algorithm.cpp */; };
+		F933EDF929D401D200C39FE8 /* scale_free.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F933EDF829D401D200C39FE8 /* scale_free.cpp */; };
 		F93F5D8F299238F300775CFA /* customtrajectory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F93F5D8C299238F300775CFA /* customtrajectory.cpp */; };
 		F93F5D90299238F300775CFA /* trajectory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F93F5D8D299238F300775CFA /* trajectory.cpp */; };
 		F93F5D91299238F300775CFA /* average.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F93F5D8E299238F300775CFA /* average.cpp */; };
@@ -97,6 +98,7 @@
 		F92123EE2902464200376961 /* algorithm.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = algorithm.h; sourceTree = "<group>"; };
 		F92123EF2902464200376961 /* matplotlibcpp.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = matplotlibcpp.h; sourceTree = "<group>"; };
 		F921EC862952A7BF00667339 /* algorithm.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = algorithm.cpp; sourceTree = "<group>"; };
+		F933EDF829D401D200C39FE8 /* scale_free.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = scale_free.cpp; sourceTree = "<group>"; };
 		F93F5D8C299238F300775CFA /* customtrajectory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = customtrajectory.cpp; sourceTree = "<group>"; };
 		F93F5D8D299238F300775CFA /* trajectory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = trajectory.cpp; sourceTree = "<group>"; };
 		F93F5D8E299238F300775CFA /* average.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = average.cpp; sourceTree = "<group>"; };
@@ -261,6 +263,7 @@
 		F9A4651A2923B2B700393E90 /* programs */ = {
 			isa = PBXGroup;
 			children = (
+				F933EDF829D401D200C39FE8 /* scale_free.cpp */,
 				F93F5D8E299238F300775CFA /* average.cpp */,
 				F93F5D8C299238F300775CFA /* customtrajectory.cpp */,
 				F93F5D8D299238F300775CFA /* trajectory.cpp */,
@@ -392,6 +395,7 @@
 				984A0CB627C0E0B7004A0A96 /* simulation.cpp in Sources */,
 				F9E1264A291CB5F100C9A221 /* NextReactionMeanField.cpp in Sources */,
 				F9CFD98A299B55A90078FD70 /* dynamic_graph.cpp in Sources */,
+				F933EDF929D401D200C39FE8 /* scale_free.cpp in Sources */,
 				984A0CAF27C0DF81004A0A96 /* random.cpp in Sources */,
 				982A07D927D5BED900B4772A /* graph.cpp in Sources */,
 				F93F5D90299238F300775CFA /* trajectory.cpp in Sources */,
