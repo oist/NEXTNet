@@ -5,7 +5,6 @@
 
 #include "random.h"
 #include "NextReaction.h"
-#include "nMGA.h"
 
 namespace {
 
@@ -14,11 +13,13 @@ namespace {
  *
  * @return The symmetric p-value
  */
+#if 0
 inline double ztest(double mean_obs, double sd_true, double mean_true) {
 	using namespace std;
 	const double z = (mean_obs - mean_true) / sd_true;
 	return 1 - std::erf(abs(z) / sqrt(2));
 }
+#endif
 
 }
 
@@ -173,4 +174,3 @@ TEST_CASE("Fraction of the recovered nodes for SIR on the Erdos-Renyi graph", "[
     REQUIRE(std::abs(nb_recovered- Pg * size)/(Pg * size) < 0.1);
 
 }
-
