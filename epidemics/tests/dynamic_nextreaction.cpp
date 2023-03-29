@@ -67,7 +67,7 @@ TEST_CASE("Plot SIS average trajectory on dynamic Erdös-Reyni networks", "[next
 			const auto ev = std::get<network_event_t>(any_ev);
 			return std::make_pair(ev.time, 0);
 		} else throw std::logic_error("unknown event type");
-	}, t_sim, y_sim_total, y_sim_new, TMAX, M);g
+	}, t_sim, y_sim_total, y_sim_new, TMAX, M);
 	
 	std::vector<double> t_sim_static, y_sim_new_static, y_sim_total_static;
 	average_trajectories(engine, [&](rng_t& engine){
