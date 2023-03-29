@@ -36,6 +36,7 @@ typedef std::pair<node_t,node_t> edge_t;
 
 /**
  * Type of event that occured during a simulation
+ * TODO: Rename to epidemic_event_kind
  */
 enum class event_kind : unsigned int {
     none = 0,
@@ -59,12 +60,61 @@ inline const char* name(event_kind kind) {
 
 /**
  * Describes an event that occured
+ * TODO: Rename to epidemic_event_t
  */
 struct event_t {
     event_kind kind = event_kind::none;
+	node_t source_node = -1;
     node_t node = -1;
     absolutetime_t time = INFINITY;
 };
+
+/**
+ * Type of dynamic network event that occured during a simulation
+ */
+enum class network_event_kind : unsigned int {
+	none = 0,
+	neighbour_added = 1,
+	neighbour_removed = 2
+};
+  
+/**
+ * Translate dynamic network event kinds to their name
+ */
+inline const char* name(network_event_kind kind) {
+	switch (kind) {
+		case network_event_kind::none: return "none";
+		case network_event_kind::neighbour_added: return "neighbour_added";
+		case network_event_kind::neighbour_removed: return "neighbour_removed";
+		default: return NULL;
+	}
+}
+
+/**
+ * Describes an event that occured when evolving a dynamic network
+ */
+struct network_event_t {
+	network_event_kind kind = network_event_kind::none;
+	node_t source_node = -1;
+	node_t target_node = -1;
+	absolutetime_t time = INFINITY;
+};
+
+/**
+ * Describes an event that occured during a simulation on a dynamic network.
+ * Can either be a change to the network, or an infection or recovery.
+ */
+typedef std::variant<event_t, network_event_t> network_or_epidemic_event_t;
+
+/**
+ * An event filter, i.e. a function that can decide whether an event should occur (true)
+ * or be blocked (false) by returning a boolean value.
+ */
+typedef std::optional<std::function<bool(event_t)>> event_filter_t;
+
+inline bool is_event_blocked(event_t ev, event_filter_t evf) {
+	return evf && !(*evf)(ev);
+}
 
 /******************************
  * rng_t - the RNG (random number generator) to use

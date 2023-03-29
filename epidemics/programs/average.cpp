@@ -22,8 +22,8 @@ int program_average(int argc, const char * argv[]) {
 	double MEAN_INFECTION = atof(argv[4]);
     double VARIANCE_INFECTION = atof(argv[5]);
 
-    // Initial number of infected
-    double I0 = atof(argv[6]);
+    // Initial percentage of infected (float from 0 to 100);
+    // double I0 = atof(argv[6]);
     int nb_simulation = atoi(argv[7]);
     string output_filename = argv[8];
     

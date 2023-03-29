@@ -22,6 +22,11 @@
 		F91C25E129113CA900FFAE9C /* libboost_system.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F91C25DD29113CA800FFAE9C /* libboost_system.a */; };
 		F91C25E529113CA900FFAE9C /* libboost_iostreams.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F91C25DF29113CA900FFAE9C /* libboost_iostreams.a */; };
 		F91C25E72911401C00FFAE9C /* libboost_filesystem.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F91C25DE29113CA800FFAE9C /* libboost_filesystem.a */; };
+		F921EC872952A7BF00667339 /* algorithm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F921EC862952A7BF00667339 /* algorithm.cpp */; };
+		F921EC882952A7BF00667339 /* algorithm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F921EC862952A7BF00667339 /* algorithm.cpp */; };
+		F93F5D8F299238F300775CFA /* customtrajectory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F93F5D8C299238F300775CFA /* customtrajectory.cpp */; };
+		F93F5D90299238F300775CFA /* trajectory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F93F5D8D299238F300775CFA /* trajectory.cpp */; };
+		F93F5D91299238F300775CFA /* average.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F93F5D8E299238F300775CFA /* average.cpp */; };
 		F946A5E2281255F2000668F9 /* random.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F946A5E0281255F2000668F9 /* random.cpp */; };
 		F95E340B2924A79700DBCE94 /* benchmark_priorityqueue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F95E340A2924A79700DBCE94 /* benchmark_priorityqueue.cpp */; };
 		F992992C2910E2B3001432FD /* plot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F99299272910E2B3001432FD /* plot.cpp */; };
@@ -30,6 +35,8 @@
 		F9A4651F2923B2B700393E90 /* profile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F9A4651C2923B2B700393E90 /* profile.cpp */; };
 		F9A465202923B2B700393E90 /* sis_meanfield_gamma_gamma.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F9A4651D2923B2B700393E90 /* sis_meanfield_gamma_gamma.cpp */; };
 		F9ADCB9B28128A6D00AEB3C0 /* nextreaction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F9ADCB9A28128A6D00AEB3C0 /* nextreaction.cpp */; };
+		F9CFD98A299B55A90078FD70 /* dynamic_graph.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F9CFD988299B55A90078FD70 /* dynamic_graph.cpp */; };
+		F9CFD98B299B55A90078FD70 /* dynamic_graph.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F9CFD988299B55A90078FD70 /* dynamic_graph.cpp */; };
 		F9D26B8927E229AB005A272D /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F99D7A9C27E21CC000200C18 /* main.cpp */; };
 		F9D26B8A27E229B0005A272D /* graph.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F99D7A9B27E21CC000200C18 /* graph.cpp */; };
 		F9D26B8B27E229B9005A272D /* simulation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 984A0CB427C0E0B7004A0A96 /* simulation.cpp */; };
@@ -39,6 +46,7 @@
 		F9D26B8F27E22A31005A272D /* libtestrunner.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F9D26B6C27E22410005A272D /* libtestrunner.a */; };
 		F9E1264A291CB5F100C9A221 /* NextReactionMeanField.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F9E12648291CB5F100C9A221 /* NextReactionMeanField.cpp */; };
 		F9E1264B291CB5F100C9A221 /* NextReactionMeanField.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F9E12648291CB5F100C9A221 /* NextReactionMeanField.cpp */; };
+		F9EACDE5299E7904009C2002 /* dynamic_graph.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F9EACDE4299E7904009C2002 /* dynamic_graph.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -88,6 +96,10 @@
 		F91C25E8291140B000FFAE9C /* permutation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = permutation.h; sourceTree = "<group>"; };
 		F92123EE2902464200376961 /* algorithm.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = algorithm.h; sourceTree = "<group>"; };
 		F92123EF2902464200376961 /* matplotlibcpp.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = matplotlibcpp.h; sourceTree = "<group>"; };
+		F921EC862952A7BF00667339 /* algorithm.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = algorithm.cpp; sourceTree = "<group>"; };
+		F93F5D8C299238F300775CFA /* customtrajectory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = customtrajectory.cpp; sourceTree = "<group>"; };
+		F93F5D8D299238F300775CFA /* trajectory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = trajectory.cpp; sourceTree = "<group>"; };
+		F93F5D8E299238F300775CFA /* average.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = average.cpp; sourceTree = "<group>"; };
 		F946A5E0281255F2000668F9 /* random.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = random.cpp; sourceTree = "<group>"; };
 		F95E340A2924A79700DBCE94 /* benchmark_priorityqueue.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = benchmark_priorityqueue.cpp; sourceTree = "<group>"; };
 		F95E34152925088200DBCE94 /* prio_queue.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = prio_queue.hpp; sourceTree = "<group>"; };
@@ -107,9 +119,13 @@
 		F9A4651C2923B2B700393E90 /* profile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = profile.cpp; sourceTree = "<group>"; };
 		F9A4651D2923B2B700393E90 /* sis_meanfield_gamma_gamma.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = sis_meanfield_gamma_gamma.cpp; sourceTree = "<group>"; };
 		F9ADCB9A28128A6D00AEB3C0 /* nextreaction.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = nextreaction.cpp; sourceTree = "<group>"; };
+		F9CFD987299B53DD0078FD70 /* dyndist */ = {isa = PBXFileReference; lastKnownFileType = folder; name = dyndist; path = dyndist/dyndist; sourceTree = "<group>"; };
+		F9CFD988299B55A90078FD70 /* dynamic_graph.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = dynamic_graph.cpp; sourceTree = "<group>"; };
+		F9CFD989299B55A90078FD70 /* dynamic_graph.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = dynamic_graph.h; sourceTree = "<group>"; };
 		F9D26B6C27E22410005A272D /* libtestrunner.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libtestrunner.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		F9E12648291CB5F100C9A221 /* NextReactionMeanField.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NextReactionMeanField.cpp; sourceTree = "<group>"; };
 		F9E12649291CB5F100C9A221 /* NextReactionMeanField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NextReactionMeanField.h; sourceTree = "<group>"; };
+		F9EACDE4299E7904009C2002 /* dynamic_graph.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = dynamic_graph.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -170,6 +186,7 @@
 				98CFFC0227F4696F00A6E322 /* utility.cpp */,
 				98CFFC0127F4696F00A6E322 /* utility.h */,
 				F91C25E8291140B000FFAE9C /* permutation.h */,
+				F921EC862952A7BF00667339 /* algorithm.cpp */,
 				F92123EE2902464200376961 /* algorithm.h */,
 				F9E12648291CB5F100C9A221 /* NextReactionMeanField.cpp */,
 				F9E12649291CB5F100C9A221 /* NextReactionMeanField.h */,
@@ -185,6 +202,8 @@
 				984A0CAE27C0DF81004A0A96 /* random.h */,
 				982A07D727D5BED900B4772A /* graph.cpp */,
 				982A07D827D5BED900B4772A /* graph.h */,
+				F9CFD988299B55A90078FD70 /* dynamic_graph.cpp */,
+				F9CFD989299B55A90078FD70 /* dynamic_graph.h */,
 				F92123EF2902464200376961 /* matplotlibcpp.h */,
 				984A0C9F27C0DE5C004A0A96 /* main.cpp */,
 				F99D7A9927E21CC000200C18 /* tests */,
@@ -196,6 +215,7 @@
 		F95E340E2925088200DBCE94 /* ext */ = {
 			isa = PBXGroup;
 			children = (
+				F9CFD987299B53DD0078FD70 /* dyndist */,
 				F95E340F2925088200DBCE94 /* prio_queue */,
 			);
 			path = ext;
@@ -225,6 +245,7 @@
 				F99299292910E2B3001432FD /* nmga.cpp */,
 				F946A5E0281255F2000668F9 /* random.cpp */,
 				F99D7A9B27E21CC000200C18 /* graph.cpp */,
+				F9EACDE4299E7904009C2002 /* dynamic_graph.cpp */,
 				F99D7A9A27E21CC000200C18 /* stdafx.h */,
 				F992992A2910E2B3001432FD /* analytical.h */,
 				F99299262910E2B3001432FD /* gnuplot-iostream.h */,
@@ -240,6 +261,9 @@
 		F9A4651A2923B2B700393E90 /* programs */ = {
 			isa = PBXGroup;
 			children = (
+				F93F5D8E299238F300775CFA /* average.cpp */,
+				F93F5D8C299238F300775CFA /* customtrajectory.cpp */,
+				F93F5D8D299238F300775CFA /* trajectory.cpp */,
 				F95E340A2924A79700DBCE94 /* benchmark_priorityqueue.cpp */,
 				F9A4651B2923B2B700393E90 /* benchmark.cpp */,
 				F9A4651C2923B2B700393E90 /* profile.cpp */,
@@ -328,7 +352,7 @@
 		984A0C9427C0DE5C004A0A96 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1330;
+				LastUpgradeCheck = 1420;
 				TargetAttributes = {
 					984A0C9B27C0DE5C004A0A96 = {
 						CreatedOnToolsVersion = 12.4;
@@ -367,11 +391,16 @@
 				F9A4651E2923B2B700393E90 /* benchmark.cpp in Sources */,
 				984A0CB627C0E0B7004A0A96 /* simulation.cpp in Sources */,
 				F9E1264A291CB5F100C9A221 /* NextReactionMeanField.cpp in Sources */,
+				F9CFD98A299B55A90078FD70 /* dynamic_graph.cpp in Sources */,
 				984A0CAF27C0DF81004A0A96 /* random.cpp in Sources */,
 				982A07D927D5BED900B4772A /* graph.cpp in Sources */,
+				F93F5D90299238F300775CFA /* trajectory.cpp in Sources */,
 				98B96F7C28111BB800A78600 /* nMGA.cpp in Sources */,
+				F921EC872952A7BF00667339 /* algorithm.cpp in Sources */,
 				F9A4651F2923B2B700393E90 /* profile.cpp in Sources */,
+				F93F5D8F299238F300775CFA /* customtrajectory.cpp in Sources */,
 				984A0CA027C0DE5C004A0A96 /* main.cpp in Sources */,
+				F93F5D91299238F300775CFA /* average.cpp in Sources */,
 				F95E340B2924A79700DBCE94 /* benchmark_priorityqueue.cpp in Sources */,
 				F9A465202923B2B700393E90 /* sis_meanfield_gamma_gamma.cpp in Sources */,
 				984A0CAB27C0DF56004A0A96 /* analysis.cpp in Sources */,
@@ -391,8 +420,11 @@
 				F9D26B8B27E229B9005A272D /* simulation.cpp in Sources */,
 				98B96F7D28111BB800A78600 /* nMGA.cpp in Sources */,
 				F946A5E2281255F2000668F9 /* random.cpp in Sources */,
+				F921EC882952A7BF00667339 /* algorithm.cpp in Sources */,
+				F9EACDE5299E7904009C2002 /* dynamic_graph.cpp in Sources */,
 				F9E1264B291CB5F100C9A221 /* NextReactionMeanField.cpp in Sources */,
 				F992992C2910E2B3001432FD /* plot.cpp in Sources */,
+				F9CFD98B299B55A90078FD70 /* dynamic_graph.cpp in Sources */,
 				F992992D2910E2B3001432FD /* nmga.cpp in Sources */,
 				F9D26B8A27E229B0005A272D /* graph.cpp in Sources */,
 				F9D26B8C27E229B9005A272D /* random.cpp in Sources */,
@@ -475,7 +507,10 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
-				USER_HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/epidemics";
+				USER_HEADER_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/epidemics",
+					"$(PROJECT_DIR)/ext/dyndist",
+				);
 			};
 			name = Debug;
 		};
@@ -536,7 +571,10 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
-				USER_HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/epidemics";
+				USER_HEADER_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/epidemics",
+					"$(PROJECT_DIR)/ext/dyndist",
+				);
 			};
 			name = Release;
 		};
@@ -571,8 +609,9 @@
 				GCC_PREFIX_HEADER = epidemics/tests/stdafx.h;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
-					"ENABLE_PLOTTING=1",
+					"DYNDIST_ENABLE_ASSERTS=1",
 					"GNUPLOT_DEFAULT_COMMAND=\"\\\"$(GNUPLOT) -persist\\\"\"",
+					"ENABLE_PLOTTING=1",
 				);
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				PRODUCT_NAME = "$(TARGET_NAME)";

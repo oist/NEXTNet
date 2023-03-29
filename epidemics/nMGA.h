@@ -25,6 +25,21 @@ private:
         double lambda = NAN;
     };
 
+    struct active_edges_hasher {
+        std::size_t operator()(const active_edges_entry& e) const {
+            return hash_combine(0, e.kind, e.source, e.target);
+        }
+    };
+
+    struct active_edges_cmp {
+        bool operator()(const active_edges_entry& a, const active_edges_entry& b) const {
+            return (a.kind == b.kind) & (a.source == b.source) && (a.target == b.target);
+        }
+    };
+
+    typedef std::unordered_set<active_edges_entry, active_edges_hasher, active_edges_cmp>
+        active_edges_t;
+
     struct outside_infections_entry {
         absolutetime_t time;
         node_t node;
@@ -37,19 +52,18 @@ private:
         bool operator> (const outside_infections_entry& o) const { return time > o.time; }
     };
 
+    typedef std::priority_queue<outside_infections_entry, std::deque<outside_infections_entry>,
+                                std::greater<outside_infections_entry>>
+        outside_infections_t;
+
     double current_time = NAN;
-
     double lambda_total = NAN;
-
-    std::priority_queue<outside_infections_entry, std::deque<outside_infections_entry>,
-                        std::greater<outside_infections_entry>>
-        outside_infections;
-
-    std::vector<active_edges_entry> active_edges;
-
+    outside_infections_t outside_infections;
+    active_edges_t active_edges;
     std::vector<double> active_edges_cumulative_finite_lambdas;
     std::vector<std::size_t> active_edges_infinite_lambdas;
     std::uniform_real_distribution<double> unif01_dist;
+    std::optional<event_t> next_event;
     
 public:
     graph& network;
@@ -87,7 +101,12 @@ public:
 	
 	virtual void add_infections(const std::vector<std::pair<node_t, absolutetime_t>>& v);
 	
-	virtual std::optional<event_t> step(rng_t& engine);
+	virtual absolutetime_t next(rng_t& engine);
+
+	virtual std::optional<event_t> step(rng_t& engine, absolutetime_t maxtime = INFINITY,
+										event_filter_t event_filter = std::nullopt);
+
+	virtual void notify_infected_node_neighbour_added(network_event_t event, rng_t& engine);
 
 private:
 	int removed = 0;
@@ -95,31 +114,20 @@ private:
 	static double find_maximal_dt(const class transmission_time& psi);
 	
 	void add_active_edge(const active_edges_entry& e) {
-		active_edges.push_back(e);
+		active_edges.insert(e);
 	}
 	
-	void remove_active_edge(std::vector<active_edges_entry>::iterator& it) {
-		/* We remove the element pointed to by <it> by swapping it with
-		 * the last element and then removing the last element. This is
-		 * faster then moving all element to the right of <it>. */
-		if (it != active_edges.end() - 1) {
-			/* Removing any element that is not the last */
-			*it = active_edges.back();
-			active_edges.pop_back();
-		} else {
-			/* Removing the last element */
-			active_edges.pop_back();
-			it = active_edges.end();
-		}
+	void remove_active_edge(active_edges_t::iterator& it) {
+		it = active_edges.erase(it);
 	}
 	
 	double phi(absolutetime_t t, interval_t tau);
 
 	interval_t invphi(absolutetime_t t, double u);
 
-	void update_active_edge_lambdas();
+	void update_active_edge_lambdas(double time);
 
-	std::vector<active_edges_entry>::iterator draw_active_edge(rng_t& engine);
+	active_edges_t::iterator draw_active_edge(rng_t& engine);
 
 	interval_t next_time_exact(rng_t& engine);
 

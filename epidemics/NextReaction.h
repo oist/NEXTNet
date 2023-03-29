@@ -26,11 +26,25 @@ public:
 
     virtual void add_infections(const std::vector<std::pair<node_t, absolutetime_t>>& v);
     
-    virtual std::optional<event_t> step(rng_t& engine);
+	virtual absolutetime_t next(rng_t& engine);
+
+	virtual std::optional<event_t> step(rng_t& engine, absolutetime_t maxtime = INFINITY,
+										event_filter_t event_filter = std::nullopt);
+	
+	virtual void notify_infected_node_neighbour_added(network_event_t event, rng_t& engine);
 
     virtual bool is_infected(node_t) const;
 
-    std::unordered_set<node_t> infected;
+    struct infected_state_t {
+        infected_state_t(absolutetime_t inf, absolutetime_t res)
+            :infection_time(inf), reset_time(res)
+        {}
+
+        absolutetime_t infection_time;
+        absolutetime_t reset_time;
+    };
+    typedef std::unordered_map<node_t, infected_state_t> infected_nodes_t;
+    infected_nodes_t infected;
     
     graph& network;
     const class transmission_time& psi;
@@ -44,6 +58,7 @@ public:
     int current_nb_of_infected(){
         return (int) infected.size() - removed;
     }
+
     struct active_edges_entry {
         /*
          * Event kind represented by this edge (infection or reset)
@@ -106,8 +121,8 @@ public:
 
     std::size_t queue_steps_total = 0;
 	
-	std::optional<event_t> step_infection(const active_edges_entry& next, rng_t& engine);
+	std::optional<event_t> step_infection(const active_edges_entry& next, event_filter_t evf, rng_t& engine);
 	
-	std::optional<event_t> step_reset(const active_edges_entry& next, rng_t& engine);
+	std::optional<event_t> step_reset(const active_edges_entry& next, event_filter_t evf, rng_t& engine);
 };
 

@@ -17,8 +17,13 @@ public:
     virtual const class transmission_time* reset_time() const;
 
     virtual void add_infections(const std::vector<std::pair<node_t, absolutetime_t>>& v);
-    
-    virtual std::optional<event_t> step(rng_t& engine);
+
+	virtual absolutetime_t next(rng_t& engine);
+
+	virtual std::optional<event_t> step(rng_t& engine, absolutetime_t maxtime = INFINITY,
+										event_filter_t event_filter = std::nullopt);
+	
+	virtual void notify_infected_node_neighbour_added(network_event_t event, rng_t& engine);
 
     virtual bool is_infected(node_t) const;
 

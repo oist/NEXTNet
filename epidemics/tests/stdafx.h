@@ -6,7 +6,9 @@
 
 #if defined(_GLIBCXX_RELEASE) && (_GLIBCXX_RELEASE >= 9)
 #define HAVE_STD_EXECUTION 1
+#if PARALLELIZE
 #include <execution>
+#endif
 #else
 #define HAVE_STD_EXECUTION 0
 #endif

@@ -5,6 +5,8 @@ project(Epidemics-On-Networks LANGUAGES CXX)
 # *** Simulation library sources and headers
 set(LIB_SOURCES
     epidemics/graph.cpp
+    epidemics/dynamic_graph.cpp
+    epidemics/algorithm.cpp
     epidemics/random.cpp
     epidemics/simulation.cpp
     epidemics/NextReaction.cpp
@@ -15,6 +17,7 @@ set(LIB_SOURCES
 set(LIB_HEADERS
     epidemics/types.h
     epidemics/graph.h
+    epidemics/dynamic_graph.h
     epidemics/random.h
     epidemics/algorithm.h
     epidemics/NextReaction.h
@@ -49,6 +52,7 @@ set(TESTS_SOURCES
     epidemics/tests/main.cpp
     epidemics/tests/utility.cpp
     epidemics/tests/graph.cpp
+    epidemics/tests/dynamic_graph.cpp
     epidemics/tests/random.cpp
     epidemics/tests/nextreaction.cpp
     epidemics/tests/nmga.cpp)
@@ -67,7 +71,7 @@ set(TESTS_PCH
 # *** Global build settings
 
 # Includes are relative to the epidemics/ folder
-include_directories(AFTER SYSTEM epidemics)
+include_directories(AFTER SYSTEM epidemics ext/dyndist)
 
 # Use C++17
 set(CMAKE_CXX_STANDARD 17)
@@ -101,12 +105,14 @@ endif()
 
 # Intel Thread Building Blocks are optional, if present
 # they speed up the tests by executing simulations in parallel
-find_package(TBB)
-if (TBB_FOUND)
-    message("Thread Building Blocks: Found")
-    add_compile_definitions(TBB_SUPPRESS_DEPRECATED_MESSAGES)
-else()
-    message("Thread Building Blocks: Not Found")
+if (NOT SERIALIZE)
+    find_package(TBB)
+    if (TBB_FOUND)
+        message("Thread Building Blocks: Found")
+        add_compile_definitions(TBB_SUPPRESS_DEPRECATED_MESSAGES)
+    else()
+        message("Thread Building Blocks: Not Found")
+    endif()
 endif()
 
 # Gnuplot is optional, if present can generate plos
@@ -161,8 +167,13 @@ target_precompile_headers(tests
     PUBLIC ${TESTS_PCH})
 set_source_files_properties(epidemics/tests/main.cpp
     PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
-if (TBB_FOUND)
+if ((NOT SERIALIZE) AND TBB_FOUND)
+    message("Parallelization: Enabled")
     target_link_libraries(tests TBB::tbb)
+    add_definitions(-DPARALLELIZE=1)
+else()
+    message("Parallelization: Disabled")
+    add_definitions(-DPARALLELIZE=0)
 endif()
 if (Gnuplot AND Boost_FILESYSTEM_FOUND AND Boost_IOSTREAMS_FOUND)
     message("Plotting during tests: Enabled")

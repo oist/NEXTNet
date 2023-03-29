@@ -55,7 +55,7 @@ public:
  * Implements functions `neighbour()` and `outdegree()`, the constructor
  * is expected to setup the adjacencylist neighbours.
  */
-class graph_adjacencylist : public graph {
+class graph_adjacencylist : public virtual graph {
 public:
     virtual node_t nodes();
 
@@ -75,7 +75,7 @@ public:
 /**
  * @brief A random Watts-Strogatz network
  */
-class watts_strogatz : public graph_adjacencylist {
+class watts_strogatz : public virtual graph_adjacencylist {
 public:
 	watts_strogatz(node_t size, int k, double p, rng_t& engine);
 
@@ -91,7 +91,7 @@ public:
 /**
  * @brief A random Erdös-Reyni network
  */
-class erdos_reyni : public graph_adjacencylist {
+class erdos_reyni : public virtual graph_adjacencylist {
 public:
     erdos_reyni(int size, double avg_degree, rng_t& engine);
 };
@@ -103,7 +103,7 @@ public:
 /**
  * @brief A fully-connected network with random edge order
  */
-class fully_connected : public graph {
+class fully_connected : public virtual graph {
 public:
     fully_connected(int size, rng_t& engine);
 
@@ -124,7 +124,7 @@ public:
 /**
  * @brief A random acyclic network
  */
-class acyclic : public graph {
+class acyclic : public virtual graph {
 public:
     static double lambda(double mean, int digits);
 
@@ -152,7 +152,7 @@ private:
 /**
  * @brief Network from arbitrary degree distribution. 
  */
-class config_model : public graph_adjacencylist {
+class config_model : public virtual graph_adjacencylist {
 public:
     config_model(std::vector<int> degreelist, rng_t& engine);
 
@@ -171,7 +171,7 @@ public:
  */
 // TODO: Clean this up
 #if 0
-class config_model_correlated : public graph_adjacencylist {
+class config_model_correlated : public virtual graph_adjacencylist {
 public:
     config_model_correlated(std::vector<int> degreelist, rng_t& engine, bool assortative);
 
@@ -188,7 +188,7 @@ public:
  *
  * The degree distribution scales with k^-3.
  */
-class scale_free : public graph_adjacencylist {
+class scale_free : public virtual graph_adjacencylist {
 public:
     scale_free(int size, rng_t& engine);
 
@@ -203,7 +203,7 @@ public:
  * 
  * the file must be an adjacency list, i.e., a list of lists;
  */
-class imported_network : public graph_adjacencylist {
+class imported_network : public virtual graph_adjacencylist {
 public:
     imported_network(std::string path_to_file);
 
