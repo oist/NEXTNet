@@ -91,6 +91,7 @@ simulate_on_dynamic_network::step(rng_t& engine, absolutetime_t maxtime)
 				case event_kind::infection: {
 					/* New infection. Create empty neighbour table which implicitly marks all neighours as unmasked */
 					infected_neighbour_state.emplace(ev.node, neighbour_state_t());
+					break;
 				}
 				case event_kind::reset: {
 					/* Remove node's neighbour table */
@@ -126,6 +127,6 @@ bool simulate_on_dynamic_network::simulation_event_filter(event_t ev)
 		
 		default:
 			/* Don't block event */
-			return false;
+			return true;
 	}
 }
