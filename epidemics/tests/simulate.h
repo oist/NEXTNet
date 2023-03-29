@@ -100,19 +100,7 @@ average_trajectories(rng_t& engine, Factory factory,
 			auto point = sim.step(thread_engine);
 			if (!point || (point->time > Tmax))
 				break;
-			double delta;
-			switch (point-> kind) {
-				case event_kind::infection:
-				case event_kind::outside_infection:
-					delta = +1;
-					break;
-				case event_kind::reset:
-					delta = -1;
-					break;
-				default:
-					throw std::logic_error("unexpected event kind");
-			}
-			r.push_back({point->time, delta});
+			r.push_back({point->time, delta_infected(point->kind)});
 		}
 
 		return r;

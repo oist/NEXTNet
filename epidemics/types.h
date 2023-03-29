@@ -59,6 +59,21 @@ inline const char* name(event_kind kind) {
 }
 
 /**
+ * @brief Translates an epidemic event into a delta of number of infected (+1 or -1)
+ */
+inline int delta_infected(event_kind kind) {
+	switch (kind) {
+		case event_kind::infection:
+		case event_kind::outside_infection:
+			return 1;
+		case event_kind::reset:
+			return -1;
+		default:
+			throw std::logic_error("unexpected event kind");
+	}
+}
+
+/**
  * Describes an event that occured
  * TODO: Rename to epidemic_event_t
  */
