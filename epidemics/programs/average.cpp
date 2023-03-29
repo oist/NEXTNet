@@ -23,7 +23,7 @@ int program_average(int argc, const char * argv[]) {
     double VARIANCE_INFECTION = atof(argv[5]);
 
     // Initial percentage of infected (float from 0 to 100);
-    // double I0 = atof(argv[6]);
+    double I0 = atof(argv[6]);
     int nb_simulation = atoi(argv[7]);
     string output_filename = argv[8];
     
@@ -63,7 +63,7 @@ int program_average(int argc, const char * argv[]) {
             sort(all_times.begin(), all_times.end());
 
             vector<double> trim;
-            for (int ax = 0; ax < all_times.size(); ax += nb_simulation){
+            for (std::size_t ax = 0; ax < all_times.size(); ax += nb_simulation){
                 trim.push_back(all_times[ax]);
             }
         exportData(trim, output_filename);
