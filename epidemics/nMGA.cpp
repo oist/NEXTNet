@@ -284,7 +284,7 @@ std::optional<event_t> simulate_nmga::step(rng_t& engine, absolutetime_t maxtime
 
 void simulate_nmga::notify_infected_node_neighbour_added(network_event_t event, rng_t& engine)
 {
-    throw std::logic_error("unimplemented");
+    throw std::logic_error("nGMA currently does not support dynamic networks");
 }
 
 interval_t simulate_nmga::next_time_exact(rng_t& engine) {
