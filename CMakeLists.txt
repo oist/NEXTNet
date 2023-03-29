@@ -55,6 +55,7 @@ set(TESTS_SOURCES
     epidemics/tests/dynamic_graph.cpp
     epidemics/tests/random.cpp
     epidemics/tests/nextreaction.cpp
+    epidemics/tests/dynamic_nextreaction.cpp
     epidemics/tests/nmga.cpp)
 
 set(TESTS_HEADERS
