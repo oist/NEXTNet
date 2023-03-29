@@ -738,8 +738,8 @@ double assortativity(graph_adjacencylist& nw)
     }
     auto wkk = Wkk(nw);
 
-    for (int i = 1; i < wkk.size(); i++){
-        for (int j = 1; j < wkk[i].size(); j++)
+    for (std::size_t i = 1; i < wkk.size(); i++){
+        for (std::size_t j = 1; j < wkk[i].size(); j++)
         {
             kkWkk += i*j* wkk[i][j];
         }
