@@ -24,6 +24,7 @@
 		F91C25E72911401C00FFAE9C /* libboost_filesystem.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F91C25DE29113CA800FFAE9C /* libboost_filesystem.a */; };
 		F921EC872952A7BF00667339 /* algorithm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F921EC862952A7BF00667339 /* algorithm.cpp */; };
 		F921EC882952A7BF00667339 /* algorithm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F921EC862952A7BF00667339 /* algorithm.cpp */; };
+		F933EDF729D3FD1400C39FE8 /* dynamic_nextreaction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F933EDF629D3FD1400C39FE8 /* dynamic_nextreaction.cpp */; };
 		F933EDF929D401D200C39FE8 /* scale_free.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F933EDF829D401D200C39FE8 /* scale_free.cpp */; };
 		F93F5D8F299238F300775CFA /* customtrajectory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F93F5D8C299238F300775CFA /* customtrajectory.cpp */; };
 		F93F5D90299238F300775CFA /* trajectory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F93F5D8D299238F300775CFA /* trajectory.cpp */; };
@@ -98,6 +99,7 @@
 		F92123EE2902464200376961 /* algorithm.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = algorithm.h; sourceTree = "<group>"; };
 		F92123EF2902464200376961 /* matplotlibcpp.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = matplotlibcpp.h; sourceTree = "<group>"; };
 		F921EC862952A7BF00667339 /* algorithm.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = algorithm.cpp; sourceTree = "<group>"; };
+		F933EDF629D3FD1400C39FE8 /* dynamic_nextreaction.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = dynamic_nextreaction.cpp; sourceTree = "<group>"; };
 		F933EDF829D401D200C39FE8 /* scale_free.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = scale_free.cpp; sourceTree = "<group>"; };
 		F93F5D8C299238F300775CFA /* customtrajectory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = customtrajectory.cpp; sourceTree = "<group>"; };
 		F93F5D8D299238F300775CFA /* trajectory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = trajectory.cpp; sourceTree = "<group>"; };
@@ -244,6 +246,7 @@
 			children = (
 				F90EC44129C422DD000294C7 /* utility.cpp */,
 				F9ADCB9A28128A6D00AEB3C0 /* nextreaction.cpp */,
+				F933EDF629D3FD1400C39FE8 /* dynamic_nextreaction.cpp */,
 				F99299292910E2B3001432FD /* nmga.cpp */,
 				F946A5E0281255F2000668F9 /* random.cpp */,
 				F99D7A9B27E21CC000200C18 /* graph.cpp */,
@@ -423,6 +426,7 @@
 				F9ADCB9B28128A6D00AEB3C0 /* nextreaction.cpp in Sources */,
 				F9D26B8B27E229B9005A272D /* simulation.cpp in Sources */,
 				98B96F7D28111BB800A78600 /* nMGA.cpp in Sources */,
+				F933EDF729D3FD1400C39FE8 /* dynamic_nextreaction.cpp in Sources */,
 				F946A5E2281255F2000668F9 /* random.cpp in Sources */,
 				F921EC882952A7BF00667339 /* algorithm.cpp in Sources */,
 				F9EACDE5299E7904009C2002 /* dynamic_graph.cpp in Sources */,
