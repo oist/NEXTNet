@@ -33,6 +33,9 @@ absolutetime_t dynamic_erdos_reyni::next(rng_t& engine) {
 	if (!std::isnan(next_time))
 		return next_time;
 	
+	/* No unreported reverse-edge event should exit */
+	assert(!reverse_edge_event);
+
 	/* Gillespie algorith: Draw time of next event */
 	const double rate = edges_absent * alpha + edges_present * beta;
 	next_time = current_time + std::exponential_distribution<>(rate)(engine);
@@ -46,12 +49,23 @@ std::optional<network_event_t> dynamic_erdos_reyni::step(rng_t& engine, absolute
 	if (max_time < next_time)
 		return std::nullopt;
 	
-	/* Get time of next event */
-	const double event_time = next_time;
-	next_time = NAN;
-	
-	/* Update current time */
-	current_time = event_time;
+	/* Report last reported event again but for the reverse edge */
+	if (reverse_edge_event) {
+		assert(current_time == next_time);
+		assert(reverse_edge_event->time == next_time);
+		const network_event_t r = *reverse_edge_event;
+		reverse_edge_event = std::nullopt;
+		next_time = NAN;
+		return r;
+	}
+
+	/* Update current time
+	 * We don't reset next_time here because we'll only report the forward event below.
+	 * The reverse event will be reported upon the next invocation of step(), and which
+	 * time next_time will be reset to NAN. Only then will future calls to next() draw
+	 * a new random next_time
+	 */
+	current_time = next_time;
 	
 	/* Draw type of event, edge appearing or disappearing */
 	const double p = alpha * edges_absent / (alpha*edges_absent + beta*edges_present);
@@ -79,9 +93,13 @@ std::optional<network_event_t> dynamic_erdos_reyni::step(rng_t& engine, absolute
 		};
 		/* Add edge and return event */
 		add_edge(src, dst);
+		reverse_edge_event = network_event_t {
+			.kind = network_event_kind::neighbour_added,
+			.source_node = dst, .target_node = src, .time = next_time
+		};
 		return network_event_t {
 			.kind = network_event_kind::neighbour_added,
-			.source_node = src, .target_node = dst, .time = event_time
+			.source_node = src, .target_node = dst, .time = next_time
 		};
 	} else {
 		/* We have to draw uniformly from the set of present edges.
@@ -95,9 +113,13 @@ std::optional<network_event_t> dynamic_erdos_reyni::step(rng_t& engine, absolute
 		/* Remove edge */
 		const node_t dst = al[neighbour_index];
 		remove_edge(src, neighbour_index);
+		reverse_edge_event = network_event_t {
+			.kind = network_event_kind::neighbour_removed,
+			.source_node = dst, .target_node = src, .time = next_time
+		};
 		return network_event_t {
 			.kind = network_event_kind::neighbour_removed,
-			.source_node = src, .target_node = dst, .time = event_time
+			.source_node = src, .target_node = dst, .time = next_time
 		};
 	}
 }

@@ -47,6 +47,9 @@ struct dynamic_erdos_reyni : virtual dynamic_network, virtual erdos_reyni {
 	/* Time of next edge appearing or vanishing */
 	absolutetime_t next_time = NAN;
 	
+	/* Unreported event for the reverse edge of the last edge event reported  */
+	std::optional<network_event_t> reverse_edge_event;
+
 	unsigned int edges_absent;
 	unsigned int edges_present;
 	
