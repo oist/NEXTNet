@@ -9,14 +9,21 @@ using namespace std::string_literals;
 //--epidemic_on_dynamic_network_simulation--
 //------------------------------------------
 
-absolutetime_t
-epidemic_on_dynamic_network_simulation::next(rng_t& engine)
+simulate_on_dynamic_network::simulate_on_dynamic_network(simulation_algorithm& sim)
+	:network(dynamic_cast<dynamic_network*>(&sim.get_network())), simulation(sim)
 {
-	return std::min(network->next(engine), simulation->next(engine));
+	if (network == NULL)
+		throw std::runtime_error("underlying simulation must use a dynamic_network");
+};
+
+absolutetime_t
+simulate_on_dynamic_network::next(rng_t& engine)
+{
+	return std::min(network->next(engine), simulation.next(engine));
 }
 
 std::optional<network_or_epidemic_event_t>
-epidemic_on_dynamic_network_simulation::step(rng_t& engine, absolutetime_t maxtime)
+simulate_on_dynamic_network::step(rng_t& engine, absolutetime_t maxtime)
 {
 	while (true) {
 		const absolutetime_t nexttime = next(engine);
@@ -39,7 +46,7 @@ epidemic_on_dynamic_network_simulation::step(rng_t& engine, absolutetime_t maxti
 						auto it2 = neighbours.find(ev.target_node);
 						if (it2 == neighbours.end()) {
 							/* Unregistered neighbour. Edge can't be active, just activate it */
-							simulation->notify_infected_node_neighbour_added(ev, engine);
+							simulation.notify_infected_node_neighbour_added(ev, engine);
 						}
 						else {
 							/* Neighbour already registered. Edge was removed and is now re-added, unmask it (false) */
@@ -65,16 +72,16 @@ epidemic_on_dynamic_network_simulation::step(rng_t& engine, absolutetime_t maxti
 					throw std::logic_error("invalid network event kind: "s + name(ev.kind));
 			}
 			return ev;
-		} else if (nexttime == simulation->next(engine)) {
+		} else if (nexttime == simulation.next(engine)) {
 			/* Next event is a simulation event, event cannot be empty
 			 * We specify an event filter that ensures that infections traversing
 			 * masked edges are blocked. Note that since we specify a filter, there
 			 * won't necessarily be an event to return before nexttime. In that case,
 			 * we start from the top.
 			 */
-			std::function<bool(event_t)> evf = std::bind(&epidemic_on_dynamic_network_simulation::simulation_event_filter,
+			std::function<bool(event_t)> evf = std::bind(&simulate_on_dynamic_network::simulation_event_filter,
 														 this, std::placeholders::_1);
-			std::optional<event_t> maybe_ev = simulation->step(engine, nexttime, evf);
+			std::optional<event_t> maybe_ev = simulation.step(engine, nexttime, evf);
 			if (!maybe_ev)
 				continue;
 			/* Got a simulation event */
@@ -103,7 +110,7 @@ epidemic_on_dynamic_network_simulation::step(rng_t& engine, absolutetime_t maxti
 	}
 }
 
-bool epidemic_on_dynamic_network_simulation::simulation_event_filter(event_t ev)
+bool simulate_on_dynamic_network::simulation_event_filter(event_t ev)
 {
 	switch (ev.kind) {
 		case event_kind::infection: {

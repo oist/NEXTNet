@@ -38,7 +38,9 @@ struct simulation_algorithm {
     virtual bool is_infected(node_t) const = 0;
 };
 
-struct epidemic_on_dynamic_network_simulation {
+struct simulate_on_dynamic_network {
+	simulate_on_dynamic_network(simulation_algorithm& sim);
+	
 	absolutetime_t next(rng_t& engine);
 
 	std::optional<network_or_epidemic_event_t> step(rng_t& engine, absolutetime_t maxtime = INFINITY) ;
@@ -46,7 +48,7 @@ struct epidemic_on_dynamic_network_simulation {
 	bool simulation_event_filter(event_t ev);
 	
 	dynamic_network* network;
-	simulation_algorithm* simulation;
+	simulation_algorithm& simulation;
 	
 	typedef std::unordered_map<node_t, bool> neighbour_state_t;
 	std::unordered_map<node_t, neighbour_state_t> infected_neighbour_state;
