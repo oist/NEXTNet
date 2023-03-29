@@ -14,8 +14,8 @@ void dynamic_network::notify_epidemic_event(event_t ev, rng_t& engine) {
 dynamic_erdos_reyni::dynamic_erdos_reyni(int size, double avg_degree, double timescale, rng_t& engine)
 	:erdos_reyni(size, avg_degree, engine)
 	,edge_probability(avg_degree / (size - 1))
-	,alpha(edge_probability * timescale)
-	,beta((1.0 - edge_probability) * timescale)
+	,alpha(edge_probability / timescale)
+	,beta((1.0 - edge_probability) / timescale)
 	,edges_present(0)
 {
 	/* Initial degree-weights node distribution and present/absent edge counters */

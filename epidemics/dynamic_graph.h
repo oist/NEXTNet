@@ -25,7 +25,7 @@ struct dynamic_network : virtual graph {
 };
 
 struct dynamic_erdos_reyni : virtual dynamic_network, virtual erdos_reyni {
-	dynamic_erdos_reyni(int size, double avg_degree, double timescape, rng_t& engine);
+	dynamic_erdos_reyni(int size, double avg_degree, double timescale, rng_t& engine);
 
 	virtual absolutetime_t next(rng_t& engine);
 
