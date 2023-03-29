@@ -7,6 +7,22 @@
 #include "NextReaction.h"
 #include "nMGA.h"
 
+namespace {
+
+/**
+ * @brief Simple symmetric Z-test (similar to a t-Test but for known variance)
+ *
+ * @return The symmetric p-value
+ */
+inline double ztest(double mean_obs, double sd_true, double mean_true) {
+	using namespace std;
+	const double z = (mean_obs - mean_true) / sd_true;
+	return 1 - std::erf(abs(z) / sqrt(2));
+}
+
+}
+
+
 #if ENABLE_PLOTTING
 TEST_CASE("Plot large-population SIR mean-field (NextReaction)", "[nextreaction]") {
     using namespace std::string_literals;
@@ -99,3 +115,62 @@ TEST_CASE("Plot SIS average trajectory (NextReaction)", "[nextreaction]") {
    });
 }
 #endif
+
+
+TEST_CASE("Fraction of the recovered nodes for SIR on the Erdos-Renyi graph", "[nextreaction]") {
+
+// The SIR can be mapped to a percolation process, which allows to derive some precise results:
+
+// we call p the probability that an infected nodes transmits the disease to a given neighbour before recovery;
+// At the end of the epidemic (once there are 0 infected in the network, only recovered or susceptibles), the fraction
+// of recovered is equivalent to the size of the Giant component under a percolation process where we remove each edge with probability p.
+// For networks with a poisson distribution, it is possible to have an exact expression of the expected fraction of recovered.
+
+
+    rng_t engine;
+
+	double MEAN_INFECTION = 10;
+    double VARIANCE_INFECTION = 5;
+    double MEAN_RECOVERY = 14;
+    double VARIANCE_RECOVERY = 7;
+
+    double R0 = 3.0; 
+
+    int size = 100000;
+
+    // // for gamma distributions, with the parameters given above, we can calculate p.
+    // double p = 0.87852;
+    // Pr r that a randomly chosen node belongs to the giant component is:
+    double Pg = 0.855518;
+    
+    transmission_time_gamma psi(MEAN_INFECTION, VARIANCE_INFECTION);
+    transmission_time_gamma rho(MEAN_RECOVERY, VARIANCE_RECOVERY);
+
+    erdos_reyni network(size,R0,engine);
+
+    simulate_next_reaction simulation(network,psi,&rho,true,false,true);
+    std::uniform_int_distribution<> dis(0, size-1);
+
+    // initial infected
+    for (node_t i = 0; i < 10; i++)
+    {
+        node_t rand_node = dis(engine);
+        simulation.add_infections({ std::make_pair(rand_node, 0.0)});
+    }
+    
+    int nb_recovered = 0;
+    while (true) {
+        auto point = simulation.step(engine);
+        if (!point )
+            break;
+
+        if (point -> kind == event_kind::reset)
+            nb_recovered ++;     
+    }
+
+    REQUIRE(nb_recovered < size);
+    REQUIRE(nb_recovered > 0);
+    REQUIRE(std::abs(nb_recovered- Pg * size)/(Pg * size) < 0.1);
+
+}
+
