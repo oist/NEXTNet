@@ -75,13 +75,25 @@ TEST_CASE("dynamic Erdös-Reyni", "[dynamic_graph]") {
 		
 		switch (event.kind) {
 			case network_event_kind::neighbour_added:
-				REQUIRE(edge_presence[e].back().second == false);
-				edge_presence[e].emplace_back(event.time, true);
+				if (!edge_presence[e].back().second)
+					/* First of fwd/rev pair for this event, add it */
+					edge_presence[e].emplace_back(event.time, true);
+				else {
+					/* Second of fwd/rev pair for this event, should be there already */
+					REQUIRE(edge_presence[e].back().first == event.time);
+					REQUIRE(edge_presence[e].back().second == true);
+				}
 				break;
 				
 			case network_event_kind::neighbour_removed:
-				REQUIRE(edge_presence[e].back().second == true);
-				edge_presence[e].emplace_back(event.time, false);
+				if (edge_presence[e].back().second)
+					/* First of fwd/rev pair for this event, add it */
+					edge_presence[e].emplace_back(event.time, false);
+				else {
+					/* Second of fwd/rev pair for this event, should be there already */
+					REQUIRE(edge_presence[e].back().first == event.time);
+					REQUIRE(edge_presence[e].back().second == false);
+				}
 				break;
 
 			default:
