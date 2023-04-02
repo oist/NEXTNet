@@ -300,6 +300,37 @@ void simulate_next_reaction::add_infections(const std::vector<std::pair<node_t, 
     }
 }
 
+
+void simulate_next_reaction::add_thermal_infections(const std::vector<std::pair<node_t, absolutetime_t>>& v,double Lambda, rng_t& engine) {
+    std::uniform_real_distribution<> ran(0.0,1.0);
+    for(const auto& ve: v) {
+
+        node_t node = ve.first;
+        time_t time = ve.second;
+
+        // mark the node as infected
+        infected.emplace(node, infected_state_t(time, INFINITY));
+        assert(is_infected(node));
+        //manually add the infections if infection happpens after their age
+        for (int i =0; i < network.outdegree(node) ; i++ ){
+            node_t neighbour = network.neighbour(node,i);
+            const double tau = psi.sample(engine, 0, 1);
+            const double thermal =-log(1-ran(engine))/Lambda;
+
+            if (tau<thermal){
+                continue;
+            }
+            active_edges_entry e;
+            e.kind = event_kind::infection;
+            e.time = time+tau;
+            e.node = neighbour;
+            e.source_time = time;
+            e.source_node = node;
+            push_edge(e);
+        }
+    }
+}
+
 bool simulate_next_reaction::is_infected(node_t node) const {
     return (infected.find(node) != infected.end());
 }
