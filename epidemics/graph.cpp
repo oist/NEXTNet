@@ -10,6 +10,10 @@
 #include "graph.h"
 #include "utility.h"
 
+
+using boost::math::erfc;
+
+
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
 /*-------------- NETWORK: BASE CLASS -----------------*/
@@ -344,6 +348,47 @@ config_model::config_model(std::vector<int> degreelist, rng_t& engine){
             ++multiedges;
     }
 }
+
+//-------- LOGNORMAL CONFIGURATION MODEL --------------
+std::vector<int> lognormal_degree_list(double mean, double variance, int size, rng_t& engine){
+
+    const double MU =2 * log(mean) - 0.5 * log( pow(mean,2.0)+ variance );
+    const double SIGMA = sqrt( log( 1 + variance/pow(mean,2.0)));
+
+    std::lognormal_distribution<double> distribution(MU,SIGMA);
+
+    std::vector<int> degreelist({});
+    int total = 0;
+    while((int) degreelist.size() < size){
+        
+        const int k = std::ceil( distribution(engine) ) ;
+        degreelist.push_back(k);
+
+        total+= k;
+    }
+    // Make sure that the degree sequence is even so that all edges get connected to 2 different nodes.
+    std::uniform_int_distribution<> d(0,size-1);
+    while (total % 2 == 1){
+        const int index = d(engine);
+        total -= degreelist[index];;
+        const int k = distribution(engine);
+        degreelist[index] = k;
+        total += k;
+    }
+
+    return degreelist;
+
+    // double g = [](int k) {return (0.5 * erfc( (MU - log[k+1]) / (sqrt(2) * SIGMA) ) )/ ( 1- 0.5*erfc(MU/(sqrt(2)*SIGMA))) };
+
+    // std::uniform_real_distribution<> d(0.0,1.0);
+    // double r = d(engine);
+    // int k = 0;
+    // while (r >= g(k))
+    //     k++;
+    
+    
+}
+
 
 //--------------------------------------
 //--------SCALE FREE NETWORK------------

@@ -45,6 +45,8 @@
 #include <boost/math/distributions.hpp>
 #include <boost/math/statistics/univariate_statistics.hpp>
 #include <boost/math/tools/roots.hpp>
+#include <boost/math/special_functions/erf.hpp>
+
 
 #if defined(__clang__)
 #pragma clang diagnostic pop

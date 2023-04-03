@@ -162,6 +162,10 @@ public:
 
 };
 
+// some specific networks using the configuration model:
+
+std::vector<int> lognormal_degree_list(double mean, double variance, int size, rng_t& engine);
+
 //------------------------------------------
 //--CONFIG MODEL: WITH CORRELATED DEGREES---
 //------------------------------------------
