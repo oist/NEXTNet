@@ -19,6 +19,29 @@
 
 using namespace std;
 
+// function to compute the derivative of f(x) using central finite differences method
+vector<double> derivative(vector<double>& X, vector<double>& Y) {
+    int n = X.size();
+    int start = 0;
+    vector<double> dydx(n);
+    // If multiple points are defined at the same t, the function is not differentiable.
+    while(X[start+1] == 0.0){
+        start++;
+        dydx[start]=0;
+    }
+    
+    // set the derivatives at the first and last points using forward and backward finite differences respectively
+    dydx[start] = (Y[start+1] - Y[start]) / (X[start+1] - X[start]);
+    dydx[n-1] = (Y[n-1] - Y[n-2]) / (X[n-1] - X[n-2]);
+
+    // compute the derivatives at the intermediate points using central finite differences
+    for (int i = start+1; i < n-1; i++) {
+        dydx[i] = (Y[i+1] - Y[i-1]) / (X[i+1] - X[i-1]);
+    }
+
+    return dydx;
+}
+
 void exportData(vector<double>& X,vector<double>& Y,string filename) {
     ofstream out;
     out.open(filename);

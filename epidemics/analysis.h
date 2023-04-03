@@ -6,6 +6,10 @@
 
 typedef std::function<simulation_algorithm* (rng_t& engine, int n)> simulation_factory_t;
 
+// function to compute the derivative of f(x) using central finite differences method
+std::vector<double> derivative(std::vector<double>& X, std::vector<double>& Y);
+
+
 void exportData( std::vector<double>& trajectory,std::string filename);
 
 void exportData( std::vector<double>& X,std::vector<double>& Y,std::string filename);
