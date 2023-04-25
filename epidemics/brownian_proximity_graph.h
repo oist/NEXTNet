@@ -27,7 +27,9 @@ struct brownian_proximity_graph : virtual dynamic_network, virtual graph {
 		neighbour_map_t neighbour_map;
 		std::vector<node_t> neighbours;
 	};
-	
+
+	brownian_proximity_graph(node_t N, double R0, double radius, double D, rng_t& engine);
+
 	brownian_proximity_graph(node_t N, double R0, double radius, double D, double dt, rng_t& engine);
 
 	virtual ~brownian_proximity_graph();

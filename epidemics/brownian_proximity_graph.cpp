@@ -7,6 +7,10 @@
 
 #include "brownian_proximity_graph.h"
 
+brownian_proximity_graph::brownian_proximity_graph(node_t N, double R0, double r, double D, rng_t& engine)
+	:brownian_proximity_graph(N, R0, r, D, std::pow(r, 2) / (100 * 2 * D),engine)
+{}
+
 brownian_proximity_graph::brownian_proximity_graph(node_t N, double R0, double r, double D, double dt, rng_t& engine)
 	:size(N)
 	,radius(r)
@@ -16,6 +20,7 @@ brownian_proximity_graph::brownian_proximity_graph(node_t N, double R0, double r
 	,plength(2*radius)
 	,pstride(std::ceil(length / plength))
 	,partitions(pstride * pstride)
+	,current_time(0.0)
 {
 	nodedata.resize(size);
 	
@@ -35,10 +40,10 @@ brownian_proximity_graph::brownian_proximity_graph(node_t N, double R0, double r
 		const partition_index_t ub = partition_index(point(n.position.x + radius, n.position.y + radius));
 		for(partition_index_t cur = lb; cur.first  < ub.first; ++cur.first) {
 			for(; cur.second  < ub.second; ++cur.second) {
-				const auto& p = partition(state.cur);
+				const auto& p = partition(cur);
 				/* Scan nodes in partition */
 				for(auto it = p.begin(), end = p.end(); it != end; ++it) {
-					const node_t j = *state.p_it;
+					const node_t j = *it;
 					/* Check if node is a neighbour */
 					if (distance(n.position, nodedata.at(j).position) <= radius) {
 						/* Add to neighbour map and vector */
@@ -47,8 +52,6 @@ brownian_proximity_graph::brownian_proximity_graph(node_t N, double R0, double r
 						assert(r.second);
 					}
 				}
-				/* Re-start scan for next partition */
-				state.partition_scan_initialized = false;
 			}
 		}
 	}
