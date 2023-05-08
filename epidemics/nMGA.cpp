@@ -157,7 +157,7 @@ std::optional<event_t> simulate_nmga::step(rng_t& engine, absolutetime_t maxtime
         if (!next_event)
             next(engine);
 
-        /* If there is no event or we'd move past nexttime */
+        /* If there is no event or we'd move past max time */
         if (!next_event || (next_event->time > maxtime))
             return std::nullopt;
 

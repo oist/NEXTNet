@@ -6,6 +6,7 @@ project(Epidemics-On-Networks LANGUAGES CXX)
 set(LIB_SOURCES
     epidemics/graph.cpp
     epidemics/dynamic_graph.cpp
+    epidemics/brownian_proximity_graph.cpp
     epidemics/algorithm.cpp
     epidemics/random.cpp
     epidemics/simulation.cpp
@@ -18,6 +19,7 @@ set(LIB_HEADERS
     epidemics/types.h
     epidemics/graph.h
     epidemics/dynamic_graph.h
+    epidemics/brownian_proximity_graph.h
     epidemics/random.h
     epidemics/algorithm.h
     epidemics/NextReaction.h
@@ -56,6 +58,7 @@ set(TESTS_SOURCES
     epidemics/tests/random.cpp
     epidemics/tests/nextreaction.cpp
     epidemics/tests/dynamic_nextreaction.cpp
+		epidemics/tests/brownian_proximity_graph.cpp
     epidemics/tests/nmga.cpp)
 
 set(TESTS_HEADERS

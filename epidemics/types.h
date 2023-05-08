@@ -131,6 +131,18 @@ inline bool is_event_blocked(event_t ev, event_filter_t evf) {
 	return evf && !(*evf)(ev);
 }
 
+struct point {
+	point() :x(0), y(0) {};
+	
+	point(float _x, float _y) :x(_x), y(_y) {};
+	
+	float x, y;
+};
+
+inline float distance(point a, point b) {
+	return std::sqrt(std::pow(a.x - b.x, 2) + std::pow(a.y - b.y, 2));
+}
+
 /******************************
  * rng_t - the RNG (random number generator) to use
  *
