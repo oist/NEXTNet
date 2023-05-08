@@ -15,6 +15,20 @@ TEST_CASE("Epidemic on Brownian proximity graph", "[brownian_proximity_graph]") 
 	
 	nr.add_infections({ std::make_pair(0, 0.0)} );
 	
-	while(sim.next(engine) < 1000)
-		sim.step(engine);
+	while(sim.next(engine) < 1000) {
+		const auto ev = *sim.step(engine);
+		if (std::holds_alternative<network_event_t>(ev)) {
+			const auto nw_ev = std::get<network_event_t>(ev);
+			std::cerr << "Network event " << name(nw_ev.kind) << ": "
+				<< "time=" << nw_ev.time << ", "
+				<< "src=" << nw_ev.source_node <<  ", "
+				<< "tgt=" << nw_ev.target_node << std::endl;
+		} else if (std::holds_alternative<event_t>(ev)) {
+			const auto ep_ev = std::get<event_t>(ev);
+			std::cerr << "Epidemic event " << name(ep_ev.kind) << ": "
+				<< "time=" << ep_ev.time << ", "
+				<< "src=" << ep_ev.source_node << ", "
+				<< "tgt=" << ep_ev.node << std::endl;
+		}
+	}
 };
