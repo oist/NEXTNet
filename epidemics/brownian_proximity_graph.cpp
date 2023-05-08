@@ -38,8 +38,8 @@ brownian_proximity_graph::brownian_proximity_graph(node_t N, double avg_degree, 
 		/* Iterate over partitions that contain possible neighbours */
 		const partition_index_t lb = partition_index(point(n.position.x - radius, n.position.y - radius));
 		const partition_index_t ub = partition_index(point(n.position.x + radius, n.position.y + radius));
-		for(partition_index_t cur = lb; cur.first  < ub.first; ++cur.first) {
-			for(; cur.second  < ub.second; ++cur.second) {
+		for(partition_index_t cur = lb; cur.first  <= ub.first; ++cur.first) {
+			for(cur.second = lb.second; cur.second  <= ub.second; ++cur.second) {
 				const auto& p = partition(cur);
 				/* Scan nodes in partition */
 				for(auto it = p.begin(), end = p.end(); it != end; ++it) {
@@ -159,6 +159,7 @@ absolutetime_t brownian_proximity_graph::next(rng_t& engine)
 					}
 				}
 				state.neighbour_scan_done = true;
+				state.neighbour_scan_initialized = false;
 			}
 			
 			/* Add neighbours that moved into range
@@ -170,8 +171,8 @@ absolutetime_t brownian_proximity_graph::next(rng_t& engine)
 				state.cur = state.lb;
 				state.range_scan_initialized = true;
 			}
-			for(; state.cur.first  < state.ub.first; ++state.cur.first) {
-				for(; state.cur.second  < state.ub.second; ++state.cur.second) {
+			for(; state.cur.first <= state.ub.first; ++state.cur.first) {
+				for(; state.cur.second  <= state.ub.second; ++state.cur.second) {
 					/* Scan nodes in partition
 					 * Keeping the iterator around is safe here because partitions are not
 					 * modified while the scan is in progress. Partitions are only modified
@@ -207,7 +208,10 @@ absolutetime_t brownian_proximity_graph::next(rng_t& engine)
 					/* Re-start scan for next partition */
 					state.partition_scan_initialized = false;
 				}
+				/* Re-start inner loop */
+				state.cur.second = state.lb.second;
 			}
+			state.range_scan_initialized = false;
 
 			/* Re-de neighbour scan for next node */
 			state.neighbour_scan_done = false;

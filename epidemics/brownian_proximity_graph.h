@@ -45,10 +45,12 @@ struct brownian_proximity_graph : virtual dynamic_network, virtual graph {
 	virtual std::optional<network_event_t> step(rng_t& engine, absolutetime_t nexttime = NAN);
 
 	partition_index_t partition_index(point p) {
-		return partition_index_t(std::trunc(p.y / plength), std::trunc(p.x / plength));
+		return partition_index_t(std::trunc(std::max(p.y, 0.0f) / plength),
+								 std::trunc(std::min(p.x, length) / plength));
 	}
 	
 	node_set_t& partition(partition_index_t i) {
+		assert((i.first >= 0) && (i.first < pstride) && (i.second >= 0) && (i.second < pstride));
 		return partitions.at(i.first * pstride + i.second);
 	}
 	
@@ -57,15 +59,15 @@ struct brownian_proximity_graph : virtual dynamic_network, virtual graph {
 	}
 	
 	const node_t size;
-	const double radius;
-	const double length;
+	const float radius;
+	const float length;
 	const double diffusivity;
 	const double delta_t;
 	double current_time = 0.0;
 	
 	std::vector<node> nodedata;
 	
-	const double plength;
+	const float plength;
 	const std::size_t pstride;
 	std::vector<node_set_t> partitions;
 	
