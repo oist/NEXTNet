@@ -19,6 +19,72 @@
 
 using namespace std;
 
+
+// Average neighbour's degree for a node of degree k
+void knn_BA() {
+
+    int size = 100000;
+    std::vector<double> knn_degree(size, 0);
+    std::vector<double> nb_with_degree(size,0);
+
+    int minkmax = size;
+    int maxkmax = 0;
+    double r = 0;
+    double mu = 0;
+    int nb = 1;
+    for (int j = 0; j < nb; j++){
+        string path_to_file = "graphs/NETWORK_" + std::to_string(j) + ".dat";
+
+        imported_network nw(path_to_file);
+        r += assortativity(nw);
+        double k1 =0;
+        double k2 =0;
+        int kmax = 0;
+        for (int i = 0; i < size; i++ ){
+            double k = nw.outdegree(i) * 1.0;
+            kmax = std::max((int) k ,kmax);
+            k1 += k ;
+            k2 +=  pow(k,2) ;
+        }
+        mu += k2/k1;
+        minkmax = std::min(kmax , minkmax);
+        maxkmax = std::max(kmax , maxkmax);
+        std::cout << j << "\r";
+
+        for (node_t node = 0; node < size; node++){
+            
+            int k = nw.outdegree(node);
+            
+            for (node_t neigh : nw.adjacencylist[node])
+            {
+                const double k_neigh = (double) nw.outdegree(neigh);
+                knn_degree[k] += k_neigh;
+                nb_with_degree[k] += 1;
+            }
+
+        }
+
+        while ((int) knn_degree.size() > minkmax + 1){
+            knn_degree.pop_back();
+            nb_with_degree.pop_back();
+        }
+    }
+    for (int k=0; k < minkmax + 1; k++)
+    {
+        if (nb_with_degree[k]!=0){
+            knn_degree[k] = knn_degree[k]/nb_with_degree[k];
+        }
+    }
+    
+    std::cout << "assortativity r: " << r/nb << endl;
+    std::cout << "mu : " << mu/nb << endl;
+    std::cout << "minkmax : " << minkmax << endl;
+    std::cout << "maxkmax" << maxkmax << endl;
+    exportData(knn_degree, "knn_single_BA.dat");
+}
+
+
+
 // function to compute the derivative of f(x) using central finite differences method
 vector<double> derivative(vector<double>& X, vector<double>& Y) {
     int n = X.size();

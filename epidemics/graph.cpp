@@ -411,7 +411,7 @@ scale_free::scale_free(int size, rng_t& engine){
     std::vector<node_t> mixed_nodes;
     for( int i = 0; i < size; i++ )
        mixed_nodes.push_back(i);
-    std::shuffle (mixed_nodes.begin(), mixed_nodes.end(), engine);
+    std::shuffle(mixed_nodes.begin(), mixed_nodes.end(), engine);
 
 
     // Initialise the adjacency list by adding the first two nodes. (no need to sample a random number for the first step.)
@@ -469,30 +469,49 @@ int imported_network::file_size(std::string path_to_file){
 }
 
 imported_network::imported_network(std::string path_to_file){
+    std::ifstream file(path_to_file); // Open the CSV file
+    std::vector<std::vector<int>> data; // Create a vector to store the data
 
-    std::ifstream file(path_to_file);
-    int size = file_size(path_to_file);
-    std::cout << "file size :" << size << "\n";
-    
-    std::string line, value;
-    int i = 0;
-    while (std::getline(file,line)) {
-        std::vector<node_t> neighbours({});
-//        adjacencylist.push_back( );
-        size_t start;
-        size_t end = 0;
-        while ((start = line.find_first_not_of(",", end)) != std::string::npos) {
-            end = line.find(",", start);
-            node_t value = stoi(line.substr(start, end - start));
-            
-//            adjacencylist[i].push_back(value);
-            neighbours.push_back(value);
-            // std::cout << value << ",";
+    std::string line;
+    while (std::getline(file, line)) { // Read each line of the CSV file
+        std::vector<int> row;
+        std::stringstream ss(line);
+        std::string cell;
+        while (std::getline(ss, cell, ',')) { // Parse each cell of the line
+            row.push_back(std::stoi(cell)); // Convert the cell to an integer and add it to the row vector
         }
-        adjacencylist.push_back(neighbours);
-        // std::cout << "\n";
-        i++;
+        adjacencylist.push_back(row); // Add the row vector to the data vector
     }
+
+    // Print the data to verify that it was read correctly
+    // for (const auto& row : adjacencylist) {
+    //     for (const auto& cell : row) {
+    //         std::cout << cell << " ";
+    //     }
+    //     std::cout << std::endl;
+    // }
+//     std::ifstream file(path_to_file);
+//     int size = file_size(path_to_file);
+//     std::cout << "file size :" << size << "\n";
+    
+//     std::string line, value;
+//     int i = 0;
+//     while (std::getline(file,line)) {
+//         std::vector<node_t> neighbours({});
+// //        adjacencylist.push_back( );
+//         size_t start;
+//         size_t end = 0;
+//         while ((start = line.find_first_not_of(",", end)) != std::string::npos) {
+//             end = line.find(",", start);
+//             node_t value = stoi(line.substr(start, end - start));
+
+//             neighbours.push_back(value);
+//             // std::cout << value << ",";
+//         }
+//         adjacencylist.push_back(neighbours);
+//         // std::cout << "\n";
+//         i++;
+//     }
 }
         // std::string j;
         // while (std::getline(line, j[0],","))
@@ -551,7 +570,7 @@ void add_correlation(double r,graph_adjacencylist& nw,rng_t& engine){
     
 //    if (abs(assortativity(nw)-r)/abs(r) < 0.1)
 //        return;
-    for (int iteration=0; iteration < 90000; iteration++) {
+    for (int iteration=0; iteration < 9000; iteration++) {
         
  
 
@@ -697,7 +716,7 @@ void add_correlation(double r,graph_adjacencylist& nw,rng_t& engine){
         if (iteration % 1000 == 0)
         {
             double cur_r = assortativity(nw);
-            std::cout << "cur r : " << cur_r << "\n";
+            std::cout << "cur r : " << cur_r << "\r";
             double condition = abs(cur_r-r)/abs(r);
             if (condition < 0.25 || ( r > 0 && cur_r > r) || (r < 0 && cur_r < r)){
                 std::cout << "converged.\n";
