@@ -7,6 +7,8 @@
 
 #include "brownian_proximity_graph.h"
 
+using namespace std::literals;
+
 brownian_proximity_graph::brownian_proximity_graph(node_t N, double avg_degree, double r, double D, rng_t& engine)
 	:brownian_proximity_graph(N, avg_degree, r, D, std::pow(r, 2) / (100 * 2 * D),engine)
 {}
@@ -131,24 +133,12 @@ absolutetime_t brownian_proximity_graph::next(rng_t& engine)
 				 * set is modified below.
 				 */
 				if (!state.neighbour_scan_initialized)  {
-					state.n_it = n.neighbour_map.begin();
+					state.neighbour_idx = 0;
 					state.neighbour_scan_initialized = true;
 				}
-				for(const auto end = n.neighbour_map.end(); state.n_it != end; ++state.n_it) {
-					const node_t j = state.n_it->first;
+				for(; state.neighbour_idx < n.neighbours.size(); ++state.neighbour_idx) {
+					const node_t j = n.neighbours[state.neighbour_idx];
 					if (distance(n.position, nodedata.at(j).position) > radius) {
-						/* Remove neighbour
-						 * First, find its index in the ordered neighbours vector */
-						const std::size_t jidx = state.n_it->second;
-						/* Swap it with the last element in the neighbours vector,
-						 * take care to update that element's index in the map */
-						node_t& e = n.neighbours.back();
-						n.neighbour_map[e] = jidx;
-						swap(n.neighbours[jidx], e);
-						/* Finally, remove from neighbours vector */
-						n.neighbours.pop_back();
-						/* And from the map, moving the iterator forward since we'll skip the loop's ++ */
-						state.n_it = n.neighbour_map.erase(state.n_it);
 						/* Create event */
 						next_event = network_event_t {
 							.kind = network_event_kind::neighbour_removed,
@@ -184,18 +174,12 @@ absolutetime_t brownian_proximity_graph::next(rng_t& engine)
 						state.partition_scan_initialized = true;
 					}
 					for(const auto end = p.end(); state.p_it != end; ++state.p_it) {
-						/* Get node */
+						/* Get putative neighbour */
 						const node_t j = *state.p_it;
 						/* Check if node is in range */
 						if ((state.node_i != j) && (distance(n.position, nodedata.at(j).position) <= radius)) {
-							/* Try to add new neighbour to the map, will fail if already a neighbour   */
-							auto r = n.neighbour_map.insert(std::make_pair(j, (index_t)n.neighbours.size()));
-							if (r.second) {
-								/* Found a new neighbour, add to neighbours vector, update index */
-								n.neighbours.push_back(j);
-								assert(n.neighbours.at(r.first->second) == j);
-								/* Continue with the next neighbour upon the next call */
-								++state.p_it;
+							/* Check if node is already a neigbhour, if not report new neighbour */
+							if (n.neighbour_map.find(j) == n.neighbour_map.end()) {
 								/* Create event and return */
 								next_event = network_event_t {
 									.kind = network_event_kind::neighbour_added,
@@ -232,7 +216,51 @@ std::optional<network_event_t> brownian_proximity_graph::step(rng_t& engine, abs
 		return std::nullopt;
 	
 	/* Process event */
-	const auto ev = next_event;
+	const auto ev = *next_event;
+	switch (ev.kind) {
+		case network_event_kind::neighbour_added: {
+			/* Get node */
+			node& n = nodedata.at(state.node_i);
+			assert(state.node_i == ev.source_node);
+			/* Get putative neighbour */
+			const node_t j = *state.p_it;
+			assert(state.range_scan_initialized);
+			assert(state.partition_scan_initialized);
+			/* Add neighbour */
+			auto r = n.neighbour_map.insert(std::make_pair(j, (index_t)n.neighbours.size()));
+			assert(r.second);
+			n.neighbours.push_back(j);
+			assert(n.neighbours.at(r.first->second) == j);
+			/* Continue with the next putative neighbour upon the next call */
+			++state.p_it;
+			break;
+		}
+		case network_event_kind::neighbour_removed: {
+			/* Get node */
+			node& n = nodedata.at(state.node_i);
+			assert(state.node_i == ev.source_node);
+			assert(state.neighbour_scan_initialized);
+			assert(!state.neighbour_scan_done);
+			/* Find neighbour in neighbour map */
+			node_t& j = n.neighbours[state.neighbour_idx];
+			assert(j == ev.target_node);
+			auto nmap_it = n.neighbour_map.find(j);
+			/* Prepare to swap with last element in the neighbour list */
+			node_t& e = n.neighbours.back();
+			/* Update neighbour map with new indices */
+			n.neighbour_map[e] = state.neighbour_idx;
+			n.neighbour_map.erase(nmap_it);
+			/* Swap elements in neighbour list and truncate */
+			using std::swap;
+			swap(j, e);
+			n.neighbours.pop_back();
+			break;
+		}
+		default:
+			throw std::logic_error("unknown network even type"s + name(ev.kind));
+	}
+	
+	
 	next_event = std::nullopt;
 	return ev;
 }

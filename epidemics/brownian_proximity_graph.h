@@ -80,7 +80,7 @@ struct brownian_proximity_graph : virtual dynamic_network, virtual graph {
 		node_t node_i = 0;
 		bool neighbour_scan_done = false;
 		bool neighbour_scan_initialized = false;
-		neighbour_map_t::iterator n_it;
+		node_t neighbour_idx;
 		bool range_scan_initialized = false;
 		partition_index_t lb;
 		partition_index_t ub;
