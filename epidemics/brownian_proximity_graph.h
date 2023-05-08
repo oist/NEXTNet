@@ -28,17 +28,17 @@ struct brownian_proximity_graph : virtual dynamic_network, virtual graph {
 		std::vector<node_t> neighbours;
 	};
 
-	brownian_proximity_graph(node_t N, double R0, double radius, double D, rng_t& engine);
+	brownian_proximity_graph(node_t N, double avg_degree, double radius, double D, rng_t& engine);
 
-	brownian_proximity_graph(node_t N, double R0, double radius, double D, double dt, rng_t& engine);
+	brownian_proximity_graph(node_t N, double avg_degree, double radius, double D, double dt, rng_t& engine);
 
 	virtual ~brownian_proximity_graph();
 	
 	virtual node_t nodes();
 
-	virtual node_t neighbour(node_t node, int neighbour_index) = 0;
+	virtual node_t neighbour(node_t node, int neighbour_index) ;
 
-	virtual int outdegree(node_t node) = 0;
+	virtual int outdegree(node_t node);
 
 	virtual absolutetime_t next(rng_t& engine);
 	

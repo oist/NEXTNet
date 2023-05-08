@@ -7,14 +7,14 @@
 
 #include "brownian_proximity_graph.h"
 
-brownian_proximity_graph::brownian_proximity_graph(node_t N, double R0, double r, double D, rng_t& engine)
-	:brownian_proximity_graph(N, R0, r, D, std::pow(r, 2) / (100 * 2 * D),engine)
+brownian_proximity_graph::brownian_proximity_graph(node_t N, double avg_degree, double r, double D, rng_t& engine)
+	:brownian_proximity_graph(N, avg_degree, r, D, std::pow(r, 2) / (100 * 2 * D),engine)
 {}
 
-brownian_proximity_graph::brownian_proximity_graph(node_t N, double R0, double r, double D, double dt, rng_t& engine)
+brownian_proximity_graph::brownian_proximity_graph(node_t N, double avg_degree, double r, double D, double dt, rng_t& engine)
 	:size(N)
 	,radius(r)
-	,length(std::sqrt(size * M_PI * std::pow(radius, 2) / R0))
+	,length(std::sqrt((double)size * M_PI * std::pow(radius, 2) / avg_degree))
 	,diffusivity(D)
 	,delta_t(dt)
 	,plength(2*radius)
@@ -57,6 +57,9 @@ brownian_proximity_graph::brownian_proximity_graph(node_t N, double R0, double r
 	}
 }
 			
+brownian_proximity_graph::~brownian_proximity_graph()
+{
+}
 			
 node_t brownian_proximity_graph::nodes() {
 	return size;
@@ -183,7 +186,7 @@ absolutetime_t brownian_proximity_graph::next(rng_t& engine)
 						/* Get node */
 						const node_t j = *state.p_it;
 						/* Check if node is in range */
-						if (distance(n.position, nodedata.at(j).position) <= radius) {
+						if ((state.node_i != j) && (distance(n.position, nodedata.at(j).position) <= radius)) {
 							/* Try to add new neighbour to the map, will fail if already a neighbour   */
 							auto r = n.neighbour_map.insert(std::make_pair(j, (index_t)n.neighbours.size()));
 							if (r.second) {
@@ -205,6 +208,9 @@ absolutetime_t brownian_proximity_graph::next(rng_t& engine)
 					state.partition_scan_initialized = false;
 				}
 			}
+
+			/* Re-de neighbour scan for next node */
+			state.neighbour_scan_done = false;
 		}
 		
 		/* Time step completed, reset state */
