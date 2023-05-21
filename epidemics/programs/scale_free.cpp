@@ -120,7 +120,7 @@ int program_scale_free(int argc, const char * argv[]) {
 
     vector<double> trimmed_trajectory;
     vector<double> trim_Y;
-    for (int ax = 0; ax < all_times.size(); ax += nb_simulation){
+    for (int ax = 0; ax < (int) all_times.size(); ax += nb_simulation){
             trimmed_trajectory.push_back(all_times[ax]);
     }
 

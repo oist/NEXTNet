@@ -79,3 +79,8 @@ namespace bm = boost::math;
  */
 #include "dyndist/rng_stdcxx.h"
 #include "dyndist/vector_distribution.h"
+
+
+// To fix warnings on bools being 'unused'
+
+#define _unused(x) ((void)(x))

@@ -97,6 +97,7 @@ simulate_on_dynamic_network::step(rng_t& engine, absolutetime_t maxtime)
 					/* Remove node's neighbour table */
 					const std::size_t r = infected_neighbour_state.erase(ev.node);
 					assert(r == 1);
+					_unused(r);
 					break;
 				}
 				default:

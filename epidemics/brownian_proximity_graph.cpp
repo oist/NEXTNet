@@ -52,6 +52,7 @@ brownian_proximity_graph::brownian_proximity_graph(node_t N, double avg_degree, 
 						auto r = n.neighbour_map.insert(std::make_pair(j, (index_t)n.neighbours.size()));
 						n.neighbours.push_back(j);
 						assert(r.second);
+						_unused(r);
 					}
 				}
 			}
@@ -69,7 +70,7 @@ node_t brownian_proximity_graph::nodes() {
 
 node_t brownian_proximity_graph::neighbour(node_t n, int neighbour_index) {
 	const node& nn = nodedata.at(n);
-	if ((neighbour_index < 0) || (neighbour_index >= nn.neighbours.size()))
+	if ((neighbour_index < 0) || (neighbour_index >= (int) nn.neighbours.size()))
 		return -1;
 	return nn.neighbours[neighbour_index];
 }
@@ -91,7 +92,7 @@ absolutetime_t brownian_proximity_graph::next(rng_t& engine)
 		/* Move nodes unless already done for the current time step */
 		if (!state.displacement_done) {
 			std::normal_distribution<float> delta(0, sqrt(2*diffusivity*delta_t));
-			for(std::size_t i=0; i < size; ++i) {
+			for(std::size_t i=0; i < (size_t) size; ++i) {
 				/* Get node */
 				node& n = nodedata.at(i);
 				/* Displace node */
@@ -136,7 +137,7 @@ absolutetime_t brownian_proximity_graph::next(rng_t& engine)
 					state.neighbour_idx = 0;
 					state.neighbour_scan_initialized = true;
 				}
-				for(; state.neighbour_idx < n.neighbours.size(); ++state.neighbour_idx) {
+				for(; state.neighbour_idx < (int) n.neighbours.size(); ++state.neighbour_idx) {
 					const node_t j = n.neighbours[state.neighbour_idx];
 					if (distance(n.position, nodedata.at(j).position) > radius) {
 						/* Create event */
@@ -233,6 +234,7 @@ std::optional<network_event_t> brownian_proximity_graph::step(rng_t& engine, abs
 			assert(n.neighbours.at(r.first->second) == j);
 			/* Continue with the next putative neighbour upon the next call */
 			++state.p_it;
+			_unused(r);
 			break;
 		}
 		case network_event_kind::neighbour_removed: {
