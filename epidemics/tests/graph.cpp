@@ -1,6 +1,68 @@
 #include "tests/stdafx.h"
 
 #include "graph.h"
+#include "NextReaction.h"
+
+/**
+ * @brief Test case to verify `scale_free`
+ * 1. The size of the giant component should be the size of the network.
+ * 2. The label of the node should be uncorrelated to its degree 
+ * (usually the first nodes are the ones with the largest degree).
+ * 3. The number of edges is +1 at every step, thus 2 * (SIZE -1) in total.
+ */
+TEST_CASE("barabasi_albert", "[graph]") {
+    std::mt19937 engine;
+    const int SIZE = 1e5;
+    const bool SHUFFLE = false;
+    const double MEAN = 1;
+    const double VARIANCE = 1;
+
+    scale_free nw(SIZE,engine);
+    transmission_time_gamma psi(MEAN,VARIANCE);
+    simulate_next_reaction simulation(nw,psi,nullptr,SHUFFLE);
+
+    simulation.add_infections({ std::make_pair(0, 0)});
+    int gc = 0;
+
+    while(true){
+        auto point = simulation.step(engine);
+        if (!point )
+            break;
+        gc++;
+    }
+    REQUIRE(gc == SIZE);
+
+
+
+
+    double mean_label = (SIZE - 1)/2;
+    double mean_degree = 2;
+    double emp_mean = 0;
+
+    double numerator = 0.0;
+    double den_x = 0.0;
+    double den_y = 0.0;
+
+    int number_edges = 0;
+
+
+    for (node_t node = 0; node < SIZE; ++node) {
+        const int k = nw.outdegree(node);
+        number_edges += k;
+        emp_mean += (double) k / SIZE;
+
+        numerator += (node - mean_label) * (k - mean_degree);
+        den_x += (node - mean_label)*(node - mean_label);
+        den_y += (k - mean_degree) * (k - mean_degree);
+    }
+
+    double correlation_coefficient = numerator / (std::sqrt(den_x) * std::sqrt(den_y));
+    
+    REQUIRE(abs(correlation_coefficient)< 0.01);
+    REQUIRE(number_edges == 2* (SIZE-1));
+    REQUIRE(abs(emp_mean - mean_degree)/mean_degree < 0.01);
+}
+
 
 /**
  * @brief Test case to verify `fully_connected`

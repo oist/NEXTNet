@@ -434,11 +434,12 @@ scale_free::scale_free(int size, rng_t& engine){
 
         // Select next node to be added to the network;
         const node_t new_node = mixed_nodes[i];
+        std::cout << "node : " << new_node << "\n";
         // const node_t new_node = i;
 
         // Determine who it will be attached to.
-        const double x = distribution(engine);
-        const index_t index = floor(x * len);
+        const double u = distribution(engine);
+        const index_t index = floor(u * len);
         const node_t selected_node = repeated_nodes[index];
 
         adjacencylist[new_node].push_back(selected_node);
