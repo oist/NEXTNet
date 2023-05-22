@@ -9,10 +9,11 @@
  * 2. The label of the node should be uncorrelated to its degree 
  * (usually the first nodes are the ones with the largest degree).
  * 3. The number of edges is +1 at every step, thus 2 * (SIZE -1) in total.
+ * 4. The assortativity should be negative.
  */
 TEST_CASE("barabasi_albert", "[graph]") {
     std::mt19937 engine;
-    const int SIZE = 1e5;
+    const int SIZE = 1e6;
     const bool SHUFFLE = false;
     const double MEAN = 1;
     const double VARIANCE = 1;
@@ -33,8 +34,6 @@ TEST_CASE("barabasi_albert", "[graph]") {
     REQUIRE(gc == SIZE);
 
 
-
-
     double mean_label = (SIZE - 1)/2;
     double mean_degree = 2;
     double emp_mean = 0;
@@ -44,7 +43,6 @@ TEST_CASE("barabasi_albert", "[graph]") {
     double den_y = 0.0;
 
     int number_edges = 0;
-
 
     for (node_t node = 0; node < SIZE; ++node) {
         const int k = nw.outdegree(node);
@@ -61,6 +59,7 @@ TEST_CASE("barabasi_albert", "[graph]") {
     REQUIRE(abs(correlation_coefficient)< 0.01);
     REQUIRE(number_edges == 2* (SIZE-1));
     REQUIRE(abs(emp_mean - mean_degree)/mean_degree < 0.01);
+    REQUIRE(assortativity(nw) < -0.01);
 }
 
 
