@@ -53,10 +53,13 @@ void measure_runtime(rng_t& engine, Factory factory,
     }
 	
 	//fill times
-	vector<double> times;
+	vector<double> average_run_time;
+	vector<double> std_run_time;
+
 	for (int N : sizes){
 		cout << N << "\n";
-		double average = 0;
+		double mean = 0;
+		double mean_square = 0;
 		for (int i = 0; i < SMAX; i++)
 		{
 			// Create simulation environment
@@ -85,12 +88,18 @@ void measure_runtime(rng_t& engine, Factory factory,
 			
 			auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
 			const double time = duration.count() ;
-			average += time / SMAX;
+           
+            mean += time / SMAX ;
+            mean_square += time * time / SMAX ;
 		}
-		times.push_back(average);
+
+		const double std_dev = std::sqrt( mean_square - mean * mean ) ;
+        average_run_time.push_back(mean);
+        std_run_time.push_back(std_dev);
 	}
 		// export data
-	exportData(sizes,times,filename);
+	exportData(sizes,average_run_time,filename + "_AV.dat" );
+	exportData(sizes,std_run_time,filename+ "_STD.dat");
 }
 
 
