@@ -394,7 +394,7 @@ std::vector<int> lognormal_degree_list(double mean, double variance, int size, r
 //--------SCALE FREE NETWORK------------
 //--------------------------------------
 
-scale_free::scale_free(int size, rng_t& engine){
+scale_free::scale_free(int size, rng_t& engine, int m){
 
     // To generate efficiently a BA network, we used the approached used in the python library networkx.
     // -> instead of re-initialising the distribution at every step by updating the weights, 
@@ -414,41 +414,60 @@ scale_free::scale_free(int size, rng_t& engine){
     std::shuffle(mixed_nodes.begin(), mixed_nodes.end(), engine);
 
 
-    // Initialise the adjacency list by adding the first two nodes. (no need to sample a random number for the first step.)
+    // Initialise the adjacency list by adding the first m+1 nodes. (no need to sample a random number for the first step.)
+    // We start with m0 nodes, the links between which are chosen arbitrarily,
+    // as long as each node has at least one link.
+    // We form a chain to ensure that there the network does not have disconnected components.
     adjacencylist.resize(size);
-    adjacencylist[mixed_nodes[0]].push_back(mixed_nodes[1]);
-    adjacencylist[mixed_nodes[1]].push_back(mixed_nodes[0]);
+    for (int i = 0; i < m;i ++){
+        adjacencylist[mixed_nodes[i]].push_back(mixed_nodes[i+1]);
+        adjacencylist[mixed_nodes[i+1]].push_back(mixed_nodes[i]);
+    }
     // adjacencylist[0].push_back(1);
     // adjacencylist[1].push_back(0);
 
-    // There are only two nodes in the network, both with degree 1.
+    // There are only m+1 nodes in the network, all with degree 2 except the first and last:
     repeated_nodes.push_back(mixed_nodes[0]);
-    repeated_nodes.push_back(mixed_nodes[1]);
-    // repeated_nodes.push_back(0);
-    // repeated_nodes.push_back(1);
+    repeated_nodes.push_back(mixed_nodes[m]);
+
+    for (int i = 1; i < m;i ++){
+        repeated_nodes.push_back(mixed_nodes[i]);
+        repeated_nodes.push_back(mixed_nodes[i]);
+    }
     
     int len = (int) repeated_nodes.size();
 
     // i is the current number of nodes in the graph
-    for (int i=2; i<size; i++) {
+    for (int i=m+1; i<size; i++) {
 
         // Select next node to be added to the network;
         const node_t new_node = mixed_nodes[i];
-        std::cout << "node : " << new_node << "\n";
+        // std::cout << "node : " << new_node << "\n";
         // const node_t new_node = i;
 
-        // Determine who it will be attached to.
-        const double u = distribution(engine);
-        const index_t index = floor(u * len);
-        const node_t selected_node = repeated_nodes[index];
+        std::unordered_set<index_t> chosen_nodes = {};
+        for (int j = 0; j < m; j++){
+            // Determine who it will be attached to.
+            const double u = distribution(engine);
+            const index_t index = floor(u * len);
 
-        adjacencylist[new_node].push_back(selected_node);
-        adjacencylist[selected_node].push_back(new_node);
+            // Forbid multiple-edges
+            if (chosen_nodes.find(index) != chosen_nodes.end()) {
+                j--;
+                continue;
+            }
 
-        // Update the weights of the preferential attachement
-        repeated_nodes.push_back(new_node);
-        repeated_nodes.push_back(selected_node);
-        len += 2;
+            chosen_nodes.insert(index);
+            const node_t selected_node = repeated_nodes[index];
+
+            adjacencylist[new_node].push_back(selected_node);
+            adjacencylist[selected_node].push_back(new_node);
+
+            // Update the weights of the preferential attachement
+            repeated_nodes.push_back(new_node);
+            repeated_nodes.push_back(selected_node);
+            len += 2;
+        }
 
     }   
 }

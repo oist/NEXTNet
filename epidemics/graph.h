@@ -194,7 +194,7 @@ public:
  */
 class scale_free : public virtual graph_adjacencylist {
 public:
-    scale_free(int size, rng_t& engine);
+    scale_free(int size, rng_t& engine,int m = 1);
 
 };
 
