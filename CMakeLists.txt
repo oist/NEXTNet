@@ -9,7 +9,6 @@ set(LIB_SOURCES
     epidemics/brownian_proximity_graph.cpp
     epidemics/algorithm.cpp
     epidemics/random.cpp
-    epidemics/simulation.cpp
     epidemics/NextReaction.cpp
     epidemics/NextReactionMeanField.cpp
     epidemics/nMGA.cpp
@@ -25,7 +24,6 @@ set(LIB_HEADERS
     epidemics/NextReaction.h
     epidemics/NextReactionMeanField.h
     epidemics/nMGA.h
-    epidemics/simulation.h
     epidemics/permutation.h
     epidemics/utility.h)
 

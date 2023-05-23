@@ -13,7 +13,6 @@
 #include "types.h"
 #include "utility.h"
 #include "algorithm.h"
-#include "simulation.h"
 
 #include "analysis.h"
 

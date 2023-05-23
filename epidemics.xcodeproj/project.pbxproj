@@ -11,7 +11,6 @@
 		984A0CA027C0DE5C004A0A96 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 984A0C9F27C0DE5C004A0A96 /* main.cpp */; };
 		984A0CAB27C0DF56004A0A96 /* analysis.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 984A0CA927C0DF56004A0A96 /* analysis.cpp */; };
 		984A0CAF27C0DF81004A0A96 /* random.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 984A0CAD27C0DF81004A0A96 /* random.cpp */; };
-		984A0CB627C0E0B7004A0A96 /* simulation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 984A0CB427C0E0B7004A0A96 /* simulation.cpp */; };
 		98B96F7228111BAC00A78600 /* NextReaction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 98B96F7028111BAC00A78600 /* NextReaction.cpp */; };
 		98B96F7328111BAC00A78600 /* NextReaction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 98B96F7028111BAC00A78600 /* NextReaction.cpp */; };
 		98B96F7C28111BB800A78600 /* nMGA.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 98B96F7A28111BB800A78600 /* nMGA.cpp */; };
@@ -44,7 +43,6 @@
 		F9CFD98B299B55A90078FD70 /* dynamic_graph.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F9CFD988299B55A90078FD70 /* dynamic_graph.cpp */; };
 		F9D26B8927E229AB005A272D /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F99D7A9C27E21CC000200C18 /* main.cpp */; };
 		F9D26B8A27E229B0005A272D /* graph.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F99D7A9B27E21CC000200C18 /* graph.cpp */; };
-		F9D26B8B27E229B9005A272D /* simulation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 984A0CB427C0E0B7004A0A96 /* simulation.cpp */; };
 		F9D26B8C27E229B9005A272D /* random.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 984A0CAD27C0DF81004A0A96 /* random.cpp */; };
 		F9D26B8D27E229BA005A272D /* graph.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 982A07D727D5BED900B4772A /* graph.cpp */; };
 		F9D26B8E27E229BA005A272D /* analysis.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 984A0CA927C0DF56004A0A96 /* analysis.cpp */; };
@@ -85,8 +83,6 @@
 		984A0CAA27C0DF56004A0A96 /* analysis.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = analysis.h; sourceTree = "<group>"; };
 		984A0CAD27C0DF81004A0A96 /* random.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = random.cpp; sourceTree = "<group>"; };
 		984A0CAE27C0DF81004A0A96 /* random.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = random.h; sourceTree = "<group>"; };
-		984A0CB427C0E0B7004A0A96 /* simulation.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = simulation.cpp; sourceTree = "<group>"; };
-		984A0CB527C0E0B7004A0A96 /* simulation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = simulation.h; sourceTree = "<group>"; };
 		986328CC27D728F30029F31F /* types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = types.h; sourceTree = "<group>"; };
 		98B96F7028111BAC00A78600 /* NextReaction.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = NextReaction.cpp; sourceTree = "<group>"; };
 		98B96F7128111BAC00A78600 /* NextReaction.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NextReaction.h; sourceTree = "<group>"; };
@@ -204,8 +200,6 @@
 				98B96F7128111BAC00A78600 /* NextReaction.h */,
 				98B96F7A28111BB800A78600 /* nMGA.cpp */,
 				98B96F7B28111BB800A78600 /* nMGA.h */,
-				984A0CB427C0E0B7004A0A96 /* simulation.cpp */,
-				984A0CB527C0E0B7004A0A96 /* simulation.h */,
 				984A0CA927C0DF56004A0A96 /* analysis.cpp */,
 				984A0CAA27C0DF56004A0A96 /* analysis.h */,
 				984A0CAD27C0DF81004A0A96 /* random.cpp */,
@@ -404,7 +398,6 @@
 			files = (
 				98CFFC0327F4696F00A6E322 /* utility.cpp in Sources */,
 				F9A4651E2923B2B700393E90 /* benchmark.cpp in Sources */,
-				984A0CB627C0E0B7004A0A96 /* simulation.cpp in Sources */,
 				F9E1264A291CB5F100C9A221 /* NextReactionMeanField.cpp in Sources */,
 				F9CFD98A299B55A90078FD70 /* dynamic_graph.cpp in Sources */,
 				F933EDF929D401D200C39FE8 /* scale_free.cpp in Sources */,
@@ -434,7 +427,6 @@
 				F9D26B8D27E229BA005A272D /* graph.cpp in Sources */,
 				F9D26B8E27E229BA005A272D /* analysis.cpp in Sources */,
 				F9ADCB9B28128A6D00AEB3C0 /* nextreaction.cpp in Sources */,
-				F9D26B8B27E229B9005A272D /* simulation.cpp in Sources */,
 				98B96F7D28111BB800A78600 /* nMGA.cpp in Sources */,
 				F933EDF729D3FD1400C39FE8 /* dynamic_nextreaction.cpp in Sources */,
 				F946A5E2281255F2000668F9 /* random.cpp in Sources */,

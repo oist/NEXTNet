@@ -1,6 +1,5 @@
 #include "random.h"
 #include "analysis.h"
-#include "simulation.h"
 #include "graph.h"
 #include "NextReaction.h"
 
