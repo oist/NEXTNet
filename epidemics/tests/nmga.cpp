@@ -21,7 +21,9 @@ TEST_CASE("Stability", "[nMGA]") {
 
 	rng_t engine;
 	erdos_reyni network(N, R0,engine);
-	simulate_nmga simulate(network, psi, nullptr, false, N/10);
+	simulate_nmga::params p;
+	p.approximation_threshold = N/10;
+	simulate_nmga simulate(network, psi, nullptr, p);
 	const int N0 = floor(network.nodes() / 10); // 10% of the network will be infected at t=0;
 	for (node_t node = 0; node < N0; node++)
 		simulate.add_infections({ std::make_pair(node, 0.0)});
@@ -130,8 +132,12 @@ TEST_CASE("SIR NMGA on ER Graph", "[nmga]") {
     transmission_time_gamma rho(MEAN_RECOVERY, VARIANCE_RECOVERY);
 
     erdos_reyni network(size,R0,engine);
-
-    simulate_nmga simulation(network,psi,&rho,true,100,0.05,1e-06,true);
+	simulate_nmga::params p;
+	p.approximation_threshold = 100;
+	p.maximal_dt = 0.05;
+	p.tau_precision = 1e-6;
+	p.SIR = true;
+    simulate_nmga simulation(network,psi,&rho,p);
 	    std::uniform_int_distribution<> dis(0, size-1);
 
     // initial infected

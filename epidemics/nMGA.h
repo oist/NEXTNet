@@ -66,29 +66,26 @@ private:
     std::optional<event_t> next_event;
     
 public:
+	struct params {
+		params() {};
+		
+		int approximation_threshold = 100;
+		double maximal_dt = NAN;
+		double tau_precision = 1e-6;
+		bool SIR = false;
+	};
+	
     graph& network;
     const class transmission_time& psi;
 	const class transmission_time* rho = nullptr;
-	bool shuffle_neighbours = true;
-    int approximation_threshold = 100;
-    double maximal_dt = NAN;
-    double tau_precision = 1e-6;
-	bool SIR = false;
-    std::unordered_set<node_t> infected;
-    
+	const params p;
+	std::unordered_set<node_t> infected;
+	
 	simulate_nmga(graph& nw, const class transmission_time& psi_,
 				  const class transmission_time* rho_ = nullptr,
-				  bool shuffle_neighbours_ = true,
-				  int threshold = 100, double max_dt = NAN,
-				  double tauprec = 1e-6,
-				  bool SIR_ = false)
+				  params p_ = params())
         :network(nw), psi(psi_), rho(rho_)
-        ,shuffle_neighbours(shuffle_neighbours_)
-        ,approximation_threshold(threshold)
-        ,maximal_dt((std::isfinite(max_dt) && (max_dt > 0)) ?
-                    max_dt : find_maximal_dt(psi_))
-        ,tau_precision(tauprec)
-		,SIR(SIR_)
+        ,p(p_)
     {}
 
 	virtual graph& get_network() const;

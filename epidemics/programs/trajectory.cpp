@@ -39,8 +39,8 @@ int program_trajectory(int argc, const char * argv[]) {
 				std::unique_ptr<simulation_algorithm> simulator;
 			} env;
 			env.nw.reset(new erdos_reyni(n, R0, engine));
-			// env.simulator.reset(new simulate_next_reaction(*env.nw, psi));
-            env.simulator.reset(new simulate_nmga(*env.nw,psi));
+			simulate_nmga::params p;
+            env.simulator.reset(new simulate_nmga(*env.nw, psi, nullptr, p));
 			return env;
 		}, I0, INFINITY, filename);
     } else if (method == "SIS")
@@ -51,8 +51,8 @@ int program_trajectory(int argc, const char * argv[]) {
 				std::unique_ptr<simulation_algorithm> simulator;
 			} env;
 			env.nw.reset(new erdos_reyni(n, R0, engine));
-			// env.simulator.reset(new simulate_next_reaction(*env.nw, psi,&rho));
-            env.simulator.reset(new simulate_nmga(*env.nw,psi,&rho,false,true));
+			simulate_nmga::params p;
+			env.simulator.reset(new simulate_nmga(*env.nw, psi, &rho, p));
 			return env;
 		}, I0, TMAX, filename);
     } else if (method == "SIR"){
@@ -62,8 +62,9 @@ int program_trajectory(int argc, const char * argv[]) {
 				std::unique_ptr<simulation_algorithm> simulator;
 			} env;
 			env.nw.reset(new erdos_reyni(n, R0, engine));
-			// env.simulator.reset(new simulate_next_reaction(*env.nw, psi,&rho,false,));
-            env.simulator.reset(new simulate_nmga(*env.nw,psi,&rho,true,false));
+			simulate_nmga::params p;
+			p.SIR = true;
+			env.simulator.reset(new simulate_nmga(*env.nw, psi, &rho, p));
             return env;
 
 		}, I0, INFINITY, filename);

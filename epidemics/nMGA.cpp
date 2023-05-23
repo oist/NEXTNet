@@ -54,8 +54,8 @@ absolutetime_t simulate_nmga::next(rng_t& engine)
         return INFINITY;
 
     /* Find the time of the next event */
-    const bool use_exact_algorithm = ((approximation_threshold < 0) ||
-                                      (active_edges.size() <= (unsigned int)approximation_threshold));
+    const bool use_exact_algorithm = ((p.approximation_threshold < 0) ||
+                                      (active_edges.size() <= (unsigned int)p.approximation_threshold));
 
     /* First, draw the time of the next event */
     double tau = NAN;
@@ -79,7 +79,7 @@ absolutetime_t simulate_nmga::next(rng_t& engine)
 		 * large or because all the hazard rates are zero, we skip ahead a bit
 		 * and try again.
 		 */
-		for(;; base_time += maximal_dt) {
+		for(;; base_time += p.maximal_dt) {
 			try {
 				/* First, update hazard rates lambda and lambda_total */
 				update_active_edge_lambdas(base_time);
@@ -90,7 +90,7 @@ absolutetime_t simulate_nmga::next(rng_t& engine)
 				 * allowed time step!
 				 */
 				tau = next_time_approximation(engine);
-				if (tau <= maximal_dt)
+				if (tau <= p.maximal_dt)
 					break;
 			} catch (const all_rates_zero& e) {
 				/* All rates were zero. This typically happens if
@@ -251,7 +251,7 @@ std::optional<event_t> simulate_nmga::step(rng_t& engine, absolutetime_t maxtime
 				 * "removed" set upon receiving a reset event, and that set would be queried before allowing
 				 * infections to proceed.
 				 */
-				if (SIR) {
+				if (p.SIR) {
 					/* SIR mode, just could the number of removed nodes */
 					removed += 1;
 				} else {
@@ -362,7 +362,7 @@ double simulate_nmga::phi(absolutetime_t t, interval_t tau) {
 }
 
 interval_t simulate_nmga::invphi(absolutetime_t t, double u) {
-	return inverse_survival_function(u, tau_precision, [&,t] (double tau) { return phi(t, tau); });
+	return inverse_survival_function(u, p.tau_precision, [&,t] (double tau) { return phi(t, tau); });
 }
 
 void simulate_nmga::update_active_edge_lambdas(double time)

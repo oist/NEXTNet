@@ -86,7 +86,9 @@ int program_benchmark(int argc, const char * argv[]) {
 				std::unique_ptr<simulation_algorithm> simulator;
 			} env;
 			env.nw.reset(new erdos_reyni(n, R0, engine));
-			env.simulator.reset(new simulate_nmga(*env.nw, psi,&rho,SIR,SHUFFLE_NEIGHBOURS));
+			simulate_nmga::params p;
+			p.SIR = SIR;
+			env.simulator.reset(new simulate_nmga(*env.nw, psi,&rho, p));
 			return env;
 		}, SIM_MAX, TMAX,MAX_POWER, filename);
 
@@ -97,7 +99,9 @@ int program_benchmark(int argc, const char * argv[]) {
 				std::unique_ptr<simulation_algorithm> simulator;
 			} env;
 			env.nw.reset(new scale_free(n, engine,M));
-			env.simulator.reset(new simulate_nmga(*env.nw, psi, &rho, SIR, SHUFFLE_NEIGHBOURS));
+			simulate_nmga::params p;
+			p.SIR = SIR;
+			env.simulator.reset(new simulate_nmga(*env.nw, psi, &rho, p));
 			return env;
 		}, SIM_MAX, TMAX,MAX_POWER, filename);
 	} else {
