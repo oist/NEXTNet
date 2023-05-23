@@ -12,6 +12,7 @@ set(LIB_SOURCES
     epidemics/NextReaction.cpp
     epidemics/NextReactionMeanField.cpp
     epidemics/nMGA.cpp
+    epidemics/REGIR.cpp
     epidemics/utility.cpp)
 
 set(LIB_HEADERS
@@ -24,6 +25,7 @@ set(LIB_HEADERS
     epidemics/NextReaction.h
     epidemics/NextReactionMeanField.h
     epidemics/nMGA.h
+    epidemics/REGIR.h
     epidemics/permutation.h
     epidemics/utility.h)
 
@@ -57,7 +59,8 @@ set(TESTS_SOURCES
     epidemics/tests/nextreaction.cpp
     epidemics/tests/dynamic_nextreaction.cpp
 		epidemics/tests/brownian_proximity_graph.cpp
-    epidemics/tests/nmga.cpp)
+    epidemics/tests/nmga.cpp
+    epidemics/tests/regir.cpp)
 
 set(TESTS_HEADERS
     epidemics/tests/simulate.h

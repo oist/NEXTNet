@@ -45,6 +45,15 @@ public:
      * and defined as lambda(tau) = psi(tau) / survivalprobability(tau).
      */
     virtual double hazardrate(interval_t) const;
+	
+	/**
+	 * Upper bound of the "hazard rate" for times up t. Let the hazard
+	 * rate be lambda(tau) = psi(tau) / survivalprobability(tau), then this
+	 * function returns a value m(tau) such that lambda(t) <= m(t)
+	 * for t in [0, tau]. For t = infinity, this function returns a global
+	 * upper bound on lambda(tau) if one exists, otherwise infinity.
+	 */
+	virtual double hazardbound(interval_t) const;
 
     /**
      * Evaluates the survival function Psi(tau), 
@@ -91,6 +100,7 @@ public:
 
     virtual double density(interval_t tau) const;
     virtual double hazardrate(interval_t) const;
+	virtual double hazardbound(interval_t) const;
     virtual double survivalprobability(interval_t tau) const;
     virtual double survivalprobability(interval_t tau, interval_t t, int m) const;
     virtual interval_t survivalquantile(double u) const;
@@ -206,6 +216,8 @@ public:
         :transmission_time_generic_boost(boost_gamma_dist(shape(m, v), scale(m, v)), pinf)
         ,mean(m), variance(v)
     {}
+	
+	virtual double hazardbound(interval_t) const;
 };
 
 /*----------------------------------------------------*/

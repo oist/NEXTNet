@@ -44,6 +44,10 @@ double transmission_time::hazardrate(interval_t tau) const {
     return this->density(tau) / this->survivalprobability(tau);
 }
 
+double transmission_time::hazardbound(interval_t tau) const {
+	throw std::runtime_error("hazardbound is not implemented for this transmission_time");
+}
+
 double transmission_time::survivalprobability(interval_t tau, interval_t t, int m) const {
     if ((t < 0) || !std::isfinite(t))
         throw std::range_error("t must be non-negative and finite");
@@ -112,6 +116,10 @@ double transmission_time_exponential::hazardrate(interval_t tau) const {
     return lambda;
 }
 
+double transmission_time_exponential::hazardbound(interval_t) const {
+	return lambda;
+}
+
 double transmission_time_exponential::survivalprobability(interval_t tau) const {
     return exp(-lambda*tau);
 }
@@ -126,6 +134,16 @@ double transmission_time_exponential::survivalquantile(double u) const {
 
 double transmission_time_exponential::survivalquantile(double u, interval_t t, int m) const {
     return -mean/m * log(u);
+}
+
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+/*-----------TRANSMISSION TIME:GAMMA------------------*/
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+
+double transmission_time_gamma::hazardbound(interval_t) const {
+	return mean / variance;
 }
 
 /*----------------------------------------------------*/
