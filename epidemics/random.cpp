@@ -146,6 +146,52 @@ double transmission_time_gamma::hazardbound(interval_t) const {
 	return mean / variance;
 }
 
+
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+/*-----------TRANSMISSION TIME:DETERMINISTIC------------*/
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+
+double transmission_time_deterministic::sample(rng_t&, interval_t t, int m) const{
+    if (t>value)
+        throw std::logic_error("present time cannot be larger than sampled time");
+    return value;
+}
+
+double transmission_time_deterministic::density(interval_t tau) const {
+        return (tau==value) ? INFINITY : 0;
+}
+
+double transmission_time_deterministic::hazardrate(interval_t) const {
+    throw std::runtime_error("not implemented");
+    return -1;
+}
+
+double transmission_time_deterministic::hazardbound(interval_t) const {
+    throw std::runtime_error("not implemented");
+    return -1;
+}
+
+double transmission_time_deterministic::survivalprobability(interval_t tau) const {
+    throw std::runtime_error("not implemented");
+    return -1;
+}
+
+double transmission_time_deterministic::survivalprobability(interval_t tau, interval_t t, int m) const {
+    throw std::runtime_error("not implemented");
+    return -1;
+}
+
+interval_t transmission_time_deterministic::survivalquantile(double u) const {
+    throw std::runtime_error("not implemented");
+    return -1;
+}
+
+interval_t transmission_time_deterministic::survivalquantile(double u, interval_t t, int m) const {
+    return -1;
+}
+
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
 /*-----------SUB RNGS---------------------------------*/

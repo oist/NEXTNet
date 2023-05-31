@@ -222,6 +222,40 @@ public:
 
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
+/*-----------TRANSMISSION TIME: DETERMINISTIC---------*/
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+
+
+class transmission_time_deterministic : public transmission_time
+{
+
+public:
+
+    transmission_time_deterministic(double v):value(v)
+    {}
+
+    const double value;
+
+    virtual interval_t sample(rng_t&, interval_t t, int m) const override;
+
+    virtual double density(interval_t tau) const override;
+
+    virtual double hazardrate(interval_t) const override;
+	
+	virtual double hazardbound(interval_t) const override;
+
+    virtual double survivalprobability(interval_t tau) const override;
+
+    virtual double survivalprobability(interval_t tau, interval_t t, int m) const override;
+
+    virtual interval_t survivalquantile(double u) const override;
+
+    virtual interval_t survivalquantile(double u, interval_t t, int m) const override;
+};
+    
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
 /*-----------SUB RNGS---------------------------------*/
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
