@@ -2,6 +2,7 @@ epidemics/*.o
 .vscode/settings.json
 .vscode
 .vscode/tasks.json
+plot
 build/average_trajectory.dat
 build/cmake_install.cmake
 build/CMakeCache.txt
