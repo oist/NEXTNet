@@ -2,7 +2,6 @@ epidemics/*.o
 .vscode/settings.json
 .vscode
 .vscode/tasks.json
-plot
 build/average_trajectory.dat
 build/cmake_install.cmake
 build/CMakeCache.txt
@@ -122,3 +121,6 @@ build/CMakeFiles/tests.dir/epidemics/tests/random.cpp.o.d
 build/.cmake/api/v1/reply/index-2022-09-13T09-54-23-0654.json
 build/.cmake/api/v1/reply/index-2022-09-14T05-40-37-0034.json
 build/
+
+
+plot/
