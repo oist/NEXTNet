@@ -123,4 +123,5 @@ build/.cmake/api/v1/reply/index-2022-09-14T05-40-37-0034.json
 build/
 
 
-plot/
+plots/log.txt
+plots/
