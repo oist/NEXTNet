@@ -1,4 +1,6 @@
 epidemics/*.o
+
+tests.out/
 .vscode/settings.json
 .vscode
 .vscode/tasks.json
