@@ -79,6 +79,7 @@ public:
     const class transmission_time& psi;
 	const class transmission_time* rho = nullptr;
 	const params p;
+	const double max_dt;
 	std::unordered_set<node_t> infected;
 	
 	simulate_nmga(graph& nw, const class transmission_time& psi_,
@@ -86,6 +87,9 @@ public:
 				  params p_ = params())
         :network(nw), psi(psi_), rho(rho_)
         ,p(p_)
+        ,max_dt((std::isfinite(p.maximal_dt) && (p.maximal_dt > 0)) ?
+                p.maximal_dt : find_maximal_dt(psi))
+
     {}
 
 	virtual graph& get_network() const;

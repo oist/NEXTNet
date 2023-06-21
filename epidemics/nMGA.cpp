@@ -79,7 +79,7 @@ absolutetime_t simulate_nmga::next(rng_t& engine)
 		 * large or because all the hazard rates are zero, we skip ahead a bit
 		 * and try again.
 		 */
-		for(;; base_time += p.maximal_dt) {
+		for(;; base_time += max_dt) {
 			try {
 				/* First, update hazard rates lambda and lambda_total */
 				update_active_edge_lambdas(base_time);
@@ -90,14 +90,14 @@ absolutetime_t simulate_nmga::next(rng_t& engine)
 				 * allowed time step!
 				 */
 				tau = next_time_approximation(engine);
-				if (tau <= p.maximal_dt)
+				if (tau <= max_dt)
 					break;
 			} catch (const all_rates_zero& e) {
 				/* All rates were zero. This typically happens if
 				 * the age distribution hasn't convereged when we switch
 				 * to the approximate algorithm. Since the rates are zero,
 				 * we assume it's going to be a while since the next event
-				 * occurs, and skip ahead maximal_dt time units.
+				 * occurs, and skip ahead max_dt time units.
 				 */
 			}
 		}
