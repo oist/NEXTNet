@@ -13,8 +13,6 @@ TEST_CASE("Stability (REGIR)", "[REGIR]") {
 	const int N = 530;
 	const double MEAN_INFECTION = 10;
 	const double VARIANCE_INFECTION = 1.0;
-	const double MEAN_RECOVERY = 20;
-	const double VARIANCE_RECOVERY = 1;
 	const double R0 = 3;
 
 	transmission_time_gamma psi(MEAN_INFECTION, VARIANCE_INFECTION);

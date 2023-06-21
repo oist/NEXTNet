@@ -92,7 +92,7 @@ int program_average(int argc, const char * argv[]) {
             sort(all_times.begin(), all_times.end());
 
             vector<double> trim;
-            for (int ax = 0; ax < all_times.size(); ax += nb_simulation){
+            for (unsigned int ax = 0; ax < all_times.size(); ax += nb_simulation){
                 trim.push_back(all_times[ax]);
             }
         exportData(trim, output_filename);

@@ -19,10 +19,10 @@ brownian_proximity_graph::brownian_proximity_graph(node_t N, double avg_degree, 
 	,length(std::sqrt((double)size * M_PI * std::pow(radius, 2) / avg_degree))
 	,diffusivity(D)
 	,delta_t(dt)
+	,current_time(0.0)
 	,plength(2*radius)
 	,pstride(std::ceil(length / plength))
 	,partitions(pstride * pstride)
-	,current_time(0.0)
 {
 	nodedata.resize(size);
 	

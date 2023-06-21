@@ -161,7 +161,6 @@ std::optional<event_t> simulate_regir::step(rng_t& engine, absolutetime_t maxtim
 				 * that would make it impossible to check whether the edge is actually still part of the
 				 * active edges set, which is a reasonable safe-guard against coding mistakes
 				 */
-				const active_edges_entry ev_edge = { .kind = ev.kind, .source = ev.source_node, .target = ev.node };
 				active_edges_t::iterator edge_i = active_edges.begin() + *next_event_edge_pos;
 				remove_active_edge(edge_i);
 				next_event_edge_pos = std::nullopt;
