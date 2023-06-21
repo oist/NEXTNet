@@ -60,7 +60,7 @@ set(TESTS_SOURCES
     epidemics/tests/dynamic_nextreaction.cpp
 		epidemics/tests/brownian_proximity_graph.cpp
     epidemics/tests/nmga.cpp
-    epidemics/tests/regir.cpp)
+    epidemics/tests/REGIR.cpp)
 
 set(TESTS_HEADERS
     epidemics/tests/simulate.h
