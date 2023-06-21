@@ -6,7 +6,7 @@
 #include "random.h"
 #include "REGIR.h"
 
-#if 0
+
 TEST_CASE("Stability (REGIR)", "[REGIR]") {
 	using namespace std;
 	
@@ -34,9 +34,8 @@ TEST_CASE("Stability (REGIR)", "[REGIR]") {
 			break;
 	}
 }
-#endif
 
-#if 0
+
 #if ENABLE_PLOTTING
 TEST_CASE("Plot large-population SIR mean-field (REGIR)", "[REGIR]") {
     using namespace std::string_literals;
@@ -67,7 +66,6 @@ TEST_CASE("Plot large-population SIR mean-field (REGIR)", "[REGIR]") {
         p.add_plot1d(analytical, "with lines title 'analytical'");
     });
 }
-#endif
 #endif
 
 #if ENABLE_PLOTTING
@@ -104,7 +102,7 @@ TEST_CASE("Plot SIS single trajectory (REGIR)", "[REGIR]") {
 }
 #endif
 
-#if 0
+
 TEST_CASE("SIR REGIR on ER Graph", "[REGIR]") {
 
 // The SIR can be mapped to a percolation process, which allows to derive some precise results:
@@ -163,5 +161,5 @@ TEST_CASE("SIR REGIR on ER Graph", "[REGIR]") {
     REQUIRE(nb_recovered > 0);
     REQUIRE(std::abs(nb_recovered- Pg * size)/(Pg * size) < 0.1);
 }
-#endif
+
 
