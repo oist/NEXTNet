@@ -436,14 +436,17 @@ void simulate_regir::add_active_edge(const active_edges_entry& e) {
 }
 
 void simulate_regir::remove_active_edge(active_edges_t::iterator& it) {
-	/* Shouldn't try to remove the next event edge */
+	/* Remember index of the removed element, used to replace iterator it at the end */
 	const std::size_t pos = it - active_edges.begin();
-	assert(next_event_edge_pos && (*next_event_edge_pos != pos));
+
+	/* If we removed the next event edge, clear next_event_edge_pos */
+	if (next_event_edge_pos && (next_event_edge_pos == pos))
+		next_event_edge_pos = std::nullopt;
 	
 	/* Swap with last element if not already the last element */
 	if (&*it != &active_edges.back()) {
-		/* Update next event edge position if necessary */
-		if (next_event_edge_pos && (*next_event_edge_pos == active_edges.size()))
+		/* Update next event edge position if it points to the last element */
+		if (next_event_edge_pos && (*next_event_edge_pos == active_edges.size() - 1))
 			next_event_edge_pos =  it - active_edges.begin();
 		/* Exchange */
 		using std::swap;
@@ -453,6 +456,6 @@ void simulate_regir::remove_active_edge(active_edges_t::iterator& it) {
 	/* Edge to be removed is now the last one */
 	active_edges.pop_back();
 	
-	/* Let iterator point to the "next" element */
+	/* Restore iterator it, let it points to the "next" element */
 	it = active_edges.begin() + pos;
 }
