@@ -5,6 +5,8 @@
 #include "types.h"
 #include "utility.h"
 
+using namespace std::literals;
+
 graph& simulate_regir::get_network() const {
 	return network;
 }
@@ -97,14 +99,18 @@ absolutetime_t simulate_regir::next(rng_t& engine)
 			edge_i = draw_active_edge_uniform(engine);
 			
 			/* Rejection step
-			 * Reject with probability lambda / lambda_max, where
+			 * Reject with probability p = lambda / lambda_max, where
 			 * lambda is the hazard rate of the selected edge
 			 */
 			const double q = unif01_dist(engine);
-			const double lambda = edge_hazard_rate(*edge_i, base_time + tau);
-			if (lambda > lambda_max)
-				throw std::logic_error("hazard rate exceeds presumed maximum");
-			if (q < lambda/lambda_max)
+			const double lambda = edge_hazard_rate(*edge_i, next_time);
+			const double p = lambda / lambda_max;
+			/* To avoid false-positive due to rounding, allow for some slack */
+			if (p >= 1.001)
+				throw std::logic_error("hazard rate exceeds presumed maximum ("s +
+									   std::to_string(lambda) + " > " + std::to_string(lambda_max) + ")");
+			
+			if (q < p)
 				break;
 		} while (true);
 		next_time = base_time + tau;
