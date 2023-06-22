@@ -111,7 +111,7 @@ TEST_CASE("Plot SIS average trajectory (REGIR)", "[REGIR]") {
 		return env;
 	}, t_sim_nr, y_sim_new_nr, y_sim_total_nr, T, M);
 	
-	plot("regir.sis.average.pdf", "SIS single trajectory [REGIR]", [&](auto& gp, auto& p) {
+	plot("regir.sis.average.pdf", "SIS average trajectory [REGIR]", [&](auto& gp, auto& p) {
 		p.add_plot1d(std::make_pair(t_sim, y_sim_total), "with lines title 'REGIR'"s);
 		p.add_plot1d(std::make_pair(t_sim_nr, y_sim_total_nr), "with lines title 'NextReaction'"s);
 	});
