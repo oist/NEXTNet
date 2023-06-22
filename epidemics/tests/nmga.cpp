@@ -6,7 +6,7 @@
 #include "random.h"
 #include "nMGA.h"
 
-TEST_CASE("Stability", "[nMGA]") {
+TEST_CASE("Stability (nMGA)", "[nMGA]") {
 	using namespace std;
 	
 	const int N = 530;
