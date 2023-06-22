@@ -93,8 +93,13 @@ absolutetime_t simulate_regir::next(rng_t& engine)
 		
 		do {
 			/* Generate candidate time */
-			tau = next_time_exponential(engine);
+			const double tau = next_time_exponential(engine);
 			
+			/* Check for outside infections. next_time_outside_infection fills next_event */
+			const absolutetime_t tau_outside = next_time_outside_infection(base_time + tau);
+			if (!std::isnan(tau_outside))
+				return tau_outside;
+
 			/* Draw uniformly from all active edges */
 			edge_i = draw_active_edge_uniform(engine);
 			
@@ -103,22 +108,21 @@ absolutetime_t simulate_regir::next(rng_t& engine)
 			 * lambda is the hazard rate of the selected edge
 			 */
 			const double q = unif01_dist(engine);
-			const double lambda = edge_hazard_rate(*edge_i, next_time);
+			const double lambda = edge_hazard_rate(*edge_i, base_time);
 			const double p = lambda / lambda_max;
 			/* To avoid false-positive due to rounding, allow for some slack */
 			if (p >= 1.001)
 				throw std::logic_error("hazard rate exceeds presumed maximum ("s +
 									   std::to_string(lambda) + " > " + std::to_string(lambda_max) + ")");
 			
+			/* Update base time, stop if accepted */
+			base_time += tau;
 			if (q < p)
 				break;
 		} while (true);
-		next_time = base_time + tau;
-			
-		/* Check for outside infections. next_time_outside_infection fills next_event */
-		const absolutetime_t tau_outside = next_time_outside_infection(base_time + tau);
-		if (!std::isnan(tau_outside))
-			return tau_outside;
+
+		/* Already updated base_time above */
+		next_time = base_time;
 	}
 
     /* Found next event, store & return its time */
