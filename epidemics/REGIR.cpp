@@ -263,6 +263,8 @@ std::optional<event_t> simulate_regir::step(rng_t& engine, absolutetime_t maxtim
 			default:
 				throw std::logic_error("unknown event kind");
 		}
+		
+//		std::cerr << "  -> DONE" <<  std::endl;
 
         /* Return handled event */
         return ev;
