@@ -104,9 +104,9 @@ absolutetime_t simulate_regir::next(rng_t& engine)
 			const double lambda = edge_hazard_rate(*edge_i, base_time + tau);
 			if (lambda > lambda_max)
 				throw std::logic_error("hazard rate exceeds presumed maximum");
-			if (q > lambda/lambda_max)
-				continue;
-		} while (false);
+			if (q < lambda/lambda_max)
+				break;
+		} while (true);
 		next_time = base_time + tau;
 			
 		/* Check for outside infections. next_time_outside_infection fills next_event */
