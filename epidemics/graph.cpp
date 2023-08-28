@@ -390,6 +390,41 @@ std::vector<int> lognormal_degree_list(double mean, double variance, int size, r
 }
 
 
+//-------- SCALE FREE CONFIGURATION MODEL --------------
+std::vector<int> powerlaw_degree_list(double g, int size, rng_t& engine){
+
+    const double x0 = 1;
+    const double x1 = size;
+
+    std::uniform_real_distribution<double> distribution(0.0,1.0);
+
+    std::vector<int> degreelist({});
+    int total = 0;
+    while((int) degreelist.size() < size){
+        const double u =  distribution(engine);
+        const double y = pow(   (  pow(x1,(g+1)) - pow(x0,(g+1))  ) * u + pow(x0,(g+1)),1/(g+1));
+        const int k = std::floor(y) ;
+        degreelist.push_back(k);
+        total+= k;
+    }
+    // Make sure that the degree sequence is even so that all edges get connected to 2 different nodes.
+    std::uniform_int_distribution<> d(0,size-1);
+    while (total % 2 == 1){
+        const int index = d(engine);
+        total -= degreelist[index];;
+        const int k = distribution(engine);
+        degreelist[index] = k;
+        total += k;
+    }
+
+    return degreelist;
+   
+    
+}
+
+
+
+
 //--------------------------------------
 //--------SCALE FREE NETWORK------------
 //--------------------------------------

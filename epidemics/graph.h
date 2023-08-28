@@ -165,7 +165,7 @@ public:
 // some specific networks using the configuration model:
 
 std::vector<int> lognormal_degree_list(double mean, double variance, int size, rng_t& engine);
-
+std::vector<int> powerlaw_degree_list(double exponent, int size, rng_t& engine);
 //------------------------------------------
 //--CONFIG MODEL: WITH CORRELATED DEGREES---
 //------------------------------------------
