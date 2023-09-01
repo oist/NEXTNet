@@ -146,6 +146,9 @@ double transmission_time_gamma::hazardbound(interval_t) const {
 	return mean / variance;
 }
 
+double transmission_time_weibull::hazardbound(interval_t) const {
+	return INFINITY;
+}
 
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/

@@ -25,6 +25,29 @@ std::pair<double, double> mean_variance(Iterator begin, Iterator end) {
     return std::make_pair(m, v / (n - 1));
 }
 
+TEST_CASE("Weibull test", "[random]") {
+    std::mt19937 engine;
+
+    double shape = 5;
+    double scale = 10;
+    transmission_time_weibull wb(shape,scale);
+
+    REQUIRE(abs(wb.mean -9.1817) /(9.1817) < 0.01);
+    REQUIRE(abs(wb.variance -4.423) /(4.423) < 0.01);
+    
+    const int N = 100000;
+    double m1 = 0;
+    double m2 = 0;
+    for(int i=0; i < N; ++i) {
+        const double t = wb.sample(engine, 0, 1);
+        m1 += t;
+        m2 += t*t;
+    }
+    REQUIRE(abs(wb.mean -m1/N) /(m1/N) < 0.01);
+    REQUIRE(abs(wb.variance -m2/N) /(m2/N) < 0.01);
+
+}
+
 TEST_CASE("Lognormal distribution nonconditional", "[random]") {
     // TODO: Check that t=0, m=1 produces the correct mean and variance
 }

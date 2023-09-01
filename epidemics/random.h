@@ -222,6 +222,37 @@ public:
 
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
+/*-----------TRANSMISSION TIME:WEIBULL------------------*/
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+
+typedef bm::weibull_distribution<double, ignore_error_policy> boost_weibull_dist;
+
+class transmission_time_weibull
+    :public transmission_time_generic_boost<boost_weibull_dist>
+{
+    static double get_mean(const double shape, double scale) {
+        return scale * std::tgamma(1 + 1/shape);
+    }
+
+    static double get_variance(const double shape, double scale) {
+        return pow(scale,2) * (std::tgamma(1 + 2/shape)- pow(std::tgamma(1 + 1/shape),2));
+    }
+
+public:
+    const double mean;
+    const double variance;
+
+    transmission_time_weibull(double shape, double scale, double pinf = 0.0)
+        :transmission_time_generic_boost(boost_weibull_dist(shape,scale), pinf),
+        mean( get_mean(shape,scale) ), variance( get_variance(shape,scale) )
+    {}
+
+	virtual double hazardbound(interval_t) const;
+};
+
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
 /*-----------TRANSMISSION TIME: DETERMINISTIC---------*/
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
