@@ -398,14 +398,14 @@ std::vector<int> powerlaw_degree_list(double g, int size, rng_t& engine){
 
     std::uniform_real_distribution<double> distribution(0.0,1.0);
 
-    std::vector<int> degreelist({});
+    std::vector<int> degreelist(size,0);
     int total = 0;
-    while((int) degreelist.size() < size){
+    for (int i = 0; i < size; i++){
         const double u =  distribution(engine);
         const double y = pow(   (  pow(x1,(g+1)) - pow(x0,(g+1))  ) * u + pow(x0,(g+1)),1/(g+1));
         const int k = std::floor(y) ;
-        degreelist.push_back(k);
-        total+= k;
+        degreelist[i] = k;
+        total += k;
     }
     // Make sure that the degree sequence is even so that all edges get connected to 2 different nodes.
     std::uniform_int_distribution<> d(0,size-1);
