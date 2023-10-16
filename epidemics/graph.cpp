@@ -422,7 +422,156 @@ std::vector<int> powerlaw_degree_list(double g, int size, rng_t& engine){
     
 }
 
+//----------------------------------------------------
+//----------------------------------------------------
+//-------- NETWORK: CLUSTERED CONFIGURATION MODEL ----
+//----------------------------------------------------
+//----------------------------------------------------
 
+class clustered_configuration_model_builder  {
+public:
+	const static unsigned int rmax = 2;
+	
+	/**
+	 * Represents a stub.
+	 *
+	 * A stub is either unconnected or connected to a different node, in which case it represents an edge.
+	 * Connected stubs (i.e. edges) reference the other node through a triple  (k, r, i) where k is the degree
+	 * (i.e. number of stubs) of the other node, r is the number of unconnected stubs, and i is the index
+	 * of the connected stub within the other node. After initialization of a builder class, all degrees remain
+	 * fixed, and k is thus immutable. As edges are created, r and i have to be updated continously for
+	 * a stub to logically keep referring to the same node!
+	 */
+	struct stub {
+		int k = -1;
+		int r = -1;
+		int i = -1;
+		
+		/** Returns the node index relative to r */
+		int node() const { return i / k; }
+		
+		/** Return true if the stub is unconnected */
+		
+		bool is_unconnected() const { return k == -1; }
+		
+		/** Returns true if the stub is connected, i.e. represents an edge */
+		bool is_edge() const { return k  > 0; }
+	};
+	
+	/**
+	 * Represents stubs in the form of an three-dimensional array of triples, i.e
+	 *   s(k, r, i) = (k', r', i').
+	 * where k is the degree of the node containing the stub, r is the number of
+	 * unconnected stubs of the node, and i is the index of the stub amongst the
+	 * node k stubs. A stub may either be unconnected in which case k' == -1.
+	 * Or a stub may be connected to another stub, thus forming an edge. In that
+	 * case, (k', r', i') references the remote stub.
+	 *
+	 * We store s(k, r, i) as three levels of nested vectors of stub objects, so that
+	 * s(k, r, l) may be accessed as stubs[k][r][i]. Because every node of degree
+	 * k comprises k stubs, stubs[k][r] contains k nk entries, where nk is the
+	 * number of nodes of degree k. The layout of stubs[k][r] is
+	 *   s11, s12, ..., s1k, s21, s22, ..., s2k, ...
+	 * where smn is the n-th stub of the m-th node. Therefore, the stub with index
+	 * i belongs to node floor(i / k), and this node comprises stubs with indices
+	 *   k floor(i / k), ...,  k floor(i / k) + k - 1
+	 * This relationship between stub and node indices is heavily used in the code.
+	 */
+	std::vector<std::vector<std::vector<stub>>> stubs;
+	
+	clustered_configuration_model_builder(std::vector<int> degrees, std::vector<int> triangles) {
+		// I. Create datastructure stubs
+		// In stubs[k][r][i], k ranges from 0 to kmax (maximum degree)
+		const int kmax = degrees.size();
+		stubs.resize(kmax+1);
+		for(unsigned int k = 0; k <= kmax; ++k) {
+			// In stubs[k][r][i], r ranges from 0 to min {rmax, n_k}
+			const int nk = degrees[k];
+			assert(nk >= 0);
+			const unsigned rm = std::min(rmax, k);
+			stubs[k].resize(rm+1);
+			// Initiall, all stubs are empty, so all nodes are in tier
+			// r_m = min {rmax, k}. We nevertheless reserve memory for the
+			// lower tiers
+			stubs[k][rm].resize(nk);
+			for(unsigned int r = 0; r < rm; ++r)
+				stubs[k][r].reserve(nk);
+		}
+		
+		// II. Create triangles
+		// TODO
+	}
+	
+	void update_refs_ri(std::vector<stub>::iterator it, std::size_t k, int r, int di) {
+		for(std::size_t j=0; j < k; ++j, ++it) {
+			if (it->is_edge())
+				continue;
+			// Update back-reference of referenced stub
+			stub& s = stubs[it->k][it->r][it->i];
+			assert(s.k == k);
+			s.r = r;
+			s.i += di;
+		}
+	}
+	
+	void add_edge(int k1, int r1, int i1, int k2, int r2, int i2) {
+		// A. Validate stubs and reduce degree of node n_j for j in {1, 2} by one
+		for(int j=1; j <= 2; ++j) {
+			// Select node
+			int& k = (j == 1) ? k1 : k2;
+			int& r = (j == 1) ? r1 : r2;
+			int& i = (j == 1) ? i1 : i2;
+			// Verify that (k, r, i) referes to a valid stub
+			if ((k <= 0) || (k >= stubs.size()) || (r <= 0) || (r > rmax) ||
+				(i < 0) || (i >= stubs[k][r].size()))
+				throw std::runtime_error("invalid tuple (k,r,i) = (" +
+										 std::to_string(k) + ", " + std::to_string(r) +
+										 ", " + std::to_string(i) + ")");
+			const int n = i / k;
+			// Verify that i is the first unconnected stub of this node
+			if (!stubs[k][r][i].is_unconnected() || ((i % k > 0) && stubs[k][r][i-1].is_unconnected()))
+				throw std::runtime_error("tuple (k,r,i) = (" +
+										 std::to_string(k) + ", " + std::to_string(r) +
+										 ", " + std::to_string(i) + ") is not first free stub");
+			// I. Check whether we have to move n_j from tier r_j to r_j-1
+			const int used_stubs = (i % k);
+			const int r_actual = k - used_stubs;
+			// Don't have to move as long as node has 2 free stubs after adding an edge
+			if (r_actual > 2)
+				continue;
+			// I. Copy stubs of node n_j from tier r_j to r_j-1
+			const int idx_src = n*k;
+			const auto it_src = stubs[k][r].begin() + idx_src;
+			const int idx_dst = stubs[k][r-1].size();
+			const auto it_dst = std::back_inserter(stubs[k][r-1]);
+			std::copy_n(it_src, k, it_dst);
+			// and update references to the stubs
+			update_refs_ri(it_src, k, r - 1, idx_dst - idx_src);
+			r = r - 1 ;
+			i += idx_dst - idx_src;
+			// III. Move stubs of last node of tier r_j to node n_j (unless n_j is at the end)
+			const auto it_last = stubs[k][r].end() - k - 1;
+			const int idx_last = it_last - stubs[k][r].begin();
+			if (it_last != it_src) {
+				std::copy_n(it_last, k, it_src);
+				// update referencing stubs
+				update_refs_ri(it_last, k, r, idx_src - idx_last);
+			}
+			// and remove last k entries of tier r_j
+			stubs[k][r].resize(stubs[k][r].size() - k);
+		}
+		// B. Add edge
+		stubs[k1][r1-1][i1] = stub {.k = k2, .r = r2, .i = i2};
+		stubs[k2][r2-1][i2] = stub {.k = k1, .r = r1, .i = i1};
+	}
+};
+
+
+config_model_clustered::config_model_clustered
+ (std::vector<int> degreelist, std::vector<int> degreetriangles, rng_t& engine)
+{
+	throw std::runtime_error("implement me");
+}
 
 
 //--------------------------------------

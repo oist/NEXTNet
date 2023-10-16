@@ -166,6 +166,25 @@ public:
 
 std::vector<int> lognormal_degree_list(double mean, double variance, int size, rng_t& engine);
 std::vector<int> powerlaw_degree_list(double exponent, int size, rng_t& engine);
+
+//--------------------------------------
+//----- CLUSTERED CONFIGURATION MODEL---
+//--------------------------------------
+
+/**
+ * @brief Network from arbitrary degree distribution.
+ */
+class config_model_clustered : public virtual graph_adjacencylist {
+public:
+	config_model_clustered(std::vector<int> degrees, std::vector<int> triangles, rng_t& engine);
+	
+
+	std::size_t selfloops = 0;
+	std::size_t multiedges = 0;
+	std::unordered_set<edge_t, pair_hash> edges = {};
+
+};
+
 //------------------------------------------
 //--CONFIG MODEL: WITH CORRELATED DEGREES---
 //------------------------------------------
