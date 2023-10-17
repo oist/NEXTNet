@@ -574,3 +574,95 @@ public:
 		return const_iterator(i, (std::size_t)(e - i->first));
 	}
 };
+
+template<typename T, class Hash = std::hash<T>, class KeyEqual = std::equal_to<T>>
+class drawable_set {
+public:
+	typedef T key_type;
+	typedef T value_type;
+	typedef std::size_t size_type;
+	typedef Hash hasher;
+	typedef KeyEqual key_equal;
+	typedef value_type& reference;
+	typedef const value_type& const_reference;
+	typedef value_type* pointer;
+	typedef const value_type* const_pointer;
+	
+	typedef std::vector<T> vector_type;
+	typedef typename vector_type::iterator iterator;
+	typedef typename vector_type::const_iterator const_iterator;
+	
+	drawable_set() {};
+	
+	template<class InputIt>
+	drawable_set(InputIt first, const InputIt last) {
+		for(; first != last; ++first) {
+			insert(*first);
+		}
+	}
+	
+	size_type size() const { return elements.size(); }
+	
+	value_type& operator[](size_type i) { return elements[i]; }
+	const value_type& operator[](size_type i) const { return elements[i]; }
+
+	iterator begin() { return elements.begin(); }
+	const_iterator begin() const { return elements.begin(); }
+
+	iterator end() { return elements.end(); }
+	const_iterator end() const { return elements.end(); }	
+
+	iterator find(const value_type& value) {
+		const auto i = index.find(value);
+		if (i == index.end())
+			return end();
+		return elements.begin() + i->second;
+	}
+	
+	std::pair<iterator, bool> insert(const value_type& value) {
+		iterator i = find(value);
+		if (i != end())
+			return { i, false };
+		elements.push_back(value);
+		return { elements.end() - 1, true };
+	}
+	
+	iterator erase(iterator it) {
+		const std::size_t idx = it - elements.begin();
+		// Remove index entry
+		index.erase(*it);
+		// Swap element with last element in vector
+		if (idx != elements.size() - 1) {
+			using std::swap;
+			swap(elements[idx], elements.back());
+			// Update index entry for former last element
+			index[elements[idx]] = idx;
+		}
+		// Remove last element
+		elements.pop_back();
+		// Return iterator pointing to element after removed one
+		return elements.begin() + idx;
+	}
+	
+	size_type erase(const key_type& key) {
+		iterator it = find(key);
+		if (it == end())
+			return 0;
+		erase(it);
+		return 1;
+	}
+	
+	void clear() {
+		elements.clear();
+		index.clear();
+	}
+	
+	template<typename Rng>
+	iterator operator()(Rng& rng) {
+		return elements.begin() + std::uniform_int_distribution<std::size_t>(0, elements.size()-1)(rng);
+	}
+	
+private:
+	vector_type elements;
+	std::unordered_map<T, std::size_t, hasher, key_equal> index;
+};
