@@ -428,149 +428,369 @@ std::vector<int> powerlaw_degree_list(double g, int size, rng_t& engine){
 //----------------------------------------------------
 //----------------------------------------------------
 
-class clustered_configuration_model_builder  {
-public:
-	const static unsigned int rmax = 2;
-	
-	/**
-	 * Represents a stub.
-	 *
-	 * A stub is either unconnected or connected to a different node, in which case it represents an edge.
-	 * Connected stubs (i.e. edges) reference the other node through a triple  (k, r, i) where k is the degree
-	 * (i.e. number of stubs) of the other node, r is the number of unconnected stubs, and i is the index
-	 * of the connected stub within the other node. After initialization of a builder class, all degrees remain
-	 * fixed, and k is thus immutable. As edges are created, r and i have to be updated continously for
-	 * a stub to logically keep referring to the same node!
-	 */
+struct config_model_clustered_serrano_builder {
 	struct stub {
-		int k = -1;
-		int r = -1;
-		int i = -1;
+		node_t node = -1;
+		index_t index = -1;
 		
-		/** Returns the node index relative to r */
-		int node() const { return i / k; }
+		bool is_filled() const { return (node != -1) && (index != -1); }
+		bool is_empty() const { return !is_filled(); }
 		
-		/** Return true if the stub is unconnected */
-		
-		bool is_unconnected() const { return k == -1; }
-		
-		/** Returns true if the stub is connected, i.e. represents an edge */
-		bool is_edge() const { return k  > 0; }
+		bool operator==(const stub& other) const {
+			return (node == other.node) && (index == other.index);
+		}
+		bool operator!=(const stub& other) const {
+			return (node != other.node) || (index != other.index);
+		}
 	};
 	
+	struct stub_hasher {
+		std::size_t operator()(const stub& e) const {
+			return hash_combine(0, e.node, e.index);
+		}
+	};
+
+	const static unsigned int rmax = 2;
+
+	const int kmax;
+	const double beta;
+	rng_t& rng;
+
 	/**
-	 * Represents stubs in the form of an three-dimensional array of triples, i.e
-	 *   s(k, r, i) = (k', r', i').
-	 * where k is the degree of the node containing the stub, r is the number of
-	 * unconnected stubs of the node, and i is the index of the stub amongst the
-	 * node k stubs. A stub may either be unconnected in which case k' == -1.
-	 * Or a stub may be connected to another stub, thus forming an edge. In that
-	 * case, (k', r', i') references the remote stub.
-	 *
-	 * We store s(k, r, i) as three levels of nested vectors of stub objects, so that
-	 * s(k, r, l) may be accessed as stubs[k][r][i]. Because every node of degree
-	 * k comprises k stubs, stubs[k][r] contains k nk entries, where nk is the
-	 * number of nodes of degree k. The layout of stubs[k][r] is
-	 *   s11, s12, ..., s1k, s21, s22, ..., s2k, ...
-	 * where smn is the n-th stub of the m-th node. Therefore, the stub with index
-	 * i belongs to node floor(i / k), and this node comprises stubs with indices
-	 *   k floor(i / k), ...,  k floor(i / k) + k - 1
-	 * This relationship between stub and node indices is heavily used in the code.
+	 * Number of remaining triangles to form for each degree
 	 */
-	std::vector<std::vector<std::vector<stub>>> stubs;
+	std::unordered_map<int, std::size_t> triangles_remaining;
+	std::unordered_map<int, std::size_t> triangles_formed;
+	const double weightfactor = 1000000000;
+	dyndist::vector_distribution<unsigned long> pk;
 	
-	clustered_configuration_model_builder(std::vector<int> degrees, std::vector<int> triangles) {
-		// I. Create datastructure stubs
-		// In stubs[k][r][i], k ranges from 0 to kmax (maximum degree)
-		const int kmax = degrees.size();
-		stubs.resize(kmax+1);
-		for(unsigned int k = 0; k <= kmax; ++k) {
-			// In stubs[k][r][i], r ranges from 0 to min {rmax, n_k}
-			const int nk = degrees[k];
-			assert(nk >= 0);
-			const unsigned rm = std::min(rmax, k);
-			stubs[k].resize(rm+1);
-			// Initiall, all stubs are empty, so all nodes are in tier
-			// r_m = min {rmax, k}. We nevertheless reserve memory for the
-			// lower tiers
-			stubs[k][rm].resize(nk);
-			for(unsigned int r = 0; r < rm; ++r)
-				stubs[k][r].reserve(nk);
+	std::unordered_map<node_t, std::vector<stub>> node_stubs;
+	std::unordered_map<int, std::set<node_t>> idx_k_nodes;
+	std::unordered_map<int, drawable_set<stub, stub_hasher>> idx_k_stubs_eligible; // these are the eligible components
+	
+	config_model_clustered_serrano_builder(std::vector<node_t> degreelist, const std::vector<int>& degree_triangles, double _beta, rng_t& _rng)
+		:kmax(degree_triangles.size() - 1)
+		,beta(_beta)
+		,rng(_rng)
+		,pk(kmax + 1, 0)
+	{
+		// I. Create stubs
+		std::sort(degreelist.begin(), degreelist.end());
+		for(auto i = degreelist.begin(), e = degreelist.end(); i != e; ++i) {
+			// Scan forward until node changes to compute degree
+			const auto c = i;
+			while ((i != e) && (*c == *i)) ++i;
+			const unsigned int k = i - c;
+			const node_t node = *c;
+			// Insert into set of nodes of degree k
+			idx_k_nodes[k].insert(node);
+			// Create stubs for current node
+			node_stubs.insert({node, std::vector<stub>(k, stub())});
+			// Insert stubs into indexes
+			auto& ec_k = idx_k_stubs_eligible[k];
+			for(unsigned int i=0; i < k; ++i) {
+				stub s {.node=node, .index = (int)i};
+				ec_k.insert(s);
+			}
 		}
 		
+		// II. Setup distribution P(k)
+		for(int i=0; i < degree_triangles.size(); ++i) {
+			if ((i < 2) && (degree_triangles[i] > 0))
+				throw std::runtime_error("nodes with degrees 0 and 1 cannot have overlapping triangles");
+			if (degree_triangles[i] > 0)
+				triangles_remaining.insert({i, degree_triangles[i]});
+		}
+		for(const auto& e: triangles_remaining) {
+			const int k = e.first;
+			const std::size_t t = e.second;
+			if ((t > 0) && (idx_k_nodes[k].size() == 0))
+				throw std::runtime_error("triangles requested for empty degree class k=" + std::to_string(k));
+			update_pk(k);
+		}
+
+		
 		// II. Create triangles
-		// TODO
-	}
-	
-	void update_refs_ri(std::vector<stub>::iterator it, std::size_t k, int r, int di) {
-		for(std::size_t j=0; j < k; ++j, ++it) {
-			if (it->is_edge())
-				continue;
-			// Update back-reference of referenced stub
-			stub& s = stubs[it->k][it->r][it->i];
-			assert(s.k == k);
-			s.r = r;
-			s.i += di;
-		}
-	}
-	
-	void add_edge(int k1, int r1, int i1, int k2, int r2, int i2) {
-		// A. Validate stubs and reduce degree of node n_j for j in {1, 2} by one
-		for(int j=1; j <= 2; ++j) {
-			// Select node
-			int& k = (j == 1) ? k1 : k2;
-			int& r = (j == 1) ? r1 : r2;
-			int& i = (j == 1) ? i1 : i2;
-			// Verify that (k, r, i) referes to a valid stub
-			if ((k <= 0) || (k >= stubs.size()) || (r <= 0) || (r > rmax) ||
-				(i < 0) || (i >= stubs[k][r].size()))
-				throw std::runtime_error("invalid tuple (k,r,i) = (" +
-										 std::to_string(k) + ", " + std::to_string(r) +
-										 ", " + std::to_string(i) + ")");
-			const int n = i / k;
-			// Verify that i is the first unconnected stub of this node
-			if (!stubs[k][r][i].is_unconnected() || ((i % k > 0) && stubs[k][r][i-1].is_unconnected()))
-				throw std::runtime_error("tuple (k,r,i) = (" +
-										 std::to_string(k) + ", " + std::to_string(r) +
-										 ", " + std::to_string(i) + ") is not first free stub");
-			// I. Check whether we have to move n_j from tier r_j to r_j-1
-			const int used_stubs = (i % k);
-			const int r_actual = k - used_stubs;
-			// Don't have to move as long as node has 2 free stubs after adding an edge
-			if (r_actual > 2)
-				continue;
-			// I. Copy stubs of node n_j from tier r_j to r_j-1
-			const int idx_src = n*k;
-			const auto it_src = stubs[k][r].begin() + idx_src;
-			const int idx_dst = stubs[k][r-1].size();
-			const auto it_dst = std::back_inserter(stubs[k][r-1]);
-			std::copy_n(it_src, k, it_dst);
-			// and update references to the stubs
-			update_refs_ri(it_src, k, r - 1, idx_dst - idx_src);
-			r = r - 1 ;
-			i += idx_dst - idx_src;
-			// III. Move stubs of last node of tier r_j to node n_j (unless n_j is at the end)
-			const auto it_last = stubs[k][r].end() - k - 1;
-			const int idx_last = it_last - stubs[k][r].begin();
-			if (it_last != it_src) {
-				std::copy_n(it_last, k, it_src);
-				// update referencing stubs
-				update_refs_ri(it_last, k, r, idx_src - idx_last);
+		// c.f. Section B. Triangle formation in Serrano & Boguna, 2005.
+		while (pk.weight() > 0) {
+			// (i). Chose degree class, a stub s1 from a node A with that degree,
+			// and a second stub s2 from the same node A.
+			stub s1 = draw_stub(0);
+			stub s2 = draw_sibling_stub(s1);
+			const node_t na = s1.node;
+			
+			// (ii). The two stubs are edges
+			if (is_edge(s1) && is_edge(s2)) {
+				const stub& s3 = find_unconnected_stub(connected_stub(s1).node);
+				const stub& s4 = find_unconnected_stub(connected_stub(s2).node);
+				// If the edges lead to nodes with no free stubs, can't form a triangle
+				if (s3.is_empty() || s4.is_empty())
+					continue;
+				add_edge(s3, s4);
 			}
-			// and remove last k entries of tier r_j
-			stubs[k][r].resize(stubs[k][r].size() - k);
+			
+			// (iii). One stub is an edge, one is unconnected
+			else if ((is_edge(s1) && is_unconnected(s2)) || (is_edge(s2) && is_unconnected(s1))) {
+				// wlog make s1 the edge, s2 the unconnected stub
+				if (is_unconnected(s1)) {
+					using std::swap;
+					swap(s1, s2);
+				}
+				// Draw stub of node B connected to A via s1
+				const stub& s3 = draw_sibling_stub(connected_stub(s1));
+				const node_t nb = s3.node;
+				assert(nb != na);
+				if (is_edge(s3)) {
+					// Stub is an edge, connects node B to node C. Find free stub of node C
+					const stub& s4 = find_unconnected_stub(connected_stub(s3).node);
+					// If C has no free stubs, can't form a triangle
+					if (s4.is_empty())
+						continue;
+					add_edge(s2, s4);
+				} else {
+					// Stub is unconnected, must draw a node C with at least two free stubs
+					const node_t nc = draw_stub(2).node;
+					if ((nc == na) || (nc == nb))
+						continue;
+					const stub& s4 = find_unconnected_stub(nc);
+					add_edge(s2, s4);
+					const stub& s5 = find_unconnected_stub(nc);
+					add_edge(s3, s5);
+				}
+			}
+			
+			// (iv). The two stubs are unconnected
+			else if (is_unconnected(s1) && is_unconnected(s2)) {
+				// Pick a node B with at least one free stub
+				const stub& s3 = draw_stub(1);
+				const stub& s4 = find_unconnected_stub(s3.node);
+				const node_t nb = s3.node;
+				add_edge(s1, s4); // Connect A and B
+				if (is_unconnected(s3)) {
+					// The remaining stub of node B is unconnected
+					// Pick a node C with a t least two free stubs
+					const node_t nc = draw_stub(2).node;
+					if ((nc == na) || (nc == nb))
+						continue;
+					const stub& s5 = find_unconnected_stub(nc);
+					add_edge(s2, s5); // Connect A and C
+					const stub& s6 = find_unconnected_stub(nc);
+					add_edge(s3, s6); // Connect B and C
+				} else {
+					// One stub of node B is connected to a node C
+					const node_t nc = connected_stub(s3).node;
+					if ((nc == na) || (nc == nb))
+						continue;
+					const stub& s5 = find_unconnected_stub(nc);
+					// If node C has no free stubs, can't form a triangle
+					if (s5.is_empty())
+						continue;
+					add_edge(s2, s5) ; // Connect A and C
+				}
+			}
+			
+			// Above list of cases should be exhaustive
+			else throw std::logic_error("unreachable code reached");
 		}
-		// B. Add edge
-		stubs[k1][r1-1][i1] = stub {.k = k2, .r = r2, .i = i2};
-		stubs[k2][r2-1][i2] = stub {.k = k1, .r = r1, .i = i1};
+		
+		// III. Closure of the network
+		// Collect all remaining unconnected stubs
+		std::vector<stub> remaining_stubs;
+		for(const auto& idx: idx_k_stubs_eligible)
+			for(const auto& s: idx.second)
+				if (is_unconnected(s))
+					remaining_stubs.push_back(s);
+		// Do as the vanilla configuration model does
+		if (remaining_stubs.size() % 2 != 0)
+			throw std::logic_error("uneven number of stubs remaining");
+		std::shuffle(remaining_stubs.begin(), remaining_stubs.end(), rng);
+		while (!remaining_stubs.empty()) {
+			const stub s1 = remaining_stubs.back();
+			remaining_stubs.pop_back();
+			const stub s2 = remaining_stubs.back();
+			remaining_stubs.pop_back();
+			// TODO: We might add self-edges here.
+			// Those may be counted by add_edge() as triangles. Should we avoid that? How?
+			add_edge(s1, s2);
+		}
+	}
+	
+	void add_edge(stub a, stub b) {
+		const node_t& na = a.node;
+		const std::size_t ka = node_stubs[na].size();
+		const node_t& nb = b.node;
+		const std::size_t kb = node_stubs[nb].size();
+		stub& ca = connected_stub(a);
+		stub& cb = connected_stub(b);
+		if (ca.is_filled() || cb.is_filled())
+			throw std::logic_error("add_edge() called for connected stubs");
+		
+		// TODO: Should we check whether we're about to add a multi-edge here?
+		// Should multi-edges be skipped while constructing trianges?
+		
+		// I. Enumerate triangles that will be completed
+		// First, build a set of neighbours of a
+		std::set<node_t> a_neighbours;
+		for(const stub& s: node_stubs[na]) {
+			if (!s.is_filled())
+				continue;
+			const node_t n = connected_stub(s).node;
+			a_neighbours.insert(n);
+		}
+		// Now scan neighbours of b for overlaps
+		for(const stub& s: node_stubs[nb]) {
+			if (!s.is_filled())
+				continue;
+			const node_t nc = connected_stub(s).node;
+			if (a_neighbours.find(nc) == a_neighbours.end())
+				continue;
+			// Found a common neighbour of the two nodes to be connected,
+			// i.e. a triangle that will be completed.
+			
+			// a. Update triangle counts, and remove stubs of nodes in satisified degree classes
+			const std::size_t kc = node_stubs[nc].size();
+			on_overlapping_triangle(ka, na);
+			on_overlapping_triangle(kb, nb);
+			on_overlapping_triangle(kc, nc);
+		}
+		
+		// II. Connect stubs
+		ca.node = b.node;
+		ca.index = b.index;
+		cb.node = a.node;
+		cb.index = a.index;
+		
+		// TODO: We should probably remove edges/nodes from the EC that cannot form triangles anymore.
+		// One reasonable conditions seems to be that either
+		//   a. Both nodes of an edge have free stubs, or
+		//   b. one node has a free stub and an *neighbour* of the other node has a free stub.
+		// However, some amount of retries during section II (Create triangles) are probably
+		// needed even with this in place. Remove these edges is therefore more of a performance
+		// optimization than an integral part of the algorithm.
+	}
+	
+	void on_overlapping_triangle(int k, node_t n) {
+		assert(node_stubs[n].size() == k);
+		
+		// Count triangle
+		triangles_formed[k]++;
+		
+		// Reduce number of triangles still to be formed for class
+		bool will_satisfy_class = (triangles_remaining[k] == 1);
+		if (triangles_remaining[k] > 0) {
+			--triangles_remaining[k];
+			update_pk(k);
+		}
+		
+		// Remove stubs of nodes in newly satisfied class from EC
+		if (will_satisfy_class) {
+			auto& idx = idx_k_stubs_eligible[k];
+			// Scan EC for degree class k and remove opposing stubs of connected stubs
+			for(const stub& s: idx) {
+				const stub& sp = connected_stub(s);
+				if (sp.is_empty())
+					continue;
+				// Find EC tier which contains the connected node and remove
+				// the connected stub from it, unless it lives in the same
+				// degree class. In that case, it's removed anyway when the
+				// whole class is removed below.
+				const int kp = node_stubs[sp.node].size();
+				if (k != kp) {
+					const auto i = idx_k_stubs_eligible.find(kp);
+					idx_k_stubs_eligible[kp].erase(sp);
+				}
+			}
+			// Remove EC for degree class k
+			idx_k_stubs_eligible.erase(k);
+		}
+	}
+	
+	stub find_unconnected_stub(node_t node) {
+		auto& ns = node_stubs[node];
+		for(index_t i=0; i < ns.size(); ++i) {
+			if (ns[i].is_empty())
+				return stub {.node=node, .index=i};
+		}
+		return stub();
+	}
+	
+	stub& connected_stub(stub s) {
+		return node_stubs[s.node][s.index];
+	}
+	
+	bool is_edge(stub s) {
+		return connected_stub(s).is_filled();
+	}
+
+	bool is_unconnected(stub s) {
+		return connected_stub(s).is_empty();
+	}
+
+	int draw_k() {
+		return pk(rng);
+	}
+	
+	stub draw_stub(int rmin) {
+		while (true) {
+			const int k = draw_k();
+			const stub s = draw_stub(k, rmin);
+			if (s.is_empty())
+				continue;
+			return s;
+		}
+	}
+	
+	stub draw_stub(int k, int rmin) {
+		if (rmin < k)
+			throw std::logic_error("impossible number of free stubs requested");
+		while (true) {
+			// Draw random stub
+			const stub s = *idx_k_stubs_eligible[k](rng);
+			// Check whether the node has rmin free stubs
+			auto& ns = node_stubs[s.node];
+			std::size_t r = 0;
+			for(index_t i=0; i < ns.size(); ++i) {
+				if (ns[i].is_filled())
+					continue;
+				// Count number of free stubs, return stub if we found enough
+				++r;
+				if (r >= rmin)
+					return s;
+			}
+		}
+	}
+	
+	stub draw_sibling_stub(stub s1) {
+		// Get degree of node
+		const int k = node_stubs[s1.node].size();
+		if (k <= 1)
+			throw std::logic_error("cannot draw siblings of node with degree one");
+		// Draw an stub different from s1
+		int i = s1.index;
+		while (i == s1.index)
+			i = std::uniform_int_distribution<int>(0, k-1)(rng);
+		return stub {.node=s1.node, .index=i};
+	}
+	
+	void update_pk(int k) {
+		assert(k >= 2);
+		pk[k] = (unsigned long)(std::pow((double)(triangles_remaining[k]), beta) * weightfactor);
 	}
 };
 
-
-config_model_clustered::config_model_clustered
- (std::vector<int> degreelist, std::vector<int> degreetriangles, rng_t& engine)
+config_model_clustered_serrano::config_model_clustered_serrano
+ (std::vector<int> degreelist, std::vector<int> degreetriangles, double beta, rng_t& engine)
 {
-	throw std::runtime_error("implement me");
+	config_model_clustered_serrano_builder b(degreelist, degreetriangles, beta, engine);
+	for(std::size_t i = 0; i < b.node_stubs.size(); ++i) {
+		const auto& ns = b.node_stubs[i];
+		for(const auto& sc: ns) {
+			if (sc.is_empty())
+				throw std::logic_error("network construction failed");
+			adjacencylist[i].push_back(sc.node);
+			adjacencylist[sc.node].push_back(i);
+		}
+	}
 }
 
 

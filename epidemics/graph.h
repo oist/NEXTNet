@@ -174,15 +174,9 @@ std::vector<int> powerlaw_degree_list(double exponent, int size, rng_t& engine);
 /**
  * @brief Network from arbitrary degree distribution.
  */
-class config_model_clustered : public virtual graph_adjacencylist {
+class config_model_clustered_serrano : public virtual graph_adjacencylist {
 public:
-	config_model_clustered(std::vector<int> degrees, std::vector<int> triangles, rng_t& engine);
-	
-
-	std::size_t selfloops = 0;
-	std::size_t multiedges = 0;
-	std::unordered_set<edge_t, pair_hash> edges = {};
-
+	config_model_clustered_serrano(std::vector<int> degrees, std::vector<int> triangles, double beta, rng_t& engine);
 };
 
 //------------------------------------------
