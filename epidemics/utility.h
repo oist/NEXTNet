@@ -575,6 +575,17 @@ public:
 	}
 };
 
+/**
+ * @brief Sets which allow random elements to be drawn
+ *
+ * Since std::set and std::unordered_set do not elements to be indexed, random elements
+ * cannot be drawn efficiently from such sets. This class provides a drop-in replacement
+ * for std::unordered_set that provides an operator()(rng) method which returns an interator
+ * pointing to a randomly and unformly chosen element.
+ *
+ * Internally, elements are stored in a vector, and an unordered_map is used as an index
+ * to efficiently find elements by value and to guarantee that uniqueness.
+ */
 template<typename T, class Hash = std::hash<T>, class KeyEqual = std::equal_to<T>>
 class drawable_set {
 public:
