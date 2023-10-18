@@ -245,48 +245,6 @@ void export_adjacency_dot(const std::vector<std::vector<node_t>>& adjacencyList,
 	out.close();
 }
 
-#if 0
-void export_adjacency_matrix(std::vector<std::vector<node_t>>& adjacencyList,string filename) {
-    //create an ofstream
-    ofstream out;
-    
-    out.open(filename);
-    std::size_t n = (int) adjacencyList.size();
-
-    for (std::size_t i =0; i<n; i++){
-        for (std::size_t j =0; j < n-1; j++){
-            //handle case if k_i = 0
-            if ((int) adjacencyList[i].size() == 0){
-                for (std::size_t val = 0; val < n-1; val++)
-                    out << 0 << ", ";
-                out << 0 << "\n";
-                continue;
-            } 
-
-            // if i and j are neighbours A[i,j]=1 else 0.
-            if(std::find(adjacencyList[i].begin(), adjacencyList[i].end(), j) != adjacencyList[i].end()) {
-                out << 1 << ", ";
-            } else {
-                out << 0 << ", ";
-            }
-        }
-
-        //handle last element:
-        // if i and j are neighbours A[i,j]=1 else 0.
-        if(std::find(adjacencyList[i].begin(), adjacencyList[i].end(), n-1) != adjacencyList[i].end()) {
-            out << 1 << "\n";
-        } else {
-            out << 0 << "\n";
-        }
-    }
-        
-
-    out.close();
-}
-#endif
-
-
-
 void print_matrix(const std::vector<std::vector<double>>& A){
     long rows = A.size();
     long cols = A[0].size();
