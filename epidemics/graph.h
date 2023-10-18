@@ -174,14 +174,63 @@ std::vector<int> powerlaw_degree_list(double exponent, int size, rng_t& engine);
 
 /**
  * @brief Network from arbitrary degree distribution.
+ *
+ * Based on the algorithm described by Serrano & Boguna, 2005.
  */
 class config_model_clustered_serrano : public virtual graph_adjacencylist {
 public:
+	/**
+	 * @brief Converts c(k) into a number of triangles per degree class.
+	 *
+	 * Given c(k) and given the degrees of all nodes, we generate a vector containing a triangle count per degree.
+	 * The vector satisfies c(k) *on average*, see footnote in Serrano & Boguna, 2005 p. 3.
+	 *
+	 * @param ck the function c(k) which returns the probability that two neighbours of a node of degree k are themselves neighbours
+	 * @param degrees list of node degrees
+	 * @param engine random number generator
+	 * @return a list of triangles per nodes of degree 0, 1, 2, ...
+	 */
 	static std::vector<int> triangles_binomial(std::function<double(int)> ck, std::vector<int> degrees, rng_t& engine);
 	
+	/**
+	 * @brief Generates a random network with nodes of the given degrees given numbers of triangles per degree class
+	 *
+	 * This is the most general form where any expected number of triangles in any degree class k can be prescribed.
+	 * However, some combinations of degrees and triangles may not allow a network to be constructed.
+	 *
+	 * @param degrees list of node degrees
+	 * @param triangles number of triangles overlapping nodes of degree 0, 1, 2, ...,
+	 * @param beta parameter that defines degree class probabilities P(k)
+	 * @param engine random number generator
+	 */
 	config_model_clustered_serrano(std::vector<int> degrees, std::vector<int> triangles, double beta, rng_t& engine);
+
+    /**
+     * @brief Generates a random network with nodes of the given degrees and clustering given by c(k)
+     *
+     * c(k) defines the probability for a node of degree k that two randomly chosen neighbours
+     * are themselves neighbours, i.e. form a triangle.
+     *
+     * @param degrees list of node degrees
+     * @param ck the function c(k) which returns the probability that two neighbours of a node are themselves neighbours
+     * @param beta parameter that defines degree class probabilities P(k)
+     * @param engine random number generator
+     */
+    config_model_clustered_serrano(std::vector<int> degrees, std::function<double(int)> ck, double beta, rng_t& engine);
+
+	/**
+	 * @brief Generates a random network with nodes of the given degrees and triangles specified by alpha
+	 *
+	 * The number of triangles per degree class is chosen such that the probability c(k) that
+	 * two randomly chosen neighbours of a node are themselves neighbours is c(k)=0.5*(k-1)^alpha
+	 * where k is the degree of the node.
+	 *
+	 * @param degrees list of node degrees
+	 * @param alpha parameter of c(k)
+	 * @param beta parameter that defines degree class probabilities P(k)
+	 * @param engine random number generator
+	 */
 	config_model_clustered_serrano(std::vector<int> degree, double alpha, double beta, rng_t& engine);
-	config_model_clustered_serrano(std::vector<int> degrees, std::function<double(int)> ck, double beta, rng_t& engine);
 };
 
 //------------------------------------------
