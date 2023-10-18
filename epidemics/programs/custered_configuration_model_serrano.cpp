@@ -35,9 +35,9 @@ int program_custered_configuration_model_serrano(int argc, const char * argv[])
 
 	config_model_clustered_serrano nw(degreeList, 0.5, 0.2, engine);
 	std::cerr << "Assortativity: " << assortativity(nw) << std::endl;
-	export_adjacency_matrix(nw.adjacencylist, "/Users/fgp/serrano.txt");
-	export_adjacency_dot(nw.adjacencylist, "/Users/fgp/serrano.dot", false);
-	system("/opt/local/bin/dot -Tpdf -Kfdp /Users/fgp/serrano.dot > /Users/fgp/serrano.pdf");
+	export_adjacency_matrix(nw.adjacencylist, "serrano.txt");
+	export_adjacency_dot(nw.adjacencylist, "serrano.dot", false);
+	system("dot -Tpdf -Kfdp serrano.dot > serrano.pdf");
 
 	return 0;
 }
