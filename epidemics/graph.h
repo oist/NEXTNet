@@ -177,7 +177,11 @@ std::vector<int> powerlaw_degree_list(double exponent, int size, rng_t& engine);
  */
 class config_model_clustered_serrano : public virtual graph_adjacencylist {
 public:
+	static std::vector<int> triangles_binomial(std::function<double(int)> ck, std::vector<int> degrees, rng_t& engine);
+	
 	config_model_clustered_serrano(std::vector<int> degrees, std::vector<int> triangles, double beta, rng_t& engine);
+	config_model_clustered_serrano(std::vector<int> degree, double alpha, double beta, rng_t& engine);
+	config_model_clustered_serrano(std::vector<int> degrees, std::function<double(int)> ck, double beta, rng_t& engine);
 };
 
 //------------------------------------------

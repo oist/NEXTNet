@@ -468,20 +468,16 @@ struct config_model_clustered_serrano_builder {
 	std::unordered_map<int, std::set<node_t>> idx_k_nodes;
 	std::unordered_map<int, drawable_set<stub, stub_hasher>> idx_k_stubs_eligible; // these are the eligible components
 	
-	config_model_clustered_serrano_builder(std::vector<node_t> degreelist, const std::vector<int>& degree_triangles, double _beta, rng_t& _rng)
+	config_model_clustered_serrano_builder(std::vector<node_t> degrees, const std::vector<int>& degree_triangles, double _beta, rng_t& _rng)
 		:kmax(degree_triangles.size() - 1)
 		,beta(_beta)
 		,rng(_rng)
 		,pk(kmax + 1, 0)
 	{
 		// I. Create stubs
-		std::sort(degreelist.begin(), degreelist.end());
-		for(auto i = degreelist.begin(), e = degreelist.end(); i != e; ++i) {
-			// Scan forward until node changes to compute degree
-			const auto c = i;
-			while ((i != e) && (*c == *i)) ++i;
-			const unsigned int k = i - c;
-			const node_t node = *c;
+		node_t next_node = 0;
+		for(const int k: degrees) {
+			const node_t node = next_node++;
 			// Insert into set of nodes of degree k
 			idx_k_nodes[k].insert(node);
 			// Create stubs for current node
@@ -562,16 +558,30 @@ struct config_model_clustered_serrano_builder {
 			// (iv). The two stubs are unconnected
 			else if (is_unconnected(s1) && is_unconnected(s2)) {
 				// Pick a node B with at least one free stub
-				const stub& s3 = draw_stub(1);
-				const stub& s4 = find_unconnected_stub(s3.node);
+				stub s3 = draw_stub(1);
 				const node_t nb = s3.node;
-				add_edge(s1, s4); // Connect A and B
+				if (nb == na)
+					continue;
+				// Pick second stub of node B, and swaps stubs
+				// such that either both are unconnected, or
+				// the first (s3) is connected and the second
+				// unconnected.
+				stub s4;
+				assert(node_stubs[s3.node].size() >= 2);
+				if (is_edge(s3))
+					s4 = find_unconnected_stub(nb);
+				else {
+					s4 = s3;
+					s3 = draw_sibling_stub(s4);
+				}
+				assert(is_unconnected(s4));
 				if (is_unconnected(s3)) {
 					// The remaining stub of node B is unconnected
 					// Pick a node C with a t least two free stubs
 					const node_t nc = draw_stub(2).node;
 					if ((nc == na) || (nc == nb))
 						continue;
+					add_edge(s1, s4); // Connect A and B
 					const stub& s5 = find_unconnected_stub(nc);
 					add_edge(s2, s5); // Connect A and C
 					const stub& s6 = find_unconnected_stub(nc);
@@ -585,6 +595,7 @@ struct config_model_clustered_serrano_builder {
 					// If node C has no free stubs, can't form a triangle
 					if (s5.is_empty())
 						continue;
+					add_edge(s1, s4); // Connect A and B
 					add_edge(s2, s5) ; // Connect A and C
 				}
 			}
@@ -596,10 +607,14 @@ struct config_model_clustered_serrano_builder {
 		// III. Closure of the network
 		// Collect all remaining unconnected stubs
 		std::vector<stub> remaining_stubs;
-		for(const auto& idx: idx_k_stubs_eligible)
-			for(const auto& s: idx.second)
+		for(node_t n=0; n < node_stubs.size(); ++n) {
+			const auto& ns = node_stubs[n];
+			for(index_t i=0; i < ns.size(); ++i) {
+				const stub s {.node=n, .index=i};
 				if (is_unconnected(s))
 					remaining_stubs.push_back(s);
+			}
+		}
 		// Do as the vanilla configuration model does
 		if (remaining_stubs.size() % 2 != 0)
 			throw std::logic_error("uneven number of stubs remaining");
@@ -634,14 +649,13 @@ struct config_model_clustered_serrano_builder {
 		for(const stub& s: node_stubs[na]) {
 			if (!s.is_filled())
 				continue;
-			const node_t n = connected_stub(s).node;
-			a_neighbours.insert(n);
+			a_neighbours.insert(s.node);
 		}
 		// Now scan neighbours of b for overlaps
 		for(const stub& s: node_stubs[nb]) {
 			if (!s.is_filled())
 				continue;
-			const node_t nc = connected_stub(s).node;
+			const node_t nc = s.node;
 			if (a_neighbours.find(nc) == a_neighbours.end())
 				continue;
 			// Found a common neighbour of the two nodes to be connected,
@@ -715,14 +729,17 @@ struct config_model_clustered_serrano_builder {
 	}
 	
 	stub& connected_stub(stub s) {
+		assert(!s.is_empty());
 		return node_stubs[s.node][s.index];
 	}
 	
 	bool is_edge(stub s) {
+		assert(!s.is_empty());
 		return connected_stub(s).is_filled();
 	}
 
 	bool is_unconnected(stub s) {
+		assert(!s.is_empty());
 		return connected_stub(s).is_empty();
 	}
 
@@ -731,6 +748,9 @@ struct config_model_clustered_serrano_builder {
 	}
 	
 	stub draw_stub(int rmin) {
+		const int k = draw_k();
+		return draw_stub(k, rmin);
+#if 0
 		while (true) {
 			const int k = draw_k();
 			const stub s = draw_stub(k, rmin);
@@ -738,10 +758,12 @@ struct config_model_clustered_serrano_builder {
 				continue;
 			return s;
 		}
+#endif
 	}
 	
 	stub draw_stub(int k, int rmin) {
-		if (rmin < k)
+		// TODO: This may loop forever
+		if (rmin > k)
 			throw std::logic_error("impossible number of free stubs requested");
 		while (true) {
 			// Draw random stub
@@ -778,17 +800,53 @@ struct config_model_clustered_serrano_builder {
 	}
 };
 
+/**
+ * Generate vector of number of triangles per degree class from c(k)
+ *
+ * k Given c(k) and given the degrees
+ * of all nodes, we generate a vector containing a triangle count per degree. The vector satisfies
+ * c(k) *on average*, see footnote in Serrano & Boguna, 2005 p. 3.
+ */
+std::vector<int> config_model_clustered_serrano::triangles_binomial
+ (std::function<double(int)> ck, std::vector<int> degrees, rng_t& engine)
+{
+	std::vector<int> triangles(*std::max_element(degrees.begin(), degrees.end()) + 1, 0);
+	for(std::size_t i=0; i < degrees.size(); ++i) {
+		const int k = degrees[i];
+		if (k < 2)
+			continue;
+		const double p = ck(k);
+		const double M = k * (k-1) / 2;
+		const int t = std::binomial_distribution<int>(M, p)(engine);
+		triangles.at(k) += t;
+	}
+	return triangles;
+}
+
+config_model_clustered_serrano::config_model_clustered_serrano
+ (std::vector<int> degrees, double alpha, double beta, rng_t& engine)
+	:config_model_clustered_serrano(degrees, [alpha](int k) -> double { return 0.5*std::pow((double)(k-1), -alpha); }, beta, engine)
+{};
+
+config_model_clustered_serrano::config_model_clustered_serrano
+ (std::vector<int> degrees, std::function<double(int)> ck, double beta, rng_t& engine)
+	:config_model_clustered_serrano(degrees, triangles_binomial(ck, degrees, engine), beta, engine)
+{}
+
 config_model_clustered_serrano::config_model_clustered_serrano
  (std::vector<int> degreelist, std::vector<int> degreetriangles, double beta, rng_t& engine)
 {
 	config_model_clustered_serrano_builder b(degreelist, degreetriangles, beta, engine);
 	for(std::size_t i = 0; i < b.node_stubs.size(); ++i) {
 		const auto& ns = b.node_stubs[i];
+		// Get adjacencylist for i-th node, make sure it exists
+		adjacencylist.resize(i+1);
+		auto& i_al = adjacencylist[i];
 		for(const auto& sc: ns) {
 			if (sc.is_empty())
 				throw std::logic_error("network construction failed");
-			adjacencylist[i].push_back(sc.node);
-			adjacencylist[sc.node].push_back(i);
+			// Add edge. Reverse edge will be added later, we rely on node_stubs being symmetric
+			i_al.push_back(sc.node);
 		}
 	}
 }
