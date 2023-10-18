@@ -198,7 +198,7 @@ void export_adjacency_matrix(const std::vector<std::vector<node_t>>& adjacencyLi
 	ofstream out;
 	out.open(filename);
 	
-	const int n = adjacencyList.size();
+	const std::size_t n = adjacencyList.size();
 	for(std::size_t i=0; i < n; ++i) {
 		const std::unordered_set<node_t> neighbours(adjacencyList[i].begin(), adjacencyList[i].end());
 		for(std::size_t j=0; j < n; ++j) {
@@ -217,7 +217,7 @@ void export_adjacency_dot(const std::vector<std::vector<node_t>>& adjacencyList,
 	
 	out << "graph {\n";
 	
-	const int n = adjacencyList.size();
+	const std::size_t n = adjacencyList.size();
 	for(std::size_t i=0; i < n; ++i) {
 		out << i << " -- {";
 		const auto& nn = adjacencyList[i];
@@ -228,7 +228,7 @@ void export_adjacency_dot(const std::vector<std::vector<node_t>>& adjacencyList,
 			nn_filtered = std::vector<node_t>(nn.begin(), nn.end());
 		} else {
 			for(node_t node: nn) {
-				if (node > i)
+				if (node > (node_t)i)
 					continue;
 				nn_filtered.push_back(node);
 			}

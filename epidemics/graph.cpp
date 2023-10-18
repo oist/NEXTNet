@@ -484,14 +484,14 @@ struct config_model_clustered_serrano_builder {
 			node_stubs.insert({node, std::vector<stub>(k, stub())});
 			// Insert stubs into indexes
 			auto& ec_k = idx_k_stubs_eligible[k];
-			for(unsigned int i=0; i < k; ++i) {
-				stub s {.node=node, .index = (int)i};
+			for(index_t i=0; i < (index_t)k; ++i) {
+				stub s {.node=node, .index = i};
 				ec_k.insert(s);
 			}
 		}
 		
 		// II. Setup distribution P(k)
-		for(int i=0; i < degree_triangles.size(); ++i) {
+		for(std::size_t i=0; i < degree_triangles.size(); ++i) {
 			if ((i < 2) && (degree_triangles[i] > 0))
 				throw std::runtime_error("nodes with degrees 0 and 1 cannot have overlapping triangles");
 			if (degree_triangles[i] > 0)
@@ -607,9 +607,9 @@ struct config_model_clustered_serrano_builder {
 		// III. Closure of the network
 		// Collect all remaining unconnected stubs
 		std::vector<stub> remaining_stubs;
-		for(node_t n=0; n < node_stubs.size(); ++n) {
+		for(node_t n=0; n < (node_t)node_stubs.size(); ++n) {
 			const auto& ns = node_stubs[n];
-			for(index_t i=0; i < ns.size(); ++i) {
+			for(index_t i=0; i < (index_t)ns.size(); ++i) {
 				const stub s {.node=n, .index=i};
 				if (is_unconnected(s))
 					remaining_stubs.push_back(s);
@@ -684,7 +684,7 @@ struct config_model_clustered_serrano_builder {
 	}
 	
 	void on_overlapping_triangle(int k, node_t n) {
-		assert(node_stubs[n].size() == k);
+		assert(node_stubs[n].size() == (std::size_t)k);
 		
 		// Count triangle
 		triangles_formed[k]++;
@@ -709,10 +709,8 @@ struct config_model_clustered_serrano_builder {
 				// degree class. In that case, it's removed anyway when the
 				// whole class is removed below.
 				const int kp = node_stubs[sp.node].size();
-				if (k != kp) {
-					const auto i = idx_k_stubs_eligible.find(kp);
+				if (k != kp)
 					idx_k_stubs_eligible[kp].erase(sp);
-				}
 			}
 			// Remove EC for degree class k
 			idx_k_stubs_eligible.erase(k);
@@ -721,7 +719,7 @@ struct config_model_clustered_serrano_builder {
 	
 	stub find_unconnected_stub(node_t node) {
 		auto& ns = node_stubs[node];
-		for(index_t i=0; i < ns.size(); ++i) {
+		for(index_t i=0; i < (index_t)ns.size(); ++i) {
 			if (ns[i].is_empty())
 				return stub {.node=node, .index=i};
 		}
@@ -770,8 +768,8 @@ struct config_model_clustered_serrano_builder {
 			const stub s = *idx_k_stubs_eligible[k](rng);
 			// Check whether the node has rmin free stubs
 			auto& ns = node_stubs[s.node];
-			std::size_t r = 0;
-			for(index_t i=0; i < ns.size(); ++i) {
+			int r = 0;
+			for(index_t i=0; i < (index_t)ns.size(); ++i) {
 				if (ns[i].is_filled())
 					continue;
 				// Count number of free stubs, return stub if we found enough
