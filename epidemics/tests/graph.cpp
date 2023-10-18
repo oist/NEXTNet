@@ -329,6 +329,48 @@ TEST_CASE("Configuration model networks","[graph]") {
 }
 
 /**
+ * @brief Test case to verify `cm::cm`
+ *
+ * The variance and mean degree of the resulting network should match
+ * with the initial degree list that was the input.
+ *
+ */
+TEST_CASE("Clustered configuration model networks (Serrano)","[graph]") {
+	std::mt19937 engine;
+	const int size = 100;
+
+	// Generate a Poisson graph with the configuration model
+	std::poisson_distribution<> poisson(3);
+	std::vector<int> degreeList(size,0);
+	std::size_t total_degree = 0;
+	std::size_t max_degree = 0;
+	for (int i = 0; i < size; i++)
+	{
+		const int k = poisson(engine);
+		degreeList[i] = k;
+		total_degree += k;
+		max_degree = std::max(max_degree, (std::size_t)k);
+	}
+
+	// make sure the total degree is even, otherwise no graph can exist
+	while (total_degree % 2 == 1) {
+		// re-generate a random degree
+		const std::size_t i = std::uniform_int_distribution<>(0, size-1)(engine);
+		const int d = degreeList[i];
+		const int dp = poisson(engine);
+		degreeList[i] = dp;
+		total_degree += dp - d;
+	}
+	
+	config_model_clustered_serrano nw(degreeList, 1.0, 1.0, engine);
+	std::size_t nw_degree = 0;
+	for (node_t i = 0; i < size; i++)
+		nw_degree += nw.adjacencylist[i].size();
+	REQUIRE(std::abs((long)total_degree - (long)nw_degree) < 0.00001);
+}
+
+
+/**
  * @brief Test case to verify `watts_strogatz::watts_strogatz`
  *
  * The number of edges should be preserved and should be equal to n
