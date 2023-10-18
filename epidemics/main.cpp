@@ -55,6 +55,7 @@ DECLARE_PROGRAM(trajectory);
 DECLARE_PROGRAM(customtrajectory);
 DECLARE_PROGRAM(average);
 DECLARE_PROGRAM(scale_free);
+DECLARE_PROGRAM(custered_configuration_model_serrano);
 
 
 int main(int argc, const char * argv[]) {
