@@ -171,7 +171,7 @@ void exportData(vector<int>& trajectory,string filename) {
 }
 
 
-void export_adjacency_list(std::vector<std::vector<node_t>>& adjacencyList,string filename) {
+void export_adjacency_list(const std::vector<std::vector<node_t>>& adjacencyList,string filename) {
     //create an ofstream
     ofstream out;
     
@@ -193,6 +193,59 @@ void export_adjacency_list(std::vector<std::vector<node_t>>& adjacencyList,strin
     out.close();
 }
 
+void export_adjacency_matrix(const std::vector<std::vector<node_t>>& adjacencyList,string filename)
+{
+	ofstream out;
+	out.open(filename);
+	
+	const int n = adjacencyList.size();
+	for(std::size_t i=0; i < n; ++i) {
+		const std::unordered_set<node_t> neighbours(adjacencyList[i].begin(), adjacencyList[i].end());
+		for(std::size_t j=0; j < n; ++j) {
+			out << ((neighbours.find(j) == neighbours.end()) ? '0' : '1');
+			out << ((j < (n-1)) ? ", " : "");
+		}
+		out << "\n";
+	}
+	out.close();
+}
+
+void export_adjacency_dot(const std::vector<std::vector<node_t>>& adjacencyList, string filename, bool directed)
+{
+	ofstream out;
+	out.open(filename);
+	
+	out << "graph {\n";
+	
+	const int n = adjacencyList.size();
+	for(std::size_t i=0; i < n; ++i) {
+		out << i << " -- {";
+		const auto& nn = adjacencyList[i];
+		
+		// For undirected graphs, output each edge only once
+		std::vector<node_t> nn_filtered;
+		if (directed) {
+			nn_filtered = std::vector<node_t>(nn.begin(), nn.end());
+		} else {
+			for(node_t node: nn) {
+				if (node > i)
+					continue;
+				nn_filtered.push_back(node);
+			}
+		}
+		
+		for(std::size_t j=0; j < nn_filtered.size(); ++j) {
+			out << nn_filtered[j];
+			out << ((j < (nn_filtered.size()-1)) ? ", " : "");
+		}
+		out << "};\n";
+	}
+	
+	out << "}\n";
+	out.close();
+}
+
+#if 0
 void export_adjacency_matrix(std::vector<std::vector<node_t>>& adjacencyList,string filename) {
     //create an ofstream
     ofstream out;
@@ -230,6 +283,7 @@ void export_adjacency_matrix(std::vector<std::vector<node_t>>& adjacencyList,str
 
     out.close();
 }
+#endif
 
 
 

@@ -19,8 +19,9 @@ void exportData( std::vector<int>& X,std::vector<double>& Y,std::string filename
 
 void exportData( std::vector<int>& trajectory,std::string filename);
 
-void export_adjacency_list(std::vector<std::vector<node_t>>& adjacencyList, std::string filename);
-void export_adjacency_matrix(std::vector<std::vector<node_t>>& adjacencyList, std::string filename);
+void export_adjacency_list(const std::vector<std::vector<node_t>>& adjacencyList, std::string filename);
+void export_adjacency_matrix(const std::vector<std::vector<node_t>>& adjacencyList, std::string filename);
+void export_adjacency_dot(const std::vector<std::vector<node_t>>& adjacencyList, std::string filename, bool directed=false);
 
 void print_matrix(std::vector<std::vector<double>>& A);
 
