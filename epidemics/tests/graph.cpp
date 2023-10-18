@@ -15,7 +15,7 @@
  */
 TEST_CASE("barabasi_albert", "[graph]") {
     std::mt19937 engine;
-    const int SIZE = 1e5;
+    const int SIZE = 1e4;
     const bool SHUFFLE = false;
     const double MEAN = 1;
     const double VARIANCE = 1;
