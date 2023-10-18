@@ -42,7 +42,8 @@ set(SIMULATOR_SOURCES
     epidemics/programs/customtrajectory.cpp
     epidemics/programs/sis_meanfield_gamma_gamma.cpp
     epidemics/programs/profile.cpp
-    epidemics/programs/benchmark_priorityqueue.cpp)
+    epidemics/programs/benchmark_priorityqueue.cpp
+    epidemics/programs/custered_configuration_model_serrano.cpp)
 
 set(SIMULATOR_HEADERS
     epidemics/analysis.h)
