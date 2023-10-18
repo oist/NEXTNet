@@ -49,6 +49,7 @@
 		F9D26B8D27E229BA005A272D /* graph.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 982A07D727D5BED900B4772A /* graph.cpp */; };
 		F9D26B8E27E229BA005A272D /* analysis.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 984A0CA927C0DF56004A0A96 /* analysis.cpp */; };
 		F9D26B8F27E22A31005A272D /* libtestrunner.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F9D26B6C27E22410005A272D /* libtestrunner.a */; };
+		F9D484BB2ADF95F90088A946 /* custered_configuration_model_serrano.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F9D484B92ADF953A0088A946 /* custered_configuration_model_serrano.cpp */; };
 		F9E1264A291CB5F100C9A221 /* NextReactionMeanField.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F9E12648291CB5F100C9A221 /* NextReactionMeanField.cpp */; };
 		F9E1264B291CB5F100C9A221 /* NextReactionMeanField.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F9E12648291CB5F100C9A221 /* NextReactionMeanField.cpp */; };
 		F9EDD82F2A1C90F5003B3F31 /* REGIR.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F9EDD82D2A1C90F5003B3F31 /* REGIR.cpp */; };
@@ -133,6 +134,7 @@
 		F9CFD988299B55A90078FD70 /* dynamic_graph.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = dynamic_graph.cpp; sourceTree = "<group>"; };
 		F9CFD989299B55A90078FD70 /* dynamic_graph.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = dynamic_graph.h; sourceTree = "<group>"; };
 		F9D26B6C27E22410005A272D /* libtestrunner.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libtestrunner.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		F9D484B92ADF953A0088A946 /* custered_configuration_model_serrano.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = custered_configuration_model_serrano.cpp; sourceTree = "<group>"; };
 		F9E12648291CB5F100C9A221 /* NextReactionMeanField.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NextReactionMeanField.cpp; sourceTree = "<group>"; };
 		F9E12649291CB5F100C9A221 /* NextReactionMeanField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NextReactionMeanField.h; sourceTree = "<group>"; };
 		F9EACDE4299E7904009C2002 /* dynamic_graph.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = dynamic_graph.cpp; sourceTree = "<group>"; };
@@ -286,6 +288,7 @@
 				F9A4651B2923B2B700393E90 /* benchmark.cpp */,
 				F9A4651C2923B2B700393E90 /* profile.cpp */,
 				F9A4651D2923B2B700393E90 /* sis_meanfield_gamma_gamma.cpp */,
+				F9D484B92ADF953A0088A946 /* custered_configuration_model_serrano.cpp */,
 			);
 			path = programs;
 			sourceTree = "<group>";
@@ -422,6 +425,7 @@
 				F93F5D91299238F300775CFA /* average.cpp in Sources */,
 				F9EDD82F2A1C90F5003B3F31 /* REGIR.cpp in Sources */,
 				F95E340B2924A79700DBCE94 /* benchmark_priorityqueue.cpp in Sources */,
+				F9D484BB2ADF95F90088A946 /* custered_configuration_model_serrano.cpp in Sources */,
 				F9A465202923B2B700393E90 /* sis_meanfield_gamma_gamma.cpp in Sources */,
 				984A0CAB27C0DF56004A0A96 /* analysis.cpp in Sources */,
 				98B96F7228111BAC00A78600 /* NextReaction.cpp in Sources */,
