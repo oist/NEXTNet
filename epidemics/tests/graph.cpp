@@ -388,9 +388,57 @@ TEST_CASE("Watts-Strogatz model","[graph]") {
         number_of_edges += (int) nei_list.size();
     }
     REQUIRE(std::abs(number_of_edges - 2* size ) < 0.01);
-    
-    
 }
+
+/**
+ * @brief Test case to verify `cubic_lattice`
+ *
+ */
+TEST_CASE("Cubic lattice","[graph]") {
+    std::mt19937 engine;
+
+    {
+        cubic_lattice_2d nw(3);
+        REQUIRE(nw.nodes() == 9);
+        const node_t n11 = nw.node({-1, -1});
+        const node_t n12 = nw.node({-1,  0});
+        const node_t n13 = nw.node({-1,  1});
+        const node_t n21 = nw.node({ 0, -1});
+        const node_t n22 = nw.node({ 0,  0});
+        const node_t n23 = nw.node({ 0,  1});
+        const node_t n31 = nw.node({ 1, -1});
+        const node_t n32 = nw.node({ 1,  0});
+        const node_t n33 = nw.node({ 1,  1});
+        REQUIRE(nw.outdegree(n11)==2);
+        REQUIRE(nw.outdegree(n13)==2);
+        REQUIRE(nw.outdegree(n31)==2);
+        REQUIRE(nw.outdegree(n33)==2);
+        REQUIRE(nw.outdegree(n12)==3);
+        REQUIRE(nw.outdegree(n21)==3);
+        REQUIRE(nw.outdegree(n23)==3);
+        REQUIRE(nw.outdegree(n32)==3);
+        REQUIRE(nw.outdegree(n22)==4);
+        REQUIRE(nw.neighbour(n11, 0) == n21);
+        REQUIRE(nw.neighbour(n11, 1) == n12);
+    }
+
+    cubic_lattice_2d nw;
+    const node_t n11 = nw.node({nw.coordinate_min, nw.coordinate_min});
+    REQUIRE(nw.outdegree(n11)==2);
+    const node_t n1k = nw.node({nw.coordinate_min, nw.coordinate_max});
+    REQUIRE(nw.outdegree(n1k)==2);
+    const node_t nk1 = nw.node({nw.coordinate_max, nw.coordinate_min});
+    REQUIRE(nw.outdegree(nk1)==2);
+    const node_t nkk = nw.node({nw.coordinate_max, nw.coordinate_max});
+    REQUIRE(nw.outdegree(nkk)==2);
+    const node_t ncc = nw.node({0, 0});
+    REQUIRE(nw.outdegree(ncc)==4);
+    REQUIRE(nw.neighbour(ncc, 0)==nw.node({ 1,  0}));
+    REQUIRE(nw.neighbour(ncc, 1)==nw.node({ 0,  1}));
+    REQUIRE(nw.neighbour(ncc, 2)==nw.node({-1,  0}));
+    REQUIRE(nw.neighbour(ncc, 3)==nw.node({ 0, -1}));
+}
+
 
 /**
  * @brief Test case to verify `knn`
