@@ -45,6 +45,30 @@ public:
     virtual int outdegree(node_t node) = 0;
 };
 
+/**
+ * @brief Interface for embedded graphs, i.e. graphs whose nodes are located in d-dimensional space
+ *
+ * Provides function to query the number of dimensions of the embedding space, and the
+ * coordinates of individual nodes.
+ */
+class graph_embedding {
+public:
+    virtual ~graph_embedding();
+
+    /**
+     * @brief Returns the dimensionality of the embedding space
+     * @return number of dimensions
+     */
+    virtual std::size_t dimensionality() = 0;
+
+    /**
+     * @brief Returns the embedding coordinates of the specified node
+     * @param node node index
+     * @param position reference to a vector, first d entries are filled with the coordinates
+     */
+    virtual bool coordinates(const node_t node, std::vector<double>& position) = 0;
+};
+
 //--------------------------------------
 //----------ADJACENCYLIST GRAPH---------
 //--------------------------------------
