@@ -16,7 +16,7 @@
 //----------DYNAMIC NETWORKS------------
 //--------------------------------------
 
-struct brownian_proximity_graph : virtual dynamic_network, virtual graph {
+struct brownian_proximity_graph : virtual dynamic_network, virtual graph, virtual graph_embedding {
 	typedef std::unordered_set<node_t> node_set_t;
 	typedef std::unordered_map<node_t, index_t> neighbour_map_t;
 
@@ -39,6 +39,10 @@ struct brownian_proximity_graph : virtual dynamic_network, virtual graph {
 	virtual node_t neighbour(node_t node, int neighbour_index) ;
 
 	virtual int outdegree(node_t node);
+
+	virtual std::size_t dimensionality();
+
+	virtual bool coordinates(const node_t node, std::vector<double>& position);
 
 	virtual absolutetime_t next(rng_t& engine);
 	

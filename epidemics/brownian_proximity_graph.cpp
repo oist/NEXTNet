@@ -79,6 +79,20 @@ index_t brownian_proximity_graph::outdegree(node_t node) {
 	return (index_t)nodedata.at(node).neighbours.size();
 }
 
+std::size_t brownian_proximity_graph::dimensionality() {
+	return 2;
+}
+
+bool brownian_proximity_graph::coordinates(const node_t n, std::vector<double>& position) {
+    if ((n < 0) || (n >= (node_t)nodedata.size()))
+        return false;
+    const node& nn = nodedata[n];
+    position.resize(2);
+    position[0] = nn.position.x;
+    position[1] = nn.position.y;
+    return true;
+}
+
 absolutetime_t brownian_proximity_graph::next(rng_t& engine)
 {
 	using std::swap;
