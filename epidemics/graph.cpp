@@ -1141,6 +1141,61 @@ imported_network::imported_network(std::string path_to_file){
         //     // of a row to a vector
         //     adjacencylist[i].push_back(std::stoi(word));
 
+//---------------------------------------------------
+//-----Measure edge multiplicity in a network--------
+//---------------------------------------------------
+
+std::vector<std::vector<double>> edge_multiplicity(graph_adjacencylist& nw){
+
+    const int SIZE = (int) nw.adjacencylist.size();
+
+    int kmax = 0;
+    for (node_t node = 0; node < SIZE; node++){
+        const int k0 = nw.outdegree(node);
+        kmax = std::max(k0,kmax);
+    }
+
+    std::vector<double> T2(kmax+1,0);
+    std::vector<std::vector<double>> T1(kmax+1,std::vector<double>(kmax+1,0));
+    std::vector<std::vector<double>> e_kk(kmax+1,std::vector<double>(kmax+1,0));
+    std::vector<std::vector<std::vector<double>>> T(kmax+1, std::vector<std::vector<double>>(kmax+1, std::vector<double>(kmax+1,0)));
+    
+    for (node_t node = 0; node < SIZE; node++){
+        
+        const int k0 = nw.outdegree(node);
+        for (node_t neigh_1 : nw.adjacencylist[node])
+        {
+            const int k1 = nw.outdegree(neigh_1);
+            e_kk[k0][k1] ++;
+
+            for (node_t neigh_2 : nw.adjacencylist[neigh_1]){
+                if (neigh_2 == node)
+                    continue;
+                const int k2 = nw.outdegree(neigh_2);
+                node_t small_node = (k0 <= k2) ? node : neigh_2;
+                node_t large_node = (k0 <= k2) ? neigh_2 : node;
+
+                // verify if edge exists between node and neighbour n°2
+                auto it = std::find(nw.adjacencylist[small_node].begin(), nw.adjacencylist[small_node].end(), large_node);
+                if (it != nw.adjacencylist[small_node].end()){
+                    T[k0][k1][k2] ++;
+                    T1[k0][k1]++;
+                    T2[k0]++;
+                }
+            }
+        }
+    }
+    std::vector<std::vector<double>> mkk(kmax+1,std::vector<double>(kmax+1,0));
+
+    for (int k=0; k <= kmax; k++){
+        for (int q=0; q <= kmax; q++){
+            if (e_kk[k][q]==0)
+                continue;
+            mkk[k][q] = T1[k][q] / ( e_kk[k][q] );
+        }
+    }
+    return mkk;
+}
 
 //---------------------------------------------------
 //-----ADD DEGREE CORRELATION TO THE NETWORK---------

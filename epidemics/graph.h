@@ -436,6 +436,13 @@ private:
 
 };
 
+
+//---------------------------------------------------
+//-----Measure edge multiplicity in a network--------
+//---------------------------------------------------
+
+std::vector<std::vector<double>> edge_multiplicity(graph_adjacencylist& nw);
+
 //------------------------------------------
 //--ADD DEGREE CORRELATION TO THE NETWORK---
 //------------------------------------------
