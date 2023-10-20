@@ -200,11 +200,32 @@ void export_adjacency_matrix(const std::vector<std::vector<node_t>>& adjacencyLi
 	
 	const std::size_t n = adjacencyList.size();
 	for(std::size_t i=0; i < n; ++i) {
-		const std::unordered_set<node_t> neighbours(adjacencyList[i].begin(), adjacencyList[i].end());
-		for(std::size_t j=0; j < n; ++j) {
-			out << ((neighbours.find(j) == neighbours.end()) ? '0' : '1');
-			out << ((j < (n-1)) ? ", " : "");
+		// Sort neighbours
+		std::vector<node_t> neighbours(adjacencyList[i].begin(), adjacencyList[i].end());
+		std::sort(neighbours.begin(), neighbours.end());
+		// Output raw
+		node_t neighbour_last = -1;
+		auto neighbour_i = neighbours.begin();
+		const auto neighbour_end = neighbours.end();
+		while (neighbour_i != neighbour_end) {
+			// Output zeros for non-existing neighbours between prev. and current
+			for(std::size_t j=neighbour_last+1; j < *neighbour_i; ++j)
+				out << "0, ";
+			// Counting edge multiplicity
+			neighbour_last = *neighbour_i;
+			std::size_t multiplicity=0;
+			while((neighbour_i != neighbour_end) && (*neighbour_i == neighbour_last)) {
+				neighbour_i++;
+				multiplicity++;
+			}
+			out << multiplicity;
+			// Output comma if not last entry
+			if (neighbour_last < n - 1)
+				out << ", ";
 		}
+		// Output trailing zeros
+		for(std::size_t j=neighbour_last+1; j < n; ++j)
+			out << ((j < (n-1)) ? "0, " : "0");
 		out << "\n";
 	}
 	out.close();
