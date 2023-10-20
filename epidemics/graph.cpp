@@ -58,8 +58,6 @@ index_t graph_adjacencylist::outdegree(node_t node) {
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
 
-
-
 watts_strogatz::watts_strogatz(node_t size, int k, double p, rng_t& engine) {
     if (k <= 0)
         throw std::range_error("k must be positive for Watts-Strogatz networks");
@@ -1051,7 +1049,6 @@ config_model_clustered_serrano::config_model_clustered_serrano
 	}
 }
 
-
 //--------------------------------------
 //--------SCALE FREE NETWORK------------
 //--------------------------------------
@@ -1133,7 +1130,6 @@ scale_free::scale_free(int size, rng_t& engine, int m){
 
     }   
 }
-
 
 //--------------------------------------
 //--------IMPORTED NETWORK----------
