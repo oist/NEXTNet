@@ -312,7 +312,7 @@ public:
     const coordinate_t coordinate_max;
 
     cubic_lattice()
-        :cubic_lattice(std::floor(std::pow<double>(2.0, std::log2((double)std::numeric_limits<node_t>::max() + 1.0) / D)))
+        :cubic_lattice(std::floor(std::pow(2.0, std::log2((double)std::numeric_limits<node_t>::max() + 1.0) / D)))
     {}
 
     cubic_lattice(const std::size_t _edge_length)
