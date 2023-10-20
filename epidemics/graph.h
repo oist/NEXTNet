@@ -308,8 +308,8 @@ public:
 
     const std::size_t edge_length;
     const std::size_t total_nodes;
-    const coordinate_t coordinate_max;
     const coordinate_t coordinate_min;
+    const coordinate_t coordinate_max;
 
     cubic_lattice()
         :cubic_lattice(std::floor(std::pow<double>(2.0, std::log2((double)std::numeric_limits<node_t>::max() + 1.0) / D)))
@@ -338,7 +338,7 @@ public:
         coordinates_t c = coordinates(n);
         // Count the number of extremal (i.e min or max) and non-extermal components
         std::size_t e = 0;
-        std::array<std::size_t, dimension> ec = { -1 };
+        std::array<std::ptrdiff_t, dimension> ec = { -1 };
         for(std::size_t i = 0; i < dimension; ++i) {
             if ((c[i] != coordinate_max) && (c[i] != coordinate_min))
                 continue;
