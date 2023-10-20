@@ -398,6 +398,22 @@ TEST_CASE("Cubic lattice","[graph]") {
     std::mt19937 engine;
 
     {
+        cubic_lattice_2d nw(2);
+        REQUIRE(nw.nodes() == 4);
+        const node_t n11 = nw.node({0, 0});
+        const node_t n12 = nw.node({0, 1});
+        const node_t n21 = nw.node({1, 0});
+        const node_t n22 = nw.node({1, 1});
+        REQUIRE(nw.outdegree(n11)==2);
+        REQUIRE(nw.outdegree(n12)==2);
+        REQUIRE(nw.outdegree(n21)==2);
+        REQUIRE(nw.outdegree(n22)==2);
+        REQUIRE(nw.neighbour(n11, 0) == n21);
+        REQUIRE(nw.neighbour(n11, 1) == n12);
+    }
+
+
+    {
         cubic_lattice_2d nw(3);
         REQUIRE(nw.nodes() == 9);
         const node_t n11 = nw.node({-1, -1});

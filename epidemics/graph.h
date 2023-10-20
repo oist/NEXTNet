@@ -299,44 +299,41 @@ public:
 //--------------------------------------
 
 template<unsigned int D>
-class cubic_lattice : public virtual graph {
+class cubic_lattice : public virtual graph, public virtual graph_embedding {
 public:
     const static unsigned int dimension = D;
-    const static std::size_t max_coordinate_digits = std::numeric_limits<node_t>::digits / D;
-    const static std::size_t max_edge_length = 1 << max_coordinate_digits;
 
-    typedef long coordinate_t;
-    const static std::size_t coordinate_type_digits = std::numeric_limits<coordinate_t>::digits;
+    typedef std::ptrdiff_t coordinate_t;
     typedef std::array<coordinate_t, dimension> coordinates_t;
 
     const std::size_t edge_length;
-    const std::size_t coordinate_digits;
-    const std::size_t coordinate_mask;
+    const std::size_t total_nodes;
     const coordinate_t coordinate_max;
     const coordinate_t coordinate_min;
 
     cubic_lattice()
-        :cubic_lattice(max_edge_length)
+        :cubic_lattice(std::floor(std::pow<double>(2.0, std::log2((double)std::numeric_limits<node_t>::max() + 1.0) / D)))
     {}
 
     cubic_lattice(const std::size_t _edge_length)
         :edge_length(_edge_length)
-        ,coordinate_digits(std::ceil(std::log2(edge_length)))
-        ,coordinate_mask(((std::size_t)1 << coordinate_digits) - 1)
-        ,coordinate_min(-(edge_length/2))
-        ,coordinate_max((edge_length-1)/2)
+        ,total_nodes(std::pow<double>(edge_length, dimension))
+        ,coordinate_min(-((edge_length-1)/2))
+        ,coordinate_max((edge_length)/2)
     {
-        if (edge_length > max_edge_length)
+        if (std::pow<double>(edge_length, dimension) > (double)std::numeric_limits<node_t>::max() + 1.0)
             throw std::runtime_error("edge length exceeds maximal supported length");
-        assert(coordinate_type_digits >= coordinate_digits);
-        assert(coordinate_max - coordinate_min + 1 == edge_length);
     }
 
-    node_t nodes() {
-        return std::pow(edge_length, dimension);
+    virtual ~cubic_lattice() {}
+
+    virtual node_t nodes() {
+        return total_nodes;
     }
 
-    node_t neighbour(node_t n, int neighbour_index) {
+    virtual node_t neighbour(node_t n, int neighbour_index) {
+        if ((n < 0) || (n >= total_nodes))
+            return -1;
         // Decode neighbour index into coordinate components
         coordinates_t c = coordinates(n);
         // Count the number of extremal (i.e min or max) and non-extermal components
@@ -369,7 +366,9 @@ public:
         return node(c);
     }
 
-    int outdegree(node_t node) {
+    virtual int outdegree(node_t node) {
+        if ((node < 0) || (node >= total_nodes))
+            return -1;
         // Decode neighbour index into coordinate components
         coordinates_t c = coordinates(node);
         // Count the number of extremal (i.e min or max) and non-extermal components
@@ -383,27 +382,18 @@ public:
         return 2*dimension - e;
     }
 
-    coordinate_t extract_coordinate(node_t node, std::size_t i) const {
-        assert(node >= 0);
-        // Extract relevat bits
-        const std::size_t bits = (((std::size_t)node) >> (i*coordinate_digits)) & coordinate_mask;
-        // Convert into a signed coordinate. Have to take care to sign-extend properly
-        const std::size_t shift = coordinate_type_digits - coordinate_digits + 1;
-        const coordinate_t c = (coordinate_t)(bits << shift) >> shift;
-        assert(c >= coordinate_min);
-        assert(c <= coordinate_max);
-        return c;
+    virtual std::size_t dimensionality() {
+        return dimension;
     }
 
-    node_t embedd_coordinate(std::size_t i, coordinate_t c) const {
-        // Chheck that all bits beyond coordinate_digits are either all zero or all one.
-        assert(((c >> coordinate_digits) == -1) || ((c >> coordinate_digits) == 0));
-        return (((std::size_t)c) & coordinate_mask) << (i*coordinate_digits);
-    }
-
-    template<std::size_t... i>
-    auto extract_coordinates(node_t node, std::index_sequence<i...>) const {
-        return std::array<coordinate_t, sizeof...(i)>{{extract_coordinate(node, i)...}};
+    virtual bool coordinates(const node_t node, std::vector<double>& position) {
+        if ((node < 0) || (node >= total_nodes))
+            return false;
+        const auto c = coordinates(node);
+        position.resize(dimension);
+        for(std::size_t i=0; i < dimension; ++i)
+            position[i] = c[i];
+        return true;
     }
 
     /**
@@ -412,7 +402,14 @@ public:
      * @return d-dimensional coordinate vector as a std::array<coordinate_t, D>
      */
     coordinates_t coordinates(node_t node) {
-        return extract_coordinates(node, std::make_index_sequence<dimension>{});
+        if ((node < 0) || (node >= total_nodes))
+            throw std::range_error("invalid node index");
+        coordinates_t c;
+        for(std::size_t i=0; i < dimension; ++i) {
+            c[i] = coordinate_min + (coordinate_t)(node % edge_length);
+            node /= edge_length;
+        }
+        return c;
     }
 
     /**
@@ -420,25 +417,20 @@ public:
      * @param p d-dimensional coordinate vector as a std::array<coordinate_t, D>
      * @return node index
      */
-    node_t node(const coordinates_t& p) const {
-        std::size_t bits = 0;
-        for(std::size_t i=0; i < D; ++i)
-            bits |= embedd_coordinate(i, p[i]);
-        return (node_t)bits;
+    node_t node(const coordinates_t& c) const {
+        node_t node = 0;
+        for(std::ptrdiff_t i=dimension-1; i >=0; --i) {
+            if ((c[i] < coordinate_min) || (c[i] > coordinate_max))
+                throw std::range_error("node coordinates are out of range");
+            node *= edge_length;
+            node += (c[i] - coordinate_min);
+        }
+        return node;
     }
 };
 
 template<unsigned int D>
 const unsigned int cubic_lattice<D>::dimension;
-
-template<unsigned int D>
-const std::size_t cubic_lattice<D>::max_coordinate_digits;
-
-template<unsigned int D>
-const std::size_t cubic_lattice<D>::max_edge_length;
-
-template<unsigned int D>
-const std::size_t cubic_lattice<D>::coordinate_type_digits;
 
 typedef cubic_lattice<2> cubic_lattice_2d;
 typedef cubic_lattice<3> cubic_lattice_3d;
