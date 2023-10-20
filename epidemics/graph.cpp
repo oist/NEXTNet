@@ -482,6 +482,11 @@ struct config_model_clustered_serrano_builder {
 	 * degree classes are drawn randomly.
 	 */
 	const double beta;
+	
+	/**
+	 * Maximum number of retries when forming triangles before we give up
+	 */
+	std::size_t max_triangle_attempts = 10;
 
 	/**
 	 * Random number generator
@@ -517,6 +522,16 @@ struct config_model_clustered_serrano_builder {
 	 */
 	std::unordered_map<int, std::set<node_t>> idx_k_nodes;
 
+	/**
+	 * Number of attempts since we last succesfully formed a triangle
+	 */
+	std::size_t triangle_attempts = 0;
+	
+	/**
+	 * Set to true during network constructions if we fail to construct enough trianglges
+	 */
+	bool triangles_unsatisfied = false;
+	
 	/**
 	 * @brief The "eligible components" of Serrano & Boguna
 	 *
@@ -575,12 +590,13 @@ struct config_model_clustered_serrano_builder {
 				throw std::runtime_error("triangles requested for empty degree class k=" + std::to_string(k));
 			update_pk(k);
 		}
-
-		
-		// II. Create triangles
+	}
+	
+	void build() {
+		// I. Create triangles
 		create_triangles_serrano();
 		
-		// III. Closure of the network
+		// II. Closure of the network
 		// Collect all remaining unconnected stubs
 		std::vector<stub> remaining_stubs;
 		for(node_t n=0; n < (node_t)node_stubs.size(); ++n) {
@@ -602,16 +618,24 @@ struct config_model_clustered_serrano_builder {
 			remaining_stubs.pop_back();
 			// TODO: We might add self-edges here.
 			// Those may be counted by add_edge() as triangles. Should we avoid that? How?
-			add_edge(s1, s2);
+			add_edge(s1, s2, true, true);
 		}
 	}
 	
 	void create_triangles_serrano() {
 		// c.f. Section B. Triangle formation in Serrano & Boguna, 2005.
 		while (pk.weight() > 0) {
+			++triangle_attempts;
+			if (triangle_attempts > max_triangle_attempts) {
+				triangles_unsatisfied = true;
+				return;
+			}
+			
 			// (i). Chose degree class, a stub s1 from a node A with that degree,
 			// and a second stub s2 from the same node A.
 			stub s1 = draw_stub(0);
+			if (s1.is_empty())
+				continue;
 			stub s2 = draw_sibling_stub(s1);
 			const node_t na = s1.node;
 
@@ -646,7 +670,7 @@ struct config_model_clustered_serrano_builder {
 				} else {
 					// Stub is unconnected, must draw a node C with at least two free stubs
 					const node_t nc = draw_stub(2).node;
-					if ((nc == na) || (nc == nb))
+					if ((nc == -1) || (nc == na) || (nc == nb))
 						continue;
 					const stub& s4 = find_unconnected_stub(nc);
 					add_edge(s2, s4);
@@ -659,6 +683,8 @@ struct config_model_clustered_serrano_builder {
 			else if (is_unconnected(s1) && is_unconnected(s2)) {
 				// Pick a node B with at least one free stub
 				stub s3 = draw_stub(1);
+				if (s3.is_empty())
+					continue;
 				const node_t nb = s3.node;
 				if (nb == na)
 					continue;
@@ -679,7 +705,7 @@ struct config_model_clustered_serrano_builder {
 					// The remaining stub of node B is unconnected
 					// Pick a node C with a t least two free stubs
 					const node_t nc = draw_stub(2).node;
-					if ((nc == na) || (nc == nb))
+					if ((nc == -1) || (nc == na) || (nc == nb))
 						continue;
 					add_edge(s1, s4); // Connect A and B
 					const stub& s5 = find_unconnected_stub(nc);
@@ -713,7 +739,9 @@ struct config_model_clustered_serrano_builder {
 	 * @param a first stub
 	 * @param b second stub
 	 */
-	void add_edge(stub a, stub b) {
+	bool add_edge(stub a, stub b, bool allow_selfedge=false, bool allow_multiedge = false) {
+		if (a == b)
+			throw std::logic_error("add_edge() called with two identical stubs");
 		const node_t& na = a.node;
 		const std::size_t ka = node_stubs[na].size();
 		const node_t& nb = b.node;
@@ -723,19 +751,37 @@ struct config_model_clustered_serrano_builder {
 		if (ca.is_filled() || cb.is_filled())
 			throw std::logic_error("add_edge() called for connected stubs");
 		
-		// TODO: Should we check whether we're about to add a multi-edge here?
-		// Should multi-edges be skipped while constructing trianges?
+		// I. Check whether the two nodes are already connected, if so
+		// do nothing unless we were asked to create multi-edges
+		auto& na_stubs = node_stubs[na];
+		auto& nb_stubs = node_stubs[nb];
+		if (!allow_multiedge) {
+			if (na_stubs.size() < nb_stubs.size()) {
+				for(const stub& s: na_stubs)
+					if (s.node == nb)
+						return false;
+			} else {
+				for(const stub& s: nb_stubs)
+					if (s.node == na)
+						return false;
+			}
+		}
 		
-		// I. Enumerate triangles that will be completed
+		// II. If we weren't specifically told to allow self-edges, complain about them
+		if (!allow_selfedge && (na == nb))
+			throw std::logic_error("add_edge() called for a self-edge but allow_selfedge is false");
+		
+		// III. Enumerate triangles that will be completed
 		// First, build a set of neighbours of a
 		std::set<node_t> a_neighbours;
-		for(const stub& s: node_stubs[na]) {
+		for(const stub& s: na_stubs) {
 			if (!s.is_filled())
 				continue;
+			
 			a_neighbours.insert(s.node);
 		}
 		// Now scan neighbours of b for overlaps
-		for(const stub& s: node_stubs[nb]) {
+		for(const stub& s: nb_stubs) {
 			if (!s.is_filled())
 				continue;
 			const node_t nc = s.node;
@@ -751,7 +797,7 @@ struct config_model_clustered_serrano_builder {
 			on_overlapping_triangle(kc, nc);
 		}
 		
-		// II. Connect stubs
+		// IV. Connect stubs
 		ca.node = b.node;
 		ca.index = b.index;
 		cb.node = a.node;
@@ -764,6 +810,8 @@ struct config_model_clustered_serrano_builder {
 		// However, some amount of retries during section II (Create triangles) are probably
 		// needed even with this in place. Remove these edges is therefore more of a performance
 		// optimization than an integral part of the algorithm.
+		
+		return true;
 	}
 	
 	/**
@@ -776,6 +824,7 @@ struct config_model_clustered_serrano_builder {
 		assert(node_stubs[n].size() == (std::size_t)k);
 		
 		// Count triangle
+		triangle_attempts = 0;
 		triangles_formed[k]++;
 		
 		// Reduce number of triangles still to be formed for class
@@ -879,13 +928,29 @@ struct config_model_clustered_serrano_builder {
 	 * @return stub index of selected stub
 	 */
 	stub draw_stub(int k, int rmin) {
-		// TODO: This may loop forever
 		if (rmin > k)
 			throw std::logic_error("impossible number of free stubs requested");
-		while (true) {
-			// Draw random stub
-			const stub s = *idx_k_stubs_eligible[k](rng);
-			// Check whether the node has rmin free stubs
+		
+		// I. Fast path
+		// Draw random stub
+		const stub s = *idx_k_stubs_eligible[k](rng);
+		// Check whether the node has rmin free stubs
+		auto& ns = node_stubs[s.node];
+		int r = 0;
+		for(index_t i=0; i < (index_t)ns.size(); ++i) {
+			if (ns[i].is_filled())
+				continue;
+			// Count number of free stubs, return stub if we found enough
+			++r;
+			if (r >= rmin)
+				return s;
+		}
+		
+		// II. Slow path, used after failing in the fast path
+		std::vector<stub> stubs;
+		stubs.reserve(idx_k_stubs_eligible[k].size());
+		for(const auto& s: idx_k_stubs_eligible[k]) {
+			// Scan sibling stubs to see whether at least rmin are free
 			auto& ns = node_stubs[s.node];
 			int r = 0;
 			for(index_t i=0; i < (index_t)ns.size(); ++i) {
@@ -893,10 +958,20 @@ struct config_model_clustered_serrano_builder {
 					continue;
 				// Count number of free stubs, return stub if we found enough
 				++r;
-				if (r >= rmin)
-					return s;
+				if (r < rmin)
+					continue;
+				// Found a matching stub
+				stubs.push_back(s);
+				break;
 			}
 		}
+		if (stubs.empty()) {
+			// No matching stubs exist, return an empty stub
+			return stub();
+		}
+			
+		// Draw random valid stub
+		return stubs[std::uniform_int_distribution<std::size_t>(0, stubs.size() - 1)(rng)];
 	}
 	
 	/**
@@ -956,6 +1031,9 @@ config_model_clustered_serrano::config_model_clustered_serrano
  (std::vector<int> degreelist, std::vector<int> degreetriangles, double beta, rng_t& engine)
 {
 	config_model_clustered_serrano_builder b(degreelist, degreetriangles, beta, engine);
+	b.build();
+	triangles_unsatisfied = b.triangles_unsatisfied;
+	/* Copy network structure from builder */
 	for(std::size_t i = 0; i < b.node_stubs.size(); ++i) {
 		const auto& ns = b.node_stubs[i];
 		// Get adjacencylist for i-th node, make sure it exists

@@ -231,6 +231,11 @@ public:
 	 * @param engine random number generator
 	 */
 	config_model_clustered_serrano(std::vector<int> degree, double alpha, double beta, rng_t& engine);
+	
+	/**
+	 * @brief True if the algorithm was unable to satisfied the requested number of triangles
+	 */
+	bool triangles_unsatisfied = false;
 };
 
 //------------------------------------------
