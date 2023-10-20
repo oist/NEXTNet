@@ -331,39 +331,30 @@ public:
         return total_nodes;
     }
 
-    virtual node_t neighbour(node_t n, int neighbour_index) {
-        if ((n < 0) || (n >= total_nodes))
+    virtual node_t neighbour(node_t nidx, int neighbour_index) {
+        if ((nidx < 0) || (nidx >= total_nodes))
             return -1;
         // Decode neighbour index into coordinate components
-        coordinates_t c = coordinates(n);
-        // Count the number of extremal (i.e min or max) and non-extermal components
-        std::size_t e = 0;
-        std::array<std::ptrdiff_t, dimension> ec = { -1 };
-        for(std::size_t i = 0; i < dimension; ++i) {
-            if ((c[i] != coordinate_max) && (c[i] != coordinate_min))
-                continue;
-            ec[e++] = i;
-        }
-        // For ever non-extremal component there are two neighbours
-        // for every extermal component one neighbour.
-        const std::size_t ne = dimension - e;
-        if (neighbour_index < 0) {
-            return -1;
-        } else if (neighbour_index < ne) {
-            // Increment non-extermal component
-            c[neighbour_index] += 1;
-        } else if (neighbour_index < 2*ne) {
-            // Decrement non-extermal component
-            c[neighbour_index - ne] -= 1 ;
-        } else if (neighbour_index < 2*ne + e) {
-            // Increment/decrement extremal component
-            const std::size_t ei = neighbour_index - 2*ne;
-            const std::size_t ci = ec[ei];
-            c[ci] += (c[ci] == coordinate_max) ? -1 : 1;
-        } else {
-           return -1;
-        }
-        return node(c);
+        coordinates_t coords = coordinates(nidx);
+		
+		for(std::size_t i=0; i < dimension; ++i) {
+			if (coords[i] == coordinate_min) {
+				if (neighbour_index == 0)
+					coords[i] += 1;
+				neighbour_index -= 1;
+			} else if (coords[i] == coordinate_max) {
+				if (neighbour_index == 0)
+					coords[i] -= 1;
+				neighbour_index -= 1;
+			} else {
+				if (neighbour_index == 0)
+					coords[i] += 1;
+				else if (neighbour_index == 1)
+					coords[i] -= 1;
+				neighbour_index -= 2;
+			}
+		}
+		return node(coords);
     }
 
     virtual int outdegree(node_t node) {

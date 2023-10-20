@@ -410,8 +410,13 @@ TEST_CASE("Cubic lattice","[graph]") {
         REQUIRE(nw.outdegree(n22)==2);
         REQUIRE(nw.neighbour(n11, 0) == n21);
         REQUIRE(nw.neighbour(n11, 1) == n12);
+		REQUIRE(nw.neighbour(n12, 0) == n22);
+		REQUIRE(nw.neighbour(n12, 1) == n11);
+		REQUIRE(nw.neighbour(n21, 0) == n11);
+		REQUIRE(nw.neighbour(n21, 1) == n22);
+		REQUIRE(nw.neighbour(n22, 0) == n12);
+		REQUIRE(nw.neighbour(n22, 1) == n21);
     }
-
 
     {
         cubic_lattice_2d nw(3);
@@ -434,8 +439,30 @@ TEST_CASE("Cubic lattice","[graph]") {
         REQUIRE(nw.outdegree(n23)==3);
         REQUIRE(nw.outdegree(n32)==3);
         REQUIRE(nw.outdegree(n22)==4);
-        REQUIRE(nw.neighbour(n11, 0) == n21);
-        REQUIRE(nw.neighbour(n11, 1) == n12);
+		for(int i = -1; i < 1; ++i) {
+			for(int j = -1; j < 1; ++j) {
+				const node_t n = nw.node({i, j});
+				std::vector<node_t> nn;
+				if (i == -1)
+					nn.push_back(nw.node({i+1, j}));
+				else if ((i > -1) && (i < 1)) {
+					nn.push_back(nw.node({i+1, j}));
+					nn.push_back(nw.node({i-1, j}));
+				}
+				else if (i == +1)
+					nn.push_back(nw.node({i-1, j}));
+				if (j == -1)
+					nn.push_back(nw.node({i, j+1}));
+				else if ((j > -1) && (j < 1)) {
+					nn.push_back(nw.node({i, j+1}));
+					nn.push_back(nw.node({i, j-1}));
+				}
+				else if (j == +1)
+					nn.push_back(nw.node({i, j+1}));
+				for(index_t k=0; k < nn.size(); ++k)
+					REQUIRE(nw.neighbour(n, k) == nn[k]);
+			}
+		}
     }
 
     cubic_lattice_2d nw;
@@ -449,10 +476,10 @@ TEST_CASE("Cubic lattice","[graph]") {
     REQUIRE(nw.outdegree(nkk)==2);
     const node_t ncc = nw.node({0, 0});
     REQUIRE(nw.outdegree(ncc)==4);
-    REQUIRE(nw.neighbour(ncc, 0)==nw.node({ 1,  0}));
-    REQUIRE(nw.neighbour(ncc, 1)==nw.node({ 0,  1}));
-    REQUIRE(nw.neighbour(ncc, 2)==nw.node({-1,  0}));
-    REQUIRE(nw.neighbour(ncc, 3)==nw.node({ 0, -1}));
+    REQUIRE(nw.neighbour(ncc, 0)==nw.node({  1,  0}));
+    REQUIRE(nw.neighbour(ncc, 1)==nw.node({ -1,  0}));
+    REQUIRE(nw.neighbour(ncc, 2)==nw.node({  0, +1}));
+    REQUIRE(nw.neighbour(ncc, 3)==nw.node({  0, -1}));
 }
 
 
@@ -534,6 +561,4 @@ TEST_CASE("Measuring degree correlation","[graph]") {
     r = assortativity(nw);
     REQUIRE(std::abs(r) < 0.05);
 }
-
-
 
