@@ -6,6 +6,31 @@
 #include "NextReaction.h"
 #include "algorithm.h"
 
+TEST_CASE("Brownian proximity graph", "[brownian_proximity_graph]") {
+	rng_t engine;
+
+	brownian_proximity_graph g(100, 5.0, 1, 0.0, engine);
+	for(node_t n=0; n < g.nodes(); ++n) {
+		std::vector<double> cn;
+		REQUIRE(g.coordinates(n, cn));
+
+		std::unordered_set<node_t> nn1;
+		for(node_t m=0; m < g.nodes(); ++m) {
+			std::vector<double> cm;
+			REQUIRE(g.coordinates(m, cm));
+			const double d = std::sqrt(std::pow(cn[0]-cm[0], 2) + std::pow(cn[1]-cm[1], 2));
+			if (d <= 1.0)
+				nn1.insert(m);
+		}
+		
+		std::unordered_set<node_t> nn2;
+		for(index_t i=0; i < g.outdegree(n); ++i)
+			nn2.insert(g.neighbour(n, i));
+		
+		REQUIRE(nn1 == nn2);
+	}
+}
+
 #if 0
 TEST_CASE("Epidemic on Brownian proximity graph", "[brownian_proximity_graph]") {
 	rng_t engine;
