@@ -203,13 +203,15 @@ void export_adjacency_matrix(const std::vector<std::vector<node_t>>& adjacencyLi
 		// Sort neighbours
 		std::vector<node_t> neighbours(adjacencyList[i].begin(), adjacencyList[i].end());
 		std::sort(neighbours.begin(), neighbours.end());
+		if (!neighbours.empty() && ((neighbours.front() < 0) || (neighbours.back() >= (node_t)n)))
+			throw std::range_error("invalid neighbour entries in adjacency list");
 		// Output raw
 		node_t neighbour_last = -1;
 		auto neighbour_i = neighbours.begin();
 		const auto neighbour_end = neighbours.end();
 		while (neighbour_i != neighbour_end) {
 			// Output zeros for non-existing neighbours between prev. and current
-			for(std::size_t j=neighbour_last+1; j < *neighbour_i; ++j)
+			for(std::size_t j=neighbour_last+1; j < (std::size_t)*neighbour_i; ++j)
 				out << "0, ";
 			// Counting edge multiplicity
 			neighbour_last = *neighbour_i;
@@ -220,7 +222,7 @@ void export_adjacency_matrix(const std::vector<std::vector<node_t>>& adjacencyLi
 			}
 			out << multiplicity;
 			// Output comma if not last entry
-			if (neighbour_last < n - 1)
+			if ((std::size_t)neighbour_last < n - 1)
 				out << ", ";
 		}
 		// Output trailing zeros
