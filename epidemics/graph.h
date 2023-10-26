@@ -67,6 +67,13 @@ public:
      * @param position reference to a vector, first d entries are filled with the coordinates
      */
     virtual bool coordinates(const node_t node, std::vector<double>& position) = 0;
+
+    /**
+     * @brief Returns the bounding box of the embedding
+     * @param a lower-left corner of vertex bounding box
+     * @param b upper-right corner of vertex bounding box
+     */
+    virtual void bounds(std::vector<double>& a, std::vector<double>& b) = 0;
 };
 
 //--------------------------------------
@@ -385,6 +392,15 @@ public:
         for(std::size_t i=0; i < dimension; ++i)
             position[i] = c[i];
         return true;
+    }
+
+    virtual void bounds(std::vector<double>& a, std::vector<double>& b) {
+        a.resize(dimension);
+        b.resize(dimension);
+        for(std::size_t i=0; i < dimension; ++i) {
+            a[i] = coordinate_min;
+            b[i] = coordinate_max;
+        }
     }
 
     /**

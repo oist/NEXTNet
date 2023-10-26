@@ -96,6 +96,13 @@ std::size_t brownian_proximity_graph::dimensionality() {
 	return 2;
 }
 
+void brownian_proximity_graph::bounds(std::vector<double>& a, std::vector<double>& b) {
+	a.resize(2);
+	b.resize(2);
+	a[0] = b[0] = 0.0;
+	a[1] = b[1] = length;
+}
+
 bool brownian_proximity_graph::coordinates(const node_t n, std::vector<double>& position) {
 	if ((n < 0) || (n >= node_index.size()))
 		return -1;

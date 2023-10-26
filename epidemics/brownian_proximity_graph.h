@@ -47,6 +47,8 @@ struct brownian_proximity_graph : virtual dynamic_network, virtual graph, virtua
 
 	virtual bool coordinates(const node_t node, std::vector<double>& position);
 
+	virtual void bounds(std::vector<double>& a, std::vector<double>& b);
+
 	virtual absolutetime_t next(rng_t& engine);
 	
 	virtual std::optional<network_event_t> step(rng_t& engine, absolutetime_t nexttime = NAN);
