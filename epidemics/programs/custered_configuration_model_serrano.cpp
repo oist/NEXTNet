@@ -37,7 +37,7 @@ int program_custered_configuration_model_serrano(int argc, const char * argv[])
 	std::cerr << "Assortativity: " << assortativity(nw) << std::endl;
 	export_adjacency_matrix(nw.adjacencylist, "serrano.txt");
 	export_adjacency_dot(nw.adjacencylist, "serrano.dot", false);
-	system("dot -Tpdf -Kfdp serrano.dot > serrano.pdf");
+	(void)system("dot -Tpdf -Kfdp serrano.dot > serrano.pdf");
 
 	return 0;
 }
