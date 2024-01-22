@@ -353,16 +353,38 @@ config_model::config_model(std::vector<int> degreelist, rng_t& engine){
 //-------- LOGNORMAL CONFIGURATION MODEL --------------
 std::vector<int> lognormal_degree_list(double mean, double variance, int size, rng_t& engine){
 
-    const double MU =2 * log(mean) - 0.5 * log( pow(mean,2.0)+ variance );
+    const double MU = 2 * log(mean) - 0.5 * log( pow(mean,2.0)+ variance );
     const double SIGMA = sqrt( log( 1 + variance/pow(mean,2.0)));
+    
 
-    std::lognormal_distribution<double> distribution(MU,SIGMA);
+    auto lognormalPDF = [MU,SIGMA](double x) {
+        double exponent = -0.5 * pow((log(x) - MU) / SIGMA, 2);
+        return 1.0 / (x * SIGMA * sqrt(2 * M_PI)) * exp(exponent);
+    };
+    
+    const int kmin = 1;
+
+    std::vector<double> probabilities(0,size);
+    double norm = 0;
+    for (int k = kmin; k < size; k++)
+    {
+        const double p = lognormalPDF(k+1)-lognormalPDF(k);
+        probabilities[k] =  p;
+        norm += p;
+    }
+    for (int k = kmin; k < size; k++)
+    {
+        probabilities[k] /=norm;
+    }
+    std::discrete_distribution<int> distribution(probabilities.begin(), probabilities.end());
+    // std::lognormal_distribution<double> distribution(MU,SIGMA);
 
     std::vector<int> degreelist({});
     int total = 0;
     while((int) degreelist.size() < size){
         
-        const int k = std::ceil( distribution(engine) ) ;
+        // const int k = std::ceil( distribution(engine) ) ;
+        const int k = distribution(engine);
         degreelist.push_back(k);
 
         total+= k;
