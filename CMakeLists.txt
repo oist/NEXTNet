@@ -59,7 +59,7 @@ set(TESTS_SOURCES
     epidemics/tests/random.cpp
     epidemics/tests/nextreaction.cpp
     epidemics/tests/dynamic_nextreaction.cpp
-		epidemics/tests/brownian_proximity_graph.cpp
+    epidemics/tests/brownian_proximity_graph.cpp
     epidemics/tests/nmga.cpp
     epidemics/tests/REGIR.cpp)
 
