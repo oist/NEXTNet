@@ -113,22 +113,38 @@ public:
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
 
-template<typename DistributionType>
+template<typename MathDistributionType, typename RandomDistributionType>
 class transmission_time_generic_boost : public transmission_time {
-    typedef DistributionType distribution_t;
-    const distribution_t distribution;
+    typedef MathDistributionType math_distribution_t;
+    typedef RandomDistributionType random_distribution_t;
+    const math_distribution_t math_distribution;
+    const random_distribution_t random_distribution;
 
 public:
-    transmission_time_generic_boost(const distribution_t& d, double pinfinity = 0.0)
+    transmission_time_generic_boost(const math_distribution_t& md, const random_distribution_t& rd, double pinfinity = 0.0)
         :transmission_time(pinfinity)
-        ,distribution(d)
+        ,math_distribution(md)
+        ,random_distribution(rd)
     {}
+
+    virtual interval_t sample(rng_t& e, interval_t t, int m) const {
+        // For m == 1 and t == 0.0 we sample from the base distribution,
+        // and may thus use the random distribution class' faster implementation.
+        // Otherwise, we sample from a modified distribution and fall back
+        // to CDF inversion.
+        if ((m == 1) && (t == 0.0)) {
+            if ((pinfinity > 0) && (std::uniform_real_distribution<double>(0, 1)(e) < pinfinity))
+                return INFINITY;
+            return random_distribution_t(random_distribution.param())(e);
+        }
+        return transmission_time::sample(e, t, m);
+    }
 
     virtual double density(interval_t tau) const {
         // TODO: Should we scale according to pinfinity here?
         // Currently, the density is always normalized while the survivalfunction
         // takes pfinfinity into account, which is weird.
-        return pdf(distribution, tau);
+        return pdf(math_distribution, tau);
     }
 
     // use the implementations of the conditional probabilities
@@ -141,7 +157,7 @@ public:
         // and point mass pinfinity at tau = infinity
         if (std::isinf(tau))
             return pinfinity;
-        return pinfinity + (1.0 - pinfinity) * cdf(complement(distribution, tau));
+        return pinfinity + (1.0 - pinfinity) * cdf(complement(math_distribution, tau));
     }
 
     virtual interval_t survivalquantile(double u) const {
@@ -150,7 +166,7 @@ public:
         // of survivalprobability() and any u-quantile for any u < pinfinity is infinity.
         if (u < pinfinity)
             return INFINITY;
-        return quantile(complement(distribution, (u - pinfinity) / (1.0 - pinfinity)));
+        return quantile(complement(math_distribution, (u - pinfinity) / (1.0 - pinfinity)));
     }
 };
 
@@ -166,10 +182,10 @@ typedef bm::policies::policy<
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
 
-typedef bm::lognormal_distribution<double, ignore_error_policy> boost_lognormal_dist;
+typedef bm::lognormal_distribution<double, ignore_error_policy> boost_math_lognormal_dist;
 
 class transmission_time_lognormal
-    :public transmission_time_generic_boost<boost_lognormal_dist>
+    :public transmission_time_generic_boost<boost_math_lognormal_dist, std::lognormal_distribution<double>>
 {
     static double mu(const double mean, double variance) {
         return 2 * log(mean) - 0.5 * log( pow(mean,2.0)+ variance );
@@ -184,7 +200,9 @@ public:
     const double variance;
 
     transmission_time_lognormal(double m, double v, double pinf = 0.0)
-        :transmission_time_generic_boost(boost_lognormal_dist(mu(m, v), sigma(m, v)), pinf)
+        :transmission_time_generic_boost(boost_math_lognormal_dist(mu(m, v), sigma(m, v)),
+                                         std::lognormal_distribution(mu(m, v), sigma(m, v)),
+                                         pinf)
         ,mean(m), variance(v)
     {}
 };
@@ -195,10 +213,10 @@ public:
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
 
-typedef bm::gamma_distribution<double, ignore_error_policy> boost_gamma_dist;
+typedef bm::gamma_distribution<double, ignore_error_policy> boost_math_gamma_dist;
 
 class transmission_time_gamma
-    :public transmission_time_generic_boost<boost_gamma_dist>
+    :public transmission_time_generic_boost<boost_math_gamma_dist, std::gamma_distribution<double>>
 {
     static double shape(const double mean, double variance) {
         return std::pow(mean, 2.0) / variance;
@@ -213,7 +231,9 @@ public:
     const double variance;
 
     transmission_time_gamma(double m, double v, double pinf = 0.0)
-        :transmission_time_generic_boost(boost_gamma_dist(shape(m, v), scale(m, v)), pinf)
+        :transmission_time_generic_boost(boost_math_gamma_dist(shape(m, v), scale(m, v)),
+                                         std::gamma_distribution(shape(m, v), scale(m, v)),
+                                         pinf)
         ,mean(m), variance(v)
     {}
 	
@@ -226,10 +246,10 @@ public:
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
 
-typedef bm::weibull_distribution<double, ignore_error_policy> boost_weibull_dist;
+typedef bm::weibull_distribution<double, ignore_error_policy> boost_math_weibull_dist;
 
 class transmission_time_weibull
-    :public transmission_time_generic_boost<boost_weibull_dist>
+    :public transmission_time_generic_boost<boost_math_weibull_dist, std::weibull_distribution<double>>
 {
     static double get_mean(const double shape, double scale) {
         return scale * std::tgamma(1 + 1/shape);
@@ -244,7 +264,9 @@ public:
     const double variance;
 
     transmission_time_weibull(double shape, double scale, double pinf = 0.0)
-        :transmission_time_generic_boost(boost_weibull_dist(shape,scale), pinf),
+        :transmission_time_generic_boost(boost_math_weibull_dist(shape,scale),
+                                         std::weibull_distribution(shape, scale),
+                                         pinf),
         mean( get_mean(shape,scale) ), variance( get_variance(shape,scale) )
     {}
 
