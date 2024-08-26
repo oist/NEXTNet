@@ -306,7 +306,7 @@ void measure_running_time_next_reaction_BA(rng_t& engine,int SMAX, string filena
         for (int i = 0; i < SMAX; i++)
         {
 
-            scale_free network(N,engine);
+            barabasi_albert network(N,engine);
 
             // Start measuring performance
             auto start = std::chrono::high_resolution_clock::now();
@@ -426,7 +426,7 @@ void measure_running_time_nMGA_BA(rng_t& engine,int SMAX, string filename){
         for (int i = 0; i < SMAX; i++)
         {
 
-            scale_free network(N,engine);
+            barabasi_albert network(N,engine);
 
             // Start measuring performance
             auto start = std::chrono::high_resolution_clock::now();

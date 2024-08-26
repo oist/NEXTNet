@@ -4,7 +4,7 @@
 #include "NextReaction.h"
 
 /**
- * @brief Test case to verify `scale_free`
+ * @brief Test case to verify `barabasi_albert`
  * 1. The size of the giant component should be the size of the network.
  * 2. The label of the node should be uncorrelated to its degree 
  * (usually the first nodes are the ones with the largest degree).
@@ -21,7 +21,7 @@ TEST_CASE("barabasi_albert", "[graph]") {
     const double VARIANCE = 1;
 
     for (int m = 1; m<4 ;m++){
-        scale_free nw(SIZE,engine,m);
+        barabasi_albert nw(SIZE,engine,m);
         transmission_time_gamma psi(MEAN,VARIANCE);
         simulate_next_reaction simulation(nw,psi,nullptr,SHUFFLE);
 

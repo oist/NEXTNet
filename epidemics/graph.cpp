@@ -1053,7 +1053,7 @@ config_model_clustered_serrano::config_model_clustered_serrano
 //--------SCALE FREE NETWORK------------
 //--------------------------------------
 
-scale_free::scale_free(int size, rng_t& engine, int m){
+barabasi_albert::barabasi_albert(int size, rng_t& engine, int m){
 
     // To generate efficiently a BA network, we used the approached used in the python library networkx.
     // -> instead of re-initialising the distribution at every step by updating the weights, 

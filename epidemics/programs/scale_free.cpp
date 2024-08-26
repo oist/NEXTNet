@@ -31,7 +31,7 @@ int program_scale_free(int argc, const char * argv[]) {
     cout << "generating network...\n";
 
 
-    scale_free network(size,engine);
+    barabasi_albert network(size,engine);
     
     string filename = "trajectory.dat";
 

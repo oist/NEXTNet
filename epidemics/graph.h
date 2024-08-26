@@ -295,9 +295,9 @@ public:
  *
  * The degree distribution scales with k^-3.
  */
-class scale_free : public virtual graph_adjacencylist {
+class barabasi_albert : public virtual graph_adjacencylist {
 public:
-    scale_free(int size, rng_t& engine,int m = 1);
+    barabasi_albert(int size, rng_t& engine,int m = 1);
 
 };
 

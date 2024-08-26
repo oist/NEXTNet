@@ -37,7 +37,7 @@ int program_average(int argc, const char * argv[]) {
         for (int s = 0; s < nb_simulation; s++)
             {
                 cout << s << "\n";
-                scale_free network(size,engine);
+                barabasi_albert network(size,engine);
                 simulate_next_reaction simulation(network, psi);
                 // simulation.add_infections({ std::make_pair(5822, 0.0)});
                 // simulation.add_infections({ std::make_pair(7712, 0.0)});

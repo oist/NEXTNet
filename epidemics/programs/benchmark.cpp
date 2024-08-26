@@ -74,7 +74,7 @@ int program_benchmark(int argc, const char * argv[]) {
 				std::unique_ptr<graph> nw;
 				std::unique_ptr<simulation_algorithm> simulator;
 			} env;
-			env.nw.reset(new scale_free(n, engine,M));
+			env.nw.reset(new barabasi_albert(n, engine,M));
 			env.simulator.reset(new simulate_next_reaction(*env.nw, psi,&rho,SHUFFLE_NEIGHBOURS,CONCURRENT_EDGES,SIR));
 			return env;
 		}, SIM_MAX, TMAX,MAX_POWER,filename);
@@ -98,7 +98,7 @@ int program_benchmark(int argc, const char * argv[]) {
 				std::unique_ptr<graph> nw;
 				std::unique_ptr<simulation_algorithm> simulator;
 			} env;
-			env.nw.reset(new scale_free(n, engine,M));
+			env.nw.reset(new barabasi_albert(n, engine,M));
 			simulate_nmga::params p;
 			p.SIR = SIR;
 			env.simulator.reset(new simulate_nmga(*env.nw, psi, &rho, p));
