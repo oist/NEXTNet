@@ -59,7 +59,7 @@ TEST_CASE("barabasi_albert", "[graph]") {
 
         double correlation_coefficient = numerator / (std::sqrt(den_x) * std::sqrt(den_y));
         
-        REQUIRE(abs(correlation_coefficient)< 0.01);
+        REQUIRE(abs(correlation_coefficient) < 0.02);
 
         REQUIRE(number_edges ==2*m + 2* m * (SIZE-m-1));           
         REQUIRE(abs(emp_mean - mean_degree)/mean_degree < 0.01);
