@@ -1,21 +1,7 @@
 #include "tests/stdafx.h"
 
 #include "utility.h"
-
-namespace {
-
-/**
- * @brief Simple symmetric Z-test (similar to a t-Test but for known variance)
- *
- * @return The symmetric p-value
- */
-inline double ztest(double mean_obs, double sd_true, double mean_true) {
-	using namespace std;
-	const double z = (mean_obs - mean_true) / sd_true;
-	return 1 - std::erf(abs(z) / sqrt(2));
-}
-
-}
+#include "tests/statistics.h"
 
 TEST_CASE("integer_set", "[utility]") {
 	typedef integer_set<int> set_t;

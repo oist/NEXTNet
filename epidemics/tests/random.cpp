@@ -1,6 +1,7 @@
 #include "tests/stdafx.h"
 
 #include "random.h"
+#include "tests/statistics.h"
 
 template<typename Iterator>
 double mean(Iterator begin, Iterator end) {
@@ -25,32 +26,51 @@ std::pair<double, double> mean_variance(Iterator begin, Iterator end) {
     return std::make_pair(m, v / (n - 1));
 }
 
-TEST_CASE("Weibull test", "[random]") {
-    std::mt19937 engine;
-
-    double shape = 5;
-    double scale = 10;
-    transmission_time_weibull wb(shape,scale);
-
-    REQUIRE(abs(wb.mean - 9.1817) /(9.1817) < 0.01);
-    REQUIRE(abs(wb.variance - 4.423) /(4.423) < 0.01);
-    
-    const int N = 100000;
-    double m1 = 0;
-    double m2c = 0;
-    for(int i=0; i < N; ++i) {
-        const double t = wb.sample(engine, 0, 1);
-        m1 += t;
-        m2c += (t - wb.mean) * (t - wb.mean);
+#define TEST_DISTRIBUTION_MEAN_VARIANCE(name, m, v, N) \
+    TEST_CASE(STRINGIFY(name) " distribution (m=" STRINGIFY(m) ", v=" STRINGIFY(v) ", N=" STRINGIFY(N) ")", "[random]") { \
+        std::mt19937 engine; \
+        transmission_time_ ## name d(m, v); \
+        REQUIRE(d.mean == m); \
+        REQUIRE(d.variance == v); \
+        std::vector<double> s; \
+        s.reserve(N);\
+        for(int i=0; i<N; ++i) s.push_back(d.sample(engine, 0, 1)); \
+        const double p_mean = ztest_mean(s, sqrt(v), m); \
+        REQUIRE(p_mean >= 0.01); \
+        const double p_sd = ztest_var(s, sqrt(v), m); \
+        REQUIRE(p_sd >= 0.01); \
+        const double p_ks = kstest(s, [&d](double x) { return 1.0 - d.survivalprobability(x); }); \
+        REQUIRE(p_ks >= 0.01); \
     }
-    REQUIRE(abs(wb.mean - m1/N) /(m1/N) < 0.01);
-    REQUIRE(abs(wb.variance - m2c/N) /(m2c/N) < 0.01);
 
-}
+#define TEST_DISTRIBUTION_2PARAM(name, a, b, N) \
+    TEST_CASE(STRINGIFY(name) " distribution (a=" STRINGIFY(a) ", b=" STRINGIFY(b) ", N=" STRINGIFY(N) ")", "[random]") { \
+        std::mt19937 engine; \
+        transmission_time_ ## name d(a, b); \
+        std::vector<double> s; \
+        s.reserve(N);\
+        for(int i=0; i<N; ++i) s.push_back(d.sample(engine, 0, 1)); \
+        const double p_mean = ztest_mean(s, sqrt(d.variance), d.mean); \
+        REQUIRE(p_mean >= 0.01); \
+        const double p_sd = ztest_var(s, sqrt(d.variance), d.mean); \
+        REQUIRE(p_sd >= 0.01); \
+        const double p_ks = kstest(s, [&d](double x) { return 1.0 - d.survivalprobability(x); }); \
+        REQUIRE(p_ks >= 0.01); \
+    }
 
-TEST_CASE("Lognormal distribution nonconditional", "[random]") {
-    // TODO: Check that t=0, m=1 produces the correct mean and variance
-}
+TEST_DISTRIBUTION_MEAN_VARIANCE(lognormal, 2.0, 0.1, 1000)
+TEST_DISTRIBUTION_MEAN_VARIANCE(lognormal, 3.0, 1.0, 1000)
+TEST_DISTRIBUTION_MEAN_VARIANCE(lognormal, 4.0, 2.0, 1000)
+TEST_DISTRIBUTION_MEAN_VARIANCE(lognormal, 5.0, 4.0, 1000)
+
+TEST_DISTRIBUTION_MEAN_VARIANCE(gamma, 2.0, 0.1, 1000)
+TEST_DISTRIBUTION_MEAN_VARIANCE(gamma, 3.0, 1.0, 1000)
+TEST_DISTRIBUTION_MEAN_VARIANCE(gamma, 4.0, 2.0, 1000)
+TEST_DISTRIBUTION_MEAN_VARIANCE(gamma, 5.0, 4.0, 1000)
+
+TEST_DISTRIBUTION_2PARAM(weibull, 1.5, 5.0, 1000)
+TEST_DISTRIBUTION_2PARAM(weibull, 2.0, 10.0, 1000)
+TEST_DISTRIBUTION_2PARAM(weibull, 4.0, 15.0, 1000)
 
 TEST_CASE("Lognormal distribution incremental sampling (pinf=0)", "[random]") {
     std::mt19937 engine;

@@ -64,6 +64,7 @@ set(TESTS_SOURCES
     epidemics/tests/REGIR.cpp)
 
 set(TESTS_HEADERS
+    epidemics/tests/statistics.h
     epidemics/tests/simulate.h
     epidemics/tests/analytical.h
     epidemics/tests/parallel.h

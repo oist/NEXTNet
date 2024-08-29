@@ -29,6 +29,11 @@
 #include <numeric>
 #include <chrono>
 
+// Macros
+
+#define STRINGIFY(v) STRINGIFY_(v)
+#define STRINGIFY_(v) #v
+
 // Boost
 
 #if defined(__clang__)

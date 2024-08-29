@@ -176,101 +176,67 @@ typedef bm::policies::policy<
       bm::policies::underflow_error<bm::policies::ignore_error>
 > ignore_error_policy;
 
-/*----------------------------------------------------*/
-/*----------------------------------------------------*/
-/*-----------TRANSMISSION TIME:LOG NORMAL-------------*/
-/*----------------------------------------------------*/
-/*----------------------------------------------------*/
+#define TRANSMISSION_TIME_GENERIC_BOOST(name, boost_tpl, std_tpl) \
+    class name: public transmission_time_generic_boost<boost::math::boost_tpl<double, ignore_error_policy>, std::std_tpl<double>> { \
+        typedef boost::math::boost_tpl<double, ignore_error_policy> bm_dist_t; \
+        typedef std::std_tpl<double> std_dist_t;
 
-typedef bm::lognormal_distribution<double, ignore_error_policy> boost_math_lognormal_dist;
+#define TRANSMISSION_TIME_GENERIC_BOOST_SAMENAME(name) \
+    TRANSMISSION_TIME_GENERIC_BOOST(transmission_time_ ## name, name ## _distribution, name ## _distribution)
 
-class transmission_time_lognormal
-    :public transmission_time_generic_boost<boost_math_lognormal_dist, std::lognormal_distribution<double>>
-{
-    static double mu(const double mean, double variance) {
-        return 2 * log(mean) - 0.5 * log( pow(mean,2.0)+ variance );
-    }
-    
-    static double sigma(const double mean, double variance) {
-        return sqrt( log( 1 + variance/pow(mean,2.0)));
-    }
-    
-public:
-    const double mean;
-    const double variance;
-
-    transmission_time_lognormal(double m, double v, double pinf = 0.0)
-        :transmission_time_generic_boost(boost_math_lognormal_dist(mu(m, v), sigma(m, v)),
-                                         std::lognormal_distribution(mu(m, v), sigma(m, v)),
-                                         pinf)
-        ,mean(m), variance(v)
+/* Defines a distribution parameterized in terms of its mean and variance */
+#define TRANSMISSION_TIME_GENERIC_MEAN_VARIANCE(name, boost_tpl, std_tpl, p1name, p1formula, p2name, p2formula) \
+    TRANSMISSION_TIME_GENERIC_BOOST(name, boost_tpl, std_tpl) \
+    static double p1name(const double m, const double v) { return p1formula; } \
+    static double p2name(const double m, const double v) { return p2formula; } \
+    public: \
+    const double mean; \
+    const double variance; \
+    name(double m, double v, double pinf = 0.0) \
+        :transmission_time_generic_boost(bm_dist_t(p1name(m, v), p2name(m, v)), \
+                                         std_dist_t(p1name(m, v), p2name(m, v)), \
+                                         pinf) \
+        ,mean(m), variance(v) \
     {}
+
+/* Defines a distribution parameterized by two double parameters */
+#define TRANSMISSION_TIME_GENERIC_2PARAM(name, boost_tpl, std_tpl, p1name, p2name, meanformula, varformula) \
+    TRANSMISSION_TIME_GENERIC_BOOST(name, boost_tpl, std_tpl) \
+    public: \
+    const double mean; \
+    const double variance; \
+    name(double p1name, double p2name, double pinf = 0.0) \
+        :transmission_time_generic_boost(bm_dist_t(p1name, p2name), \
+                                         std_dist_t(p1name, p2name), \
+                                         pinf) \
+        ,mean(meanformula), variance(varformula) \
+    {}
+
+#define TRANSMISSION_TIME_GENERIC_SAMENAME_MEAN_VARIANCE(name, p1name, p1formula, p2name, p2formula) \
+    TRANSMISSION_TIME_GENERIC_MEAN_VARIANCE(transmission_time_ ## name, name ## _distribution, name ## _distribution, \
+                                            p1name, p1formula, p2name, p2formula)
+
+#define TRANSMISSION_TIME_GENERIC_SAMENAME_2PARAM(name, p1name, p2name, meanformula, varformula) \
+    TRANSMISSION_TIME_GENERIC_2PARAM(transmission_time_ ## name, name ## _distribution, name ## _distribution, \
+                                     p1name, p2name, meanformula, varformula)
+
+/*-----------TRANSMISSION TIMES DEFINED IN TERMS OF BOOST AND C++ STDLIB ---------*/
+
+TRANSMISSION_TIME_GENERIC_SAMENAME_MEAN_VARIANCE(lognormal,
+                                                 mu,  2 * log(m) - 0.5 * log(pow(m,2.0) + v),
+                                                 sigma, sqrt(log( 1 + v/pow(m,2.0))))
 };
 
-/*----------------------------------------------------*/
-/*----------------------------------------------------*/
-/*-----------TRANSMISSION TIME:GAMMA------------------*/
-/*----------------------------------------------------*/
-/*----------------------------------------------------*/
-
-typedef bm::gamma_distribution<double, ignore_error_policy> boost_math_gamma_dist;
-
-class transmission_time_gamma
-    :public transmission_time_generic_boost<boost_math_gamma_dist, std::gamma_distribution<double>>
-{
-    static double shape(const double mean, double variance) {
-        return std::pow(mean, 2.0) / variance;
-    }
-
-    static double scale(const double mean, double variance) {
-        return variance / mean;
-    }
-
-public:
-    const double mean;
-    const double variance;
-
-    transmission_time_gamma(double m, double v, double pinf = 0.0)
-        :transmission_time_generic_boost(boost_math_gamma_dist(shape(m, v), scale(m, v)),
-                                         std::gamma_distribution(shape(m, v), scale(m, v)),
-                                         pinf)
-        ,mean(m), variance(v)
-    {}
-	
-	virtual double hazardbound(interval_t) const;
+TRANSMISSION_TIME_GENERIC_SAMENAME_MEAN_VARIANCE(gamma,
+                                                 shape, pow(m, 2.0) / v,
+                                                 scale, v / m)
+    virtual double hazardbound(interval_t) const;
 };
 
-/*----------------------------------------------------*/
-/*----------------------------------------------------*/
-/*-----------TRANSMISSION TIME:WEIBULL------------------*/
-/*----------------------------------------------------*/
-/*----------------------------------------------------*/
-
-typedef bm::weibull_distribution<double, ignore_error_policy> boost_math_weibull_dist;
-
-class transmission_time_weibull
-    :public transmission_time_generic_boost<boost_math_weibull_dist, std::weibull_distribution<double>>
-{
-    static double get_mean(const double shape, double scale) {
-        return scale * std::tgamma(1 + 1/shape);
-    }
-
-    static double get_variance(const double shape, double scale) {
-        return pow(scale,2) * (std::tgamma(1 + 2/shape)- pow(std::tgamma(1 + 1/shape),2));
-    }
-
-public:
-    const double mean;
-    const double variance;
-
-    transmission_time_weibull(double shape, double scale, double pinf = 0.0)
-        :transmission_time_generic_boost(boost_math_weibull_dist(shape,scale),
-                                         std::weibull_distribution(shape, scale),
-                                         pinf),
-        mean( get_mean(shape,scale) ), variance( get_variance(shape,scale) )
-    {}
-
-	virtual double hazardbound(interval_t) const;
+TRANSMISSION_TIME_GENERIC_SAMENAME_2PARAM(weibull, shape, scale,
+                                          scale * std::tgamma(1 + 1/shape),
+                                          pow(scale,2) * (std::tgamma(1 + 2/shape)- pow(std::tgamma(1 + 1/shape),2)))
+    virtual double hazardbound(interval_t) const;
 };
 
 /*----------------------------------------------------*/
