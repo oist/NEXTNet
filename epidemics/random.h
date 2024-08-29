@@ -245,7 +245,6 @@ TRANSMISSION_TIME_GENERIC_SAMENAME_2PARAM(weibull, shape, scale,
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
 
-
 class transmission_time_deterministic : public transmission_time
 {
 
