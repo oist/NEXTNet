@@ -212,6 +212,15 @@ typedef bm::policies::policy<
         ,mean(meanformula), variance(varformula) \
     {}
 
+#define TRANSMISSION_TIME_GENERIC_1PARAM(name, boost_tpl, std_tpl, p1name, meanformula) \
+    TRANSMISSION_TIME_GENERIC_BOOST(name, boost_tpl, std_tpl) \
+    public: \
+    const double mean; \
+    name(double p1name, double p2name, double pinf = 0.0) \
+        :transmission_time_generic_boost(bm_dist_t(p1name), std_dist_t(p1name), pinf) \
+        ,mean(meanformula) \
+    {}
+
 #define TRANSMISSION_TIME_GENERIC_SAMENAME_MEAN_VARIANCE(name, p1name, p1formula, p2name, p2formula) \
     TRANSMISSION_TIME_GENERIC_MEAN_VARIANCE(transmission_time_ ## name, name ## _distribution, name ## _distribution, \
                                             p1name, p1formula, p2name, p2formula)
@@ -219,6 +228,10 @@ typedef bm::policies::policy<
 #define TRANSMISSION_TIME_GENERIC_SAMENAME_2PARAM(name, p1name, p2name, meanformula, varformula) \
     TRANSMISSION_TIME_GENERIC_2PARAM(transmission_time_ ## name, name ## _distribution, name ## _distribution, \
                                      p1name, p2name, meanformula, varformula)
+
+#define TRANSMISSION_TIME_GENERIC_SAMENAME_1PARAM(name, p1name,  meanformula) \
+    TRANSMISSION_TIME_GENERIC_1PARAM(transmission_time_ ## name, name ## _distribution, name ## _distribution, \
+                                     p1name, meanformula)
 
 /*-----------TRANSMISSION TIMES DEFINED IN TERMS OF BOOST AND C++ STDLIB ---------*/
 
