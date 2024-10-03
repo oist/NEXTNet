@@ -25,6 +25,89 @@ inline double ztest(double mean_obs, double sd_true, double mean_true) {
 
 }
 
+/**
+ * @brief Test case to verify `dynamic_empirical_network`
+ */
+TEST_CASE("epidemic on empirical network", "[empirical_graph]") {
+
+	rng_t engine;
+
+	using namespace std::string_literals;
+
+	const std::size_t M = 1;
+
+	const double PSI_MEAN = 3;
+	const double PSI_VARIANCE = 1;
+	const double RHO_MEAN = 10;
+	const double RHO_VARIANCE = 1;
+	const double TMAX = 100;
+	// dynamic_empirical_network g(std::string("/home/sam/Documents/Epidemics-On-Networks/epidemics/tests/test_empirical_network.txt"),dt);
+
+	double dt = 1000;
+	std::vector<double> t_sim, y_sim_new, y_sim_total;
+	average_trajectories(engine, [&](rng_t& engine) {
+		struct {
+			std::unique_ptr<dynamic_empirical_network> g;
+			std::unique_ptr<transmission_time_gamma> psi;
+			std::unique_ptr<transmission_time_gamma> rho;
+			std::unique_ptr<simulate_next_reaction> nr;
+			std::unique_ptr<simulate_on_dynamic_network> simulator;
+		} env;
+		env.g = std::make_unique<dynamic_empirical_network>(std::string("/home/sam/Documents/Epidemics-On-Networks/epidemics/tests/test_empirical_network.txt"),dt);
+		env.psi = std::make_unique<transmission_time_gamma>(PSI_MEAN, PSI_VARIANCE);
+		env.rho = std::make_unique<transmission_time_gamma>(RHO_MEAN, RHO_VARIANCE);
+		env.nr = std::make_unique<simulate_next_reaction>(*env.g.get(), *env.psi.get(), env.rho.get(), false, true);
+		env.nr->add_infections({ std::make_pair(0, 0.0)});
+		env.simulator = std::make_unique<simulate_on_dynamic_network>(*env.nr.get());
+		return env;
+	}, [](network_or_epidemic_event_t any_ev) {
+		/* Translate event into a pair (time, delta) */
+		if (std::holds_alternative<event_t>(any_ev)) {
+			/* Epidemic event */
+			const auto ev = std::get<event_t>(any_ev);
+			return std::make_pair(ev.time, delta_infected(ev.kind));
+		} else if (std::holds_alternative<network_event_t>(any_ev)) {
+			/* Network event */
+			const auto ev = std::get<network_event_t>(any_ev);
+			return std::make_pair(ev.time, 0);
+		} else throw std::logic_error("unknown event type");
+	}, t_sim, y_sim_total, y_sim_new, TMAX, M);
+	
+	
+	plot("nextreaction_dynamic.sis.mean.pdf", "SIS average trajectory on dynamic empirical graph [NextReaction]", [&](auto& gp, auto& p) {
+		p.add_plot1d(std::make_pair(t_sim, y_sim_new), "with lines title 'dynamic network'"s);
+   });
+
+
+	// double dt = 1000;
+	// dynamic_empirical_network g(std::string("/home/sam/Documents/Epidemics-On-Networks/epidemics/tests/test_empirical_network.txt"),dt);
+
+	// transmission_time_gamma psi(5,3);
+	// transmission_time_gamma rho(10,1);
+
+	// // simulation_algorithm alg()
+	// // simulate_on_dynamic_network sim()
+	// simulate_next_reaction sim(g.,psi,rho,false,true);
+	// // simulate_on_dynamic_network sim;
+
+	// // Add initial infections (you can add more or use different nodes)
+	// sim.add_infections({std::make_pair(0, 0.0)});
+
+	// // Initialize simulator for dynamic network
+	// simulate_on_dynamic_network simulator(sim);
+
+	// int nb_recovered = 0;
+	// // int nb_infected = 0;
+
+	// while (true) {
+	// 	auto event = simulator.step(engine);
+	// 	if (!event)
+	// 		break;
+	// }
+	// // REQUIRE(nb_recovered==2);
+
+}
+
 TEST_CASE("Plot SIS average trajectory on dynamic Erdös-Reyni networks", "[nextreaction]")
 {
 	using namespace std::string_literals;

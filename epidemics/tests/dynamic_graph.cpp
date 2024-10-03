@@ -1,5 +1,4 @@
 #include "tests/stdafx.h"
-
 #include "dynamic_graph.h"
 
 namespace {
@@ -32,6 +31,27 @@ inline double ztest(double mean_obs, double sd_true, double mean_true) {
 }
 
 }
+
+
+/**
+ * @brief Test case to verify `dynamic_empirical_network`
+ */
+TEST_CASE("dynamic empirical graph", "[empirical_graph]") {
+
+	double dt = 4;
+	// std::string path_to_network = "epidemics/tests/test_empirical_network.txt";
+	dynamic_empirical_network g(std::string("/home/sam/Documents/Epidemics-On-Networks/epidemics/tests/test_empirical_network.txt"),dt);
+	INFO("adjacencylist size: " << g.adjacencylist.size() << " (Expected: 13)");
+	REQUIRE(g.adjacencylist.size()==14);
+	INFO("Edges size: " << g.edges.size() << " (Expected: 4)");
+	REQUIRE(g.edges.size()==8);
+
+	REQUIRE(g.nodes()==14);
+	REQUIRE(g.neighbour(0,0)==13);
+	REQUIRE(g.outdegree(0)==2);
+	REQUIRE(g.outdegree(10)==0);
+}
+
 
 /**
  * @brief Test case to verify `dynamic_erdos_reyni`

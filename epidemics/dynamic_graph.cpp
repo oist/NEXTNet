@@ -11,6 +11,125 @@ void dynamic_network::notify_epidemic_event(event_t ev, rng_t& engine) {
 	/* Do nothing by default */
 }
 
+dynamic_empirical_network::dynamic_empirical_network(std::string path_to_file,double dt){
+
+    std::ifstream file(path_to_file); // Open the CSV file
+    
+	if (!file.is_open()) {
+        throw std::runtime_error("Error: Unable to open file: " + path_to_file);
+    }
+	// std::set<int> set_nodes;
+	int nb_nodes = 0;
+
+    std::string line;
+    while (std::getline(file, line)) { // Read each line of the CSV file
+        std::vector<int> row;
+        std::istringstream iss(line);
+		int src,dst;
+		double next_time;
+		if (iss >> src >> dst >> next_time){
+			edges.push_back( network_event_t{
+				.kind = network_event_kind::neighbour_added,
+				.source_node = src, .target_node = dst, .time = next_time
+			});
+			edges.push_back( network_event_t{
+				.kind = network_event_kind::neighbour_removed,
+				.source_node = src, .target_node = dst, .time = next_time + dt
+			});
+			nb_nodes = std::max({nb_nodes, src, dst});
+			// if (set_nodes.find(src) == set_nodes.end())
+			// 	set_nodes.insert(src);
+			// if (set_nodes.find(dst) == set_nodes.end())
+			// 	set_nodes.insert(dst);
+
+		}
+	}
+	adjacencylist.resize(nb_nodes+1);
+
+	// Sort the vector in increasing order of 'time'
+    std::sort(edges.begin(), edges.end(), [](const network_event_t& a, const network_event_t& b) {
+        return a.time < b.time;
+    });
+
+	for (node_t i = 0; i < (int) edges.size(); i++)
+	{
+		const network_event_t edge = edges[i];
+		if (edge.time > 0)
+			break;
+		adjacencylist[edge.source_node].push_back(edge.target_node);
+		adjacencylist[edge.target_node].push_back(edge.source_node);
+	}
+	
+
+	max_index = (int) edges.size();
+
+}
+
+node_t dynamic_empirical_network::nodes() {
+    return (node_t)adjacencylist.size();
+}    
+
+node_t dynamic_empirical_network::neighbour(node_t node, int neighbour_index) {
+    const auto& n = adjacencylist.at(node);
+    if ((neighbour_index < 0) || (n.size() <= (unsigned int)neighbour_index))
+        return -1;
+    return n[neighbour_index];
+}
+
+index_t dynamic_empirical_network::outdegree(node_t node) {
+    return (index_t) adjacencylist.at(node).size();
+}
+
+
+absolutetime_t dynamic_empirical_network::next(rng_t& engine) {
+	// if (!std::isnan(next_time))
+	// 	return next_time;
+	
+	/* No unreported reverse-edge event should exit */
+	// assert(!reverse_edge_event);
+
+	next_time = edges[time_index].time;
+	return next_time;
+}
+
+
+std::optional<network_event_t> dynamic_empirical_network::step(rng_t& engine, absolutetime_t max_time) {
+	
+	/* Determine time of next event if necessary, return if after max_time */
+	if (std::isnan(next_time))
+		next(engine);
+	if (max_time < next_time)
+		return std::nullopt;
+
+	if (time_index == max_index)
+		return std::nullopt;
+	/* Update current time
+	 * We don't reset next_time here because we'll only report the forward event below.
+	 * The reverse event will be reported upon the next invocation of step(), and which
+	 * time next_time will be reset to NAN. Only then will future calls to next() draw
+	 * a new random next_time
+	 */
+	current_time = next_time;
+
+	network_event_t next_event = edges[time_index];
+	time_index++;
+
+	if (next_event.kind==network_event_kind::neighbour_removed){
+
+		auto it = std::find(adjacencylist[next_event.source_node].begin(), adjacencylist[next_event.source_node].end(), next_event.target_node);
+    	if (it != adjacencylist[next_event.source_node].end()) adjacencylist[next_event.source_node].erase(it);
+
+		it = std::find(adjacencylist[next_event.target_node].begin(), adjacencylist[next_event.target_node].end(), next_event.source_node);
+    	if (it != adjacencylist[next_event.target_node].end()) adjacencylist[next_event.target_node].erase(it);
+	} else if (next_event.kind==network_event_kind::neighbour_added){
+		adjacencylist[next_event.source_node].push_back(next_event.target_node);
+		adjacencylist[next_event.target_node].push_back(next_event.source_node);
+	}
+
+	return next_event;
+}
+
+
 dynamic_erdos_reyni::dynamic_erdos_reyni(int size, double avg_degree, double timescale, rng_t& engine)
 	:erdos_reyni(size, avg_degree, engine)
 	,edge_probability(avg_degree / (size - 1))
