@@ -178,6 +178,7 @@ set_source_files_properties(epidemics/tests/main.cpp
 if ((NOT SERIALIZE) AND TBB_FOUND)
     message("Parallelization: Enabled")
     target_link_libraries(tests TBB::tbb)
+    target_link_libraries(simulator PRIVATE TBB::tbb)
     add_definitions(-DPARALLELIZE=1)
 else()
     message("Parallelization: Disabled")
