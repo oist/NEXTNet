@@ -52,6 +52,12 @@ struct dynamic_empirical_network : virtual dynamic_network {
 
 	index_t outdegree(node_t node);
 
+	/* return number of edges existing at time t*/
+	int present_edges(double t);
+
+	/* return average degree of active nodes at time t*/
+	double average_degree(double t);
+
     /* Adjacency list of the graph */
     std::vector<std::vector<node_t>>  adjacencylist;
 };

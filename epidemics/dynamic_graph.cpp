@@ -37,6 +37,7 @@ dynamic_empirical_network::dynamic_empirical_network(std::string path_to_file,do
 				.source_node = src, .target_node = dst, .time = next_time + dt
 			});
 			nb_nodes = std::max({nb_nodes, src, dst});
+			
 			// if (set_nodes.find(src) == set_nodes.end())
 			// 	set_nodes.insert(src);
 			// if (set_nodes.find(dst) == set_nodes.end())
@@ -92,6 +93,57 @@ absolutetime_t dynamic_empirical_network::next(rng_t& engine) {
 	return next_time;
 }
 
+int dynamic_empirical_network::present_edges(double t){
+
+	
+	int nb_edges = 0;
+	for (auto edge : edges) {
+		if (edge.time < t)
+			continue;
+		
+		if (edge.time > t)
+			break;
+
+		if (edge.kind==network_event_kind::neighbour_added){
+			nb_edges++;
+		} else if (edge.kind==network_event_kind::neighbour_removed){
+			nb_edges--;
+		}
+	}
+	return nb_edges;
+}
+
+double dynamic_empirical_network::average_degree(double t){
+
+	std::set<int> set_nodes;
+	int nb_edges = 0;
+
+	for (auto edge : edges) {
+		if (edge.time < t)
+			continue;
+		
+		if (edge.time > t)
+			break;
+
+		const int src = edge.source_node;
+		const int dst = edge.target_node;
+
+		if (edge.kind==network_event_kind::neighbour_added){
+			nb_edges++;
+			if (set_nodes.find(src) == set_nodes.end())
+					set_nodes.insert(src);
+			if (set_nodes.find(dst) == set_nodes.end())
+					set_nodes.insert(dst);
+		} else if (edge.kind==network_event_kind::neighbour_removed){
+			if (set_nodes.find(src) != set_nodes.end())
+				set_nodes.erase(src);
+			if (set_nodes.find(src) != set_nodes.end()) 
+				set_nodes.erase(src);
+			nb_edges--;
+		}
+	}
+	return (double) 2*nb_edges/set_nodes.size();
+}
 
 std::optional<network_event_t> dynamic_empirical_network::step(rng_t& engine, absolutetime_t max_time) {
 	
