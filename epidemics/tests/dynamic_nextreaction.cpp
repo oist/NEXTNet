@@ -29,12 +29,12 @@ inline double ztest(double mean_obs, double sd_true, double mean_true) {
  * @brief Test case to verify `dynamic_empirical_network`
  */
 TEST_CASE("epidemic on empirical network nb2", "[empirical_graph]") {
-    rng_t engine;
+    rng_t engine(0);
 
     bool SHUFFLE_NEIGHBOURS=false;
 	bool EDGES_CONCURRENT = true;
     bool SIR = false;
-	dynamic_empirical_network g("/home/sam/Desktop/Temporal_Networks/clean_data/college.tab",1);
+	dynamic_empirical_network g("/home/sam/Desktop/Temporal_Networks/clean_data/college.tab",3);
     struct {
         std::unique_ptr<dynamic_empirical_network> g;
         std::unique_ptr<transmission_time_gamma> psi;
@@ -43,8 +43,8 @@ TEST_CASE("epidemic on empirical network nb2", "[empirical_graph]") {
         std::unique_ptr<simulate_on_dynamic_network> simulator;
     } env;
     env.g = std::make_unique<dynamic_empirical_network>(g);
-    env.psi = std::make_unique<transmission_time_gamma>(5,3);
-    env.rho = std::make_unique<transmission_time_gamma>(10,1);
+    env.psi = std::make_unique<transmission_time_gamma>(50,3);
+    env.rho = std::make_unique<transmission_time_gamma>(100,1);
     env.nr = std::make_unique<simulate_next_reaction>(*env.g.get(), *env.psi.get(), env.rho.get(),SHUFFLE_NEIGHBOURS,EDGES_CONCURRENT,SIR);
     env.nr->add_infections({ std::make_pair(0, 0.0)});
     env.simulator = std::make_unique<simulate_on_dynamic_network>(*env.nr.get());
