@@ -58,7 +58,7 @@ dynamic_empirical_network::dynamic_empirical_network(std::string path_to_file,do
 		if (edge.time > 0)
 			break;
 		adjacencylist[edge.source_node].push_back(edge.target_node);
-		adjacencylist[edge.target_node].push_back(edge.source_node);
+		// adjacencylist[edge.target_node].push_back(edge.source_node);
 	}
 	
 
@@ -160,6 +160,18 @@ std::optional<network_event_t> dynamic_empirical_network::step(rng_t& engine, ab
 
 	if (time_index == max_index)
 		return std::nullopt;
+
+	// /* Report last reported event again but for the reverse edge */
+	// if (reverse_edge_event) {
+	// 	assert(current_time == next_time);
+	// 	assert(reverse_edge_event->time == next_time);
+	// 	const network_event_t r = *reverse_edge_event;
+	// 	reverse_edge_event = std::nullopt;
+	// 	next_time = NAN;
+	// 	return r;
+	// }
+
+
 	/* Update current time
 	 * We don't reset next_time here because we'll only report the forward event below.
 	 * The reverse event will be reported upon the next invocation of step(), and which
@@ -176,14 +188,25 @@ std::optional<network_event_t> dynamic_empirical_network::step(rng_t& engine, ab
 		auto it = std::find(adjacencylist[next_event.source_node].begin(), adjacencylist[next_event.source_node].end(), next_event.target_node);
     	if (it != adjacencylist[next_event.source_node].end()) adjacencylist[next_event.source_node].erase(it);
 
-		it = std::find(adjacencylist[next_event.target_node].begin(), adjacencylist[next_event.target_node].end(), next_event.source_node);
-    	if (it != adjacencylist[next_event.target_node].end()) adjacencylist[next_event.target_node].erase(it);
+		// it = std::find(adjacencylist[next_event.target_node].begin(), adjacencylist[next_event.target_node].end(), next_event.source_node);
+    	// if (it != adjacencylist[next_event.target_node].end()) adjacencylist[next_event.target_node].erase(it);
+
+		
 	} else if (next_event.kind==network_event_kind::neighbour_added){
-		adjacencylist[next_event.source_node].push_back(next_event.target_node);
-		adjacencylist[next_event.target_node].push_back(next_event.source_node);
+
+		auto it = std::find(adjacencylist[next_event.source_node].begin(), adjacencylist[next_event.source_node].end(), next_event.target_node);
+    	if (it == adjacencylist[next_event.source_node].end())
+			adjacencylist[next_event.source_node].push_back(next_event.target_node);
+		// adjacencylist[next_event.target_node].push_back(next_event.source_node);
 	}
 
+	// reverse_edge_event = network_event_t {
+	// 	.kind = next_event.kind,
+	// 	.source_node = next_event.target_node, .target_node =  next_event.source_node, .time = next_time
+	// };
 	return next_event;
+
+
 }
 
 
