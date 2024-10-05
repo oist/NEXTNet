@@ -137,10 +137,13 @@ int dynamic_empirical_network::present_edges(double t){
 	return nb_edges;
 }
 
+
+
 double dynamic_empirical_network::average_degree(double t){
 
-	std::set<int> set_nodes;
+	std::unordered_map<int, int> degree;
 	int nb_edges = 0;
+
 
 	for (auto edge : edges) {
 		// if (edge.time < t)
@@ -154,19 +157,23 @@ double dynamic_empirical_network::average_degree(double t){
 
 		if (edge.kind==network_event_kind::neighbour_added){
 			nb_edges++;
-			if (set_nodes.find(src) == set_nodes.end())
-				set_nodes.insert(src);
-			if (set_nodes.find(dst) == set_nodes.end())
-				set_nodes.insert(dst);
+			degree[src]++;
+			degree[dst]++;
 		} else if (edge.kind==network_event_kind::neighbour_removed){
-			if (set_nodes.find(src) != set_nodes.end())
-				set_nodes.erase(src);
-			if (set_nodes.find(dst) != set_nodes.end()) 
-				set_nodes.erase(dst);
+			degree[src]--;
+			degree[dst]--;
 			nb_edges--;
 		}
 	}
-	return (double) 2*nb_edges/set_nodes.size();
+
+	int active_nodes = 0;
+	// Iterate over the map and count nodes having at least degree 1
+    for (const auto& pair : degree) {
+        if (pair.second >= 1) {
+            active_nodes++;
+        }
+    }
+	return (double) 2*nb_edges/active_nodes;
 }
 
 std::optional<network_event_t> dynamic_empirical_network::step(rng_t& engine, absolutetime_t max_time) {
