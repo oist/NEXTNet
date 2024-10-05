@@ -51,7 +51,7 @@ simulate_on_dynamic_network::step(rng_t& engine, absolutetime_t maxtime)
 						else {
 							/* Neighbour already registered. Edge was removed and is now re-added, unmask it (false) */
 							if (it2->second == false)
-								throw std::logic_error("duplicate neighbour_added event");
+								throw std::logic_error("duplicate neighbour_added event: t=" + std::to_string(ev.time)+ ", " + std::to_string(ev.source_node)+"->" + std::to_string(ev.target_node));
 							it2->second = false ;
 						}
 					}
