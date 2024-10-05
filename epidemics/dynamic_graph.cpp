@@ -89,6 +89,9 @@ absolutetime_t dynamic_empirical_network::next(rng_t& engine) {
 	/* No unreported reverse-edge event should exit */
 	// assert(!reverse_edge_event);
 
+	if (time_index >= (int) edges.size()){
+		return INFINITY;
+	}
 	next_time = edges[time_index].time;
 	return next_time;
 }
