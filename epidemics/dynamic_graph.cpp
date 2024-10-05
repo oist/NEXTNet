@@ -18,7 +18,8 @@ dynamic_empirical_network::dynamic_empirical_network(std::string path_to_file,do
 	if (!file.is_open()) {
         throw std::runtime_error("Error: Unable to open file: " + path_to_file);
     }
-	// std::set<int> set_nodes;
+	std::set<int> set_active_edges;
+
 	int nb_nodes = 0;
 
     std::string line;
@@ -28,25 +29,43 @@ dynamic_empirical_network::dynamic_empirical_network(std::string path_to_file,do
 		int src,dst;
 		double next_time;
 		if (iss >> src >> dst >> next_time){
-			edges.push_back( network_event_t{
-				.kind = network_event_kind::neighbour_added,
-				.source_node = src, .target_node = dst, .time = next_time
-			});
-			edges.push_back( network_event_t{
-				.kind = network_event_kind::neighbour_removed,
-				.source_node = src, .target_node = dst, .time = next_time + dt
-			});
+			bool duplicate = false;
+
+
+			for (auto it = edges.rbegin(); it != edges.rend(); ++it) {
+
+				/* this edge already existed at some point*/
+				if ((it->source_node == src) && (it->target_node ==dst)){
+					
+					/* we need to update and extend the edge's life duration*/
+					if (it -> time + dt >= next_time) {
+						it -> time = next_time + dt;
+						assert(it-> kind == network_event_kind::neighbour_removed);
+						duplicate=true;
+					}
+					/*break from the vector loop*/
+					break;
+				}
+			}
+			if (!duplicate){
+				edges.push_back( network_event_t{
+					.kind = network_event_kind::neighbour_added,
+					.source_node = src, .target_node = dst, .time = next_time
+				});
+
+				edges.push_back( network_event_t{
+					.kind = network_event_kind::neighbour_removed,
+					.source_node = src, .target_node = dst, .time = next_time + dt
+				});
+			}
 			nb_nodes = std::max({nb_nodes, src, dst});
 			
-			// if (set_nodes.find(src) == set_nodes.end())
-			// 	set_nodes.insert(src);
-			// if (set_nodes.find(dst) == set_nodes.end())
-			// 	set_nodes.insert(dst);
-
 		}
 	}
-	adjacencylist.resize(nb_nodes+1);
 
+
+
+	adjacencylist.resize(nb_nodes+1);
 	// Sort the vector in increasing order of 'time'
     std::sort(edges.begin(), edges.end(), [](const network_event_t& a, const network_event_t& b) {
         return a.time < b.time;
