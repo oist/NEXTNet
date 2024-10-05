@@ -98,8 +98,8 @@ int dynamic_empirical_network::present_edges(double t){
 	
 	int nb_edges = 0;
 	for (auto edge : edges) {
-		if (edge.time < t)
-			continue;
+		// if (edge.time < t)
+		// 	continue;
 		
 		if (edge.time > t)
 			break;
@@ -109,6 +109,8 @@ int dynamic_empirical_network::present_edges(double t){
 		} else if (edge.kind==network_event_kind::neighbour_removed){
 			nb_edges--;
 		}
+
+	
 	}
 	return nb_edges;
 }
@@ -119,8 +121,8 @@ double dynamic_empirical_network::average_degree(double t){
 	int nb_edges = 0;
 
 	for (auto edge : edges) {
-		if (edge.time < t)
-			continue;
+		// if (edge.time < t)
+		// 	continue;
 		
 		if (edge.time > t)
 			break;
@@ -131,14 +133,14 @@ double dynamic_empirical_network::average_degree(double t){
 		if (edge.kind==network_event_kind::neighbour_added){
 			nb_edges++;
 			if (set_nodes.find(src) == set_nodes.end())
-					set_nodes.insert(src);
+				set_nodes.insert(src);
 			if (set_nodes.find(dst) == set_nodes.end())
-					set_nodes.insert(dst);
+				set_nodes.insert(dst);
 		} else if (edge.kind==network_event_kind::neighbour_removed){
 			if (set_nodes.find(src) != set_nodes.end())
 				set_nodes.erase(src);
-			if (set_nodes.find(src) != set_nodes.end()) 
-				set_nodes.erase(src);
+			if (set_nodes.find(dst) != set_nodes.end()) 
+				set_nodes.erase(dst);
 			nb_edges--;
 		}
 	}
