@@ -38,33 +38,42 @@ simulate_on_dynamic_network::step(rng_t& engine, absolutetime_t maxtime)
 			assert(ev.time == nexttime);
 			switch (ev.kind) {
 				case network_event_kind::neighbour_added: {
-					/* Check if the source node is infected */
+					/* neighbour added, check if the source node is infected, otherwise nothing to do */
 					auto it = infected_neighbour_state.find(ev.source_node);
 					if (it != infected_neighbour_state.end()) {
-						/* Source node is infected. Check if the new neighbour was previosly registered */
-						neighbour_state_t& neighbours = it->second;
+						/* source infected, find the state of the neighbour */
+						auto& neighbours = it->second;
 						auto it2 = neighbours.find(ev.target_node);
-						if (it2 == neighbours.end()) {
-							/* Unregistered neighbour. Edge can't be active, just activate it */
+						/* check state */
+						if ((it2 == neighbours.end()) || (it2->second == neighbour_state_t::admissible)) {
+							/* neighbour state is admissible (default). Activate edge */
 							simulation.notify_infected_node_neighbour_added(ev, engine);
 						}
-						else {
-							/* Neighbour already registered. Edge was removed and is now re-added, unmask it (false) */
-							if (it2->second == false)
-								throw std::logic_error("duplicate neighbour_added event: t=" + std::to_string(ev.time)+ ", " + std::to_string(ev.source_node)+"->" + std::to_string(ev.target_node));
-							it2->second = false ;
+						else if (it2->second == neighbour_state_t::masked) {
+							/* neighbour is masked (edge was removed previously & hasn't fired). Unmask it. */
+							it2->second = neighbour_state_t::admissible;
 						}
+						/* nothing to do if the neighbour state is transmitted */
 					}
 					break;
 				}
 				case network_event_kind::neighbour_removed: {
-					/* Check if the source node is infected */
+					/* neighbour removed, check if the source node is infected, otherwise nothing to do */
 					auto it = infected_neighbour_state.find(ev.source_node);
 					if (it != infected_neighbour_state.end()) {
-						/* Souce node is infected. Mark edge towards removed neighbour as masked (true). */
-						neighbour_state_t& neighbours = it->second;
-						/* Update neighbour sate (will create an entry if none exists!) */
-						neighbours[ev.target_node] = true;
+						/* source infected, find the state of the neighbour */
+						auto& neighbours = it->second;
+						auto it2 = neighbours.find(ev.target_node);
+						/* check state */
+						if ((it2 == neighbours.end()) || (it2->second == neighbour_state_t::admissible)) {
+							/* neighbour state is admissible (default), set state to masked */
+							neighbours[ev.target_node] = neighbour_state_t::masked;
+						}
+						else if (it2->second == neighbour_state_t::masked) {
+							/* neighbour state is already masked, this should not happen */
+							throw std::logic_error("duplicate neighbour_removed event: t=" + std::to_string(ev.time)+ ", " + std::to_string(ev.source_node)+"->" + std::to_string(ev.target_node));
+						}
+						/* nothing to do if the neighbour state is transmitted */
 					}
 					break;
 				}
@@ -89,12 +98,12 @@ simulate_on_dynamic_network::step(rng_t& engine, absolutetime_t maxtime)
 			switch (ev.kind) {
 				case event_kind::outside_infection:
 				case event_kind::infection: {
-					/* New infection. Create empty neighbour table which implicitly marks all neighours as unmasked */
-					infected_neighbour_state.emplace(ev.node, neighbour_state_t());
+					/* infection event, initialize empty neighbour table, this makes edges admissible (by default) */
+					infected_neighbour_state.emplace(ev.node, neighbours_states_t());
 					break;
 				}
 				case event_kind::reset: {
-					/* Remove node's neighbour table */
+					/* recovery/reset event. remove nodes' neighbour table */
 					const std::size_t r = infected_neighbour_state.erase(ev.node);
 					assert(r == 1);
 					_unused(r);
@@ -116,14 +125,27 @@ bool simulate_on_dynamic_network::simulation_event_filter(event_t ev)
 {
 	switch (ev.kind) {
 		case event_kind::infection: {
-			/* Infection event. Find neighbour table entry for source node of infection event */
+			/* Infection event, find the state of the neighbour in the source node */
 			auto it = infected_neighbour_state.find(ev.source_node);
 			if (it == infected_neighbour_state.end())
 				throw std::logic_error("missing neighbour table for infected node");
-			const neighbour_state_t& neighbours = it->second;
-			/* Block event if there's a neighbour table entry marking the edge as masked (true) */
+			auto& neighbours = it->second;
 			const auto it2 = neighbours.find(ev.node);
-			return (it2 == neighbours.end()) || !it2->second;
+			/* check state */
+			if ((it2 == neighbours.end()) || (it2->second == neighbour_state_t::admissible)) {
+				/* state is admissible, don't block and set state to transmitted */
+				neighbours[ev.node] = neighbour_state_t::transmitted;
+				return true;
+			}
+			else if (it2->second == neighbour_state_t::masked) {
+				/* state is masked, block event and update to admissible */
+				it2->second = neighbour_state_t::admissible;
+				return false;
+			}
+			else {
+				/* if the state is transmitted, no further infection events should occur */
+				throw std::logic_error("infection along already transmitted edge: t=" + std::to_string(ev.time)+ ", " + std::to_string(ev.source_node)+"->" + std::to_string(ev.node));
+			}
 		}
 		
 		default:

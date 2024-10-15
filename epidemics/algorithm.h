@@ -50,6 +50,12 @@ struct simulate_on_dynamic_network {
 	dynamic_network* network;
 	simulation_algorithm& simulation;
 	
-	typedef std::unordered_map<node_t, bool> neighbour_state_t;
-	std::unordered_map<node_t, neighbour_state_t> infected_neighbour_state;
+	enum class neighbour_state_t : unsigned char {
+		admissible = 0,
+		masked = 1,
+		transmitted = 2
+	};
+	
+	typedef std::unordered_map<node_t, neighbour_state_t> neighbours_states_t;
+	std::unordered_map<node_t, neighbours_states_t> infected_neighbour_state;
 };
