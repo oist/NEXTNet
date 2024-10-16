@@ -39,8 +39,7 @@ inline double ztest(double mean_obs, double sd_true, double mean_true) {
 TEST_CASE("dynamic empirical graph", "[empirical_graph]") {
 
 	double dt = 4;
-	// std::string path_to_network = "epidemics/tests/test_empirical_network.txt";
-	dynamic_empirical_network g(std::string("/home/sam/Documents/Epidemics-On-Networks/epidemics/tests/test_empirical_network.txt"),dt);
+	dynamic_empirical_network g(TEST_DATA_DIR "/test_empirical_network.txt", dt);
 	INFO("adjacencylist size: " << g.adjacencylist.size() << " (Expected: 13)");
 	REQUIRE(g.adjacencylist.size()==14);
 	INFO("Edges size: " << g.edges.size() << " (Expected: 4)");

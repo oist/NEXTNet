@@ -34,7 +34,6 @@ TEST_CASE("epidemic on empirical network nb2", "[empirical_graph]") {
     bool SHUFFLE_NEIGHBOURS=false;
 	bool EDGES_CONCURRENT = true;
     bool SIR = false;
-	dynamic_empirical_network g("/home/sam/Desktop/Temporal_Networks/clean_data/college.tab",3);
     struct {
         std::unique_ptr<dynamic_empirical_network> g;
         std::unique_ptr<transmission_time_gamma> psi;
@@ -42,7 +41,7 @@ TEST_CASE("epidemic on empirical network nb2", "[empirical_graph]") {
         std::unique_ptr<simulate_next_reaction> nr;
         std::unique_ptr<simulate_on_dynamic_network> simulator;
     } env;
-    env.g = std::make_unique<dynamic_empirical_network>(g);
+    env.g = std::make_unique<dynamic_empirical_network>(TEST_DATA_DIR "/college.tab", 3);
     env.psi = std::make_unique<transmission_time_gamma>(50,3);
     env.rho = std::make_unique<transmission_time_gamma>(100,1);
     env.nr = std::make_unique<simulate_next_reaction>(*env.g.get(), *env.psi.get(), env.rho.get(),SHUFFLE_NEIGHBOURS,EDGES_CONCURRENT,SIR);
@@ -130,7 +129,7 @@ TEST_CASE("epidemic on empirical network", "[empirical_graph]") {
 			std::unique_ptr<simulate_next_reaction> nr;
 			std::unique_ptr<simulate_on_dynamic_network> simulator;
 		} env;
-		env.g = std::make_unique<dynamic_empirical_network>(std::string("/home/sam/Documents/Epidemics-On-Networks/epidemics/tests/test_empirical_network.txt"),dt);
+		env.g = std::make_unique<dynamic_empirical_network>(TEST_DATA_DIR "/test_empirical_network.txt", dt);
 		env.psi = std::make_unique<transmission_time_gamma>(PSI_MEAN, PSI_VARIANCE);
 		env.rho = std::make_unique<transmission_time_gamma>(RHO_MEAN, RHO_VARIANCE);
 		env.nr = std::make_unique<simulate_next_reaction>(*env.g.get(), *env.psi.get(), env.rho.get(), false, true);

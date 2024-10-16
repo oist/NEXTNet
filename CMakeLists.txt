@@ -90,7 +90,6 @@ set(CMAKE_VISIBILITY_INLINES_HIDDEN true)
 
 # Enable all warnings
 add_compile_options(-Wall)
-
 add_compile_definitions(${CMAKE_DEFINES})
 
 # *** Dependencies
@@ -175,6 +174,9 @@ target_precompile_headers(tests
     PUBLIC ${TESTS_PCH})
 set_source_files_properties(epidemics/tests/main.cpp
     PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
+# Test data
+target_compile_definitions(tests PRIVATE TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/epidemics/tests/data")
+message("Test data: ${PROJECT_SOURCE_DIR}/epidemics/tests/data")
 if ((NOT SERIALIZE) AND TBB_FOUND)
     message("Parallelization: Enabled")
     target_link_libraries(tests TBB::tbb)
