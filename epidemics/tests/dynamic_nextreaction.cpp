@@ -11,7 +11,7 @@
 /**
  * @brief Test case to verify `dynamic_empirical_network`
  */
-TEST_CASE("epidemic on empirical network nb2", "[empirical_graph]") {
+TEST_CASE("epidemic on empirical network nb2", "[dynamic_nextreaction]") {
     rng_t engine(0);
 
     bool SHUFFLE_NEIGHBOURS=false;
@@ -86,7 +86,7 @@ TEST_CASE("epidemic on empirical network nb2", "[empirical_graph]") {
 /**
  * @brief Test case to verify `dynamic_empirical_network`
  */
-TEST_CASE("epidemic on empirical network", "[empirical_graph]") {
+TEST_CASE("epidemic on empirical network", "[dynamic_nextreaction]") {
 
 	rng_t engine;
 
@@ -136,7 +136,7 @@ TEST_CASE("epidemic on empirical network", "[empirical_graph]") {
    });
 }
 
-TEST_CASE("Plot SIS average trajectory on dynamic Erdös-Reyni networks", "[nextreaction]")
+TEST_CASE("Plot SIS average trajectory on dynamic Erdös-Reyni networks", "[dynamic_nextreaction]")
 {
 	using namespace std::string_literals;
 
