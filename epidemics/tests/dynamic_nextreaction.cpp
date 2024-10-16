@@ -8,23 +8,6 @@
 #include "dynamic_graph.h"
 #include "algorithm.h"
 
-namespace {
-
-/**
- * @brief Simple symmetric Z-test (similar to a t-Test but for known variance)
- *
- * @return The symmetric p-value
- */
-#if 0
-inline double ztest(double mean_obs, double sd_true, double mean_true) {
-	using namespace std;
-	const double z = (mean_obs - mean_true) / sd_true;
-	return 1 - std::erf(abs(z) / sqrt(2));
-}
-#endif
-
-}
-
 /**
  * @brief Test case to verify `dynamic_empirical_network`
  */
@@ -44,7 +27,7 @@ TEST_CASE("epidemic on empirical network nb2", "[empirical_graph]") {
     env.g = std::make_unique<dynamic_empirical_network>(TEST_DATA_DIR "/college.tab", 3);
     env.psi = std::make_unique<transmission_time_gamma>(50,3);
     env.rho = std::make_unique<transmission_time_gamma>(100,1);
-    env.nr = std::make_unique<simulate_next_reaction>(*env.g.get(), *env.psi.get(), env.rho.get(),SHUFFLE_NEIGHBOURS,EDGES_CONCURRENT,SIR);
+    env.nr = std::make_unique<simulate_next_reaction>(*env.g.get(), *env.psi.get(), env.rho.get(), SHUFFLE_NEIGHBOURS, EDGES_CONCURRENT, SIR);
     env.nr->add_infections({ std::make_pair(0, 0.0)});
     env.simulator = std::make_unique<simulate_on_dynamic_network>(*env.nr.get());
 
@@ -57,7 +40,6 @@ TEST_CASE("epidemic on empirical network nb2", "[empirical_graph]") {
     int number_of_edges = 0;
 
     while(true){
-
         std::optional<network_or_epidemic_event_t> any_ev = env.simulator -> step(engine,200);
 
         if (any_ev.has_value()) {
@@ -117,7 +99,6 @@ TEST_CASE("epidemic on empirical network", "[empirical_graph]") {
 	const double RHO_MEAN = 10;
 	const double RHO_VARIANCE = 1;
 	const double TMAX = 100;
-	// dynamic_empirical_network g(std::string("/home/sam/Documents/Epidemics-On-Networks/epidemics/tests/test_empirical_network.txt"),dt);
 
 	double dt = 1000;
 	std::vector<double> t_sim, y_sim_new, y_sim_total;
@@ -153,35 +134,6 @@ TEST_CASE("epidemic on empirical network", "[empirical_graph]") {
 	plot("nextreaction_dynamic.sis.mean.pdf", "SIS average trajectory on dynamic empirical graph [NextReaction]", [&](auto& gp, auto& p) {
 		p.add_plot1d(std::make_pair(t_sim, y_sim_new), "with lines title 'dynamic network'"s);
    });
-
-
-	// double dt = 1000;
-	// dynamic_empirical_network g(std::string("/home/sam/Documents/Epidemics-On-Networks/epidemics/tests/test_empirical_network.txt"),dt);
-
-	// transmission_time_gamma psi(5,3);
-	// transmission_time_gamma rho(10,1);
-
-	// // simulation_algorithm alg()
-	// // simulate_on_dynamic_network sim()
-	// simulate_next_reaction sim(g.,psi,rho,false,true);
-	// // simulate_on_dynamic_network sim;
-
-	// // Add initial infections (you can add more or use different nodes)
-	// sim.add_infections({std::make_pair(0, 0.0)});
-
-	// // Initialize simulator for dynamic network
-	// simulate_on_dynamic_network simulator(sim);
-
-	// int nb_recovered = 0;
-	// // int nb_infected = 0;
-
-	// while (true) {
-	// 	auto event = simulator.step(engine);
-	// 	if (!event)
-	// 		break;
-	// }
-	// // REQUIRE(nb_recovered==2);
-
 }
 
 TEST_CASE("Plot SIS average trajectory on dynamic Erdös-Reyni networks", "[nextreaction]")
