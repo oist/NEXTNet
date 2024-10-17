@@ -294,11 +294,9 @@ public:
 
 class transmission_time_deterministic : public transmission_time
 {
-
 public:
 
-    transmission_time_deterministic(double v):value(v)
-    {}
+    transmission_time_deterministic(double v) :value(v) {}
 
     const double value;
 
