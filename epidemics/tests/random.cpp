@@ -72,6 +72,12 @@ TEST_DISTRIBUTION_2PARAM(weibull, 1.5, 5.0, 1000)
 TEST_DISTRIBUTION_2PARAM(weibull, 2.0, 10.0, 1000)
 TEST_DISTRIBUTION_2PARAM(weibull, 4.0, 15.0, 1000)
 
+TEST_CASE("Polynomial rate distribution", "[random]") {
+    std::mt19937 engine;
+
+//    transmission_time_polynomial_rate({1.0, 2.0, 3.0});
+}
+
 TEST_CASE("Lognormal distribution incremental sampling (pinf=0)", "[random]") {
     std::mt19937 engine;
 

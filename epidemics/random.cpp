@@ -152,6 +152,51 @@ double transmission_time_weibull::hazardbound(interval_t) const {
 
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
+/*-----------TRANSMISSION TIME:POLYNOMIAL RATE--------*/
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+
+transmission_time_polynomial_rate::transmission_time_polynomial_rate(std::vector<double>&& _coeffs, int dummy)
+    :coeffs(std::move(_coeffs))
+{
+    bool all_zero = true;
+    for(double c: coeffs) {
+        if ((c < 0.0) || (!std::isfinite(c)))
+            throw std::range_error("coefficients must be non-negative");
+        all_zero = all_zero && (c == 0.0);
+    }
+    if (all_zero)
+        throw std::range_error("polynomial cannot be identically zero");
+}
+
+double transmission_time_polynomial_rate::density(interval_t tau) const {
+    return hazardrate(tau) * std::exp(-totalhazard(tau));
+}
+
+double transmission_time_polynomial_rate::hazardrate(interval_t tau) const {
+    double r=0.0;
+    for(std::size_t i=0; i < coeffs.size(); ++i)
+        r += std::pow(tau, i) * coeffs[i];
+    return r;
+}
+
+double transmission_time_polynomial_rate::totalhazard(interval_t tau) const {
+    double s=0.0;
+    for(std::size_t i=0; i < coeffs.size(); ++i)
+        s += std::pow(tau, i+1) * coeffs[i] / (i+1);
+    return s;
+}
+
+double transmission_time_polynomial_rate::hazardbound(interval_t) const {
+    return INFINITY;
+}
+
+double transmission_time_polynomial_rate::survivalprobability(interval_t tau) const {
+    return std::exp(-totalhazard(tau));
+}
+
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
 /*-----------TRANSMISSION TIME:DETERMINISTIC------------*/
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/

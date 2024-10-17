@@ -252,6 +252,40 @@ TRANSMISSION_TIME_GENERIC_SAMENAME_2PARAM(weibull, shape, scale,
     virtual double hazardbound(interval_t) const;
 };
 
+
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+/*-----------TRANSMISSION TIME: POLYNOMIAL RATE-------*/
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+
+class transmission_time_polynomial_rate : public transmission_time
+{
+public:
+    template<typename ...Args>
+    transmission_time_polynomial_rate(Args&& ...args)
+        :transmission_time_polynomial_rate(std::vector<double>(std::forward<Args>(args)...), 0)
+    {}
+
+private:
+    explicit
+    transmission_time_polynomial_rate(std::vector<double>&& _coeffs, int dummy);
+
+public:
+    const std::vector<double> coeffs;
+
+    virtual double density(interval_t tau) const override;
+
+    virtual double hazardrate(interval_t) const override;
+
+    double totalhazard(interval_t) const;
+
+    virtual double hazardbound(interval_t) const override;
+
+    virtual double survivalprobability(interval_t tau) const override;
+};
+
+
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
 /*-----------TRANSMISSION TIME: DETERMINISTIC---------*/
