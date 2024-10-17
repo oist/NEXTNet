@@ -2,6 +2,41 @@
 #define STATISTICS_H
 
 /**
+ * @brief Computes the mean over the specified range of values
+ * @param begin first element to be averaged
+ * @param end one past the last ement to be averaged
+ * @return the average value
+ */
+template<typename Iterator>
+double mean(Iterator begin, Iterator end) {
+    std::size_t n = 0;
+    double v = 0;
+    for(Iterator i = begin; i != end; ++i) {
+        n += 1;
+        v += *i;
+    }
+    return v / n;
+}
+
+/**
+ * @brief Computes mean and variance of the specified range of values
+ * @param begin first element to be included
+ * @param end one past the last ement to be included
+ * @return a pair contaning the mean and average
+ */
+template<typename Iterator>
+std::pair<double, double> mean_variance(Iterator begin, Iterator end) {
+    const double m = mean(begin, end);
+    std::size_t n = 0;
+    double v = 0;
+    for(Iterator i = begin; i != end; ++i) {
+        n += 1;
+        v += std::pow((*i - m), 2);
+    }
+    return std::make_pair(m, v / (n - 1));
+}
+
+/**
  * @brief Simple symmetric Z-test (similar to a t-Test but for known variance)
  *
  * @return The symmetric p-value

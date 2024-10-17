@@ -3,29 +3,6 @@
 #include "random.h"
 #include "tests/statistics.h"
 
-template<typename Iterator>
-double mean(Iterator begin, Iterator end) {
-    std::size_t n = 0;
-    double v = 0;
-    for(Iterator i = begin; i != end; ++i) {
-        n += 1;
-        v += *i;
-    }
-    return v / n;
-}
-
-template<typename Iterator>
-std::pair<double, double> mean_variance(Iterator begin, Iterator end) {
-    const double m = mean(begin, end);
-    std::size_t n = 0;
-    double v = 0;
-    for(Iterator i = begin; i != end; ++i) {
-        n += 1;
-        v += std::pow((*i - m), 2);
-    }
-    return std::make_pair(m, v / (n - 1));
-}
-
 #define TEST_DISTRIBUTION_MEAN_VARIANCE(name, m, v, N) \
     TEST_CASE(STRINGIFY(name) " distribution (m=" STRINGIFY(m) ", v=" STRINGIFY(v) ", N=" STRINGIFY(N) ")", "[random]") { \
         std::mt19937 engine; \
