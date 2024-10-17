@@ -7,6 +7,120 @@
 #include "NextReaction.h"
 #include "dynamic_graph.h"
 #include "algorithm.h"
+#include "statistics.h"
+
+namespace{
+	struct dynamic_single_edge : virtual graph, virtual dynamic_network {
+		bool edge_present;
+		const std::vector<absolutetime_t> times;
+
+		template<typename ...Args>
+		dynamic_single_edge(bool _edge_present, Args&& ...args)
+			:edge_present(_edge_present), times(std::forward<Args>(args)...)
+		{}
+
+		virtual node_t nodes() { return 2; }
+
+		virtual node_t neighbour(node_t node, int neighbour_index) {
+			if ((node == 0) && (neighbour_index == 0) && edge_present) return 1;
+			return -1;
+		}
+
+		virtual int outdegree(node_t node) {
+			if (node == 0) return 1;
+			return -1;
+		}
+
+		virtual absolutetime_t next(rng_t& engine) {
+			if (times.empty()) return INFINITY;
+			return times.back();
+		}
+
+		virtual std::optional<network_event_t> step(rng_t&, absolutetime_t max_time = NAN) {
+			if (times.empty())
+				return std::nullopt;
+			const absolutetime_t t = times.back();
+			edge_present = !edge_present;
+			return network_event_t {
+				.kind = edge_present ? network_event_kind::neighbour_added : network_event_kind::neighbour_removed,
+				.source_node = 0,
+				.target_node = 1,
+				.time = t
+			};
+		}
+	};
+}
+
+TEST_CASE("Effective transmission time distribution", "[dynamic_nextreaction]") {
+	rng_t engine(0);
+
+	const std::size_t M = 1;
+
+	// Edge is absent [0.5, 1.0], [1.8, 2.0], [2.6, 3.2], [4.0, 5.0]
+	const double INFECTION_TIME = 0.2;
+	const bool EDGE_STATE_INITIAL = true;
+	const std::vector<absolutetime_t> EDGE_FLIP_TIMES = { 0.5, 1.0, 1.8, 2.0, 2.6, 3.2, 4.0, 5.0 };
+
+	// Transmission rate is 1.0*tau
+	const std::vector<double> COEFFS = {0.0, 1.0};
+
+	// Collect M transmission times
+	std::vector<double> t_sim, y_sim_new, y_sim_total;
+	average_trajectories(engine, [&](rng_t& engine) {
+		struct {
+			std::unique_ptr<dynamic_single_edge> g;
+			std::unique_ptr<transmission_time_polynomial_rate> psi;
+			std::unique_ptr<simulate_next_reaction> nr;
+			std::unique_ptr<simulate_on_dynamic_network> simulator;
+		} env;
+		env.g = std::make_unique<dynamic_single_edge>(EDGE_STATE_INITIAL, EDGE_FLIP_TIMES);
+		env.psi = std::make_unique<transmission_time_polynomial_rate>(COEFFS);
+		env.nr = std::make_unique<simulate_next_reaction>(*env.g.get(), *env.psi.get(), nullptr, false, true);
+		env.nr->add_infections({ std::make_pair(0, INFECTION_TIME)});
+		env.simulator = std::make_unique<simulate_on_dynamic_network>(*env.nr.get());
+		return env;
+	}, [](network_or_epidemic_event_t any_ev) {
+		/* Translate event into a pair (time, delta) */
+		if (std::holds_alternative<event_t>(any_ev)) {
+			/* Epidemic event */
+			const auto ev = std::get<event_t>(any_ev);
+			return std::make_pair(ev.time, delta_infected(ev.kind));
+		} else if (std::holds_alternative<network_event_t>(any_ev)) {
+			/* Network event */
+			const auto ev = std::get<network_event_t>(any_ev);
+			return std::make_pair(ev.time, 0);
+		} else throw std::logic_error("unknown event type");
+	}, t_sim, y_sim_total, y_sim_new, INFINITY, M);
+
+	// Check distribution
+	const auto F = [&](double t) {
+		// Compute the CDF of the effective transmission time, i.e. compute
+		//   exp( - int_0^tau lambda(tau') * epsilon(tau') dtau')
+		// where lambda(tau) = sum_i c[i] * tau^i is the hazard rate, and
+		// epsilon(tau) = 1 if the edge exists at time epsilon, i.e. if
+		//   tau in [0, t_1] u [t_2, t_3] u ...
+		bool edge_state = EDGE_STATE_INITIAL;
+		double t1 = 0.0;
+		double t2;
+		double s=0.0;
+		for(std::size_t j=0; t1 < t; j += 1, edge_state != edge_state, t1 = t2) {
+			// skip intervals where the edge does not exist
+			if (!edge_state)
+				continue;
+			// integration endpoint is when the edge next flips, or t, whichever is sooner
+			t2 = (j < EDGE_FLIP_TIMES.size()) ? std::min(EDGE_FLIP_TIMES[j], t) : t;
+			// integrate lambda(tau) over [ t_1, t_2 ] where epsilon == 1
+			for(std::size_t i=0; i < COEFFS.size(); ++i) {
+				s -= std::pow(t1 - INFECTION_TIME, i+1) * COEFFS[i] / (i+1);
+				s += std::pow(t2 - INFECTION_TIME, i+1) * COEFFS[i] / (i+1);
+			}
+		}
+		return exp(-s);
+	};
+
+	const double pval = kstest(t_sim, F);
+	CHECK(pval >= 0.001);
+}
 
 /**
  * @brief Test case to verify `dynamic_empirical_network`
