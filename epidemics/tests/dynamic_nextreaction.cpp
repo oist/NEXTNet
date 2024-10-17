@@ -142,7 +142,7 @@ TEST_CASE("epidemic on empirical network nb2", "[dynamic_nextreaction]") {
     env.psi = std::make_unique<transmission_time_gamma>(50,3);
     env.rho = std::make_unique<transmission_time_gamma>(100,1);
     env.nr = std::make_unique<simulate_next_reaction>(*env.g.get(), *env.psi.get(), env.rho.get(), SHUFFLE_NEIGHBOURS, EDGES_CONCURRENT, SIR);
-    env.nr->add_infections({ std::make_pair(0, 0.0)});
+    env.nr->add_infections({ std::make_pair(0, 0.0) });
     env.simulator = std::make_unique<simulate_on_dynamic_network>(*env.nr.get());
 
     std::vector<double> infection_times;

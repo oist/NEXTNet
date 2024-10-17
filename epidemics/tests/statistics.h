@@ -79,8 +79,8 @@ inline double ztest_var(const std::vector<double>& values, double sd_true, doubl
 	double s = 0.0;
 	for(const auto& v: values)
 		s += pow(v - mean_true, 2.0);
-	s /= (values.size() - 1);
-	const double p = ztest(s, 2.0*var_true / sqrt(values.size() - 1), var_true);
+	s /= (N - 1);
+	const double p = ztest(s, 2.0*var_true / sqrt(N - 1), var_true);
 	return p;
 }
 
