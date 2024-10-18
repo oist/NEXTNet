@@ -181,7 +181,7 @@ average_trajectories(rng_t& engine, Factory factory, DeltaInfectedFunctor f,
 			if (p.first > Tmax)
 				break;
 			// Only store points with non-zero delta
-			if (p.second != 0.0)
+			if (std::isfinite(p.first) && std::isfinite(p.second) && (p.second != 0.0))
 				r.push_back(p);
 		}
 
