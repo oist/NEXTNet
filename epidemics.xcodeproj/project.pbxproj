@@ -112,6 +112,7 @@
 		F946A5E0281255F2000668F9 /* random.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = random.cpp; sourceTree = "<group>"; };
 		F95E340A2924A79700DBCE94 /* benchmark_priorityqueue.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = benchmark_priorityqueue.cpp; sourceTree = "<group>"; };
 		F95E34152925088200DBCE94 /* prio_queue.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = prio_queue.hpp; sourceTree = "<group>"; };
+		F9906FA22CC2264F00ADC766 /* statistics.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = statistics.h; sourceTree = "<group>"; };
 		F99299252910E2B3001432FD /* simulate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = simulate.h; sourceTree = "<group>"; };
 		F99299262910E2B3001432FD /* gnuplot-iostream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "gnuplot-iostream.h"; sourceTree = "<group>"; };
 		F99299272910E2B3001432FD /* plot.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = plot.cpp; sourceTree = "<group>"; };
@@ -266,6 +267,7 @@
 				F9EACDE4299E7904009C2002 /* dynamic_graph.cpp */,
 				F910EA7429F9C92700CB0F4A /* brownian_proximity_graph.cpp */,
 				F99D7A9A27E21CC000200C18 /* stdafx.h */,
+				F9906FA22CC2264F00ADC766 /* statistics.h */,
 				F992992A2910E2B3001432FD /* analytical.h */,
 				F99299262910E2B3001432FD /* gnuplot-iostream.h */,
 				F992992B2910E2B3001432FD /* parallel.h */,
