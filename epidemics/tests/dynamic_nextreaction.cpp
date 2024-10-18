@@ -159,7 +159,7 @@ TEST_CASE("Effective transmission time distribution", "[dynamic_nextreaction]") 
 /**
  * @brief Test case to verify `dynamic_empirical_network`
  */
-TEST_CASE("epidemic on empirical network nb2", "[dynamic_nextreaction]") {
+TEST_CASE("Epidemic on empirical network nb2", "[dynamic_nextreaction]") {
     rng_t engine(0);
 
     bool SHUFFLE_NEIGHBOURS=false;
@@ -234,7 +234,7 @@ TEST_CASE("epidemic on empirical network nb2", "[dynamic_nextreaction]") {
 /**
  * @brief Test case to verify `dynamic_empirical_network`
  */
-TEST_CASE("epidemic on empirical network", "[dynamic_nextreaction]") {
+TEST_CASE("Epidemic on empirical network", "[dynamic_nextreaction]") {
 
 	rng_t engine;
 
