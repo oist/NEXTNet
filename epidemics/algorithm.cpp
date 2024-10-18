@@ -27,7 +27,7 @@ simulate_on_dynamic_network::step(rng_t& engine, absolutetime_t maxtime)
 {
 	while (true) {
 		const absolutetime_t nexttime = next(engine);
-		if (nexttime > maxtime)
+		if (std::isinf(nexttime) || (nexttime > maxtime))
 			return std::nullopt;
 
 		if (nexttime == network->next(engine)) {
