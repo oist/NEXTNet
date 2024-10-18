@@ -648,6 +648,7 @@
 					"DYNDIST_ENABLE_ASSERTS=1",
 					"GNUPLOT_DEFAULT_COMMAND=\"\\\"$(GNUPLOT) -persist\\\"\"",
 					"ENABLE_PLOTTING=1",
+					"TEST_DATA_DIR=\"\\\"$(PROJECT_DIR)/epidemics/tests/data\\\"\"",
 				);
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -668,6 +669,7 @@
 					NDEBUG,
 					"ENABLE_PLOTTING=1",
 					"GNUPLOT_DEFAULT_COMMAND=\"\\\"$(GNUPLOT) -persist\\\"\"",
+					"TEST_DATA_DIR=\"\\\"$(PROJECT_DIR)/epidemics/tests/data\\\"\"",
 				);
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
