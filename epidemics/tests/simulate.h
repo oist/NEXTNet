@@ -128,7 +128,7 @@ average_trajectories(rng_t& engine, Factory factory,
 		cum_inf += std::max(d, 0.0);
 
 		/* Only output every <output_every>-th element */
-		if (++i != output_every)
+		if ((output_every > 0) && (++i != output_every))
 			continue;
 		i = 0;
 
@@ -210,7 +210,7 @@ average_trajectories(rng_t& engine, Factory factory, DeltaInfectedFunctor f,
 		cum_inf += std::max(d, 0.0);
 
 		/* Only output every <output_every>-th element */
-		if (++i != output_every)
+		if ((output_every > 0) && (++i != output_every))
 			continue;
 		i = 0;
 
