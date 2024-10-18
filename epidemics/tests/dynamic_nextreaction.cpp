@@ -12,12 +12,22 @@
 namespace{
 	struct dynamic_single_edge : virtual graph, virtual dynamic_network {
 		bool edge_present;
-		const std::vector<absolutetime_t> times;
+		std::vector<absolutetime_t> times;
 
 		template<typename ...Args>
 		dynamic_single_edge(bool _edge_present, Args&& ...args)
 			:edge_present(_edge_present), times(std::forward<Args>(args)...)
-		{}
+		{
+			std::reverse(times.begin(), times.end());
+			if (!times.empty()) {
+				double t = times[0];
+				for(double tp: times) {
+					if (tp > t)
+						throw std::range_error("edges flip times must be passed to dynamic_single_edge in ascending order");
+					t = tp;
+				}
+			}
+		}
 
 		virtual node_t nodes() { return 2; }
 
@@ -40,6 +50,7 @@ namespace{
 			if (times.empty())
 				return std::nullopt;
 			const absolutetime_t t = times.back();
+			times.pop_back();
 			edge_present = !edge_present;
 			return network_event_t {
 				.kind = edge_present ? network_event_kind::neighbour_added : network_event_kind::neighbour_removed,
@@ -52,9 +63,11 @@ namespace{
 }
 
 TEST_CASE("Effective transmission time distribution", "[dynamic_nextreaction]") {
-	rng_t engine(0);
+	rng_t engine;
 
-	const std::size_t M = 1;
+	using namespace std::string_literals;
+	
+	const std::size_t M = 1000;
 
 	// Edge is absent [0.5, 1.0], [1.8, 2.0], [2.6, 3.2], [4.0, 5.0]
 	const double INFECTION_TIME = 0.2;
@@ -84,42 +97,63 @@ TEST_CASE("Effective transmission time distribution", "[dynamic_nextreaction]") 
 		if (std::holds_alternative<event_t>(any_ev)) {
 			/* Epidemic event */
 			const auto ev = std::get<event_t>(any_ev);
-			return std::make_pair(ev.time, delta_infected(ev.kind));
-		} else if (std::holds_alternative<network_event_t>(any_ev)) {
-			/* Network event */
-			const auto ev = std::get<network_event_t>(any_ev);
-			return std::make_pair(ev.time, 0);
-		} else throw std::logic_error("unknown event type");
+			if (ev.kind == event_kind::infection)
+				return std::make_pair(ev.time, 1.0);
+		}
+		return std::make_pair((double)NAN, (double)NAN);
 	}, t_sim, y_sim_total, y_sim_new, INFINITY, M);
 
 	// Check distribution
 	const auto F = [&](double t) {
 		// Compute the CDF of the effective transmission time, i.e. compute
-		//   exp( - int_0^tau lambda(tau') * epsilon(tau') dtau')
-		// where lambda(tau) = sum_i c[i] * tau^i is the hazard rate, and
-		// epsilon(tau) = 1 if the edge exists at time epsilon, i.e. if
+		//   exp( - int_0^t lambda(t - t_infection) * epsilon(t') dt')
+		// where t_infection is the infection time of the node,
+		// lambda(tau) = sum_i c[i] * tau^i is the hazard rate as used
+		// by transmission_time_polynomial_rate, and epsilon(tau) = 1
+		// if the edge exists at time epsilon, i.e. if
 		//   tau in [0, t_1] u [t_2, t_3] u ...
-		bool edge_state = EDGE_STATE_INITIAL;
+		bool edge_state = !EDGE_STATE_INITIAL;
 		double t1 = 0.0;
-		double t2;
-		double s=0.0;
-		for(std::size_t j=0; t1 < t; j += 1, edge_state != edge_state, t1 = t2) {
-			// skip intervals where the edge does not exist
+		double t2 = 0.0;
+		double s = 0.0;
+		for(std::size_t j=0; j < EDGE_FLIP_TIMES.size(); j += 1, t1 = t2)
+		{
+			// update current interval, skip intervals were edge is absent
+			t2 = EDGE_FLIP_TIMES[j];
+			edge_state = !edge_state;
 			if (!edge_state)
 				continue;
-			// integration endpoint is when the edge next flips, or t, whichever is sooner
-			t2 = (j < EDGE_FLIP_TIMES.size()) ? std::min(EDGE_FLIP_TIMES[j], t) : t;
-			// integrate lambda(tau) over [ t_1, t_2 ] where epsilon == 1
+			// integrate over [0, t] intersect [t_infection, infty] intersect [t1, t2]
+			const double tstart = std::max(t1, INFECTION_TIME);
+			const double tend = std::min(t2, t);
+			if (tstart >= tend)
+				continue;
 			for(std::size_t i=0; i < COEFFS.size(); ++i) {
-				s -= std::pow(t1 - INFECTION_TIME, i+1) * COEFFS[i] / (i+1);
-				s += std::pow(t2 - INFECTION_TIME, i+1) * COEFFS[i] / (i+1);
+				s -= std::pow(tstart - INFECTION_TIME, i+1) * COEFFS[i] / (i+1);
+				s += std::pow(tend - INFECTION_TIME, i+1) * COEFFS[i] / (i+1);
 			}
 		}
-		return exp(-s);
+		return 1.0 - exp(-s);
 	};
-
+	
+	std::vector<double> t_ecdf;
+	for(std::size_t i = 0; i < t_sim.size(); ++i)
+		t_ecdf.push_back((double) (i+1) / t_sim.size());
+	const double dt = t_sim.back() / 1000;
+	std::vector<double> t_grid;
+	std::vector<double> t_cdf;
+	for(double t=0; t <= t_sim.back(); t += dt) {
+		t_grid.push_back(t);
+		t_cdf.push_back(F(t));
+	}
+	
+	plot("nextreaction_dynamic.transmissiontime.pdf", "Transmission time on a fluctuating edge", [&](auto& gp, auto& p) {
+		p.add_plot1d(std::make_pair(t_sim, t_ecdf), "with lines title 'empirical CDF'"s);
+		p.add_plot1d(std::make_pair(t_grid, t_cdf), "with lines title 'theoretical CDF'"s);
+   });
+	
 	const double pval = kstest(t_sim, F);
-	CHECK(pval >= 0.001);
+	CHECK(pval >= 0.01);
 }
 
 /**
