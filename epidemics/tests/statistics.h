@@ -99,9 +99,13 @@ inline double kstest(const std::vector<double>& values, std::function<double(dou
 	for(std::size_t i=0; i < N; ++i) {
 		const double x = vsorted[i];
 		const double Ft = cdf(x);
+		if ((Ft < 0.0) || (Ft > 1.0))
+			throw std::range_error("CDF(" + std::to_string(x) + ") = " + std::to_string(Ft) + " with lies outside of [0,1]");
 		const double Fe1 = (double)i / N;
 		const double Fe2 = (double)(i+1) / N;
-		ks = std::max(ks, std::max(std::abs(Ft - Fe1), std::abs(Ft - Fe2)));
+		const double dist = std::max(std::abs(Ft - Fe1), std::abs(Ft - Fe2));
+		assert((dist >= 0.0) && (dist <= 1.0));
+		ks = std::max(ks, dist);
 	}
 	boost::math::kolmogorov_smirnov_distribution<double> ks_dist(N);
 	return quantile(complement(ks_dist, ks));
