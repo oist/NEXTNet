@@ -684,6 +684,7 @@ public:
 		if (i != end())
 			return { i, false };
 		elements.push_back(value);
+		index[value] = elements.size() - 1;
 		return { elements.end() - 1, true };
 	}
 	
