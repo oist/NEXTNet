@@ -187,7 +187,7 @@ TEST_CASE("Epidemic on empirical network nb2 with infitesimal edge durations", "
 #if ENABLE_PLOTTING
 TEST_CASE("Plot SIS average trajectories on dynamic empirical network", "[dynamic_nextreaction]")
 {
-	rng_t engine;
+	rng_t engine(2);
 
 	using namespace std::string_literals;
 
