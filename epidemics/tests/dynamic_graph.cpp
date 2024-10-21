@@ -2,6 +2,43 @@
 #include "tests/statistics.h"
 #include "dynamic_graph.h"
 
+
+TEST_CASE("dynamic activity driven graph", "[activity_driven_graph]") {
+
+	rng_t engine;
+
+	const int N = 50;
+	const std::vector<double> activity_rates(N,1.0);
+	const double recovery_rate = 1.0;
+	const double eta = 1.0;
+	const double m =1;
+	activity_driven_network g(activity_rates,eta,m,recovery_rate,engine);
+
+	double TMAX = 50;
+	
+	double t = 0 ;
+	while (t < TMAX){
+
+		t = g.next(engine);
+		// std::cout << t<< std::endl;
+		g.step(engine,TMAX);
+	}
+
+	double av_k = 0;
+	for (node_t node = 0; node < N; node++)
+	{
+		const double k = (double) g.outdegree(node);
+		av_k += k/N;
+	}
+	
+	double expected_k = 0.5*(1.25);
+	INFO(av_k);
+	INFO(expected_k);
+	REQUIRE(abs(av_k- expected_k) < 0.05);
+	
+}
+
+
 TEST_CASE("dynamic empirical graph", "[dynamic_graph]") {
     rng_t engine;
 

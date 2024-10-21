@@ -12,6 +12,9 @@
 #include "random.h"
 #include "graph.h"
 
+//--------------------------------------
+//----------DYNAMIC NETWORKS------------
+//--------------------------------------
 
 struct dynamic_network : virtual graph {
 	virtual absolutetime_t next(rng_t& engine) = 0;
@@ -20,7 +23,6 @@ struct dynamic_network : virtual graph {
 
 	virtual void notify_epidemic_event(event_t ev, rng_t& engine);
 };
-
 
 struct graph_mutable : virtual graph
 {
@@ -42,7 +44,6 @@ private:
 	std::vector<drawable_set<node_t>> adjacencylist;
 };
 
-
 struct dynamic_empirical_network : virtual dynamic_network, virtual graph_mutable
 {
 	enum edge_duration_kind {
@@ -61,59 +62,7 @@ private:
 
 };
 
-
-/**
- * @brief Dynamic version of an Erdös-Reyni graph
- *
- * Each edge appears and disappears independently according to a two-state
- * Markov process with rate alpha for an edge appearing and rate beta for
- * the rate disappearing. The dynamic Erdös-Reyni graph is parametrized
- * in terms of the number n of nodes, the average degree k of a node, and
- * the timescale tau on which edges appear and disappear. In terms of these
- * parameter, each edge has probability p_+ = k / (n - 1) to exist at at
- * certain point in time, which is satiesfied for rates of appearance and
- * disappearance of alpha = p_+ / tau and beta = p_- / tau = (1 - p_+) / tau.
- *
- * To see this, consider a two-state Markov process with states + (present)
- * and - (absent) with rates alpha for the transition - -> +, and beta for
- * + -> -. The steady-state probabilites are then p_+ = alpha / (alpha + beta),
- * and p_- = beta / (alpha + beta).
- */
-struct dynamic_erdos_reyni : virtual dynamic_network, virtual erdos_reyni {
-	dynamic_erdos_reyni(int size, double avg_degree, double timescale, rng_t& engine);
-
-	virtual absolutetime_t next(rng_t& engine);
-
-	virtual std::optional<network_event_t> step(rng_t& engine, absolutetime_t max_time = NAN);
-
-	void add_edge(node_t node, node_t neighbour);
-	void remove_edge(node_t node, int neighbour_index);
-
-	/* Probability that a particular edge is present in the steady-state */
-	const double edge_probability;
-	/* Rate with which absent edges appear */
-	const double alpha;
-	/* Rate with which present edges vanish */
-	const double beta;
-	
-	/* Current time (time of last event) */
-	absolutetime_t current_time = 0.0;
-	
-	/* Time of next edge appearing or vanishing */
-	absolutetime_t next_time = NAN;
-	
-	/* Unreported event for the reverse edge of the last edge event reported  */
-	std::optional<network_event_t> reverse_edge_event;
-
-	unsigned int edges_absent;
-	unsigned int edges_present;
-	
-	/* Degree-weighted node distribution */
-	dyndist::vector_distribution<unsigned> weighted_nodes;
-};
-
-
-struct activity_driven_network : virtual dynamic_network, virtual graph_adjacencylist {
+struct activity_driven_network : virtual dynamic_network {
 
 	// activity_driven_network(std::vector<int> degreelist, double eta, double m, transmission_time& psi, transmission_time* rho,rng_t& engine);
 
@@ -121,16 +70,20 @@ struct activity_driven_network : virtual dynamic_network, virtual graph_adjacenc
     double eta;
     double m;
     double recovery_rate;
-	rng_t engine;
 
     // Constructor to initialize the variables
     activity_driven_network(std::vector<double> activity_rates, double eta, double m, double recovery_rate, rng_t& engine);
 
 
+    /* Adjacency list of the graph */
+    std::vector<std::vector<node_t>>  adjacencylist;
+
 	virtual absolutetime_t next(rng_t& engine);
 
 	virtual std::optional<network_event_t> step(rng_t& engine, absolutetime_t max_time = NAN);
 
+	void activate_node(node_t node,rng_t& engine);
+	void deactivate_node(node_t node,rng_t& engine);
 
 	/* Current time (time of last event) */
 	absolutetime_t current_time = 0.0;
@@ -140,7 +93,15 @@ struct activity_driven_network : virtual dynamic_network, virtual graph_adjacenc
 		
 	/* Time of next edge appearing or vanishing */
 	absolutetime_t next_time = NAN;
+	
+	/* Unreported event for the reverse edge of the last edge event reported  */
+	std::optional<network_event_t> reverse_edge_event;
 
+	unsigned int edges_absent;
+	unsigned int edges_present;
+
+	/* Degree-weighted node distribution */
+	dyndist::vector_distribution<unsigned> weighted_nodes;
 
 	struct active_edges_entry {
 			/*
@@ -195,4 +156,57 @@ struct activity_driven_network : virtual dynamic_network, virtual graph_adjacenc
 	#endif
 
 
+};
+
+
+
+
+/**
+ * @brief Dynamic version of an Erdös-Reyni graph
+ *
+ * Each edge appears and disappears independently according to a two-state
+ * Markov process with rate alpha for an edge appearing and rate beta for
+ * the rate disappearing. The dynamic Erdös-Reyni graph is parametrized
+ * in terms of the number n of nodes, the average degree k of a node, and
+ * the timescale tau on which edges appear and disappear. In terms of these
+ * parameter, each edge has probability p_+ = k / (n - 1) to exist at at
+ * certain point in time, which is satiesfied for rates of appearance and
+ * disappearance of alpha = p_+ / tau and beta = p_- / tau = (1 - p_+) / tau.
+ *
+ * To see this, consider a two-state Markov process with states + (present)
+ * and - (absent) with rates alpha for the transition - -> +, and beta for
+ * + -> -. The steady-state probabilites are then p_+ = alpha / (alpha + beta),
+ * and p_- = beta / (alpha + beta).
+ */
+struct dynamic_erdos_reyni : virtual dynamic_network, virtual erdos_reyni {
+	dynamic_erdos_reyni(int size, double avg_degree, double timescale, rng_t& engine);
+
+	virtual absolutetime_t next(rng_t& engine);
+
+	virtual std::optional<network_event_t> step(rng_t& engine, absolutetime_t max_time = NAN);
+
+	void add_edge(node_t node, node_t neighbour);
+	void remove_edge(node_t node, int neighbour_index);
+
+	/* Probability that a particular edge is present in the steady-state */
+	const double edge_probability;
+	/* Rate with which absent edges appear */
+	const double alpha;
+	/* Rate with which present edges vanish */
+	const double beta;
+	
+	/* Current time (time of last event) */
+	absolutetime_t current_time = 0.0;
+	
+	/* Time of next edge appearing or vanishing */
+	absolutetime_t next_time = NAN;
+	
+	/* Unreported event for the reverse edge of the last edge event reported  */
+	std::optional<network_event_t> reverse_edge_event;
+
+	unsigned int edges_absent;
+	unsigned int edges_present;
+	
+	/* Degree-weighted node distribution */
+	dyndist::vector_distribution<unsigned> weighted_nodes;
 };
