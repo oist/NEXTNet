@@ -7,9 +7,22 @@
 
 #include "dynamic_graph.h"
 
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+/*----------- DYNAMIC_NETWORK ------------------------*/
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+
+
 void dynamic_network::notify_epidemic_event(event_t ev, rng_t& engine) {
 	/* Do nothing by default */
 }
+
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+/*----------- DYNAMIC NETWORK: EMPIRICAL -==----------*/
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
 
 dynamic_empirical_network::dynamic_empirical_network(std::string path_to_file,double dt){
 
@@ -235,6 +248,11 @@ std::optional<network_event_t> dynamic_empirical_network::step(rng_t& engine, ab
 
 }
 
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+/*----------- DYNAMIC NETWORK: ERDÖS REYNI -----------*/
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
 
 dynamic_erdos_reyni::dynamic_erdos_reyni(int size, double avg_degree, double timescale, rng_t& engine)
 	:erdos_reyni(size, avg_degree, engine)

@@ -89,6 +89,23 @@ struct dynamic_empirical_network : virtual dynamic_network {
 // 	dyndist::vector_distribution<unsigned> weighted_nodes;
 // };
 
+/**
+ * @brief Dynamic version of an Erdös-Reyni graph
+ *
+ * Each edge appears and disappears independently according to a two-state
+ * Markov process with rate alpha for an edge appearing and rate beta for
+ * the rate disappearing. The dynamic Erdös-Reyni graph is parametrized
+ * in terms of the number n of nodes, the average degree k of a node, and
+ * the timescale tau on which edges appear and disappear. In terms of these
+ * parameter, each edge has probability p_+ = k / (n - 1) to exist at at
+ * certain point in time, which is satiesfied for rates of appearance and
+ * disappearance of alpha = p_+ / tau and beta = p_- / tau = (1 - p_+) / tau.
+ *
+ * To see this, consider a two-state Markov process with states + (present)
+ * and - (absent) with rates alpha for the transition - -> +, and beta for
+ * + -> -. The steady-state probabilites are then p_+ = alpha / (alpha + beta),
+ * and p_- = beta / (alpha + beta).
+ */
 struct dynamic_erdos_reyni : virtual dynamic_network, virtual erdos_reyni {
 	dynamic_erdos_reyni(int size, double avg_degree, double timescale, rng_t& engine);
 
