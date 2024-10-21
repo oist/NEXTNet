@@ -6,18 +6,19 @@
  * @brief Test case to verify `dynamic_empirical_network`
  */
 TEST_CASE("dynamic empirical graph", "[empirical_graph]") {
+    rng_t engine;
 
 	double dt = 4;
-	dynamic_empirical_network g(TEST_DATA_DIR "/test_empirical_network.txt", dt);
-	INFO("adjacencylist size: " << g.adjacencylist.size() << " (Expected: 13)");
-	REQUIRE(g.adjacencylist.size()==14);
-	INFO("Edges size: " << g.edges.size() << " (Expected: 4)");
-	REQUIRE(g.edges.size()==8);
-
+	dynamic_empirical_network g(TEST_DATA_DIR "/test_empirical_network.txt", dynamic_empirical_network::finite_duration, dt);
 	REQUIRE(g.nodes()==14);
-	REQUIRE(g.neighbour(0,0)==13);
-	REQUIRE(g.outdegree(0)==2);
-	REQUIRE(g.outdegree(10)==0);
+
+	/* evolve network up to time 0 */
+	while (g.next(engine) <= 0.0)
+		g.step(engine, 0.0);
+
+	REQUIRE(g.neighbour(0,0) == 13);
+	REQUIRE(g.outdegree(0) == 2);
+	REQUIRE(g.outdegree(10) == 0);
 }
 
 

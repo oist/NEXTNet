@@ -165,19 +165,12 @@ TEST_CASE("Epidemic on empirical network nb2", "[dynamic_nextreaction]") {
     bool SHUFFLE_NEIGHBOURS=false;
 	bool EDGES_CONCURRENT = true;
     bool SIR = false;
-    struct {
-        std::unique_ptr<dynamic_empirical_network> g;
-        std::unique_ptr<transmission_time_gamma> psi;
-        std::unique_ptr<transmission_time_gamma> rho;
-        std::unique_ptr<simulate_next_reaction> nr;
-        std::unique_ptr<simulate_on_dynamic_network> simulator;
-    } env;
-    env.g = std::make_unique<dynamic_empirical_network>(TEST_DATA_DIR "/college.tab", 3);
-    env.psi = std::make_unique<transmission_time_gamma>(50,3);
-    env.rho = std::make_unique<transmission_time_gamma>(100,1);
-    env.nr = std::make_unique<simulate_next_reaction>(*env.g.get(), *env.psi.get(), env.rho.get(), SHUFFLE_NEIGHBOURS, EDGES_CONCURRENT, SIR);
-    env.nr->add_infections({ std::make_pair(0, 0.0) });
-    env.simulator = std::make_unique<simulate_on_dynamic_network>(*env.nr.get());
+    dynamic_empirical_network g(TEST_DATA_DIR "/college.tab", dynamic_empirical_network::finite_duration, 3);
+    transmission_time_gamma psi(50,3);
+    transmission_time_gamma rho(100,1);
+    simulate_next_reaction nr(g, psi, &rho, SHUFFLE_NEIGHBOURS, EDGES_CONCURRENT, SIR);
+    nr.add_infections({ std::make_pair(0, 0.0) });
+    simulate_on_dynamic_network sim(nr);
 
     std::vector<double> infection_times;
     std::vector<int> infected_array;
@@ -188,7 +181,7 @@ TEST_CASE("Epidemic on empirical network nb2", "[dynamic_nextreaction]") {
     int number_of_edges = 0;
 
     while(true){
-        std::optional<network_or_epidemic_event_t> any_ev = env.simulator -> step(engine,200);
+        std::optional<network_or_epidemic_event_t> any_ev = sim.step(engine,200);
 
         if (any_ev.has_value()) {
             if (std::holds_alternative<event_t>(*any_ev)) {
@@ -229,8 +222,8 @@ TEST_CASE("Epidemic on empirical network nb2", "[dynamic_nextreaction]") {
             break;
         }
     }
-
 }
+
 /**
  * @brief Test case to verify `dynamic_empirical_network`
  */
@@ -258,7 +251,7 @@ TEST_CASE("Epidemic on empirical network", "[dynamic_nextreaction]") {
 			std::unique_ptr<simulate_next_reaction> nr;
 			std::unique_ptr<simulate_on_dynamic_network> simulator;
 		} env;
-		env.g = std::make_unique<dynamic_empirical_network>(TEST_DATA_DIR "/test_empirical_network.txt", dt);
+		env.g = std::make_unique<dynamic_empirical_network>(TEST_DATA_DIR "/test_empirical_network.txt", dynamic_empirical_network::finite_duration, dt);
 		env.psi = std::make_unique<transmission_time_gamma>(PSI_MEAN, PSI_VARIANCE);
 		env.rho = std::make_unique<transmission_time_gamma>(RHO_MEAN, RHO_VARIANCE);
 		env.nr = std::make_unique<simulate_next_reaction>(*env.g.get(), *env.psi.get(), env.rho.get(), false, true);
