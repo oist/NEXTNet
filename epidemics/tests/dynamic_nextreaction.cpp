@@ -189,8 +189,8 @@ TEST_CASE("Epidemic on empirical network nb2 with infitesimal edge durations", "
 }
 
 
-TEST_CASE("Plot SIS average trajectories on dynamic empirical network", "[dynamic_nextreaction]") {
-
+TEST_CASE("Plot SIS average trajectories on dynamic empirical network", "[dynamic_nextreaction]")
+{
 	rng_t engine;
 
 	using namespace std::string_literals;
@@ -201,41 +201,47 @@ TEST_CASE("Plot SIS average trajectories on dynamic empirical network", "[dynami
 	const double PSI_VARIANCE = 1;
 	const double RHO_MEAN = 10;
 	const double RHO_VARIANCE = 1;
-	const double TMAX = 100;
+	const double TMAX = 2000;
+	const double DT = 2;
 
-	double dt = 1000;
-	std::vector<double> t_sim, y_sim_new, y_sim_total;
-	average_trajectories(engine, [&](rng_t& engine) {
-		struct {
-			std::unique_ptr<dynamic_empirical_network> g;
-			std::unique_ptr<transmission_time_gamma> psi;
-			std::unique_ptr<transmission_time_gamma> rho;
-			std::unique_ptr<simulate_next_reaction> nr;
-			std::unique_ptr<simulate_on_dynamic_network> simulator;
-		} env;
-		env.g = std::make_unique<dynamic_empirical_network>(TEST_DATA_DIR "/test_empirical_network.txt", dynamic_empirical_network::finite_duration, dt);
-		env.psi = std::make_unique<transmission_time_gamma>(PSI_MEAN, PSI_VARIANCE);
-		env.rho = std::make_unique<transmission_time_gamma>(RHO_MEAN, RHO_VARIANCE);
-		env.nr = std::make_unique<simulate_next_reaction>(*env.g.get(), *env.psi.get(), env.rho.get(), false, true);
-		env.nr->add_infections({ std::make_pair(0, 0.0)});
-		env.simulator = std::make_unique<simulate_on_dynamic_network>(*env.nr.get());
-		return env;
-	}, [](network_or_epidemic_event_t any_ev) {
-		/* Translate event into a pair (time, delta) */
-		if (std::holds_alternative<event_t>(any_ev)) {
-			/* Epidemic event */
-			const auto ev = std::get<event_t>(any_ev);
-			return std::make_pair(ev.time, delta_infected(ev.kind));
-		} else if (std::holds_alternative<network_event_t>(any_ev)) {
-			/* Network event */
-			const auto ev = std::get<network_event_t>(any_ev);
-			return std::make_pair(ev.time, 0);
-		} else throw std::logic_error("unknown event type");
-	}, t_sim, y_sim_total, y_sim_new, TMAX, M);
-	
-	
-	plot("nextreaction_dynamic.sis.mean.pdf", "SIS average trajectory on dynamic empirical graph [NextReaction]", [&](auto& gp, auto& p) {
-		p.add_plot1d(std::make_pair(t_sim, y_sim_new), "with lines title 'dynamic network'"s);
+	auto run = [&](dynamic_empirical_network::edge_duration_kind duration_kind) -> auto {
+		std::vector<double> t, y_tot, y_new;
+		average_trajectories(engine, [&](rng_t& engine) {
+			struct {
+				std::unique_ptr<dynamic_empirical_network> g;
+				std::unique_ptr<transmission_time_gamma> psi;
+				std::unique_ptr<transmission_time_gamma> rho;
+				std::unique_ptr<simulate_next_reaction> nr;
+				std::unique_ptr<simulate_on_dynamic_network> simulator;
+			} env;
+			env.g = std::make_unique<dynamic_empirical_network>(TEST_DATA_DIR "/college.tab", duration_kind, DT);
+			env.psi = std::make_unique<transmission_time_gamma>(PSI_MEAN, PSI_VARIANCE);
+			env.rho = std::make_unique<transmission_time_gamma>(RHO_MEAN, RHO_VARIANCE);
+			env.nr = std::make_unique<simulate_next_reaction>(*env.g.get(), *env.psi.get(), env.rho.get(), false, true);
+			env.nr->add_infections({ std::make_pair(0, 0.0)});
+			env.simulator = std::make_unique<simulate_on_dynamic_network>(*env.nr.get());
+			return env;
+		}, [](network_or_epidemic_event_t any_ev) {
+			/* Translate event into a pair (time, delta) */
+			if (std::holds_alternative<event_t>(any_ev)) {
+				/* Epidemic event */
+				const auto ev = std::get<event_t>(any_ev);
+				return std::make_pair(ev.time, delta_infected(ev.kind));
+			} else if (std::holds_alternative<network_event_t>(any_ev)) {
+				/* Network event */
+				const auto ev = std::get<network_event_t>(any_ev);
+				return std::make_pair(ev.time, 0);
+			} else throw std::logic_error("unknown event type");
+		}, t, y_tot, y_new, TMAX, M, 1);
+		return std::make_tuple(t, y_tot, y_new);
+	};
+
+	auto edge_fin = run(dynamic_empirical_network::finite_duration);
+	auto edge_infi = run(dynamic_empirical_network::infitesimal_duration);
+
+	plot("dynamic.empirical.sis.mean.pdf", "SIS average trajectory on dynamic empirical graph [NextReaction]", [&](auto& gp, auto& p) {
+		p.add_plot1d(std::make_pair(std::get<0>(edge_fin), std::get<2>(edge_fin)), "with lines title 'finite edge duration'"s);
+		p.add_plot1d(std::make_pair(std::get<0>(edge_infi), std::get<2>(edge_infi)), "with lines title 'infitesimal edge duration'"s);
    });
 }
 
@@ -299,7 +305,7 @@ TEST_CASE("Plot SIS average trajectory on dynamic Erdös-Reyni networks", "[dyna
 	}, t_sim_static, y_sim_total_static, y_sim_new_static, TMAX, M);
 
 	
-	plot("nextreaction_dynamic.sis.mean.pdf", "SIS average trajectory on dynamic Erdös-Reyni [NextReaction]", [&](auto& gp, auto& p) {
+	plot("dynamic.er.sis.mean.pdf", "SIS average trajectory on dynamic Erdös-Reyni [NextReaction]", [&](auto& gp, auto& p) {
 		p.add_plot1d(std::make_pair(t_sim, y_sim_new), "with lines title 'dynamic network'"s);
 		p.add_plot1d(std::make_pair(t_sim_static, y_sim_new_static), "with lines title 'static network'"s);
    });
