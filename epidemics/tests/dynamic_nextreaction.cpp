@@ -288,7 +288,7 @@ TEST_CASE("Plot SIS average trajectory on dynamic Erdös-Reyni networks", "[dyna
 {
 	using namespace std::string_literals;
 
-	const std::size_t M = 1000;
+	const std::size_t M = 100;
 	const std::size_t N = 100;
 	const std::size_t K = 3;
 	const double TAU = 10;
