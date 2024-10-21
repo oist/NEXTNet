@@ -82,6 +82,9 @@ average_trajectories(rng_t& engine, Factory factory,
 	typedef std::pair<double, double> pair_t;
 	typedef std::vector<pair_t> pairs_t;
 	
+	if (output_every <= 0)
+		output_every = runs;
+	
 	// Run <runs> simulations, collect a large vector of
 	// (time, delta) pairs which allow easy averaging
 	auto results_par = parallel<pairs_t>(runs, engine, [factory, Tmax](rng_t& thread_engine) {
@@ -125,7 +128,7 @@ average_trajectories(rng_t& engine, Factory factory,
 		cum_inf += std::max(d, 0.0);
 
 		/* Only output every <output_every>-th element */
-		if ((output_every > 0) && (++i != output_every))
+		if (++i != output_every)
 			continue;
 		i = 0;
 
@@ -154,6 +157,9 @@ average_trajectories(rng_t& engine, Factory factory, DeltaInfectedFunctor f,
 {
 	typedef std::pair<double, double> pair_t;
 	typedef std::vector<pair_t> pairs_t;
+	
+	if (output_every <= 0)
+		output_every = runs;
 	
 	// Run <runs> simulations, collect a large vector of
 	// (time, delta) pairs which allow easy averaging
@@ -204,7 +210,7 @@ average_trajectories(rng_t& engine, Factory factory, DeltaInfectedFunctor f,
 		cum_inf += std::max(d, 0.0);
 
 		/* Only output every <output_every>-th element */
-		if ((output_every > 0) && (++i != output_every))
+		if (++i != output_every)
 			continue;
 		i = 0;
 
