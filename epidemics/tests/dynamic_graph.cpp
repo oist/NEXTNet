@@ -1,37 +1,6 @@
 #include "tests/stdafx.h"
+#include "tests/statistics.h"
 #include "dynamic_graph.h"
-
-namespace {
-
-int edge_index(node_t nodeA, node_t nodeB) {
-	/* Translate (src, dst) pair of edge into an index 0 <= i < N*(N - 1)/2
-	 * We first translate (src, dist) into (n1, n2) where n1 > n2. Since there
-	 * are n1 valid edge descriptors (n1, x) for a node n1, there are
-	 * 0 + 1 + ... + (n1 - 1) = n * (n1 - 1) / 2 edge descriptors (n1p, x)
-	 * with n1p < n1. The mapping of (n1, n2) to (n1 * (n1 - 1) / 2) + n2
-	 * is thus bijective onto [0, E) where E is the number of possible edges.
-	 */
-	const int n1 = std::max(nodeA, nodeB);
-	const int n2 = std::min(nodeA, nodeB);
-	REQUIRE(n1 > n2);
-	const int e = (n1 * (n1 - 1) / 2) + n2;
-	REQUIRE(e >= 0);
-	return e;
-}
-
-/**
- * @brief Simple symmetric Z-test (similar to a t-Test but for known variance)
- *
- * @return The symmetric p-value
- */
-inline double ztest(double mean_obs, double sd_true, double mean_true) {
-	using namespace std;
-	const double z = (mean_obs - mean_true) / sd_true;
-	return 1 - std::erf(abs(z) / sqrt(2));
-}
-
-}
-
 
 /**
  * @brief Test case to verify `dynamic_empirical_network`
@@ -75,7 +44,7 @@ TEST_CASE("dynamic Erdös-Reyni", "[dynamic_graph]") {
 		const int k = g.outdegree(a);
 		for(int j=0; j < k; ++j) {
 			const node_t b = g.neighbour(a, j);
-			const int e = edge_index(a, b);
+			const int e = edge_index_undirected(a, b);
 			if (a > b)
 				continue;
 			REQUIRE(edge_presence[e].empty());
@@ -90,7 +59,7 @@ TEST_CASE("dynamic Erdös-Reyni", "[dynamic_graph]") {
 	/* Evolve dynamic network */
 	while (auto ev = g.step(engine, TMAX)) {
 		const network_event_t event = *ev;
-		const int e = edge_index(event.source_node, event.target_node);
+		const int e = edge_index_undirected(event.source_node, event.target_node);
 		
 		switch (event.kind) {
 			case network_event_kind::neighbour_added:

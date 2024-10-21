@@ -93,6 +93,55 @@ double inverse_survival_function(double u, double precision, T f, Args... args) 
 }
 
 /**
+ * @brief edge_index One-to-one map of edges (i,j) of an undirected graph to {0,...,|E|-1}
+ *
+ * Translate (i, j) where 0 <= i,j < N into an index 0 <= i < N*(N - 1)/2.
+ * We first translate (i, j) into (n1, n2) where n1 > n2. Since there
+ * are n1 valid edge descriptors (n1, x) for a node n1, there are
+ * 0 + 1 + ... + (n1 - 1) = n * (n1 - 1) / 2 edge descriptors (n1p, x)
+ * with n1p < n1. The mapping of (n1, n2) to (n1 * (n1 - 1) / 2) + n2
+ * is thus bijective onto [0, E) where E is the number of possible edges
+ * in an undirected graph with N nodes.
+ *
+ * @param i first incident node
+ * @param j second incident node
+ * @return an integer from {0,...,|E|-1} where |E| is the number of edges
+ */
+inline unsigned long edge_index_undirected(node_t i, node_t j)
+{
+	if ((i < 0) || (j < 0) || (i == j))
+		throw std::range_error("node (i,j) indices must be non-negative and different");
+	const unsigned long n1 = (unsigned long)std::max(i, j);
+	const unsigned long n2 = (unsigned long)std::min(i, j);
+	assert(n1 > n2);
+	const unsigned long k = (n1 * (n1 - 1) / 2) + n2;
+	assert(k >= 0);
+	return k;
+}
+
+/**
+ * @brief edge_index One-to-on map of {0,...,|E|-1} onto edges (i,j) of an undirected graph
+ *
+ * @param e edge index from {0,...,|E|-1} where |E| is the number of edges
+ * @return an undirected edge (i,j), normalized such that i > j.
+ */
+
+inline std::pair<node_t, node_t> edge_undirected(unsigned long k)
+{
+    // Check that double precision suffices to distinguish edge indices
+    if (8.0 * (double) k == (8.0 * (double) k + 1.0))
+        throw std::range_error("edge index out of range");
+    // Find n1 by inverting edge_index_undirected()
+    const double n1p = std::floor(0.5 + 0.5*std::pow(1 + 8*k, 0.5));
+    if (n1p > (double)std::numeric_limits<node_t>::max())
+        throw std::range_error("edge index out of range");
+    const node_t n1 = (node_t)n1p;
+    const node_t n2 = (node_t)(k - (unsigned long)n1p);
+    assert(n1 > n2);
+    return std::make_pair(n1, n2);
+}
+
+/**
  * @brief Represents a set of integers the allows random elements and non-elements to be sampled
  *
  * Operations `insert()` and `erase()` take time O(log n) where n is the number of elements in the set.
