@@ -101,7 +101,7 @@ TEST_CASE("Effective transmission time distribution", "[dynamic_nextreaction]") 
 				return std::make_pair(ev.time, 1.0);
 		}
 		return std::make_pair((double)NAN, (double)NAN);
-	}, t_sim, y_sim_total, y_sim_new, INFINITY, M);
+	}, t_sim, y_sim_total, y_sim_new, INFINITY, M, 1);
 
 	// Check distribution
 	const auto F = [&](double t) {
