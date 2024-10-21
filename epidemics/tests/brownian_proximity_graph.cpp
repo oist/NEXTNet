@@ -62,6 +62,7 @@ TEST_CASE("Epidemic on Brownian proximity graph", "[brownian_proximity_graph]") 
 };
 #endif
 
+#if ENABLE_PLOTTING
 TEST_CASE("Plot SIS average trajectory on Brownian proximity graph", "[brownian_proximity_graph]")
 {
 	using namespace std::string_literals;
@@ -143,3 +144,5 @@ TEST_CASE("Plot SIS average trajectory on Brownian proximity graph", "[brownian_
 		p.add_plot1d(std::make_pair(t_sim_erdos, y_sim_erdos_new), "with lines title 'Dynamic Erdos'"s);
    });
 }
+#endif
+

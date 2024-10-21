@@ -147,11 +147,13 @@ TEST_CASE("Effective transmission time distribution", "[dynamic_nextreaction]") 
 		t_cdf.push_back(F(t));
 	}
 	
-	plot("nextreaction_dynamic.transmissiontime.pdf", "Transmission time on a fluctuating edge", [&](auto& gp, auto& p) {
+#if ENABLE_PLOTTING
+	plot("dynamic.transmissiontime.pdf", "Transmission time on a fluctuating edge", [&](auto& gp, auto& p) {
 		p.add_plot1d(std::make_pair(t_sim, t_ecdf), "with lines title 'empirical CDF'"s);
 		p.add_plot1d(std::make_pair(t_grid, t_cdf), "with lines title 'theoretical CDF'"s);
    });
-	
+#endif
+
 	const double pval = kstest(t_sim, F);
 	CHECK(pval >= 0.01);
 }
@@ -182,7 +184,7 @@ TEST_CASE("Epidemic on empirical network nb2 with infitesimal edge durations", "
 	while (sim.step(engine));
 }
 
-
+#if ENABLE_PLOTTING
 TEST_CASE("Plot SIS average trajectories on dynamic empirical network", "[dynamic_nextreaction]")
 {
 	rng_t engine;
@@ -238,7 +240,9 @@ TEST_CASE("Plot SIS average trajectories on dynamic empirical network", "[dynami
 		p.add_plot1d(std::make_pair(std::get<0>(edge_infi), std::get<2>(edge_infi)), "with lines title 'infitesimal edge duration'"s);
    });
 }
+#endif
 
+#if ENABLE_PLOTTING
 TEST_CASE("Plot SIS average trajectory on dynamic Erdös-Reyni networks", "[dynamic_nextreaction]")
 {
 	using namespace std::string_literals;
@@ -304,3 +308,4 @@ TEST_CASE("Plot SIS average trajectory on dynamic Erdös-Reyni networks", "[dyna
 		p.add_plot1d(std::make_pair(t_sim_static, y_sim_new_static), "with lines title 'static network'"s);
    });
 }
+#endif
