@@ -127,7 +127,7 @@ TEST_CASE("dynamic Erdös-Reyni", "[dynamic_graph]") {
 		 *                 as TMAX goes to infinity (per counting process theory)
 		 *   Avg(present): Average of exponentially distributed waiting times with mean TAU/(1-P)
 		 *   Avg(absent) : Average of exponentially distributed waiting times with mean TAU/P
-		 *   P(present)  : Scaled sum of exponentially distributed waiting times with mean 1/(TAU*(1-P))
+		 *   P(present)  : Scaled sum of TMAX/mu exponentially distributed waiting times with mean TAU/(1-P)
 		 * We use a simple z-test, i.e. assume normality and known variance of all tested quantities.
 		 * Since we test each edge separately, the p-value threshold of 0.01 is Bonferroni-corrected by
 		 * dividing by the number of edges.
