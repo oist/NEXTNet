@@ -33,7 +33,7 @@ struct simulation_algorithm {
 	
 	virtual void notify_infected_node_neighbour_added(network_event_t event, rng_t& engine) = 0;
 
-	virtual void notify_contact(network_event_t event, rng_t& engine);
+	virtual void notify_infected_contact(network_event_t event, rng_t& engine);
 
     virtual void add_infections(const std::vector<std::pair<node_t, absolutetime_t>>& v) = 0;
 

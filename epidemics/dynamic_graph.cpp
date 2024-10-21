@@ -172,8 +172,8 @@ std::optional<network_event_t> dynamic_empirical_network::step(rng_t& engine, ab
 					return event;
 				break;
 			default:
-				/* nothing to do */
-				break;
+				/* never skipped */
+				return event;
 		}
 	}
 	return std::nullopt;

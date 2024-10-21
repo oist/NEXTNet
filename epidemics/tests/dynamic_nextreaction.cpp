@@ -156,72 +156,36 @@ TEST_CASE("Effective transmission time distribution", "[dynamic_nextreaction]") 
 	CHECK(pval >= 0.01);
 }
 
-/**
- * @brief Test case to verify `dynamic_empirical_network`
- */
-TEST_CASE("Epidemic on empirical network nb2", "[dynamic_nextreaction]") {
-    rng_t engine(0);
+TEST_CASE("Epidemic on empirical network nb2 with finite edge durations", "[dynamic_nextreaction]") {
+	rng_t engine(0);
 
-    bool SHUFFLE_NEIGHBOURS=false;
+	bool SHUFFLE_NEIGHBOURS=false;
 	bool EDGES_CONCURRENT = true;
-    bool SIR = false;
-    dynamic_empirical_network g(TEST_DATA_DIR "/college.tab", dynamic_empirical_network::finite_duration, 3);
-    transmission_time_gamma psi(50,3);
-    transmission_time_gamma rho(100,1);
-    simulate_next_reaction nr(g, psi, &rho, SHUFFLE_NEIGHBOURS, EDGES_CONCURRENT, SIR);
-    nr.add_infections({ std::make_pair(0, 0.0) });
-    simulate_on_dynamic_network sim(nr);
+	bool SIR = false;
+	dynamic_empirical_network g(TEST_DATA_DIR "/college.tab", dynamic_empirical_network::finite_duration, 3);
+	transmission_time_gamma psi(50,3);
+	transmission_time_gamma rho(100,1);
+	simulate_next_reaction nr(g, psi, &rho, SHUFFLE_NEIGHBOURS, EDGES_CONCURRENT, SIR);
+	nr.add_infections({ std::make_pair(0, 0.0) });
+	simulate_on_dynamic_network sim(nr);
 
-    std::vector<double> infection_times;
-    std::vector<int> infected_array;
-    std::vector<double> network_event_times;
-    std::vector<int> edges_array;
+	while (sim.step(engine));
+}
 
-    int number_of_infected = 0;
-    int number_of_edges = 0;
+TEST_CASE("Epidemic on empirical network nb2 with infitesimal edge durations", "[dynamic_nextreaction]") {
+	rng_t engine(0);
 
-    while(true){
-        std::optional<network_or_epidemic_event_t> any_ev = sim.step(engine,200);
+	bool SHUFFLE_NEIGHBOURS=false;
+	bool EDGES_CONCURRENT = true;
+	bool SIR = false;
+	dynamic_empirical_network g(TEST_DATA_DIR "/college.tab", dynamic_empirical_network::infitesimal_duration, 3);
+	transmission_time_gamma psi(50,3);
+	transmission_time_gamma rho(100,1);
+	simulate_next_reaction nr(g, psi, &rho, SHUFFLE_NEIGHBOURS, EDGES_CONCURRENT, SIR);
+	nr.add_infections({ std::make_pair(0, 0.0) });
+	simulate_on_dynamic_network sim(nr);
 
-        if (any_ev.has_value()) {
-            if (std::holds_alternative<event_t>(*any_ev)) {
-                /* Epidemic event */
-                const auto& ev = std::get<event_t>(*any_ev);
-                infection_times.push_back(ev.time);
-                switch (ev.kind) {
-                    case event_kind::infection:
-                    case event_kind::outside_infection:
-                        number_of_infected++;
-                        break;
-                    case event_kind::reset:
-						number_of_infected--;
-						break;
-                    default: throw std::logic_error("invalid event kind");
-                }
-
-                infected_array.push_back(number_of_infected);
-
-            } else if (std::holds_alternative<network_event_t>(*any_ev)) {
-                /* Network event */
-                const auto& ev = std::get<network_event_t>(*any_ev);
-                network_event_times.push_back(ev.time);
-                switch (ev.kind){
-                    case network_event_kind::neighbour_added: 
-						number_of_edges++;
-						break;
-                    case network_event_kind::neighbour_removed:
-						number_of_edges--;
-						break;
-                    default: throw std::logic_error("invalid event kind");
-                }
-                edges_array.push_back(number_of_edges);
-            } else {
-                throw std::logic_error("unknown event type");
-            }
-        } else {
-            break;
-        }
-    }
+	while (sim.step(engine));
 }
 
 /**

@@ -93,7 +93,7 @@ void simulate_next_reaction::notify_infected_node_neighbour_added(network_event_
 	push_edge(e);
 }
 
-void simulate_next_reaction::notify_contact(network_event_t event, rng_t& engine)
+void simulate_next_reaction::notify_infected_contact(network_event_t event, rng_t& engine)
 {
 	/* An instantenous contact occured, check if it leads to a transmission.
 	 * Event must occur now, not in the future
@@ -103,7 +103,7 @@ void simulate_next_reaction::notify_contact(network_event_t event, rng_t& engine
 	/* Query state of source node */
 	const auto source_state = infected.find(event.source_node);
 	if (source_state == infected.end())
-		return;
+		throw std::logic_error("notify_infected_contact called for non-infected source node");
 
 	/* Computing tranmission probability */
 	assert(event.time >= source_state->second.infection_time);

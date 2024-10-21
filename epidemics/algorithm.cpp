@@ -9,7 +9,7 @@ using namespace std::string_literals;
 //----------SIMULATION_ALGORITHM--------
 //--------------------------------------
 
-void simulation_algorithm::notify_contact(network_event_t event, rng_t& engine)
+void simulation_algorithm::notify_infected_contact(network_event_t event, rng_t& engine)
 {
 	throw std::logic_error("instantenous contacts are not implemented for this simulation algorithm");
 }
@@ -87,8 +87,20 @@ simulate_on_dynamic_network::step(rng_t& engine, absolutetime_t maxtime)
 					break;
 				}
 				case network_event_kind::instantenous_contact: {
-					/* infitesimal contact between nodes */
-					simulation.notify_contact(ev, engine);
+					/* instantenous contact, check if the source node is infected, otherwise nothing to do */
+					auto it = infected_neighbour_state.find(ev.source_node);
+					if (it != infected_neighbour_state.end()) {
+						/* source infected, find the state of the neighbour */
+						auto& neighbours = it->second;
+						auto it2 = neighbours.find(ev.target_node);
+						/* check state */
+						if ((it2 == neighbours.end()) || (it2->second == neighbour_state_t::admissible)) {
+							/* neighbour state is admissible (default), report contact */
+							simulation.notify_infected_contact(ev, engine);
+						}
+						/* nothing to do if the neighbour state is masked or transmitted */
+					}
+					break;
 				}
 				default:
 					throw std::logic_error("invalid network event kind: "s + name(ev.kind));
