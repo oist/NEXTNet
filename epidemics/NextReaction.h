@@ -36,6 +36,8 @@ public:
 	
 	virtual void notify_infected_node_neighbour_added(network_event_t event, rng_t& engine);
 
+	virtual void notify_contact(network_event_t event, rng_t& engine);
+
     virtual bool is_infected(node_t) const;
 
     struct infected_state_t {

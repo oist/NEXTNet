@@ -90,7 +90,8 @@ struct event_t {
 enum class network_event_kind : unsigned int {
 	none = 0,
 	neighbour_added = 1,
-	neighbour_removed = 2
+	neighbour_removed = 2,
+	instantenous_contact = 3,
 };
   
 /**
@@ -101,6 +102,7 @@ inline const char* name(network_event_kind kind) {
 		case network_event_kind::none: return "none";
 		case network_event_kind::neighbour_added: return "neighbour_added";
 		case network_event_kind::neighbour_removed: return "neighbour_removed";
+		case network_event_kind::instantenous_contact: return "instantenous_contact";
 		default: return NULL;
 	}
 }
@@ -113,6 +115,7 @@ struct network_event_t {
 	node_t source_node = -1;
 	node_t target_node = -1;
 	absolutetime_t time = INFINITY;
+	double infitesimal_duration = NAN;
 };
 
 /**

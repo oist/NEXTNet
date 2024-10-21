@@ -5,9 +5,18 @@
 
 using namespace std::string_literals;
 
-//------------------------------------------
-//--epidemic_on_dynamic_network_simulation--
-//------------------------------------------
+//--------------------------------------
+//----------SIMULATION_ALGORITHM--------
+//--------------------------------------
+
+void simulation_algorithm::notify_contact(network_event_t event, rng_t& engine)
+{
+	throw std::logic_error("instantenous contacts are not implemented for this simulation algorithm");
+}
+
+//--------------------------------------
+//----SIMULATE_ON_DYNAMIC_NETWORK-------
+//--------------------------------------
 
 simulate_on_dynamic_network::simulate_on_dynamic_network(simulation_algorithm& sim)
 	:network(dynamic_cast<dynamic_network*>(&sim.get_network())), simulation(sim)
@@ -76,6 +85,10 @@ simulate_on_dynamic_network::step(rng_t& engine, absolutetime_t maxtime)
 						/* nothing to do if the neighbour state is transmitted */
 					}
 					break;
+				}
+				case network_event_kind::instantenous_contact: {
+					/* infitesimal contact between nodes */
+					simulation.notify_contact(ev, engine);
 				}
 				default:
 					throw std::logic_error("invalid network event kind: "s + name(ev.kind));

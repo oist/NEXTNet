@@ -93,6 +93,37 @@ void simulate_next_reaction::notify_infected_node_neighbour_added(network_event_
 	push_edge(e);
 }
 
+void simulate_next_reaction::notify_contact(network_event_t event, rng_t& engine)
+{
+	/* An instantenous contact occured, check if it leads to a transmission.
+	 * Event must occur now, not in the future
+	 */
+	assert(active_edges.empty() || (top_edge().time >= event.time));
+
+	/* Query state of source node */
+	const auto source_state = infected.find(event.source_node);
+	if (source_state == infected.end())
+		return;
+
+	/* Computing tranmission probability */
+	assert(event.time >= source_state->second.infection_time);
+	const double p = psi.hazardrate(event.time - source_state->second.infection_time) * event.infitesimal_duration;
+	if (!std::bernoulli_distribution(p)(engine))
+		return;
+
+	/* Queue infection, this will be the next event that occurs (see assert above) */
+	active_edges_entry e;
+	e.kind = event_kind::infection;
+	e.time = event.time;
+	e.node = event.target_node;
+	e.source_time = source_state->second.infection_time;
+	e.source_node = event.source_node;
+	e.source_reset = source_state->second.reset_time;
+	e.neighbour_index = -1;
+	e.neighbours_remaining = 0;
+	push_edge(e);
+}
+
 std::optional<event_t> simulate_next_reaction::step_infection(const active_edges_entry& next, event_filter_t evf, rng_t& engine)
 {
     /*
@@ -340,5 +371,3 @@ const transmission_time& simulate_next_reaction::transmission_time() const {
 const transmission_time* simulate_next_reaction::reset_time() const {
     return rho;
 }
-
-
