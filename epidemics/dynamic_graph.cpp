@@ -13,9 +13,49 @@
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
 
-
 void dynamic_network::notify_epidemic_event(event_t ev, rng_t& engine) {
 	/* Do nothing by default */
+}
+
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+/*----------- MUTABLE_GRAPH --------------------------*/
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+
+void graph_mutable::resize(node_t nodes)
+{
+	adjacencylist.resize((std::size_t)nodes);
+}
+
+bool graph_mutable::has_edge(node_t src, node_t dst)
+{
+	auto& al = adjacencylist.at(src);
+	return (al.find(dst) != al.end());
+}
+
+bool graph_mutable::add_edge(node_t src, node_t dst)
+{
+	return adjacencylist.at(src).insert(dst).second;
+}
+
+bool graph_mutable::remove_edge(node_t src, node_t dst) {
+	return (adjacencylist.at(src).erase(dst) > 0);
+}
+
+node_t graph_mutable::nodes() {
+	return adjacencylist.size();
+}
+
+node_t graph_mutable::neighbour(node_t node, int neighbour_index) {
+	const auto& al = adjacencylist.at(node);
+	if ((neighbour_index < 0) || ((std::size_t)neighbour_index >= al.size()))
+		return -1;
+	return al[neighbour_index];
+}
+
+index_t graph_mutable::outdegree(node_t node) {
+	return (index_t) adjacencylist.at(node).size();
 }
 
 /*----------------------------------------------------*/
@@ -24,228 +64,119 @@ void dynamic_network::notify_epidemic_event(event_t ev, rng_t& engine) {
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
 
-dynamic_empirical_network::dynamic_empirical_network(std::string path_to_file,double dt){
+dynamic_empirical_network::dynamic_empirical_network(std::string path_to_file, dynamic_empirical_network::edge_duration_kind contact_type, interval_t dt)
+{
+	node_t max_node = 0;
 
-    std::ifstream file(path_to_file); // Open the CSV file
-    
-	if (!file.is_open()) {
-        throw std::runtime_error("Error: Unable to open file: " + path_to_file);
-    }
-	std::set<int> set_active_edges;
-
-	int nb_nodes = 0;
-
-    std::string line;
-    while (std::getline(file, line)) { // Read each line of the CSV file
-        std::vector<int> row;
-        std::istringstream iss(line);
+	/* read whitespace-separated file */
+	std::ifstream file(path_to_file);
+	if (!file.is_open())
+		throw std::runtime_error("unable to open file: " + path_to_file);
+	std::string line;
+	while (std::getline(file, line)) {
+		/* read line of the form: src <space> dst <space> time */
+		std::istringstream iss(line);
 		int src,dst;
-		double next_time;
-		if (iss >> src >> dst >> next_time){
-			bool duplicate = false;
+		double time;
+		if (!(iss >> src >> dst >> time) || (src < 0) || (dst < 0))
+			throw std::runtime_error("unable to parse line: " + line);
+		max_node = std::max(max_node, std::max(src, dst));
 
-
-			for (auto it = edges.rbegin(); it != edges.rend(); ++it) {
-
-				/* this edge already existed at some point*/
-				if ((it->source_node == src) && (it->target_node ==dst)){
-					
-					/* we need to update and extend the edge's life duration*/
-					if (it -> time + dt >= next_time) {
-						it -> time = next_time + dt;
-						assert(it-> kind == network_event_kind::neighbour_removed);
-						duplicate=true;
-					}
-					/*break from the vector loop*/
-					break;
-				}
-			}
-			if (!duplicate){
-				edges.push_back( network_event_t{
+		/* queue event */
+		switch (contact_type) {
+			case finite_duration: {
+				network_event_t ev1 {
 					.kind = network_event_kind::neighbour_added,
-					.source_node = src, .target_node = dst, .time = next_time
-				});
+					.source_node = src,
+					.target_node = dst,
+					.time = time - dt/2
+				};
+				event_queue.push_back(ev1);
 
-				edges.push_back( network_event_t{
+				network_event_t ev2 {
 					.kind = network_event_kind::neighbour_removed,
-					.source_node = src, .target_node = dst, .time = next_time + dt
-				});
+					.source_node = src,
+					.target_node = dst,
+					.time = time + dt/2
+				};
+				event_queue.push_back(ev2);
+				break;
 			}
-			nb_nodes = std::max({nb_nodes, src, dst});
-			
+			case infitesimal_duration: {
+				network_event_t ev {
+					.kind = network_event_kind::instantenous_contact,
+					.source_node = src,
+					.target_node = dst,
+					.time = time,
+					.infitesimal_duration = dt
+				};
+				event_queue.push_back(ev);
+				break;
+			}
 		}
 	}
 
+	/* make sure events are sorted */
+	auto cmp = [](const network_event_t& a, const network_event_t& b) {
+		return a.time < b.time;
+	};
+	if (!std::is_sorted(event_queue.begin(), event_queue.end(), cmp))
+		std::sort(event_queue.begin(), event_queue.end(), cmp);
 
-
-	adjacencylist.resize(nb_nodes+1);
-	// Sort the vector in increasing order of 'time'
-    std::sort(edges.begin(), edges.end(), [](const network_event_t& a, const network_event_t& b) {
-        return a.time < b.time;
-    });
-
-	for (node_t i = 0; i < (int) edges.size(); i++)
-	{
-		const network_event_t edge = edges[i];
-		if (edge.time > 0)
-			break;
-		adjacencylist[edge.source_node].push_back(edge.target_node);
-		// adjacencylist[edge.target_node].push_back(edge.source_node);
-	}
-	
-
-	max_index = (int) edges.size();
-
+	/* Allocate adjacency list */
+	resize(max_node + 1);
 }
 
-node_t dynamic_empirical_network::nodes() {
-    return (node_t)adjacencylist.size();
-}    
-
-node_t dynamic_empirical_network::neighbour(node_t node, int neighbour_index) {
-    const auto& n = adjacencylist.at(node);
-    if ((neighbour_index < 0) || (n.size() <= (unsigned int)neighbour_index))
-        return -1;
-    return n[neighbour_index];
-}
-
-index_t dynamic_empirical_network::outdegree(node_t node) {
-    return (index_t) adjacencylist.at(node).size();
-}
-
-
-absolutetime_t dynamic_empirical_network::next(rng_t& engine) {
-	// if (!std::isnan(next_time))
-	// 	return next_time;
-	
-	/* No unreported reverse-edge event should exit */
-	// assert(!reverse_edge_event);
-
-	if (time_index >= (int) edges.size()){
-		return INFINITY;
-	}
-	next_time = edges[time_index].time;
-	return next_time;
-}
-
-int dynamic_empirical_network::present_edges(double t){
-
-	
-	int nb_edges = 0;
-	for (auto edge : edges) {
-		// if (edge.time < t)
-		// 	continue;
-		
-		if (edge.time > t)
-			break;
-
-		if (edge.kind==network_event_kind::neighbour_added){
-			nb_edges++;
-		} else if (edge.kind==network_event_kind::neighbour_removed){
-			nb_edges--;
-		}
-
-	
-	}
-	return nb_edges;
-}
-
-
-
-double dynamic_empirical_network::average_degree(double t){
-
-	std::unordered_map<int, int> degree;
-	int nb_edges = 0;
-
-
-	for (auto edge : edges) {
-		// if (edge.time < t)
-		// 	continue;
-		
-		if (edge.time > t)
-			break;
-
-		const int src = edge.source_node;
-		const int dst = edge.target_node;
-
-		if (edge.kind==network_event_kind::neighbour_added){
-			nb_edges++;
-			degree[src]++;
-			degree[dst]++;
-		} else if (edge.kind==network_event_kind::neighbour_removed){
-			degree[src]--;
-			degree[dst]--;
-			nb_edges--;
+absolutetime_t dynamic_empirical_network::next(rng_t& engine)
+{
+	/* find next actual event, skipping over events that do nothing */
+	for(network_event_t& event: event_queue) {
+		switch (event.kind) {
+			case network_event_kind::neighbour_added:
+				if (!has_edge(event.source_node, event.target_node))
+					return event.time;
+				break;
+			case network_event_kind::neighbour_removed:
+				if (has_edge(event.source_node, event.target_node))
+					return event.time;
+				break;
+			default:
+				return event.time;
 		}
 	}
-
-	int active_nodes = 0;
-	// Iterate over the map and count nodes having at least degree 1
-    for (const auto& pair : degree) {
-        if (pair.second >= 1) {
-            active_nodes++;
-        }
-    }
-	return (double) 2*nb_edges/active_nodes;
+	return INFINITY;
 }
 
-std::optional<network_event_t> dynamic_empirical_network::step(rng_t& engine, absolutetime_t max_time) {
-	
-	/* Determine time of next event if necessary, return if after max_time */
-	if (std::isnan(next_time))
-		next(engine);
-	if (max_time < next_time)
-		return std::nullopt;
+std::optional<network_event_t> dynamic_empirical_network::step(rng_t& engine, absolutetime_t max_time)
+{
+	/* loop until we find an event, necessary because add/remove may be skipped if edge already exists */
+	while (!event_queue.empty()) {
+		/* process event if not later than max_time */
+		network_event_t event = event_queue.front();
+		if (!std::isnan(max_time) && (event.time > max_time))
+			break;
+		event_queue.pop_front();
 
-	if (time_index == max_index)
-		return std::nullopt;
-
-	// /* Report last reported event again but for the reverse edge */
-	// if (reverse_edge_event) {
-	// 	assert(current_time == next_time);
-	// 	assert(reverse_edge_event->time == next_time);
-	// 	const network_event_t r = *reverse_edge_event;
-	// 	reverse_edge_event = std::nullopt;
-	// 	next_time = NAN;
-	// 	return r;
-	// }
-
-
-	/* Update current time
-	 * We don't reset next_time here because we'll only report the forward event below.
-	 * The reverse event will be reported upon the next invocation of step(), and which
-	 * time next_time will be reset to NAN. Only then will future calls to next() draw
-	 * a new random next_time
-	 */
-	current_time = next_time;
-
-	network_event_t next_event = edges[time_index];
-	time_index++;
-
-	if (next_event.kind==network_event_kind::neighbour_removed){
-
-		auto it = std::find(adjacencylist[next_event.source_node].begin(), adjacencylist[next_event.source_node].end(), next_event.target_node);
-    	if (it != adjacencylist[next_event.source_node].end()) adjacencylist[next_event.source_node].erase(it);
-
-		// it = std::find(adjacencylist[next_event.target_node].begin(), adjacencylist[next_event.target_node].end(), next_event.source_node);
-    	// if (it != adjacencylist[next_event.target_node].end()) adjacencylist[next_event.target_node].erase(it);
-
-		
-	} else if (next_event.kind==network_event_kind::neighbour_added){
-
-		auto it = std::find(adjacencylist[next_event.source_node].begin(), adjacencylist[next_event.source_node].end(), next_event.target_node);
-    	if (it == adjacencylist[next_event.source_node].end())
-			adjacencylist[next_event.source_node].push_back(next_event.target_node);
-		// adjacencylist[next_event.target_node].push_back(next_event.source_node);
+		/* update graph
+		 * NOTE: The event-skipping logic below must be kept in sync with next()
+		 */
+		switch (event.kind) {
+			case network_event_kind::neighbour_added:
+				/* add edge, report event unless edge already existed */
+				if (add_edge(event.source_node, event.target_node))
+					return event;
+				break;
+			case network_event_kind::neighbour_removed:
+				/* remove edge, report event if edge didn't exist */
+				if (remove_edge(event.source_node, event.target_node))
+					return event;
+				break;
+			default:
+				/* nothing to do */
+				break;
+		}
 	}
-
-	// reverse_edge_event = network_event_t {
-	// 	.kind = next_event.kind,
-	// 	.source_node = next_event.target_node, .target_node =  next_event.source_node, .time = next_time
-	// };
-	return next_event;
-
-
+	return std::nullopt;
 }
 
 /*----------------------------------------------------*/

@@ -24,42 +24,42 @@ struct dynamic_network : virtual graph {
 	virtual void notify_epidemic_event(event_t ev, rng_t& engine);
 };
 
-struct dynamic_empirical_network : virtual dynamic_network {
+struct graph_mutable : virtual graph
+{
+	void resize(node_t nodes);
 
-	dynamic_empirical_network(std::string path_to_file,double dt);
+	bool has_edge(node_t src, node_t dst);
+
+	bool add_edge(node_t src, node_t dst);
+
+	bool remove_edge(node_t src, node_t dst);
+
+	virtual node_t nodes();
+
+	virtual node_t neighbour(node_t node, int neighbour_index);
+
+	virtual index_t outdegree(node_t node);
+
+private:
+	std::vector<drawable_set<node_t>> adjacencylist;
+};
+
+struct dynamic_empirical_network : virtual dynamic_network, virtual graph_mutable
+{
+	enum edge_duration_kind {
+		finite_duration = 1,
+		infitesimal_duration = 2
+	};
+
+	dynamic_empirical_network(std::string path_to_file, edge_duration_kind contact_type, double dt);
 
 	virtual absolutetime_t next(rng_t& engine);
 
 	virtual std::optional<network_event_t> step(rng_t& engine, absolutetime_t max_time = NAN);
 
-	/* Current time (time of last event) */
-	absolutetime_t current_time = 0.0;
-	
-	/* Time of next edge appearing or vanishing */
-	absolutetime_t next_time = NAN;
+private:
+	std::deque<network_event_t> event_queue;
 
-	/* timestamps of all appearing or vanishing edges (sorted vector)*/
-	std::vector<network_event_t> edges; 
-
-	/* Index of the next network_event*/
-	int time_index = 0;
-
-	int max_index = -1;
-
-	node_t nodes();
-
-	node_t neighbour(node_t node, int neighbour_index) ;
-
-	index_t outdegree(node_t node);
-
-	/* return number of edges existing at time t*/
-	int present_edges(double t);
-
-	/* return average degree of active nodes at time t*/
-	double average_degree(double t);
-
-    /* Adjacency list of the graph */
-    std::vector<std::vector<node_t>>  adjacencylist;
 };
 
 // struct activity_driven_network : virtual dynamic_network {
