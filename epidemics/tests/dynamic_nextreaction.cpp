@@ -188,10 +188,8 @@ TEST_CASE("Epidemic on empirical network nb2 with infitesimal edge durations", "
 	while (sim.step(engine));
 }
 
-/**
- * @brief Test case to verify `dynamic_empirical_network`
- */
-TEST_CASE("Epidemic on empirical network", "[dynamic_nextreaction]") {
+
+TEST_CASE("Plot SIS average trajectories on dynamic empirical network", "[dynamic_nextreaction]") {
 
 	rng_t engine;
 

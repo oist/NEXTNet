@@ -2,10 +2,7 @@
 #include "tests/statistics.h"
 #include "dynamic_graph.h"
 
-/**
- * @brief Test case to verify `dynamic_empirical_network`
- */
-TEST_CASE("dynamic empirical graph", "[empirical_graph]") {
+TEST_CASE("dynamic empirical graph", "[dynamic_graph]") {
     rng_t engine;
 
 	double dt = 4;
@@ -21,10 +18,6 @@ TEST_CASE("dynamic empirical graph", "[empirical_graph]") {
 	REQUIRE(g.outdegree(10) == 0);
 }
 
-
-/**
- * @brief Test case to verify `dynamic_erdos_reyni`
- */
 TEST_CASE("dynamic Erdös-Reyni", "[dynamic_graph]") {
 	const int N = 20;
 	const int E = N*(N-1)/2;
