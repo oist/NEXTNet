@@ -120,6 +120,14 @@ if (NOT SERIALIZE)
     else()
         message("Thread Building Blocks: Not Found")
     endif()
+else()
+    # It seems that the mere presence of TBB on a system causes
+    # the parallel STL backend that uses TBB to be selected, which
+    # then causes linker errors if TBB is not actually linked. It
+    # seems that defining this macro forces the serial backend and
+    # prevents the linker errors. This is probably the wrong solution
+    # but it works.
+    add_compile_definitions(_PSTL_PAR_BACKEND_SERIAL)
 endif()
 
 # Gnuplot is optional, if present can generate plos
