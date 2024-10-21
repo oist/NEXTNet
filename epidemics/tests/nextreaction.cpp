@@ -79,9 +79,9 @@ TEST_CASE("Plot SIS average trajectory (NextReaction)", "[nextreaction]") {
 	using namespace std::string_literals;
     std::mt19937 engine;
 
-	const int M = 10;
-    const int N = 10000;
-    const double T = 100;
+	const int M = 50;
+    const int N = 500;
+    const double T = 75;
     const double R0 = 3;
 
     const double MEAN = 3;
