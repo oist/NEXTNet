@@ -64,7 +64,11 @@ int program_benchmark(int argc, const char * argv[]) {
 				std::unique_ptr<simulation_algorithm> simulator;
 			} env;
 			env.nw.reset(new erdos_reyni(n, R0, engine));
-			env.simulator.reset(new simulate_next_reaction(*env.nw, psi,&rho,SHUFFLE_NEIGHBOURS,CONCURRENT_EDGES, SIR));
+			simulate_next_reaction::params p;
+			p.shuffle_neighbours = SHUFFLE_NEIGHBOURS;
+			p.edges_concurrent = CONCURRENT_EDGES;
+			p.SIR = SIR;
+			env.simulator.reset(new simulate_next_reaction(*env.nw, psi, &rho, p));
 			return env;
 		}, SIM_MAX, TMAX,MAX_POWER, filename);
 
@@ -75,7 +79,11 @@ int program_benchmark(int argc, const char * argv[]) {
 				std::unique_ptr<simulation_algorithm> simulator;
 			} env;
 			env.nw.reset(new barabasi_albert(n, engine,M));
-			env.simulator.reset(new simulate_next_reaction(*env.nw, psi,&rho,SHUFFLE_NEIGHBOURS,CONCURRENT_EDGES,SIR));
+			simulate_next_reaction::params p;
+			p.shuffle_neighbours = SHUFFLE_NEIGHBOURS;
+			p.edges_concurrent = CONCURRENT_EDGES;
+			p.SIR = SIR;
+			env.simulator.reset(new simulate_next_reaction(*env.nw, psi,&rho,p));
 			return env;
 		}, SIM_MAX, TMAX,MAX_POWER,filename);
 

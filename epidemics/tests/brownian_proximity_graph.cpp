@@ -91,7 +91,7 @@ TEST_CASE("Plot SIS average trajectory on Brownian proximity graph", "[brownian_
 		env.g = std::make_unique<brownian_proximity_graph>(N, K, RADIUS, D, engine);
 		env.psi = std::make_unique<transmission_time_gamma>(PSI_MEAN, PSI_VARIANCE);
 		env.rho = std::make_unique<transmission_time_gamma>(RHO_MEAN, RHO_VARIANCE);
-		env.nr = std::make_unique<simulate_next_reaction>(*env.g.get(), *env.psi.get(), env.rho.get(), false, true);
+		env.nr = std::make_unique<simulate_next_reaction>(*env.g.get(), *env.psi.get(), env.rho.get());
 		env.nr->add_infections({ std::make_pair(0, 0.0)});
 		env.simulator = std::make_unique<simulate_on_dynamic_network>(*env.nr.get());
 		return env;
@@ -120,7 +120,7 @@ TEST_CASE("Plot SIS average trajectory on Brownian proximity graph", "[brownian_
 		env.g = std::make_unique<dynamic_erdos_reyni>(N, K, TAU, engine);
 		env.psi = std::make_unique<transmission_time_gamma>(PSI_MEAN, PSI_VARIANCE);
 		env.rho = std::make_unique<transmission_time_gamma>(RHO_MEAN, RHO_VARIANCE);
-		env.nr = std::make_unique<simulate_next_reaction>(*env.g.get(), *env.psi.get(), env.rho.get(), false, true);
+		env.nr = std::make_unique<simulate_next_reaction>(*env.g.get(), *env.psi.get(), env.rho.get());
 		env.nr->add_infections({ std::make_pair(0, 0.0)});
 		env.simulator = std::make_unique<simulate_on_dynamic_network>(*env.nr.get());
 		return env;

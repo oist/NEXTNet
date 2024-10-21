@@ -23,7 +23,9 @@ TEST_CASE("barabasi_albert", "[graph]") {
     for (int m = 1; m<4 ;m++){
         barabasi_albert nw(SIZE,engine,m);
         transmission_time_gamma psi(MEAN,VARIANCE);
-        simulate_next_reaction simulation(nw,psi,nullptr,SHUFFLE);
+		simulate_next_reaction::params p;
+		p.shuffle_neighbours = SHUFFLE;
+		simulate_next_reaction simulation(nw, psi, nullptr, p);
 
         simulation.add_infections({ std::make_pair(0, 0)});
         int gc = 0;

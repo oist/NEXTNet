@@ -18,16 +18,18 @@
  * @return a pair of pairs containing (1) ordered transmission times
  *         and (2) total number of infections
  */
-template<typename N, typename S, typename ...Args>
+template<typename N, typename S, typename P, typename ...Args>
 std::pair<std::vector<absolutetime_t>, std::vector<absolutetime_t>>
-simulate_SIR(rng_t& engine, const transmission_time& psi, absolutetime_t T, std::size_t Mn, std::size_t Ms, Args&&...args) {
-    auto ts = parallel<std::vector<double>>(Mn, engine, [&psi, T, Ms, &args...](rng_t& thread_engine){
+simulate_trajectory(rng_t& engine, const transmission_time& psi, const P& p,
+					absolutetime_t T, std::size_t Mn, std::size_t Ms, Args&&...args)
+{
+    auto ts = parallel<std::vector<double>>(Mn, engine, [&psi, T, &p, Ms, &args...](rng_t& thread_engine){
         std::vector<double> t = {};
 
         // Simulate Ms times on one network
         N nw(std::forward<Args>(args)..., thread_engine);
         for(std::size_t i=0; i < Ms; ++i) {
-            S sim(nw, psi);
+            S sim(nw, psi, nullptr, p);
             sim.add_infections({ std::make_pair(0, 0.0)});
 
             // Run simulation, collect transmission times

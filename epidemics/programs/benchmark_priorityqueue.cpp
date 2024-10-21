@@ -46,7 +46,9 @@ int program_benchmark_priorityqueue(int argc, const char * argv[])
     const auto rho = transmission_time_lognormal(Mr, Vr);
 
     // Create simulation and specifiy initial set of infections
-    auto sim = simulate_next_reaction(nw, psi, &rho, true, edges_concurrent);
+	simulate_next_reaction::params p;
+	p.edges_concurrent = edges_concurrent;
+    auto sim = simulate_next_reaction(nw, psi, &rho, p);
     sim.add_infections({{0, 0.0}});
 
     // Prepare output

@@ -83,8 +83,6 @@ int program_scale_free(int argc, const char * argv[]) {
 
     std::uniform_int_distribution<> dis(0, size-1);
     std::uniform_real_distribution<> ran(0.0,1.0);
-    const bool SHUFFLE_NEIGHBOURS = false;
-    const bool EDGES_CONCURRENT = true;
     // run simulation
     cout << "running simulation...\n";
     for (int s = 0; s < nb_simulation; s++)
@@ -93,7 +91,7 @@ int program_scale_free(int argc, const char * argv[]) {
             cout <<  s <<" / " << nb_simulation << "\r";
             std::cout.flush();
 
-            simulate_next_reaction simulation(network, psi,nullptr,SHUFFLE_NEIGHBOURS,EDGES_CONCURRENT,false);
+            simulate_next_reaction simulation(network, psi,nullptr);
 
             for (node_t i = 0; i < 1; i++)
             {

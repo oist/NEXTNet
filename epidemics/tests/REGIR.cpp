@@ -49,7 +49,9 @@ TEST_CASE("Plot large-population SIR mean-field (REGIR)", "[REGIR]") {
     transmission_time_gamma psi(MEAN, VARIANCE);
 
     /* Simulate using REGIR reaction M times */
-    auto racyclic = simulate_SIR<acyclic, simulate_regir>(engine, psi, T, M, 1, R0+1, true);
+	simulate_regir::params p;
+    auto racyclic = simulate_trajectory<acyclic, simulate_regir>
+		(engine, psi, p, T, M, 1, R0+1, true);
 
     /* Evaluate analytical solution */
     std::pair<std::vector<double>, std::vector<double>> analytical;

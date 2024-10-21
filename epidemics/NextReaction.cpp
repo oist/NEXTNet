@@ -145,7 +145,7 @@ std::optional<event_t> simulate_next_reaction::step_infection(const active_edges
      */
     if (next.neighbours_remaining > 0) {
 		/* Should never happen if we're making sibling edges active concurrently */
-		assert(!edges_concurrent);
+		assert(!p.edges_concurrent);
 		
         /* This only occurs for infection edges, reset self-loops have no neighbours */
         const node_t neighbour_id = next.source_permutation[next.neighbour_index + 1];
@@ -212,14 +212,14 @@ std::optional<event_t> simulate_next_reaction::step_infection(const active_edges
 
     /* First, create a permutation to shuffle the neighbours if necessary */
     const int neighbours_total = network.outdegree(next.node);
-    permutation<node_t> p;
+    permutation<node_t> pi;
     if (rho && shuffle_neighbours) {
 		/* We should never shuffle neighbours if sibling edges are made active concurrently */
-		assert(!edges_concurrent);
+		assert(!p.edges_concurrent);
 
 		if (neighbours_total < 0)
             throw std::runtime_error("cannot shuffle neighbours if nodes have undefined or infinite degree");
-        p = permutation<node_t>(neighbours_total, engine);
+        pi = permutation<node_t>(neighbours_total, engine);
     }
 
 	/* We now add either only the first (in our permutation) edge to the list
@@ -230,7 +230,7 @@ std::optional<event_t> simulate_next_reaction::step_infection(const active_edges
 	 * is actually the identity map.
 	 */
 	int r;
-	if (edges_concurrent)
+	if (p.edges_concurrent)
 		/* Interate over all neighbours */
 		r = neighbours_total;
 	else if (neighbours_total >= 1)
@@ -241,7 +241,7 @@ std::optional<event_t> simulate_next_reaction::step_infection(const active_edges
 		r = 0;
 	for(int neighbour_i = 0; neighbour_i < r; ++neighbour_i) {
 		/* Get i-th neighbour according to the permutation */
-		const node_t neighbour = network.neighbour(next.node, p[neighbour_i]);
+		const node_t neighbour = network.neighbour(next.node, pi[neighbour_i]);
 		
 		/* This should never happen unless the graph reported the wrong number
 		 * of outgoing edges */
@@ -259,7 +259,7 @@ std::optional<event_t> simulate_next_reaction::step_infection(const active_edges
 		 * the implicit result of putting all the times into the reaction queue,
 		 * and processing it in order.
 		 */
-		const int m = edges_concurrent ? 1 : neighbours_total;
+		const int m = p.edges_concurrent ? 1 : neighbours_total;
 		const double tau = psi.sample(engine, 0, m);
         if (std::isnan(tau) || (tau < 0))
             throw std::logic_error("transmission times must be non-negative");
@@ -274,8 +274,8 @@ std::optional<event_t> simulate_next_reaction::step_infection(const active_edges
             e.source_time = next.time;
             e.source_node = next.node;
             e.source_reset = node_reset_time;
-            if (!edges_concurrent)
-                e.source_permutation = std::move(p);
+            if (!p.edges_concurrent)
+                e.source_permutation = std::move(pi);
             e.neighbour_index = 0;
 			e.neighbours_remaining = m - 1;
 			push_edge(e);
@@ -303,7 +303,7 @@ std::optional<event_t> simulate_next_reaction::step_reset(const active_edges_ent
 	 * "removed" set upon receiving a reset event, and that set would be queried before allowing
 	 * infections to proceed.
 	 */
-	if (SIR) {
+	if (p.SIR) {
 		/* SIR mode, just could the number of removed nodes */
 		removed += 1;
 	} else {

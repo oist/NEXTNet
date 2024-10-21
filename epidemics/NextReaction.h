@@ -9,13 +9,19 @@
 
 class simulate_next_reaction : public simulation_algorithm {
 public:
-    simulate_next_reaction(graph& nw, const class transmission_time& psi_,
+	struct params {
+		params() noexcept {} ;
+		
+		bool shuffle_neighbours = true;
+		bool edges_concurrent = true;
+		bool SIR = false;
+	};
+	
+	simulate_next_reaction(graph& nw, const class transmission_time& psi_,
                            const class transmission_time* rho_ = nullptr,
-                           bool shuffle_neighbours_ = true, bool edges_concurrent_ = false, bool SIR_ = false)
-        :network(nw), psi(psi_), rho(rho_),
-	     edges_concurrent(edges_concurrent_),
-	     shuffle_neighbours(shuffle_neighbours_ && !edges_concurrent_),
-         SIR(SIR_)
+						   params p_ = params())
+		:network(nw), psi(psi_), rho(rho_),
+		 p(p_), shuffle_neighbours(p.shuffle_neighbours && !p.edges_concurrent)
     {}
 
     virtual graph& get_network() const;
@@ -54,11 +60,10 @@ public:
     graph& network;
     const class transmission_time& psi;
     const class transmission_time* rho = nullptr;
-	bool edges_concurrent = false;
-    bool shuffle_neighbours = true;
-    
-    bool SIR = false;
-    int removed = 0; // number of nodes that have recovered and cannot be re infected. (only active in the SIR case).
+	const params p;
+	const bool shuffle_neighbours;
+
+	int removed = 0; // number of nodes that have recovered and cannot be re infected. (only active in the SIR case).
 
     int current_nb_of_infected(){
         return (int) infected.size() - removed;

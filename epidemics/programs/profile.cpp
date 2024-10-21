@@ -42,8 +42,8 @@ int program_profile(int argc, const char * argv[])
     // Run simulation for M steps
     double total_runtime = 0.0;
     for(std::size_t i=0; i < M; ++i) {
-        // Create simulation and specifiy initial set of infections
-        auto sim = simulate_next_reaction(nw, psi, &rho, false, true, true);
+        // Create simulation and specifiy initial set of infections		
+        auto sim = simulate_next_reaction(nw, psi, &rho);
         sim.add_infections({{0, 0.0}});
 
         const auto start = std::chrono::steady_clock::now();

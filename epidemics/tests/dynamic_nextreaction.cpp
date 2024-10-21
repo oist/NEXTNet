@@ -88,7 +88,7 @@ TEST_CASE("Effective transmission time distribution", "[dynamic_nextreaction]") 
 		} env;
 		env.g = std::make_unique<dynamic_single_edge>(EDGE_STATE_INITIAL, EDGE_FLIP_TIMES);
 		env.psi = std::make_unique<transmission_time_polynomial_rate>(COEFFS);
-		env.nr = std::make_unique<simulate_next_reaction>(*env.g.get(), *env.psi.get(), nullptr, false, true);
+		env.nr = std::make_unique<simulate_next_reaction>(*env.g.get(), *env.psi.get(), nullptr);
 		env.nr->add_infections({ std::make_pair(0, INFECTION_TIME)});
 		env.simulator = std::make_unique<simulate_on_dynamic_network>(*env.nr.get());
 		return env;
@@ -159,13 +159,10 @@ TEST_CASE("Effective transmission time distribution", "[dynamic_nextreaction]") 
 TEST_CASE("Epidemic on empirical network nb2 with finite edge durations", "[dynamic_nextreaction]") {
 	rng_t engine(0);
 
-	bool SHUFFLE_NEIGHBOURS=false;
-	bool EDGES_CONCURRENT = true;
-	bool SIR = false;
 	dynamic_empirical_network g(TEST_DATA_DIR "/college.tab", dynamic_empirical_network::finite_duration, 3);
 	transmission_time_gamma psi(50,3);
 	transmission_time_gamma rho(100,1);
-	simulate_next_reaction nr(g, psi, &rho, SHUFFLE_NEIGHBOURS, EDGES_CONCURRENT, SIR);
+	simulate_next_reaction nr(g, psi, &rho);
 	nr.add_infections({ std::make_pair(0, 0.0) });
 	simulate_on_dynamic_network sim(nr);
 
@@ -175,13 +172,10 @@ TEST_CASE("Epidemic on empirical network nb2 with finite edge durations", "[dyna
 TEST_CASE("Epidemic on empirical network nb2 with infitesimal edge durations", "[dynamic_nextreaction]") {
 	rng_t engine(0);
 
-	bool SHUFFLE_NEIGHBOURS=false;
-	bool EDGES_CONCURRENT = true;
-	bool SIR = false;
 	dynamic_empirical_network g(TEST_DATA_DIR "/college.tab", dynamic_empirical_network::infitesimal_duration, 3);
 	transmission_time_gamma psi(50,3);
 	transmission_time_gamma rho(100,1);
-	simulate_next_reaction nr(g, psi, &rho, SHUFFLE_NEIGHBOURS, EDGES_CONCURRENT, SIR);
+	simulate_next_reaction nr(g, psi, &rho);
 	nr.add_infections({ std::make_pair(0, 0.0) });
 	simulate_on_dynamic_network sim(nr);
 
@@ -217,7 +211,7 @@ TEST_CASE("Plot SIS average trajectories on dynamic empirical network", "[dynami
 			env.g = std::make_unique<dynamic_empirical_network>(TEST_DATA_DIR "/college.tab", duration_kind, DT);
 			env.psi = std::make_unique<transmission_time_gamma>(PSI_MEAN, PSI_VARIANCE);
 			env.rho = std::make_unique<transmission_time_gamma>(RHO_MEAN, RHO_VARIANCE);
-			env.nr = std::make_unique<simulate_next_reaction>(*env.g.get(), *env.psi.get(), env.rho.get(), false, true);
+			env.nr = std::make_unique<simulate_next_reaction>(*env.g.get(), *env.psi.get(), env.rho.get());
 			env.nr->add_infections({ std::make_pair(0, 0.0)});
 			env.simulator = std::make_unique<simulate_on_dynamic_network>(*env.nr.get());
 			return env;
@@ -272,7 +266,7 @@ TEST_CASE("Plot SIS average trajectory on dynamic Erdös-Reyni networks", "[dyna
 		env.g = std::make_unique<dynamic_erdos_reyni>(N, K, TAU, engine);
 		env.psi = std::make_unique<transmission_time_gamma>(PSI_MEAN, PSI_VARIANCE);
 		env.rho = std::make_unique<transmission_time_gamma>(RHO_MEAN, RHO_VARIANCE);
-		env.nr = std::make_unique<simulate_next_reaction>(*env.g.get(), *env.psi.get(), env.rho.get(), false, true);
+		env.nr = std::make_unique<simulate_next_reaction>(*env.g.get(), *env.psi.get(), env.rho.get());
 		env.nr->add_infections({ std::make_pair(0, 0.0)});
 		env.simulator = std::make_unique<simulate_on_dynamic_network>(*env.nr.get());
 		return env;
@@ -300,7 +294,7 @@ TEST_CASE("Plot SIS average trajectory on dynamic Erdös-Reyni networks", "[dyna
 		env.g = std::make_unique<erdos_reyni>(N, K, engine);
 		env.psi = std::make_unique<transmission_time_gamma>(PSI_MEAN, PSI_VARIANCE);
 		env.rho = std::make_unique<transmission_time_gamma>(RHO_MEAN, RHO_VARIANCE);
-		env.simulator = std::make_unique<simulate_next_reaction>(*env.g.get(), *env.psi.get(), env.rho.get(), true, false);
+		env.simulator = std::make_unique<simulate_next_reaction>(*env.g.get(), *env.psi.get(), env.rho.get());
 		return env;
 	}, t_sim_static, y_sim_total_static, y_sim_new_static, TMAX, M);
 

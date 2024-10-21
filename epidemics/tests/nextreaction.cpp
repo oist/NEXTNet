@@ -47,9 +47,14 @@ TEST_CASE("Plot large-population SIR mean-field (NextReaction)", "[nextreaction]
     transmission_time_gamma psi(MEAN, VARIANCE);
 
     /* Simulate using next reaction M times */
-    auto rfully = simulate_SIR<fully_connected, simulate_next_reaction>(engine, psifully, T, M, 1, Nfully);
-    auto racyclic = simulate_SIR<acyclic, simulate_next_reaction>(engine, psi, T, M, 1, R0+1, true);
-    auto rerdos = simulate_SIR<erdos_reyni, simulate_next_reaction>(engine, psi, T, M, 1, Nerdos, R0);
+	simulate_next_reaction::params p;
+	p.edges_concurrent = false;
+    auto rfully = simulate_trajectory<fully_connected, simulate_next_reaction>
+		(engine, psifully, p, T,  M, 1, Nfully);
+    auto racyclic = simulate_trajectory<acyclic, simulate_next_reaction>
+		(engine, psi, p, T, M, 1, R0+1, true);
+    auto rerdos = simulate_trajectory<erdos_reyni, simulate_next_reaction>
+		(engine, psi, p, T, M, 1, Nerdos, R0);
 
     /* Evaluate analytical solution */
     std::pair<std::vector<double>, std::vector<double>> analytical;
@@ -94,7 +99,9 @@ TEST_CASE("Plot SIS average trajectory (NextReaction)", "[nextreaction]") {
 			std::unique_ptr<simulation_algorithm> simulator;
 		} env;
 		env.nw.reset(new erdos_reyni(N, R0, engine));
-		env.simulator.reset(new simulate_next_reaction(*env.nw, psi, &rho, true, false));
+		simulate_next_reaction::params p_serial;
+		p_serial.edges_concurrent = false;
+		env.simulator.reset(new simulate_next_reaction(*env.nw, psi, &rho, p_serial));
 		return env;
 	}, t_sim_seq, y_sim_new_seq, y_sim_total_seq, T, M);
 
@@ -106,7 +113,9 @@ TEST_CASE("Plot SIS average trajectory (NextReaction)", "[nextreaction]") {
 			std::unique_ptr<simulation_algorithm> simulator;
 		} env;
 		env.nw.reset(new erdos_reyni(N, R0, engine));
-		env.simulator.reset(new simulate_next_reaction(*env.nw, psi, &rho, false, true));
+		simulate_next_reaction::params p_concurrent;
+		p_concurrent.edges_concurrent = true;
+		env.simulator.reset(new simulate_next_reaction(*env.nw, psi, &rho, p_concurrent));
 		return env;
 	}, t_sim_conc, y_sim_new_conc, y_sim_total_conc, T, M);
 
@@ -148,8 +157,9 @@ TEST_CASE("Fraction of the recovered nodes for SIR on the Erdos-Renyi graph", "[
     transmission_time_gamma rho(MEAN_RECOVERY, VARIANCE_RECOVERY);
 
     erdos_reyni network(size,R0,engine);
-
-    simulate_next_reaction simulation(network,psi,&rho,true,false,true);
+	simulate_next_reaction::params p;
+	p.SIR = true;
+    simulate_next_reaction simulation(network,psi,&rho,p);
     std::uniform_int_distribution<> dis(0, size-1);
 
     // initial infected
@@ -172,5 +182,4 @@ TEST_CASE("Fraction of the recovered nodes for SIR on the Erdos-Renyi graph", "[
     REQUIRE(nb_recovered < size);
     REQUIRE(nb_recovered > 0);
     REQUIRE(std::abs(nb_recovered- Pg * size)/(Pg * size) < 0.1);
-
 }
