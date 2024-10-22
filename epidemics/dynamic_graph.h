@@ -13,7 +13,7 @@
 #include "graph.h"
 
 
-struct dynamic_network : virtual graph {
+struct dynamic_network : public virtual graph {
 	virtual absolutetime_t next(rng_t& engine) = 0;
 
 	virtual std::optional<network_event_t> step(rng_t& engine, absolutetime_t max_time = NAN) = 0;
@@ -22,7 +22,7 @@ struct dynamic_network : virtual graph {
 };
 
 
-struct graph_mutable : virtual graph
+struct graph_mutable : public virtual graph
 {
 	void resize(node_t nodes);
 
@@ -43,7 +43,7 @@ private:
 };
 
 
-struct dynamic_empirical_network : virtual dynamic_network, virtual graph_mutable
+struct dynamic_empirical_network : public virtual dynamic_network, public virtual graph_mutable
 {
 	enum edge_duration_kind {
 		finite_duration = 1,
@@ -129,7 +129,7 @@ struct dynamic_sirx_network : public virtual dynamic_network
  * + -> -. The steady-state probabilites are then p_+ = alpha / (alpha + beta),
  * and p_- = beta / (alpha + beta).
  */
-struct dynamic_erdos_reyni : virtual dynamic_network, virtual erdos_reyni {
+struct dynamic_erdos_reyni : public virtual dynamic_network, public virtual erdos_reyni {
 	dynamic_erdos_reyni(int size, double avg_degree, double timescale, rng_t& engine);
 
 	virtual absolutetime_t next(rng_t& engine);
