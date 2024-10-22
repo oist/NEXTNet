@@ -181,6 +181,198 @@ std::optional<network_event_t> dynamic_empirical_network::step(rng_t& engine, ab
 
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
+/*----------- DYNAMIC NETWORK: SIRX NETWORK ----------*/
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+
+dynamic_sirx_network::dynamic_sirx_network(graph& network_, double kappa0_, double kappa_)
+	:network(network_), network_is_undirected(network.is_undirected()), network_size(network.nodes())
+	,kappa0(kappa0_), kappa(kappa_), queue_next_flipped(is_undirected())
+{
+}
+
+dynamic_sirx_network::node_state_t dynamic_sirx_network::state(node_t node)
+{
+	if (is_infected(node)) {
+		if (is_removed(node))
+			return X;
+		else
+			return I;
+	} else {
+		if (is_removed(node))
+			return R;
+		else
+			return S;
+	}
+}
+
+
+bool dynamic_sirx_network::is_undirected()
+{
+	return network_is_undirected;
+}
+
+node_t dynamic_sirx_network::nodes()
+{
+	return network_size;
+}
+
+node_t dynamic_sirx_network::neighbour(node_t node, int neighbour_index)
+{
+	if (is_removed(node))
+		return -1;
+	return network.neighbour(node, neighbour_index);
+}
+
+index_t dynamic_sirx_network::outdegree(node_t node)
+{
+	if (is_removed(node))
+		return 0;
+	return network.outdegree(node);
+}
+
+void dynamic_sirx_network::notify_epidemic_event(event_t ev, rng_t& engine)
+{
+	switch(ev.kind) {
+		case event_kind::infection:
+		case event_kind::outside_infection:
+			/* mark node as infected */
+			infected.insert(ev.node);
+			/* check if the node was removed and update stats if so
+			 * don't have to checkf or undirected networks, since removing
+			 * all outgoing edges also then removes all incoming ones, so
+			 * removed nodes cannot be infected
+			 */
+			if (!is_undirected() && is_removed(ev.node))
+				removed_infected += 1;
+			else if (is_undirected())
+				assert(!is_removed(ev.node));
+			/* clear previously generated next_time since the rates have changed */
+			next_time = NAN;
+			assert(queue.empty());
+			break;
+		case event_kind::reset:
+			/* mark node as no longer infected */
+			infected.erase(ev.node);
+			/* check if the node was removed and update removed stats if so */
+			if (is_removed(ev.node))
+				removed_infected -= 1;
+			/* clear previously generated next_time since the rates have changed */
+			next_time = NAN;
+			assert(queue.empty());
+			break;
+		default:
+			break;
+	}
+}
+
+absolutetime_t dynamic_sirx_network::next(rng_t& engine)
+{
+	/* generate next time unless already done previously */
+	if (std::isnan(next_time)) {
+		/* should not have queued events */
+		assert(queue.empty());
+		/* removal rate is kappa0 for all non-removed nodes,
+		 * and additionally kappa for all non-removed infected nodes */
+		const double r0 = (network_size - removed.size()) * kappa0;
+		const double r = (infected.size() - removed_infected) * kappa0;
+		std::exponential_distribution dist(r0 + r);
+		next_time = dist(engine);
+	}
+
+	return next_time;
+}
+
+std::optional<network_event_t> dynamic_sirx_network::step(rng_t& engine, absolutetime_t max_time)
+{
+	/* handle queued events */
+	if (!queue.empty() && queue.front().time <= max_time) {
+		/* get next event off queue, it's time must be next_time */
+		network_event_t ev = queue.front();
+		assert(ev.time == next_time);
+		/* for undirected networks, report each edge twice, flipped and unflipped */
+		if (queue_next_flipped) {
+			/* flip edge this time, next time report unflipped edge */
+			assert(is_undirected());
+			std::swap(ev.source_node, ev.target_node);
+			queue_next_flipped = false;
+		} else {
+			/* report unflipped edge and dequeue */
+			queue.pop_front();
+			queue_next_flipped = is_undirected();
+		}
+		/* and clear next_time only once we've emptied the queue */
+		if (queue.empty())
+			next_time = NAN;
+		return ev;
+	}
+
+	while (true) {
+		/* make sure next_time was generated, and skip if past max_time */
+		next(engine);
+		if (next_time > max_time)
+			return std::nullopt;
+		next_time = NAN;
+		/* if there's a queued event, it's time must equal next_time, and since
+		 * next_time <= max_time it should have been reported above, so queue must be empty
+		 */
+		assert(queue.empty);
+		assert(queue_next_flipped == is_undirected());
+
+		/* Determine whether to remove non-specifically or specifically an infected node.
+		 * Total rate of non-specific removal is r0 = size * kappa0,
+		 * total rate of specific removal of infected nodes is r = infected.size * kappa,
+		 * so the probability of a non-specific removal is p0 = r0 / (r + r0).
+		 */
+		node_t n = -1;
+		const double r0 = (network_size - removed.size()) * kappa0;
+		const double r = (infected.size() - removed_infected) * kappa0;
+		const double p0 = r0 / (r0 + r);
+		if (std::bernoulli_distribution(p0)(engine)) {
+			/* non-specific removal */
+			n = std::uniform_int_distribution(0, network_size-1)(engine);
+			removed.insert(n);
+			/* check if the node was infected and update stats if so */
+			if (infected.find(n) != infected.end())
+				removed_infected += 1;
+		} else {
+			/* specific removal of infected node */
+			const node_t n = *infected(engine);
+			removed.insert(n);
+			removed_infected += 1;
+		}
+
+		/* remove edges of removed node, including flipped edges for undirected networks
+		 * NOTE: for directed networks, it would be great to remove also incoming edges,
+		 * but there's currently no way to find them all. So instead we keep incoming edges,
+		 * meaning that removed nodes can still be infected for directed networks,
+		 * but can't infect others.
+		 */
+		std::optional<network_event_t> result;
+		for(int i=0, nn=0; (nn = network.neighbour(n, i)) >= 0; ++i) {
+			network_event_t ev  = {
+				.kind = network_event_kind::neighbour_removed,
+				.source_node = n,
+				.target_node = nn,
+				.time = next_time
+			};
+			/* return first neighbour, queue others
+			 * for undirected networks, also queue the reverse edge of the first neighbour
+			 */
+			if (i == 0)
+				result = ev;
+			if ((i > 0) || is_undirected())
+				queue.push_back(ev);
+		}
+
+		/* return event if we generated one. otherwise, node had no neighbours, so repeat */
+		if (result)
+			return result;
+	}
+}
+
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
 /*----------- DYNAMIC NETWORK: ERDÖS REYNI -----------*/
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
@@ -337,6 +529,7 @@ void dynamic_erdos_reyni::remove_edge(node_t node, int neighbour_index) {
 	edges_absent += 1;
 	edges_present -= 1;
 }
+
 
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/

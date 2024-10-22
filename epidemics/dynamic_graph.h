@@ -62,6 +62,56 @@ private:
 };
 
 
+struct dynamic_sirx_network : public virtual dynamic_network
+{
+	enum node_state_t { S=1, I=2, R=3, X=4 };
+
+	dynamic_sirx_network(graph& network, double kappa0, double kappa);
+
+	virtual bool is_undirected();
+
+	virtual node_t nodes();
+
+	virtual node_t neighbour(node_t node, int neighbour_index);
+
+	virtual index_t outdegree(node_t node);
+
+	virtual void notify_epidemic_event(event_t ev, rng_t& engine);
+
+	virtual absolutetime_t next(rng_t& engine);
+
+	virtual std::optional<network_event_t> step(rng_t& engine, absolutetime_t max_time = NAN);
+
+	bool is_removed(node_t node) { return (removed.find(node) != removed.end()); }
+
+	bool is_infected(node_t node) { return (infected.find(node) != infected.end()); }
+
+	node_state_t state(node_t node);
+
+	graph& network;
+
+	const bool network_is_undirected;
+
+	const node_t network_size;
+
+	const double kappa0;
+
+	const double kappa;
+
+	drawable_set<node_t> infected;
+
+	std::unordered_set<node_t> removed;
+
+	std::size_t removed_infected = 0;
+
+	std::deque<network_event_t> queue;
+
+	bool queue_next_flipped = false;
+
+	double next_time = NAN;
+};
+
+
 /**
  * @brief Dynamic version of an Erdös-Reyni graph
  *
