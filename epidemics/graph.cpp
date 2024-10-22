@@ -24,8 +24,16 @@ node_t graph::nodes() {
     return -1;
 }
 
+bool graph::is_undirected() {
+    return false;
+}
+
 graph::~graph()
 {}
+
+bool graph_is_undirected::is_undirected() {
+    return true;
+}
 
 graph_embedding::~graph_embedding()
 {}

@@ -29,6 +29,12 @@ public:
     virtual ~graph();
     
     /**
+     * @brief Whether the graph is undirected, i.e. whether for every
+     * edge (i,j) there is also an edge (j,i)
+     */
+    virtual bool is_undirected();
+
+    /**
      * @brief Return the number of nodes in the graph. If the number is
      * infinite or unknown, -1 is returned.
      */
@@ -43,6 +49,16 @@ public:
      * @brief Returns the number of (outgoing) edges of the given node
      */
     virtual int outdegree(node_t node) = 0;
+};
+
+/**
+ * @brief Convenience class to mark a graph as undirected
+ *
+ * This avoid having to override is_undirected() in all undirected graphs to
+ * return false. Instead, it suffices to additionally inherit from graph_is_undirected
+ */
+class graph_is_undirected {
+    virtual bool is_undirected();
 };
 
 /**
@@ -106,7 +122,7 @@ public:
 /**
  * @brief A random Watts-Strogatz network
  */
-class watts_strogatz : public virtual graph_adjacencylist {
+class watts_strogatz : public virtual graph_adjacencylist, public virtual graph_is_undirected {
 public:
 	watts_strogatz(node_t size, int k, double p, rng_t& engine);
 
@@ -122,7 +138,7 @@ public:
 /**
  * @brief A random Erdös-Reyni network
  */
-class erdos_reyni : public virtual graph_adjacencylist {
+class erdos_reyni : public virtual graph_adjacencylist, public virtual graph_is_undirected {
 public:
     erdos_reyni(int size, double avg_degree, rng_t& engine);
 };
@@ -134,7 +150,7 @@ public:
 /**
  * @brief A fully-connected network with random edge order
  */
-class fully_connected : public virtual graph {
+class fully_connected : public virtual graph, public virtual graph_is_undirected {
 public:
     fully_connected(int size, rng_t& engine);
 
@@ -155,7 +171,7 @@ public:
 /**
  * @brief A random acyclic network
  */
-class acyclic : public virtual graph {
+class acyclic : public virtual graph, public virtual graph_is_undirected {
 public:
     static double lambda(double mean, int digits);
 
@@ -183,7 +199,7 @@ private:
 /**
  * @brief Network from arbitrary degree distribution. 
  */
-class config_model : public virtual graph_adjacencylist {
+class config_model : public virtual graph_adjacencylist, public virtual graph_is_undirected {
 public:
     config_model(std::vector<int> degreelist, rng_t& engine);
 
@@ -208,7 +224,7 @@ std::vector<int> powerlaw_degree_list(double exponent, int size, rng_t& engine);
  *
  * Based on the algorithm described by Serrano & Boguna, 2005.
  */
-class config_model_clustered_serrano : public virtual graph_adjacencylist {
+class config_model_clustered_serrano : public virtual graph_adjacencylist, public virtual graph_is_undirected {
 public:
 	/**
 	 * @brief Converts c(k) into a number of triangles per degree class.
@@ -295,7 +311,7 @@ public:
  *
  * The degree distribution scales with k^-3.
  */
-class barabasi_albert : public virtual graph_adjacencylist {
+class barabasi_albert : public virtual graph_adjacencylist, public virtual graph_is_undirected {
 public:
     barabasi_albert(int size, rng_t& engine,int m = 1);
 
@@ -306,7 +322,7 @@ public:
 //--------------------------------------
 
 template<unsigned int D>
-class cubic_lattice : public virtual graph, public virtual graph_embedding {
+class cubic_lattice : public virtual graph, public virtual graph_embedding, public virtual graph_is_undirected {
 public:
     const static unsigned int dimension = D;
 
