@@ -213,7 +213,7 @@ std::optional<event_t> simulate_next_reaction::step_infection(const active_edges
     /* First, create a permutation to shuffle the neighbours if necessary */
     const int neighbours_total = network.outdegree(next.node);
     permutation<node_t> pi;
-    if (rho && shuffle_neighbours) {
+    if (shuffle_neighbours) {
 		/* We should never shuffle neighbours if sibling edges are made active concurrently */
 		assert(!p.edges_concurrent);
 
