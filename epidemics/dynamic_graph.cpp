@@ -316,7 +316,7 @@ std::optional<network_event_t> dynamic_sirx_network::step(rng_t& engine, absolut
 		/* if there's a queued event, it's time must equal next_time, and since
 		 * next_time <= max_time it should have been reported above, so queue must be empty
 		 */
-		assert(queue.empty);
+		assert(queue.empty());
 		assert(queue_next_flipped == is_undirected());
 
 		/* Determine whether to remove non-specifically or specifically an infected node.
