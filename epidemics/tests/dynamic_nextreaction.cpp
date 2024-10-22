@@ -309,3 +309,67 @@ TEST_CASE("Plot SIS average trajectory on dynamic Erdös-Reyni networks", "[dyna
    });
 }
 #endif
+
+#if ENABLE_PLOTTING
+TEST_CASE("Plot SIR average trajectory on SIRX-Erdös-Reyni network", "[nextreaction]") {
+	using namespace std::string_literals;
+
+	const std::size_t M = 50;
+	const std::size_t N = 1000;
+	const std::size_t K = 4;
+	const double PSI_MEAN = 3;
+	const double PSI_VARIANCE = 1;
+	const double KAPPA0 = 0.01;
+	const double KAPPA = 0.1;
+	const double TMAX = 20;
+
+	rng_t engine;
+	std::vector<double> t_sim, y_sim_new, y_sim_total;
+	average_trajectories(engine, [&](rng_t& engine) {
+		struct {
+			std::unique_ptr<erdos_reyni> g_static;
+			std::unique_ptr<dynamic_sirx_network> g;
+			std::unique_ptr<transmission_time_gamma> psi;
+			std::unique_ptr<simulate_next_reaction> nr;
+			std::unique_ptr<simulate_on_dynamic_network> simulator;
+		} env;
+		env.g_static = std::make_unique<erdos_reyni>(N, K, engine);
+		env.g = std::make_unique<dynamic_sirx_network>(*env.g_static.get(), KAPPA0, KAPPA);
+		env.psi = std::make_unique<transmission_time_gamma>(PSI_MEAN, PSI_VARIANCE);
+		env.nr = std::make_unique<simulate_next_reaction>(*env.g.get(), *env.psi.get(), nullptr);
+		env.nr->add_infections({ std::make_pair(0, 0.0)});
+		env.simulator = std::make_unique<simulate_on_dynamic_network>(*env.nr.get());
+		return env;
+	}, [](network_or_epidemic_event_t any_ev) {
+		/* Translate event into a pair (time, delta) */
+		if (std::holds_alternative<event_t>(any_ev)) {
+			/* Epidemic event */
+			const auto ev = std::get<event_t>(any_ev);
+			return std::make_pair(ev.time, delta_infected(ev.kind));
+		} else if (std::holds_alternative<network_event_t>(any_ev)) {
+			/* Network event */
+			const auto ev = std::get<network_event_t>(any_ev);
+			return std::make_pair(ev.time, 0);
+		} else throw std::logic_error("unknown event type");
+	}, t_sim, y_sim_total, y_sim_new, TMAX, M);
+
+	std::vector<double> t_sim_static, y_sim_new_static, y_sim_total_static;
+	average_trajectories(engine, [&](rng_t& engine){
+		struct {
+			std::unique_ptr<erdos_reyni> g;
+			std::unique_ptr<transmission_time_gamma> psi;
+			std::unique_ptr<simulation_algorithm> simulator;
+		} env;
+		env.g = std::make_unique<erdos_reyni>(N, K, engine);
+		env.psi = std::make_unique<transmission_time_gamma>(PSI_MEAN, PSI_VARIANCE);
+		env.simulator = std::make_unique<simulate_next_reaction>(*env.g.get(), *env.psi.get(), nullptr);
+		return env;
+	}, t_sim_static, y_sim_total_static, y_sim_new_static, TMAX, M);
+
+
+	plot("dynamic.sirx_er.sir.mean.pdf", "Plot SIR average trajectory on SIRX-Erdös-Reyni network [next reaction]", [&](auto& gp, auto& p) {
+		p.add_preamble("set logscale y");
+		p.add_plot1d(std::make_pair(t_sim, y_sim_new), "with lines title 'dynamic SIRX-Erdös-Reyni'"s);
+		p.add_plot1d(std::make_pair(t_sim_static, y_sim_new_static), "with lines title 'static Erdös-Reyni'"s);
+   });}
+#endif

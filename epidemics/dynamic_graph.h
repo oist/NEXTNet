@@ -82,7 +82,7 @@ struct dynamic_sirx_network : public virtual dynamic_network
 
 	virtual std::optional<network_event_t> step(rng_t& engine, absolutetime_t max_time = NAN);
 
-	bool is_removed(node_t node) { return (removed.find(node) != removed.end()); }
+	bool is_removed(node_t node) { return (nonremoved.find(node) == nonremoved.end()); }
 
 	bool is_infected(node_t node) { return (infected.find(node) != infected.end()); }
 
@@ -98,15 +98,17 @@ struct dynamic_sirx_network : public virtual dynamic_network
 
 	const double kappa;
 
-	drawable_set<node_t> infected;
+	drawable_set<node_t> nonremoved;
 
-	std::unordered_set<node_t> removed;
+	drawable_set<node_t> infected_nonremoved;
 
-	std::size_t removed_infected = 0;
+	std::unordered_set<node_t> infected;
 
 	std::deque<network_event_t> queue;
 
 	bool queue_next_flipped = false;
+
+	double current_time = 0.0;
 
 	double next_time = NAN;
 };
