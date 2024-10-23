@@ -355,7 +355,7 @@ public:
     }
 
     virtual node_t neighbour(node_t nidx, int neighbour_index) {
-        if ((nidx < 0) || (nidx >= total_nodes))
+        if ((nidx < 0) || ((std::size_t)nidx >= total_nodes))
             return -1;
         // Decode neighbour index into coordinate components
         coordinates_t coords = coordinates(nidx);
@@ -381,7 +381,7 @@ public:
     }
 
     virtual int outdegree(node_t node) {
-        if ((node < 0) || (node >= total_nodes))
+        if ((node < 0) || ((std::size_t)node >= total_nodes))
             return -1;
         // Decode neighbour index into coordinate components
         coordinates_t c = coordinates(node);
@@ -401,7 +401,7 @@ public:
     }
 
     virtual bool coordinates(const node_t node, std::vector<double>& position) {
-        if ((node < 0) || (node >= total_nodes))
+        if ((node < 0) || ((std::size_t)node >= total_nodes))
             return false;
         const auto c = coordinates(node);
         position.resize(dimension);
@@ -425,7 +425,7 @@ public:
      * @return d-dimensional coordinate vector as a std::array<coordinate_t, D>
      */
     coordinates_t coordinates(node_t node) {
-        if ((node < 0) || (node >= total_nodes))
+        if ((node < 0) || ((std::size_t)node >= total_nodes))
             throw std::range_error("invalid node index");
         coordinates_t c;
         for(std::size_t i=0; i < dimension; ++i) {

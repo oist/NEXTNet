@@ -77,7 +77,7 @@ node_t brownian_proximity_graph::nodes() {
 }
 
 node_t brownian_proximity_graph::neighbour(node_t n, int neighbour_index) {
-	if ((n < 0) || (n >= node_index.size()))
+	if ((n < 0) || ((std::size_t)n >= node_index.size()))
 		return -1;
 	const node_data& nn = node(n);
 	if ((neighbour_index < 0) || (neighbour_index >= (int) nn.neighbours.size()))
@@ -86,7 +86,7 @@ node_t brownian_proximity_graph::neighbour(node_t n, int neighbour_index) {
 }
 
 index_t brownian_proximity_graph::outdegree(node_t n) {
-	if ((n < 0) || (n >= node_index.size()))
+	if ((n < 0) || ((std::size_t)n >= node_index.size()))
 		return -1;
 	const node_data& nn = node(n);
 	return (index_t)nn.neighbours.size();
@@ -104,9 +104,9 @@ void brownian_proximity_graph::bounds(std::vector<double>& a, std::vector<double
 }
 
 bool brownian_proximity_graph::coordinates(const node_t n, std::vector<double>& position) {
-	if ((n < 0) || (n >= node_index.size()))
-		return -1;
-	const node_data& nn = node(n);
+    if ((n < 0) || ((std::size_t)n >= node_index.size()))
+        return -1;
+    const node_data& nn = node(n);
     position.resize(2);
     position[0] = nn.position.x;
     position[1] = nn.position.y;
@@ -125,7 +125,7 @@ void brownian_proximity_graph:: move_node(node_data& n, partition_index_t pi_old
 	 */
 	node_vector_t& p_old = partition(pi_old);
 	const std::ptrdiff_t ni = &n - &p_old.front();
-	assert((0 <= ni) && (ni < p_old.size()));
+	assert((0 <= ni) && ((std::size_t)ni < p_old.size()));
 	/* Move last node of current partition to positing of removed node */
 	node_data& last = p_old.back();
 	if (&n != &last) {
