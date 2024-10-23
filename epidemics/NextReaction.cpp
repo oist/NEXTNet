@@ -75,8 +75,8 @@ void simulate_next_reaction::notify_infected_node_neighbour_added(network_event_
 		throw std::logic_error("transmission time must be positive");
 	const double t = event.time + tau;
 
-	/* If the edge fires before it was added or after the node has resetted it has no effect */
-	if (t > source_state->second.reset_time)
+	/* If the edge fires after the node has resetted (or never) it has no effect */
+	if (t >= source_state->second.reset_time)
 		return;
 
 	/* Add edge */
