@@ -553,7 +553,7 @@ activity_driven_network::activity_driven_network(std::vector<double> activity_ra
     {
         double ai = activity_rates[node];
 
-        const double activation_time = current_time + std::exponential_distribution<>(eta * ai)(engine);
+        const double activation_time = std::exponential_distribution<>(eta * ai)(engine);
 
         for (int i = 0; i < m; i++)
         {
@@ -596,16 +596,22 @@ std::optional<network_event_t> activity_driven_network::step(rng_t& engine, abso
 	// Handle event before returning the edge
 	switch (next.kind) {
 		case network_event_kind::neighbour_added:{
+
+			// If a link already exists, or is a self-link, ignore event
+			auto it = std::find(adjacencylist[next.source_node].begin(), adjacencylist[next.source_node].end(), next.target_node);
+			if ((next.source_node == next.target_node) && (it != adjacencylist[next.source_node].end())){
+				break;
+			}
 			// Handle activate case
 			adjacencylist[next.source_node].push_back(next.target_node);
-			if (next.source_node != next.target_node)
-				adjacencylist[next.target_node].push_back(next.source_node);
+			adjacencylist[next.target_node].push_back(next.source_node);
 
+			// Determine time it stops being active
 			active_edges_entry e;
+			e.time =next.time + std::exponential_distribution<>(recovery_rate)(engine);;
 			e.kind = network_event_kind::neighbour_removed;
 			e.source_node = next.source_node;
 			e.target_node = -1;
-			e.time =next.time + std::exponential_distribution<>(recovery_rate)(engine);;
 			push_edge(e);
 
 			break;
@@ -622,6 +628,7 @@ std::optional<network_event_t> activity_driven_network::step(rng_t& engine, abso
 			//delete all edges leaving source node
 			adjacencylist[next.source_node].clear();
 			
+			// Determine time it becomes active again
 			const double ai = activity_rates[next.source_node];
 			const double activation_time = next.time + std::exponential_distribution<>(eta*ai)(engine);
 			
@@ -638,8 +645,6 @@ std::optional<network_event_t> activity_driven_network::step(rng_t& engine, abso
 			}
 			break;	
 		}
-		// case network_event_kind::none:
-		// case network_event_kind::instantenous_contact:
 		default: 
 			throw std::runtime_error("invalid event kind");
 	}

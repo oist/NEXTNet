@@ -178,18 +178,12 @@ struct activity_driven_network : virtual dynamic_network, virtual graph_adjacenc
     // Constructor to initialize the variables
     activity_driven_network(std::vector<double> activity_rates, double eta, double m, double recovery_rate, rng_t& engine);
 
-
 	virtual absolutetime_t next(rng_t& engine);
 
 	virtual std::optional<network_event_t> step(rng_t& engine, absolutetime_t max_time = NAN);
 
-
-	/* Current time (time of last event) */
-	absolutetime_t current_time = 0.0;
-
-	int nb_edges = 1;
+	int nb_edges = 0;
 	
-		
 	/* Time of next edge appearing or vanishing */
 	absolutetime_t next_time = NAN;
 
