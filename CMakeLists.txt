@@ -96,7 +96,7 @@ add_compile_definitions(${CMAKE_DEFINES})
 
 # Boost headers are mandatory, iostreamd and filesystem are optional
 # and allow plots to be generated during test runs
-find_package(Boost REQUIRED OPTIONAL_COMPONENTS iostreams filesystem)
+find_package(Boost CONFIG REQUIRED OPTIONAL_COMPONENTS iostreams filesystem)
 link_libraries(Boost::boost)
 include_directories(${Boost_INCLUDE_DIRS})
 if (Boost_FILESYSTEM_FOUND)
