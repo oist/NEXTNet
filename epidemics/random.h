@@ -145,10 +145,9 @@ public:
     }
 
     virtual double density(interval_t tau) const {
-        // TODO: Should we scale according to pinfinity here?
-        // Currently, the density is always normalized while the survivalfunction
-        // takes pfinfinity into account, which is weird.
-        return pdf(math_distribution, tau);
+        if (tau < 0)
+            return 0;
+        return (1.0 - pinfinity) * pdf(math_distribution, tau);
     }
 
     // use the implementations of the conditional probabilities
