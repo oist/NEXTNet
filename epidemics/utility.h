@@ -93,7 +93,7 @@ double inverse_survival_function(double u, double precision, T f, Args... args) 
 }
 
 /**
- * @brief edge_index One-to-one map of edges (i,j) of an undirected graph to {0,...,|E|-1}
+ * @brief edge_index_undirected One-to-one map of edges (i,j) of an undirected graph to {0,...,|E|-1}
  *
  * Translate (i, j) where 0 <= i,j < N into an index 0 <= i < N*(N - 1)/2.
  * We first translate (i, j) into (n1, n2) where n1 > n2. Since there
