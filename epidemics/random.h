@@ -137,7 +137,7 @@ public:
         // Otherwise, we sample from a modified distribution and fall back
         // to CDF inversion.
         if ((m == 1) && (t == 0.0)) {
-            if ((pinfinity > 0) && (std::uniform_real_distribution<double>(0, 1)(e) < pinfinity))
+            if ((pinfinity > 0) && std::bernoulli_distribution(pinfinity)(e))
                 return INFINITY;
             return random_distribution_t(random_distribution.param())(e);
         }
