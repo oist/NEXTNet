@@ -128,6 +128,10 @@ public:
     {}
 
     virtual interval_t sample(rng_t& e, interval_t t, int m) const {
+        if ((t < 0) || !std::isfinite(t))
+            throw std::range_error("condition t must be non-negative and finite");
+        if (m < 1)
+            throw std::range_error("m must be positive");
         // For m == 1 and t == 0.0 we sample from the base distribution,
         // and may thus use the random distribution class' faster implementation.
         // Otherwise, we sample from a modified distribution and fall back
@@ -155,6 +159,8 @@ public:
     virtual double survivalprobability(interval_t tau) const {
         // distribution has a scaled version of the specified CDF on tau in [0, inf)
         // and point mass pinfinity at tau = infinity
+        if (tau < 0)
+            return 1.0;
         if (std::isinf(tau))
             return pinfinity;
         return pinfinity + (1.0 - pinfinity) * cdf(complement(math_distribution, tau));
@@ -164,6 +170,8 @@ public:
         // distribution has a scaled version of the specified CDF on tau in [0, inf)
         // and point mass pinfinity at tau = infinity, so pinfinity is the lower bound
         // of survivalprobability() and any u-quantile for any u < pinfinity is infinity.
+        if ((u < 0) || (u > 1) || !std::isfinite(u))
+            throw std::range_error("u-quantile undefined for u not in [0,1]");
         if (u < pinfinity)
             return INFINITY;
         return quantile(complement(math_distribution, (u - pinfinity) / (1.0 - pinfinity)));

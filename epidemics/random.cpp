@@ -71,6 +71,8 @@ interval_t transmission_time::survivalquantile(double u) const {
 }
 
 interval_t transmission_time::survivalquantile(double u, interval_t t, int m) const {
+    if ((u < 0) || (u > 1) || !std::isfinite(u))
+        throw std::range_error("u-quantile undefined for u not in [0,1]");
     if ((t < 0) || !std::isfinite(t))
         throw std::range_error("t must be non-negative and finite");
     if (m < 1)
@@ -109,30 +111,50 @@ interval_t transmission_time::survivalquantile(double u, interval_t t, int m) co
 /*----------------------------------------------------*/
 
 double transmission_time_exponential::density(interval_t tau) const {
+    if (tau < 0)
+        return 0.0;
     return lambda*exp(-lambda*tau);
 }
 
 double transmission_time_exponential::hazardrate(interval_t tau) const {
+    if (tau < 0)
+        return 0.0;
     return lambda;
 }
 
 double transmission_time_exponential::hazardbound(interval_t) const {
-	return lambda;
+    return lambda;
 }
 
 double transmission_time_exponential::survivalprobability(interval_t tau) const {
+    if (tau < 0)
+        return 1.0;
     return exp(-lambda*tau);
 }
 
 double transmission_time_exponential::survivalprobability(interval_t tau, interval_t t, int m) const {
+    if ((t < 0) || !std::isfinite(t))
+        throw std::range_error("condition t must be non-negative and finite");
+    if (m < 1)
+        throw std::range_error("m must be positive");
+    if (tau < 0)
+        return 1.0;
     return exp(-lambda * m * tau);
 }
 
 double transmission_time_exponential::survivalquantile(double u) const {
+    if ((u < 0) || (u > 1) || !std::isfinite(u))
+        throw std::range_error("u-quantile undefined for u not in [0,1]");
     return -mean * log(u);
 }
 
 double transmission_time_exponential::survivalquantile(double u, interval_t t, int m) const {
+    if ((u < 0) || (u > 1) || !std::isfinite(u))
+        throw std::range_error("u-quantile undefined for u not in [0,1]");
+    if ((t < 0) || !std::isfinite(t))
+        throw std::range_error("condition t must be non-negative and finite");
+    if (m < 1)
+        throw std::range_error("m must be positive");
     return -mean/m * log(u);
 }
 
@@ -170,10 +192,14 @@ transmission_time_polynomial_rate::transmission_time_polynomial_rate(std::vector
 }
 
 double transmission_time_polynomial_rate::density(interval_t tau) const {
+    if (tau < 0)
+        return 0.0;
     return hazardrate(tau) * std::exp(-totalhazard(tau));
 }
 
 double transmission_time_polynomial_rate::hazardrate(interval_t tau) const {
+    if (tau < 0)
+        return 0.0;
     double r=0.0;
     for(std::size_t i=0; i < coeffs.size(); ++i)
         r += std::pow(tau, i) * coeffs[i];
@@ -181,6 +207,8 @@ double transmission_time_polynomial_rate::hazardrate(interval_t tau) const {
 }
 
 double transmission_time_polynomial_rate::totalhazard(interval_t tau) const {
+    if (tau < 0)
+        return 0.0;
     double s=0.0;
     for(std::size_t i=0; i < coeffs.size(); ++i)
         s += std::pow(tau, i+1) * coeffs[i] / (i+1);
@@ -192,6 +220,8 @@ double transmission_time_polynomial_rate::hazardbound(interval_t) const {
 }
 
 double transmission_time_polynomial_rate::survivalprobability(interval_t tau) const {
+    if (tau < 0)
+        return 0.0;
     return std::exp(-totalhazard(tau));
 }
 
@@ -224,6 +254,12 @@ double transmission_time_deterministic::survivalprobability(interval_t tau) cons
 }
 
 double transmission_time_deterministic::survivalprobability(interval_t tau, interval_t t, int m) const {
+    if ((t < 0) || !std::isfinite(t))
+        throw std::range_error("condition t must be non-negative and finite");
+    if (m < 1)
+        throw std::range_error("m must be positive");
+    if (tau < 0)
+        return 1.0;
     return (t + tau < value) ? 1 : 0;
 }
 
