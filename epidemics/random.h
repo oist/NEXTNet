@@ -257,7 +257,6 @@ TRANSMISSION_TIME_GENERIC_SAMENAME_MEAN_VARIANCE(gamma,
 TRANSMISSION_TIME_GENERIC_SAMENAME_2PARAM(weibull, shape, scale,
                                           scale * std::tgamma(1 + 1/shape),
                                           pow(scale,2) * (std::tgamma(1 + 2/shape)- pow(std::tgamma(1 + 1/shape),2)))
-    virtual double hazardbound(interval_t) const;
 };
 
 

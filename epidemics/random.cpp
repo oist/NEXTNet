@@ -45,7 +45,7 @@ double transmission_time::hazardrate(interval_t tau) const {
 }
 
 double transmission_time::hazardbound(interval_t tau) const {
-	throw std::runtime_error("hazardbound is not implemented for this transmission_time");
+    return INFINITY;
 }
 
 double transmission_time::survivalprobability(interval_t tau, interval_t t, int m) const {
@@ -166,10 +166,6 @@ double transmission_time_exponential::survivalquantile(double u, interval_t t, i
 
 double transmission_time_gamma::hazardbound(interval_t) const {
 	return mean / variance;
-}
-
-double transmission_time_weibull::hazardbound(interval_t) const {
-	return INFINITY;
 }
 
 /*----------------------------------------------------*/
