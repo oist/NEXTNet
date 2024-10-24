@@ -32,7 +32,7 @@ transmission_time::~transmission_time() {
 
 interval_t transmission_time::sample(rng_t& rng, interval_t t, int m) const {
     if ((t < 0) || !std::isfinite(t))
-        throw std::range_error("t must be non-negative and finite");
+        throw std::range_error("condition t must be non-negative and finite");
     if (m < 1)
         throw std::range_error("m must be positive");
     // sample by inverting the survival function
@@ -50,7 +50,7 @@ double transmission_time::hazardbound(interval_t tau) const {
 
 double transmission_time::survivalprobability(interval_t tau, interval_t t, int m) const {
     if ((t < 0) || !std::isfinite(t))
-        throw std::range_error("t must be non-negative and finite");
+        throw std::range_error("condition t must be non-negative and finite");
     if (m < 1)
         throw std::range_error("m must be positive");
     // By default compute the conditional survival probability
@@ -74,7 +74,7 @@ interval_t transmission_time::survivalquantile(double u, interval_t t, int m) co
     if ((u < 0) || (u > 1) || !std::isfinite(u))
         throw std::range_error("u-quantile undefined for u not in [0,1]");
     if ((t < 0) || !std::isfinite(t))
-        throw std::range_error("t must be non-negative and finite");
+        throw std::range_error("condition t must be non-negative and finite");
     if (m < 1)
         throw std::range_error("m must be positive");
     /* We consider i.i.d. tau_1, ..., tau_m and ask for the probability
