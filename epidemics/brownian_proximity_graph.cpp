@@ -281,7 +281,7 @@ absolutetime_t brownian_proximity_graph::next(rng_t& engine)
 				}
 				state.range_scan_initialized = false;
 				
-				/* Re-de neighbour scan for next node */
+				/* Re-do neighbour scan for next node */
 				state.neighbour_scan_done = false;
 			}
 			/* Re-start scan for next partition */
