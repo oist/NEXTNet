@@ -198,14 +198,14 @@ absolutetime_t brownian_proximity_graph::next(rng_t& engine)
 		/* Update neighbour relationships */
 		/* Scan nodes, partition-wise */
 		for(; state.partition_i < partitions.size(); ++state.partition_i) {
-			node_vector_t p = partitions[state.partition_i];
 			if (!state.outer_partition_scan_initialized) {
 				state.outer_partition_node_i = 0;
 				state.outer_partition_scan_initialized = true;
 			}
+			const node_vector_t& p = partitions[state.partition_i];
 			for(; state.outer_partition_node_i < p.size(); ++state.outer_partition_node_i) {
 				/* Current node */
-				node_data& n = p[state.outer_partition_node_i];
+				const node_data& n = p[state.outer_partition_node_i];
 				
 				/* Remove neighbours that are out of range */
 				if (!state.neighbour_scan_done) {
