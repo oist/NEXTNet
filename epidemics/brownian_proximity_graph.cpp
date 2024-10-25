@@ -311,7 +311,7 @@ std::optional<network_event_t> brownian_proximity_graph::step(rng_t& engine, abs
 			node_data& n = node(pin);
 			assert(n.index == ev.source_node);
 			/* Get putative neighbour */
-			const node_vector_t p = partition(state.cur);
+			const node_vector_t& p = partition(state.cur);
 			const node_data& n2 = p[state.inner_partition_node_i];
 			assert(state.range_scan_initialized);
 			assert(state.inner_partition_scan_initialized);
