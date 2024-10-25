@@ -314,7 +314,6 @@ absolutetime_t dynamic_sirx_network::next(rng_t& engine)
 		 * meaning that removed nodes can still be infected for directed networks,
 		 * but can't infect others.
 		 */
-		std::optional<network_event_t> result;
 		for(int i=0, nn=0; (nn = network.neighbour(n, i)) >= 0; ++i) {
 			queue.push_back(network_event_t {
 				.kind = network_event_kind::neighbour_removed,
