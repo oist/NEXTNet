@@ -573,7 +573,6 @@ activity_driven_network::activity_driven_network(std::vector<double> activity_ra
     : activity_rates(activity_rates), eta(eta), m(m), recovery_rate(recovery_rate), engine(engine)
 {
     const int N = (int) activity_rates.size(); 
-    adjacencylist.resize(N);
 
     std::uniform_int_distribution<> distr(0, N - 1);
 
@@ -621,18 +620,18 @@ std::optional<network_event_t> activity_driven_network::step(rng_t& engine, abso
 
 	std::uniform_int_distribution<> distr(0, (int) activity_rates.size() - 1);
 
+	const node_t src = next.source_node;
+	const node_t dst = next.target_node;
 	// Handle event before returning the edge
 	switch (next.kind) {
 		case network_event_kind::neighbour_added:{
 
 			// If a link already exists, or is a self-link, ignore event
-			auto it = std::find(adjacencylist[next.source_node].begin(), adjacencylist[next.source_node].end(), next.target_node);
-			if ((next.source_node == next.target_node) && (it != adjacencylist[next.source_node].end())){
+			if (has_edge(src, dst) || (src==dst) )
 				break;
-			}
-			// Handle activate case
-			adjacencylist[next.source_node].push_back(next.target_node);
-			adjacencylist[next.target_node].push_back(next.source_node);
+
+			add_edge(src,dst);
+			// add_edge(dst,src);
 
 			// Determine time it stops being active
 			active_edges_entry e;
@@ -646,15 +645,16 @@ std::optional<network_event_t> activity_driven_network::step(rng_t& engine, abso
 		}
 		case network_event_kind::neighbour_removed:{
 			// delete all edges pointing towards source node
-			for (auto& nei : adjacencylist[next.source_node]) {
-				auto it = std::find(adjacencylist[nei].begin(), adjacencylist[nei].end(), next.source_node);
-								
-				if (it != adjacencylist[nei].end()) {
-					adjacencylist[nei].erase(it);
-				}
+
+			std::cerr << "outdegree:" << outdegree(src) <<'\n';
+
+			while (outdegree(src)>0){
+				std::cerr << outdegree(src) <<'\n';
+				const node_t dst = neighbour(src,0);
+				remove_edge(src,dst);
+				// remove_edge(dst,src);
 			}
-			//delete all edges leaving source node
-			adjacencylist[next.source_node].clear();
+
 			
 			// Determine time it becomes active again
 			const double ai = activity_rates[next.source_node];
