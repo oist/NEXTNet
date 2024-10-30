@@ -179,6 +179,35 @@ std::optional<network_event_t> dynamic_empirical_network::step(rng_t& engine, ab
 	return std::nullopt;
 }
 
+std::vector<std::vector<double>> dynamic_empirical_network::compute_number_of_edges(rng_t& engine){
+
+	std::vector<std::vector<double>> average_degree;
+	int number_of_edges=0;
+
+	while (auto ev = step(engine)) {
+		const network_event_t event = *ev;
+
+		switch (event.kind){
+			case network_event_kind::neighbour_added: 
+				number_of_edges++;
+				break;
+			case network_event_kind::neighbour_removed:
+				number_of_edges--;
+				break;
+			case network_event_kind::instantenous_contact:
+				number_of_edges++;
+				break;
+			default: throw std::logic_error("invalid event kind");
+		}
+		const double time = event.time;
+		average_degree.push_back({time, (double) number_of_edges});
+		     
+	}
+
+
+	return average_degree;
+}
+
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
 /*----------- DYNAMIC NETWORK: SIRX NETWORK ----------*/

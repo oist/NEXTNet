@@ -56,6 +56,8 @@ struct dynamic_empirical_network : public virtual dynamic_network, public virtua
 
 	virtual std::optional<network_event_t> step(rng_t& engine, absolutetime_t max_time = NAN);
 
+	std::vector<std::vector<double>> compute_number_of_edges(rng_t& engine);
+
 private:
 	std::deque<network_event_t> event_queue;
 
