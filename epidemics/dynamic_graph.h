@@ -195,7 +195,7 @@ struct activity_driven_network : virtual dynamic_network, virtual graph_mutable 
     void deactivate_node(node_t node,double time);
 
 	// void to_equilibrium(rng_t& engine,absolutetime_t max_time = NAN);
-	std::tuple<std::vector<double>, std::vector<double>, std::vector<double>> to_equilibrium(rng_t& engine,absolutetime_t max_time=NAN);
+	std::tuple<std::vector<double>, std::vector<double>, std::vector<double>> advance_time(rng_t& engine,absolutetime_t max_time=NAN);
 
 	std::vector<bool> active_nodes;
 	
