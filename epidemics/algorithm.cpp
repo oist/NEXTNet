@@ -159,7 +159,9 @@ bool simulate_on_dynamic_network::simulation_event_filter(event_t ev)
 			/* check state */
 			if ((it2 == neighbours.end()) || (it2->second == neighbour_state_t::admissible)) {
 				/* state is admissible, don't block and set state to transmitted */
-				neighbours[ev.node] = neighbour_state_t::transmitted;
+				// neighbours[ev.node] = neighbour_state_t::transmitted;
+				/* /!\ we allow the nodes to fire multiple times*/
+				neighbours[ev.node] = neighbour_state_t::admissible;
 				return true;
 			}
 			else if (it2->second == neighbour_state_t::masked) {
