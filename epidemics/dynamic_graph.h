@@ -167,9 +167,16 @@ struct dynamic_erdos_reyni : public virtual dynamic_network, public virtual erdo
 };
 
 
-struct activity_driven_network : virtual dynamic_network, virtual graph_adjacencylist {
+struct activity_driven_network : virtual dynamic_network, virtual graph_mutable {
 
 	// activity_driven_network(std::vector<int> degreelist, double eta, double m, transmission_time& psi, transmission_time* rho,rng_t& engine);
+
+	enum activity_event_kind {
+		none=0,
+		activate = 1,
+		deactivate = 2
+	};
+
 
     std::vector<double> activity_rates;
     double eta;
@@ -184,6 +191,11 @@ struct activity_driven_network : virtual dynamic_network, virtual graph_adjacenc
 
 	virtual std::optional<network_event_t> step(rng_t& engine, absolutetime_t max_time = NAN);
 
+	void activate_node(node_t node,double time);
+    void deactivate_node(node_t node,double time);
+
+	std::vector<bool> active_nodes;
+	
 	int nb_edges = 0;
 	
 	/* Time of next edge appearing or vanishing */
@@ -210,6 +222,8 @@ struct activity_driven_network : virtual dynamic_network, virtual graph_adjacenc
 			* Node that the edge is leaving from
 			*/
 			node_t source_node;
+
+			activity_event_kind activity_event;
 
 			
 			bool operator< (const active_edges_entry& o) const { return time < o.time; }

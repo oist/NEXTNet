@@ -184,6 +184,56 @@ TEST_CASE("Epidemic on empirical network nb2 with infitesimal edge durations", "
 	while (sim.step(engine));
 }
 
+TEST_CASE("Epidemic on activity driven graph", "[activity_driven_graph]") {
+	rng_t engine(0);
+
+
+	const int N = 5;
+	const std::vector<double> activity_rates(N,1.0);
+	const double recovery_rate = 1.0;
+	const double eta = 1.0;
+	const double m =1;
+	activity_driven_network graph(activity_rates,eta,m,recovery_rate,engine);
+	transmission_time_gamma psi(50,3);
+	transmission_time_gamma rho(100,1);
+	simulate_next_reaction nr(graph, psi, &rho);
+	nr.add_infections({ std::make_pair(0, 0.0) });
+	simulate_on_dynamic_network sim(nr);
+
+	double tmax = 10;
+	// while(auto ev = sim.step(engine,tmax)){
+
+
+	// }
+   while(true){
+
+        // std::optional<network_or_epidemic_event_t> any_ev = env.simulator -> step(engine,TMAX);
+        std::optional<network_or_epidemic_event_t> any_ev = sim.step(engine,tmax);
+
+        if (any_ev.has_value()) {
+            if (std::holds_alternative<event_t>(*any_ev)) {
+                /* Epidemic event */
+                // const auto& ev = std::get<event_t>(*any_ev);
+				// std::cerr << "ep ";
+				// std::cerr << ev.time << " | " << ev.source_node << "->" << ev.node << std::endl;
+
+            } else if (std::holds_alternative<network_event_t>(*any_ev)) {
+                /* Network event */
+                // const auto& ev = std::get<network_event_t>(*any_ev);
+				// int k = ev.kind == network_event_kind::neighbour_added ? 1 : 0;
+				// std::cerr << "network " << k << ": ";
+				// std::cerr << ev.time << " | " << ev.source_node << "->" << ev.target_node << std::endl;
+                // edges_array.push_back(number_of_edges);
+            } else {
+                throw std::logic_error("unknown event type");
+            }
+
+        } else { //no events
+            break;
+        }
+    }
+}
+
 #if ENABLE_PLOTTING
 TEST_CASE("Plot SIS average trajectories on dynamic empirical network", "[dynamic_nextreaction]")
 {
