@@ -725,6 +725,103 @@ void activity_driven_network::deactivate_node(node_t node,double time){
 
 }
 
+// void activity_driven_network::to_equilibrium(rng_t& engine,absolutetime_t max_time){
+
+// 	double a1=0;
+// 	double b1=0;
+// 	for (double a : activity_rates){
+// 		a1 += eta*a/(eta*a+recovery_rate);
+// 		b1 += recovery_rate/(eta*a+recovery_rate);
+// 	}
+// 	const node_t N = activity_rates.size();
+// 	a1 = (double) a1/N;
+// 	b1 = (double) b1/N;
+
+// 	const double theoretical_mean = m*a1*(1 +b1*b1);
+	
+// 	auto has_converged = [this, N,theoretical_mean]() {
+// 		double av_k =0;
+// 		double k2 = 0;
+
+// 		for (node_t node = 0; node < N; node++) {
+// 			const double k = (double) outdegree(node);
+// 			av_k += (double) k / N;
+// 			k2 += (double) k * k / N;
+// 		}
+
+// 		return std::abs(av_k - theoretical_mean)/theoretical_mean < 0.05;
+// 	};
+
+// 	auto next = top_edge();
+// 	double t = next.time;
+// 	while(t < max_time){
+
+// 		for(int i = 0; i<N; i++){
+// 			auto any_ev = step(engine,max_time);
+// 			if (any_ev.has_value()) {
+// 				t = any_ev -> time;
+// 			} else{
+// 				break;
+// 			}
+// 		}	
+// 		if (has_converged())
+// 			break; 
+// 	}
+// }
+
+
+std::tuple<std::vector<double>, std::vector<double>, std::vector<double>> activity_driven_network::to_equilibrium(rng_t& engine,absolutetime_t max_time){
+
+	double a1=0;
+	double b1=0;
+	for (double a : activity_rates){
+		a1 += eta*a/(eta*a+recovery_rate);
+		b1 += recovery_rate/(eta*a+recovery_rate);
+	}
+	const node_t N = activity_rates.size();
+	a1 = (double) a1/N;
+	b1 = (double) b1/N;
+
+	const double theoretical_mean = m*a1*(1 +b1*b1);
+	
+	std::vector<double> time_traj;
+	std::vector<double> k1_traj;
+	std::vector<double> k2_traj;
+
+	auto has_converged = [this, N,theoretical_mean,&time_traj,&k1_traj,&k2_traj]() {
+		double av_k =0;
+		double k2 = 0;
+
+		for (node_t node = 0; node < N; node++) {
+			const double k = (double) outdegree(node);
+			av_k += (double) k / N;
+			k2 += (double) k * k / N;
+		}
+		k1_traj.push_back(av_k);
+		k2_traj.push_back(k2);
+		return std::abs(av_k - theoretical_mean)/theoretical_mean < 0.05;
+	};
+
+	auto next = top_edge();
+	double t = next.time;
+	while(t < max_time){
+
+		for(int i = 0; i<N; i++){
+			auto any_ev = step(engine,max_time);
+			if (any_ev.has_value()) {
+				t = any_ev -> time;
+			} else{
+				break;
+			}
+		}	
+		time_traj.push_back(t);
+		if (has_converged())
+			break; 
+	}
+
+	return std::make_tuple(time_traj, k1_traj,k2_traj);
+}
+
 
 
 std::optional<network_event_t> activity_driven_network::step(rng_t& engine, absolutetime_t max_time){
