@@ -60,7 +60,7 @@ TEST_CASE("get activity_driven_graph to equilibrium", "[activity_driven_graph]")
 	const double m =1;
 	activity_driven_network g(activity_rates,eta,m,recovery_rate,engine);
 
-	g.to_equilibrium(engine,50);
+	g.advance_time(engine,30);
 
 	std::cerr << "time taken:" << g.step(engine) -> time << std::endl;
 

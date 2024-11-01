@@ -640,15 +640,19 @@ void activity_driven_network::activate_node(node_t node,double time){
 
 	active_nodes[node] = true;
 
+	std::unordered_set<node_t> sampled_neighbors;
+	sampled_neighbors.insert(node);
 	for (int i = 0; i < m; i++)
 	{
-
-		node_t neigh = node;
-		while(neigh==node)
+		node_t neigh = distr(engine);
+		while(sampled_neighbors.find(neigh) != sampled_neighbors.end())
 			neigh = distr(engine);
 
-		if (has_edge(node, neigh) && has_edge(neigh,node))
+		sampled_neighbors.insert(neigh);
+
+		if (has_edge(node, neigh))
 			continue;
+
 		if (node==neigh)
 			continue;
 		 
@@ -692,7 +696,7 @@ void activity_driven_network::deactivate_node(node_t node,double time){
 	for (int ki = 0; ki < k ; ki++){
 		const node_t nei = neighbour(node,ki);
 
-		if ((!has_edge(node, nei)) && (!has_edge(nei, node)))
+		if ((!has_edge(nei, node)))
 			throw std::logic_error("there should be a link between nei and node");
 
 		if (node ==nei)

@@ -188,23 +188,27 @@ TEST_CASE("Epidemic on activity driven graph", "[activity_driven_graph]") {
 	rng_t engine(0);
 
 
-	const int N = 5;
-	const std::vector<double> activity_rates(N,1.0);
+	const int N =10;
+	const std::vector<double> activity_rates(N,0.1);
 	const double recovery_rate = 1.0;
 	const double eta = 1.0;
-	const double m =1;
+	const double m =3;
 	activity_driven_network graph(activity_rates,eta,m,recovery_rate,engine);
-	transmission_time_gamma psi(50,3);
-	transmission_time_gamma rho(100,1);
-	simulate_next_reaction nr(graph, psi, &rho);
-	nr.add_infections({ std::make_pair(0, 0.0) });
+
+	graph.advance_time(engine,30);
+
+	// transmission_time_gamma psi(5,25);
+	transmission_time_exponential psi(5);
+	// transmission_time_gamma rho(100,1);
+	simulate_next_reaction nr(graph, psi);
+	nr.add_infections({ std::make_pair(0, 30) });
 	simulate_on_dynamic_network sim(nr);
 
-	double tmax = 10;
+	double tmax = 100;
 	// while(auto ev = sim.step(engine,tmax)){
 
+	int cnt = 0;
 
-	// }
    while(true){
 
         // std::optional<network_or_epidemic_event_t> any_ev = env.simulator -> step(engine,TMAX);
@@ -217,10 +221,15 @@ TEST_CASE("Epidemic on activity driven graph", "[activity_driven_graph]") {
 				// std::cerr << "ep ";
 				// std::cerr << ev.time << " | " << ev.source_node << "->" << ev.node << std::endl;
 
+
             } else if (std::holds_alternative<network_event_t>(*any_ev)) {
                 /* Network event */
                 // const auto& ev = std::get<network_event_t>(*any_ev);
 				// int k = ev.kind == network_event_kind::neighbour_added ? 1 : 0;
+				// if ( ev.source_node==8 && ev.target_node==7){
+				// 	cnt++;
+				// 	std::cerr << "counter :" << cnt << std::endl;
+				// }
 				// std::cerr << "network " << k << ": ";
 				// std::cerr << ev.time << " | " << ev.source_node << "->" << ev.target_node << std::endl;
                 // edges_array.push_back(number_of_edges);
@@ -233,6 +242,63 @@ TEST_CASE("Epidemic on activity driven graph", "[activity_driven_graph]") {
         }
     }
 }
+
+#if ENABLE_PLOTTING
+TEST_CASE("Plot SIS average trajectories on activity driven network", "[activity_driven_graph]")
+{
+	rng_t engine(2);
+
+	using namespace std::string_literals;
+
+	const std::size_t M = 1;
+
+	const double PSI_MEAN = 3;
+	const double RHO_MEAN = 10;
+	const double RHO_VARIANCE = 1;
+	const double TMAX = 2000;
+
+	const int N = 1000;
+	std::vector<double> activity_rates(N,1);
+	const double recovery_rate = 1/20;
+	const double eta = 1;
+	const int m = 3;
+
+	std::vector<double> t_sim, y_sim_new, y_sim_total;
+	average_trajectories(engine, [&](rng_t& engine) {
+		struct {
+			std::unique_ptr<activity_driven_network> g;
+			std::unique_ptr<transmission_time_exponential> psi;
+			std::unique_ptr<transmission_time_gamma> rho;
+			std::unique_ptr<simulate_next_reaction> nr;
+			std::unique_ptr<simulate_on_dynamic_network> simulator;
+		} env;
+		env.g = std::make_unique<activity_driven_network>(activity_rates,eta,m,recovery_rate,engine);
+		env.psi = std::make_unique<transmission_time_exponential>(1/PSI_MEAN);
+		env.rho = std::make_unique<transmission_time_gamma>(RHO_MEAN, RHO_VARIANCE);
+		env.nr = std::make_unique<simulate_next_reaction>(*env.g.get(), *env.psi.get(), env.rho.get());
+		env.nr->add_infections({ std::make_pair(0, 0.0)});
+		env.simulator = std::make_unique<simulate_on_dynamic_network>(*env.nr.get());
+		return env;
+	}, [](network_or_epidemic_event_t any_ev) {
+		/* Translate event into a pair (time, delta) */
+		if (std::holds_alternative<event_t>(any_ev)) {
+			/* Epidemic event */
+			const auto ev = std::get<event_t>(any_ev);
+			return std::make_pair(ev.time, delta_infected(ev.kind));
+		} else if (std::holds_alternative<network_event_t>(any_ev)) {
+			/* Network event */
+			const auto ev = std::get<network_event_t>(any_ev);
+			return std::make_pair(ev.time, 0);
+		} else throw std::logic_error("unknown event type");
+	}, t_sim, y_sim_total, y_sim_new, TMAX, M);
+
+
+	plot("activity.driven.sis.mean.pdf", "SIS average trajectory on activity driven graph [NextReaction]", [&](auto& gp, auto& p) {
+		p.add_plot1d(std::make_pair(t_sim, y_sim_new), "with lines title 'dynamic network'"s);
+   });
+}
+#endif
+
 
 #if ENABLE_PLOTTING
 TEST_CASE("Plot SIS average trajectories on dynamic empirical network", "[dynamic_nextreaction]")
