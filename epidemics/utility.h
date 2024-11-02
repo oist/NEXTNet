@@ -680,6 +680,13 @@ public:
 		return elements.begin() + i->second;
 	}
 	
+	const_iterator find(const value_type& value) const {
+		const auto i = index.find(value);
+		if (i == index.end())
+			return end();
+		return elements.begin() + i->second;
+	}
+
 	std::pair<iterator, bool> insert(const value_type& value) {
 		iterator i = find(value);
 		if (i != end())
