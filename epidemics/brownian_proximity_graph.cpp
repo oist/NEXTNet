@@ -51,17 +51,10 @@ brownian_proximity_graph::brownian_proximity_graph(node_t N, double avg_degree, 
 			for(partition_index_t cur = lb; cur.first  <= ub.first; ++cur.first) {
 				for(cur.second = lb.second; cur.second  <= ub.second; ++cur.second) {
 					const auto& p = partition(cur);
-					/* Scan nodes in partition */
-					for(const node_data& n2: p) {
-						/* Check if node is a neighbour */
-						if (distance(n1.position, n2.position) <= radius) {
-							/* Add to neighbour map and vector */
-							auto r = n1.neighbour_map.insert(std::make_pair(n2.index, (index_t)n1.neighbours.size()));
-							n1.neighbours.push_back(n2.index);
-							assert(r.second);
-							_unused(r);
-						}
-					}
+					/* Scan nodes in partition and add as neighbours if d(n1, n2) <= R */
+					for(const node_data& n2: p)
+						if (distance(n1.position, n2.position) <= radius)
+							n1.neighbours.insert(n2.index);
 				}
 			}
 		}
@@ -263,7 +256,7 @@ absolutetime_t brownian_proximity_graph::next(rng_t& engine)
 							/* Check if node is in range */
 							if ((&n != &n2) && (distance(n.position, n2.position) <= radius)) {
 								/* Check if node is already a neigbhour, if not report new neighbour */
-								if (n.neighbour_map.find(n2.index) == n.neighbour_map.end()) {
+								if (n.neighbours.find(n2.index) == n.neighbours.end()) {
 									/* Create event and return */
 									next_event = network_event_t {
 										.kind = network_event_kind::neighbour_added,
@@ -316,13 +309,9 @@ std::optional<network_event_t> brownian_proximity_graph::step(rng_t& engine, abs
 			assert(state.range_scan_initialized);
 			assert(state.inner_partition_scan_initialized);
 			/* Add neighbour */
-			auto r = n.neighbour_map.insert(std::make_pair(n2.index, (index_t)n.neighbours.size()));
-			assert(r.second);
-			n.neighbours.push_back(n2.index);
-			assert(n.neighbours.at(r.first->second) == n2.index);
+			n.neighbours.insert(n2.index);
 			/* Continue with the next putative neighbour upon the next call */
 			++state.inner_partition_node_i;
-			_unused(r);
 			break;
 		}
 		case network_event_kind::neighbour_removed: {
@@ -332,19 +321,9 @@ std::optional<network_event_t> brownian_proximity_graph::step(rng_t& engine, abs
 			assert(n.index == ev.source_node);
 			assert(state.neighbour_scan_initialized);
 			assert(!state.neighbour_scan_done);
-			/* Find neighbour in neighbour map */
-			node_t& j = n.neighbours[state.neighbour_idx];
-			assert(j == ev.target_node);
-			auto nmap_it = n.neighbour_map.find(j);
-			/* Prepare to swap with last element in the neighbour list */
-			node_t& e = n.neighbours.back();
-			/* Update neighbour map with new indices */
-			n.neighbour_map[e] = state.neighbour_idx;
-			n.neighbour_map.erase(nmap_it);
-			/* Swap elements in neighbour list and truncate */
-			using std::swap;
-			swap(j, e);
-			n.neighbours.pop_back();
+			/* Remove neighbour */
+			const node_t n2 = n.neighbours[state.neighbour_idx];
+			n.neighbours.erase(n2);
 			break;
 		}
 		default:

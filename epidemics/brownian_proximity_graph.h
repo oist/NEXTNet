@@ -17,14 +17,12 @@
 //--------------------------------------
 
 struct brownian_proximity_graph : virtual dynamic_network, virtual graph, virtual graph_embedding {
-	typedef std::unordered_map<node_t, index_t> neighbour_map_t;
-
 	struct node_data {
 		node_t index;
 		point position;
 		unsigned int generation;
-		neighbour_map_t neighbour_map;
-		std::vector<node_t> neighbours;
+		
+		indexed_set<node_t> neighbours;
 	};
 
 	typedef std::vector<node_data> node_vector_t;
