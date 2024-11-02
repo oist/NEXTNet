@@ -9,7 +9,7 @@
 TEST_CASE("Brownian proximity graph", "[brownian_proximity_graph]") {
 	rng_t engine;
 
-	brownian_proximity_graph g(100, 5.0, 1, 0.0, engine);
+	brownian_proximity_graph g(100, 5.0, 1.0, 0.0, 0.0, 1.0, engine);
 	for(node_t n=0; n < g.nodes(); ++n) {
 		std::vector<double> cn;
 		REQUIRE(g.coordinates(n, cn));
@@ -71,7 +71,9 @@ TEST_CASE("Plot SIS average trajectory on Brownian proximity graph", "[brownian_
 	const std::size_t N = 100;
 	const double K = 3.0;
 	const double RADIUS = 1.0;
-	const double D = 0.1;
+	const double D0 = 0.1;
+	const double D1 = 0.05;
+	const double GAMMA = 1.0;
 	const double TAU = 10;
 	const double PSI_MEAN = 3;
 	const double PSI_VARIANCE = 1;
@@ -89,7 +91,7 @@ TEST_CASE("Plot SIS average trajectory on Brownian proximity graph", "[brownian_
 			std::unique_ptr<simulate_next_reaction> nr;
 			std::unique_ptr<simulate_on_dynamic_network> simulator;
 		} env;
-		env.g = std::make_unique<brownian_proximity_graph>(N, K, RADIUS, D, engine);
+		env.g = std::make_unique<brownian_proximity_graph>(N, K, RADIUS, D0, D1, GAMMA, engine);
 		env.psi = std::make_unique<transmission_time_gamma>(PSI_MEAN, PSI_VARIANCE);
 		env.rho = std::make_unique<transmission_time_gamma>(RHO_MEAN, RHO_VARIANCE);
 		env.nr = std::make_unique<simulate_next_reaction>(*env.g.get(), *env.psi.get(), env.rho.get());

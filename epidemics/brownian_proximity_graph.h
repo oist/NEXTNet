@@ -17,11 +17,16 @@
 //--------------------------------------
 
 struct brownian_proximity_graph : virtual dynamic_network, virtual graph, virtual graph_embedding {
+	enum node_state_t {
+		NONINFECTED = 0,
+		INFECTED = 1
+	};
+	
 	struct node_data {
 		node_t index;
 		point position;
 		unsigned int generation;
-		
+		node_state_t node_state;
 		indexed_set<node_t> neighbours;
 	};
 
@@ -29,9 +34,17 @@ struct brownian_proximity_graph : virtual dynamic_network, virtual graph, virtua
 	typedef std::pair<unsigned int, unsigned int> partition_index_t;
 	typedef std::pair<partition_index_t, unsigned int> partition_node_index_t;
 
-	brownian_proximity_graph(node_t N, double avg_degree, double radius, double D, rng_t& engine);
+	brownian_proximity_graph(node_t N, double avg_degree, double radius,
+							 double D, rng_t& engine);
 
-	brownian_proximity_graph(node_t N, double avg_degree, double radius, double D, double dt, rng_t& engine);
+	brownian_proximity_graph(node_t N, double avg_degree, double radius,
+							 double D, double dt, rng_t& engine);
+	
+	brownian_proximity_graph(node_t N, double avg_degree, double radius,
+							 double D0, double D1, double gamma, rng_t& engine);
+
+	brownian_proximity_graph(node_t N, double avg_degree, double radius,
+							 double D0, double D1, double gamma, double dt, rng_t& engine);
 
 	virtual ~brownian_proximity_graph();
 	
@@ -51,6 +64,10 @@ struct brownian_proximity_graph : virtual dynamic_network, virtual graph, virtua
 	
 	virtual std::optional<network_event_t> step(rng_t& engine, absolutetime_t nexttime = NAN);
 
+	virtual void notify_epidemic_event(event_t ev, rng_t& engine);
+	
+	double node_diffusivity(const node_data& n);
+	
 	node_data& node(std::size_t n) {
 		return node(node_index.at(n));
 	}
@@ -82,10 +99,13 @@ struct brownian_proximity_graph : virtual dynamic_network, virtual graph, virtua
 	const node_t size;
 	const float radius;
 	const float length;
-	const double diffusivity;
+	const double diffusivity_noninfected;
+	const double diffusivity_infected;
+	const double gamma;
 	const double delta_t;
 	double current_time = 0.0;
 	unsigned int current_generation = 0;
+	std::size_t ninfected = 0;
 	
 	const float plength;
 	const std::size_t pstride;

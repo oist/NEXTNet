@@ -9,15 +9,32 @@
 
 using namespace std::literals;
 
-brownian_proximity_graph::brownian_proximity_graph(node_t N, double avg_degree, double r, double D, rng_t& engine)
-	:brownian_proximity_graph(N, avg_degree, r, D, std::pow(r, 2) / (100 * 2 * D),engine)
+brownian_proximity_graph::brownian_proximity_graph(node_t N, double avg_degree, double r,
+												   double D, rng_t& engine)
+	:brownian_proximity_graph(N, avg_degree, r, D, D, 0.0, engine)
 {}
 
-brownian_proximity_graph::brownian_proximity_graph(node_t N, double avg_degree, double r, double D, double dt, rng_t& engine)
+brownian_proximity_graph::brownian_proximity_graph(node_t N, double avg_degree, double r,
+												   double D, double dt, rng_t& engine)
+	:brownian_proximity_graph(N, avg_degree, r, D, D, 0.0, dt, engine)
+{}
+
+
+brownian_proximity_graph::brownian_proximity_graph(node_t N, double avg_degree, double r,
+												   double D0, double D1, double gamma_, rng_t& engine)
+	:brownian_proximity_graph(N, avg_degree, r, D0, D1, gamma_,
+							  std::pow(r, 2) / (100 * 2 * std::max(D0, D1)), engine)
+{}
+
+brownian_proximity_graph::brownian_proximity_graph(node_t N, double avg_degree, double r,
+												   double D0, double D1, double gamma_,
+												   double dt, rng_t& engine)
 	:size(N)
 	,radius(r)
 	,length(std::sqrt((double)size * M_PI * std::pow(radius, 2) / avg_degree))
-	,diffusivity(D)
+	,diffusivity_noninfected(D0)
+	,diffusivity_infected(D1)
+	,gamma(gamma_)
 	,delta_t(dt)
 	,current_time(0.0)
 	,plength(2*radius)
@@ -33,6 +50,7 @@ brownian_proximity_graph::brownian_proximity_graph(node_t N, double avg_degree, 
 		node_data node_tmp;
 		node_tmp.index = i;
 		node_tmp.position = p;
+		node_tmp.node_state = NONINFECTED;
 		const partition_index_t pi = partition_index(p);
 		
 		/* Insert node into partition and node index */
@@ -132,6 +150,46 @@ void brownian_proximity_graph:: move_node(node_data& n, partition_index_t pi_old
 	p_old.pop_back();
 }
 
+void brownian_proximity_graph::notify_epidemic_event(event_t ev, rng_t& engine)
+{
+	switch (ev.kind) {
+		case event_kind::outside_infection:
+		case event_kind::infection: {
+			node_data& n1 = node(ev.node);
+			assert(n1.node_state == NONINFECTED);
+			n1.node_state = INFECTED;
+			++ninfected;
+			assert(ninfected <= (std::size_t)size);
+			break;
+		}
+		case event_kind::reset: {
+			node_data& n1 = node(ev.node);
+			assert(n1.node_state == INFECTED);
+			n1.node_state = NONINFECTED;
+			assert(ninfected > 0);
+			--ninfected;
+			assert(ninfected <= (std::size_t)size);
+			break;
+		}
+		default:
+			throw std::logic_error("unknown epidemic event: "s + name(ev.kind));
+	}
+}
+
+double brownian_proximity_graph::node_diffusivity(const node_data& n)
+{
+	const double diffusivity_scale = std::pow((1.0 - (double) ninfected / (double) size), gamma);
+	
+	switch (n.node_state) {
+		case NONINFECTED:
+			return diffusivity_noninfected * diffusivity_scale;
+		case INFECTED:
+			return diffusivity_infected * diffusivity_scale;
+		default:
+			throw std::logic_error("unknown node state");
+	}
+}
+
 absolutetime_t brownian_proximity_graph::next(rng_t& engine)
 {
 	using std::swap;
@@ -144,7 +202,6 @@ absolutetime_t brownian_proximity_graph::next(rng_t& engine)
     while (true) {
 		/* Move nodes unless already done for the current time step */
 		if (!state.displacement_done) {
-			std::normal_distribution<float> delta(0, sqrt(2*diffusivity*delta_t));
 			for(node_vector_t& p: partitions) {
 				for(std::size_t i=0; i < p.size();) {
 					/* Get node */
@@ -155,6 +212,14 @@ absolutetime_t brownian_proximity_graph::next(rng_t& engine)
 						continue;
 					}
 					assert(n.generation == current_generation);
+					/* Create displacement distribution */
+					const double D = node_diffusivity(n);
+					std::normal_distribution<float> delta(0, sqrt(2*D*delta_t));
+					if (D <= 0.0) {
+						/* Skip node if diffusivity is zero (or negative, which is invalid) */
+						n.generation++;
+						continue;
+					}
 					/* Displace node, increment generation counter */
 					point& p = n.position;
 					const partition_index_t ppi_old = partition_index(p);
