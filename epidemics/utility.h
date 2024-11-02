@@ -625,18 +625,19 @@ public:
 };
 
 /**
- * @brief Sets which allow random elements to be drawn
+ * @brief Sets which elemenets to be accessed by index and randomly drawn
  *
- * Since std::set and std::unordered_set do not elements to be indexed, random elements
- * cannot be drawn efficiently from such sets. This class provides a drop-in replacement
- * for std::unordered_set that provides an operator()(rng) method which returns an interator
- * pointing to a randomly and unformly chosen element.
+ * Combined a std::vector with an std::unordered_set, i.e. elements can be accessed by
+ * index but also efficiently be located by value. Elements can also be drawn randomly
+ * and uniformly. his class provides a drop-in replacement for std::unordered_set that
+ * provides operator[](int) which returns the i-th object, and operator()(rng) method which
+ * returns an interator pointing to a randomly and unformly chosen element.
  *
  * Internally, elements are stored in a vector, and an unordered_map is used as an index
  * to efficiently find elements by value and to guarantee that uniqueness.
  */
 template<typename T, class Hash = std::hash<T>, class KeyEqual = std::equal_to<T>>
-class drawable_set {
+class indexed_set {
 public:
 	typedef T key_type;
 	typedef T value_type;
@@ -652,10 +653,10 @@ public:
 	typedef typename vector_type::iterator iterator;
 	typedef typename vector_type::const_iterator const_iterator;
 	
-	drawable_set() {};
+	indexed_set() {};
 	
 	template<class InputIt>
-	drawable_set(InputIt first, const InputIt last) {
+	indexed_set(InputIt first, const InputIt last) {
 		for(; first != last; ++first) {
 			insert(*first);
 		}

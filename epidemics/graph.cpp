@@ -554,7 +554,7 @@ struct config_model_clustered_serrano_builder {
 	 * For every degree class, a set of stubs of nodes in that class is kept which may be
 	 * still selected during triangle building
 	 */
-	std::unordered_map<int, drawable_set<stub, stub_hasher>> idx_k_stubs_eligible;
+	std::unordered_map<int, indexed_set<stub, stub_hasher>> idx_k_stubs_eligible;
 	
 	/**
 	 * @brief Build a network using the clustered configuration model of Serrano & Boguna 2005

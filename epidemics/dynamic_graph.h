@@ -39,7 +39,7 @@ struct graph_mutable : public virtual graph
 	virtual index_t outdegree(node_t node);
 
 private:
-	std::vector<drawable_set<node_t>> adjacencylist;
+	std::vector<indexed_set<node_t>> adjacencylist;
 };
 
 
@@ -100,9 +100,9 @@ struct dynamic_sirx_network : public virtual dynamic_network
 
 	const double kappa;
 
-	drawable_set<node_t> nonremoved;
+	indexed_set<node_t> nonremoved;
 
-	drawable_set<node_t> infected_nonremoved;
+	indexed_set<node_t> infected_nonremoved;
 
 	std::unordered_set<node_t> infected;
 
