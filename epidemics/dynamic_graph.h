@@ -52,9 +52,9 @@ struct dynamic_empirical_network : public virtual dynamic_network, public virtua
 
 	dynamic_empirical_network(std::string path_to_file, edge_duration_kind contact_type, double dt);
 
-	virtual absolutetime_t next(rng_t& engine);
+	virtual absolutetime_t next(rng_t& engine) override;
 
-	virtual std::optional<network_event_t> step(rng_t& engine, absolutetime_t max_time = NAN);
+	virtual std::optional<network_event_t> step(rng_t& engine, absolutetime_t max_time = NAN) override;
 
 	std::vector<std::vector<double>> compute_number_of_edges(rng_t& engine);
 
@@ -70,19 +70,19 @@ struct dynamic_sirx_network : public virtual dynamic_network
 
 	dynamic_sirx_network(graph& network, double kappa0, double kappa);
 
-	virtual bool is_undirected();
+	virtual bool is_undirected() override;
 
-	virtual node_t nodes();
+	virtual node_t nodes() override;
 
-	virtual node_t neighbour(node_t node, int neighbour_index);
+	virtual node_t neighbour(node_t node, int neighbour_index) override;
 
-	virtual index_t outdegree(node_t node);
+	virtual index_t outdegree(node_t node) override;
 
-	virtual void notify_epidemic_event(event_t ev, rng_t& engine);
+	virtual void notify_epidemic_event(event_t ev, rng_t& engine) override;
 
-	virtual absolutetime_t next(rng_t& engine);
+	virtual absolutetime_t next(rng_t& engine) override;
 
-	virtual std::optional<network_event_t> step(rng_t& engine, absolutetime_t max_time = NAN);
+	virtual std::optional<network_event_t> step(rng_t& engine, absolutetime_t max_time = NAN) override;
 
 	bool is_removed(node_t node) { return (nonremoved.find(node) == nonremoved.end()); }
 
@@ -136,9 +136,9 @@ struct dynamic_sirx_network : public virtual dynamic_network
 struct dynamic_erdos_reyni : public virtual dynamic_network, public virtual erdos_reyni {
 	dynamic_erdos_reyni(int size, double avg_degree, double timescale, rng_t& engine);
 
-	virtual absolutetime_t next(rng_t& engine);
+	virtual absolutetime_t next(rng_t& engine) override;
 
-	virtual std::optional<network_event_t> step(rng_t& engine, absolutetime_t max_time = NAN);
+	virtual std::optional<network_event_t> step(rng_t& engine, absolutetime_t max_time = NAN) override;
 
 	void add_edge(node_t node, node_t neighbour);
 	void remove_edge(node_t node, int neighbour_index);
