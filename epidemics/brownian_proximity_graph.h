@@ -48,23 +48,23 @@ struct brownian_proximity_graph : virtual dynamic_network, virtual graph, virtua
 
 	virtual ~brownian_proximity_graph();
 	
-	virtual node_t nodes();
+	virtual node_t nodes() override;
 
-	virtual node_t neighbour(node_t node, int neighbour_index) ;
+	virtual node_t neighbour(node_t node, int neighbour_index) override;
 
-	virtual int outdegree(node_t node);
+	virtual int outdegree(node_t node) override;
 
-	virtual std::size_t dimensionality();
+	virtual std::size_t dimensionality() override;
 
-	virtual bool coordinates(const node_t node, std::vector<double>& position);
+	virtual bool coordinates(const node_t node, std::vector<double>& position) override;
 
-	virtual void bounds(std::vector<double>& a, std::vector<double>& b);
+	virtual void bounds(std::vector<double>& a, std::vector<double>& b) override;
 
-	virtual absolutetime_t next(rng_t& engine);
+	virtual absolutetime_t next(rng_t& engine) override;
 	
-	virtual std::optional<network_event_t> step(rng_t& engine, absolutetime_t nexttime = NAN);
+	virtual std::optional<network_event_t> step(rng_t& engine, absolutetime_t nexttime = NAN) override;
 
-	virtual void notify_epidemic_event(event_t ev, rng_t& engine);
+	virtual void notify_epidemic_event(event_t ev, rng_t& engine) override;
 	
 	double node_diffusivity(const node_data& n);
 	
