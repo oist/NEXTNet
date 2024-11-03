@@ -200,6 +200,10 @@ absolutetime_t brownian_proximity_graph::next(rng_t& engine, absolutetime_t maxt
 	
 	/* Otherwise, step time until something happens */
     while (true) {
+		/* */
+		if (current_time > maxtime)
+			return INFINITY;
+		
 		/* Move nodes unless already done for the current time step */
 		if (!state.displacement_done) {
 			bool allskipped = true;
@@ -361,10 +365,10 @@ absolutetime_t brownian_proximity_graph::next(rng_t& engine, absolutetime_t maxt
 std::optional<network_event_t> brownian_proximity_graph::step(rng_t& engine, absolutetime_t max_time) {
 	/* Generate next event */
 	if (!next_event)
-		next(engine);
+		next(engine, max_time);
 	
 	/* Return if event lies past max_time */
-	if (max_time < next_event->time)
+	if (!next_event || (max_time < next_event->time))
 		return std::nullopt;
 	
 	/* Process event */
