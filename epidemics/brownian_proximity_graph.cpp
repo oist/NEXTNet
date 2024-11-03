@@ -190,7 +190,7 @@ double brownian_proximity_graph::node_diffusivity(const node_data& n)
 	}
 }
 
-absolutetime_t brownian_proximity_graph::next(rng_t& engine)
+absolutetime_t brownian_proximity_graph::next(rng_t& engine, absolutetime_t maxtime)
 {
 	using std::swap;
 

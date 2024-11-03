@@ -14,7 +14,7 @@
 
 
 struct dynamic_network : public virtual graph {
-	virtual absolutetime_t next(rng_t& engine) = 0;
+	virtual absolutetime_t next(rng_t& engine, absolutetime_t maxtime = INFINITY) = 0;
 
 	virtual std::optional<network_event_t> step(rng_t& engine, absolutetime_t max_time = NAN) = 0;
 
@@ -52,7 +52,7 @@ struct dynamic_empirical_network : public virtual dynamic_network, public virtua
 
 	dynamic_empirical_network(std::string path_to_file, edge_duration_kind contact_type, double dt);
 
-	virtual absolutetime_t next(rng_t& engine) override;
+	virtual absolutetime_t next(rng_t& engine, absolutetime_t maxtime = INFINITY) override;
 
 	virtual std::optional<network_event_t> step(rng_t& engine, absolutetime_t max_time = NAN) override;
 
@@ -80,7 +80,7 @@ struct dynamic_sirx_network : public virtual dynamic_network
 
 	virtual void notify_epidemic_event(event_t ev, rng_t& engine) override;
 
-	virtual absolutetime_t next(rng_t& engine) override;
+	virtual absolutetime_t next(rng_t& engine, absolutetime_t maxtime = INFINITY) override;
 
 	virtual std::optional<network_event_t> step(rng_t& engine, absolutetime_t max_time = NAN) override;
 
@@ -136,7 +136,7 @@ struct dynamic_sirx_network : public virtual dynamic_network
 struct dynamic_erdos_reyni : public virtual dynamic_network, public virtual erdos_reyni {
 	dynamic_erdos_reyni(int size, double avg_degree, double timescale, rng_t& engine);
 
-	virtual absolutetime_t next(rng_t& engine) override;
+	virtual absolutetime_t next(rng_t& engine, absolutetime_t maxtime = INFINITY) override;
 
 	virtual std::optional<network_event_t> step(rng_t& engine, absolutetime_t max_time = NAN) override;
 
@@ -187,7 +187,7 @@ struct activity_driven_network : virtual dynamic_network, virtual graph_mutable 
     // Constructor to initialize the variables
     activity_driven_network(std::vector<double> activity_rates, double eta, double m, double recovery_rate, rng_t& engine);
 
-	virtual absolutetime_t next(rng_t& engine);
+	virtual absolutetime_t next(rng_t& engine, absolutetime_t maxtime = INFINITY);
 
 	virtual std::optional<network_event_t> step(rng_t& engine, absolutetime_t max_time = NAN);
 

@@ -127,7 +127,7 @@ dynamic_empirical_network::dynamic_empirical_network(std::string path_to_file, d
 	resize(max_node + 1);
 }
 
-absolutetime_t dynamic_empirical_network::next(rng_t& engine)
+absolutetime_t dynamic_empirical_network::next(rng_t& engine, absolutetime_t)
 {
 	/* find next actual event, skipping over events that do nothing */
 	for(network_event_t& event: event_queue) {
@@ -298,7 +298,7 @@ void dynamic_sirx_network::notify_epidemic_event(event_t ev, rng_t& engine)
 	}
 }
 
-absolutetime_t dynamic_sirx_network::next(rng_t& engine)
+absolutetime_t dynamic_sirx_network::next(rng_t& engine, absolutetime_t)
 {
 	/* generate next time unless already done previously */
 	double base_time = current_time;
@@ -427,7 +427,7 @@ dynamic_erdos_reyni::dynamic_erdos_reyni(int size, double avg_degree, double tim
 	edges_absent = size * (size - 1) / 2 - edges_present;
 }
 
-absolutetime_t dynamic_erdos_reyni::next(rng_t& engine) {
+absolutetime_t dynamic_erdos_reyni::next(rng_t& engine, absolutetime_t) {
 	if (!std::isnan(next_time))
 		return next_time;
 	
@@ -596,7 +596,7 @@ activity_driven_network::activity_driven_network(std::vector<double> activity_ra
     }
 }
 
-absolutetime_t activity_driven_network::next(rng_t& engine){
+absolutetime_t activity_driven_network::next(rng_t& engine, absolutetime_t){
 
 	if (active_edges.empty())
 		return INFINITY;

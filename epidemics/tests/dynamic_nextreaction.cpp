@@ -29,24 +29,24 @@ namespace{
 			}
 		}
 
-		virtual node_t nodes() { return 2; }
+		virtual node_t nodes() override { return 2; }
 
-		virtual node_t neighbour(node_t node, int neighbour_index) {
+		virtual node_t neighbour(node_t node, int neighbour_index) override {
 			if ((node == 0) && (neighbour_index == 0) && edge_present) return 1;
 			return -1;
 		}
 
-		virtual int outdegree(node_t node) {
+		virtual int outdegree(node_t node) override {
 			if (node == 0) return 1;
 			return -1;
 		}
 
-		virtual absolutetime_t next(rng_t& engine) {
+		virtual absolutetime_t next(rng_t& engine, absolutetime_t) override {
 			if (times.empty()) return INFINITY;
 			return times.back();
 		}
 
-		virtual std::optional<network_event_t> step(rng_t&, absolutetime_t max_time = NAN) {
+		virtual std::optional<network_event_t> step(rng_t&, absolutetime_t max_time = NAN) override {
 			if (times.empty())
 				return std::nullopt;
 			const absolutetime_t t = times.back();

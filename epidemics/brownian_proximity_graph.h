@@ -60,7 +60,7 @@ struct brownian_proximity_graph : virtual dynamic_network, virtual graph, virtua
 
 	virtual void bounds(std::vector<double>& a, std::vector<double>& b) override;
 
-	virtual absolutetime_t next(rng_t& engine) override;
+	virtual absolutetime_t next(rng_t& engine, absolutetime_t maxtime = INFINITY) override;
 	
 	virtual std::optional<network_event_t> step(rng_t& engine, absolutetime_t nexttime = NAN) override;
 
