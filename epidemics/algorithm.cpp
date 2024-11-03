@@ -28,7 +28,9 @@ simulate_on_dynamic_network::simulate_on_dynamic_network(simulation_algorithm& s
 absolutetime_t
 simulate_on_dynamic_network::next(rng_t& engine)
 {
-	return std::min(network->next(engine), simulation.next(engine));
+	const double sim_next = simulation.next(engine);
+	const double nw_next = network->next(engine, sim_next);
+	return std::min(sim_next, nw_next);
 }
 
 std::optional<network_or_epidemic_event_t>
