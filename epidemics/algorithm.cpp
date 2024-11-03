@@ -26,10 +26,10 @@ simulate_on_dynamic_network::simulate_on_dynamic_network(simulation_algorithm& s
 };
 
 absolutetime_t
-simulate_on_dynamic_network::next(rng_t& engine)
+simulate_on_dynamic_network::next(rng_t& engine, absolutetime_t maxtime)
 {
 	const double sim_next = simulation.next(engine);
-	const double nw_next = network->next(engine, sim_next);
+	const double nw_next = network->next(engine, std::min(sim_next, maxtime));
 	return std::min(sim_next, nw_next);
 }
 
@@ -37,7 +37,7 @@ std::optional<network_or_epidemic_event_t>
 simulate_on_dynamic_network::step(rng_t& engine, absolutetime_t maxtime)
 {
 	while (true) {
-		const absolutetime_t nexttime = next(engine);
+		const absolutetime_t nexttime = next(engine, maxtime);
 		if (std::isinf(nexttime) || (nexttime > maxtime))
 			return std::nullopt;
 

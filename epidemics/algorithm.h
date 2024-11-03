@@ -43,7 +43,7 @@ struct simulation_algorithm {
 struct simulate_on_dynamic_network {
 	simulate_on_dynamic_network(simulation_algorithm& sim);
 	
-	absolutetime_t next(rng_t& engine);
+	absolutetime_t next(rng_t& engine, absolutetime_t maxtime = INFINITY);
 
 	std::optional<network_or_epidemic_event_t> step(rng_t& engine, absolutetime_t maxtime = INFINITY) ;
 	
