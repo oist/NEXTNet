@@ -41,7 +41,7 @@ simulate_on_dynamic_network::step(rng_t& engine, absolutetime_t maxtime)
 		if (std::isinf(nexttime) || (nexttime > maxtime))
 			return std::nullopt;
 
-		if (nexttime == network->next(engine)) {
+		if (nexttime == network->next(engine, maxtime)) {
 			/* Next event is a network event. Since we don't specify an event filter,
 			 * we should get an event for exactly nexttime.
 			 */
