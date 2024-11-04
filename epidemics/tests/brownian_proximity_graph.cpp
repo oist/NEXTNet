@@ -38,7 +38,7 @@ TEST_CASE("Brownian proximity graph", "[brownian_proximity_graph]") {
 			for(index_t i=0; i < g.outdegree(n); ++i)
 				nn2.insert(g.neighbour(n, i));
 			
-			//REQUIRE(nn1 == nn2);
+			REQUIRE(nn1 == nn2);
 		}
 		if (ni >= N)
 			break;

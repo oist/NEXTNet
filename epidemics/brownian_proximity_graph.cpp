@@ -200,13 +200,16 @@ absolutetime_t brownian_proximity_graph::next(rng_t& engine, absolutetime_t maxt
 	
 	/* Otherwise, step time until something happens */
     while (true) {
-		/* */
+		/* Stop once we've reached maxtime, any further events certainly lie after maxtime */
 		if (current_time > maxtime)
 			return INFINITY;
 		
 		/* Move nodes unless already done for the current time step */
 		bool no_node_moved = true;
 		if (!state.displacement_done) {
+			/* Don't do an additional round of displacements if that'd move us past maxtime */
+			if (current_time + delta_t > maxtime)
+				return INFINITY;
 			for(node_vector_t& p: partitions) {
 				for(std::size_t i=0; i < p.size();) {
 					/* Get node */
