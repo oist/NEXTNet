@@ -211,7 +211,7 @@ absolutetime_t brownian_proximity_graph::next(rng_t& engine, absolutetime_t maxt
 			if (current_time + delta_t > maxtime)
 				return INFINITY;
 			for(node_vector_t& p: partitions) {
-				for(std::size_t i=0; i < p.size();) {
+				for(std::size_t i=0; i < p.size(); /* don't increment, done below */) {
 					/* Get node */
 					node_data& n = p[i];
 					/* Skip nodes which were already displaced & moved into this partition */
@@ -226,6 +226,7 @@ absolutetime_t brownian_proximity_graph::next(rng_t& engine, absolutetime_t maxt
 					if (D <= 0.0) {
 						/* Skip node if diffusivity is zero (or negative, which is invalid) */
 						n.generation++;
+						++i;
 						continue;
 					}
 					/* Moved at least one node */
