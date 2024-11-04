@@ -56,36 +56,57 @@ TEST_CASE("Brownian proximity graph", "[brownian_proximity_graph]") {
 	}
 }
 
-#if 0
 TEST_CASE("Epidemic on Brownian proximity graph", "[brownian_proximity_graph]") {
 	rng_t engine;
 
-	brownian_proximity_graph g(100, 3.0, 1, 0.1, engine);
+	const std::size_t N = 100;
+	const std::size_t K = 5;
+	const double r = 1.0;
+	const double D0 = 0.1;
+	const double D1 = 0.1;
+	const double gamma = 1.0;
+	const double dt = 0.1;
+	const double Tmax = 100;
+	const double Tstep = 1;
+	brownian_proximity_graph g(N, K, r, D0, D1, gamma, dt, engine);
 	transmission_time_gamma psi(5, 3);
-	transmission_time_gamma rho(100, 10);
-	simulate_next_reaction nr(g, psi, &rho, false, true);
+	//transmission_time_gamma rho(100, 10);
+	simulate_next_reaction nr(g, psi, nullptr);
 	simulate_on_dynamic_network sim(nr);
 	
 	nr.add_infections({ std::make_pair(0, 0.0)} );
-	
-	while(sim.next(engine) < 1000) {
-		const auto ev = *sim.step(engine);
-		if (std::holds_alternative<network_event_t>(ev)) {
-			const auto nw_ev = std::get<network_event_t>(ev);
-			std::cerr << "Network event " << name(nw_ev.kind) << ": "
-				<< "time=" << nw_ev.time << ", "
-				<< "src=" << nw_ev.source_node <<  ", "
-				<< "tgt=" << nw_ev.target_node << std::endl;
-		} else if (std::holds_alternative<event_t>(ev)) {
-			const auto ep_ev = std::get<event_t>(ev);
-			std::cerr << "Epidemic event " << name(ep_ev.kind) << ": "
-				<< "time=" << ep_ev.time << ", "
-				<< "src=" << ep_ev.source_node << ", "
-				<< "tgt=" << ep_ev.node << std::endl;
+	std::size_t ninfected = 0;
+	for(double t=0; t < Tmax; t += Tstep) {
+		while (true) {
+			const auto maybe_ev = sim.step(engine, t);
+			if (!maybe_ev)
+				break;
+			
+			const auto ev = *maybe_ev;
+			if (std::holds_alternative<network_event_t>(ev)) {
+				const auto nw_ev = std::get<network_event_t>(ev);
+				_unused(nw_ev);
+				/*
+				std::cerr << "Network event " << name(nw_ev.kind) << ": "
+					<< "time=" << nw_ev.time << ", "
+					<< "src=" << nw_ev.source_node <<  ", "
+					<< "tgt=" << nw_ev.target_node << std::endl;
+				 */
+			} else if (std::holds_alternative<event_t>(ev)) {
+				const auto ep_ev = std::get<event_t>(ev);
+				ninfected += delta_infected(ep_ev.kind);
+				/*
+				std::cerr << "Epidemic event " << name(ep_ev.kind) << ": "
+					<< "time=" << ep_ev.time << ", "
+					<< "src=" << ep_ev.source_node << ", "
+					<< "tgt=" << ep_ev.node << std::endl;
+				 */
+			}
 		}
 	}
+	
+	REQUIRE(ninfected == N);
 };
-#endif
 
 #if ENABLE_PLOTTING
 TEST_CASE("Plot SIS average trajectory on Brownian proximity graph", "[brownian_proximity_graph]")
