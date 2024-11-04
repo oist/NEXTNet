@@ -63,7 +63,7 @@ TEST_CASE("Plot large-population SIR mean-field (REGIR)", "[REGIR]") {
     }
 
     plot("regir.sir.mean.pdf", "Large-population SIR mean-field [REGIR]", [&](auto& gp, auto& p) {
-        p.add_plot1d(racyclic, "with lines title 'REGIT acyclic'"s);
+        p.add_plot1d(racyclic, "with lines title 'REGIR acyclic'"s);
         p.add_plot1d(analytical, "with lines title 'analytical'");
     });
 }
