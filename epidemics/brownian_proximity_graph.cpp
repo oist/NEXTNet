@@ -205,8 +205,8 @@ absolutetime_t brownian_proximity_graph::next(rng_t& engine, absolutetime_t maxt
 			return INFINITY;
 		
 		/* Move nodes unless already done for the current time step */
+		bool no_node_moved = true;
 		if (!state.displacement_done) {
-			bool allskipped = true;
 			for(node_vector_t& p: partitions) {
 				for(std::size_t i=0; i < p.size();) {
 					/* Get node */
@@ -226,7 +226,7 @@ absolutetime_t brownian_proximity_graph::next(rng_t& engine, absolutetime_t maxt
 						continue;
 					}
 					/* Moved at least one node */
-					allskipped = false;
+					no_node_moved = false;
 					/* Displace node, increment generation counter */
 					point& p = n.position;
 					const partition_index_t ppi_old = partition_index(p);
@@ -259,9 +259,9 @@ absolutetime_t brownian_proximity_graph::next(rng_t& engine, absolutetime_t maxt
 			current_generation++;
 			state.displacement_done = true;
 			
-			/* If we all nodes were skipped due to D <= 0, report infinity */
-			if (allskipped)
-				return INFINITY;
+			/* If no nodes were moved, don't have to update neighbours */
+			if (no_node_moved)
+				state.partition_i = partitions.size();
 		}
 		
 		/* Update neighbour relationships */
