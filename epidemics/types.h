@@ -142,9 +142,14 @@ struct point {
 	float x, y;
 };
 
-inline float distance(point a, point b) {
-	return std::sqrt(std::pow(a.x - b.x, 2) + std::pow(a.y - b.y, 2));
+inline float distance_squared(point a, point b) {
+	return std::pow(a.x - b.x, 2) + std::pow(a.y - b.y, 2);
 }
+
+inline float distance(point a, point b) {
+	return std::sqrt(distance_squared(a, b));
+}
+
 
 /******************************
  * rng_t - the RNG (random number generator) to use

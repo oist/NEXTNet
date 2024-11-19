@@ -31,6 +31,7 @@ brownian_proximity_graph::brownian_proximity_graph(node_t N, double avg_degree, 
 												   double dt, rng_t& engine)
 	:size(N)
 	,radius(r)
+	,radius_squared(std::pow(r, 2))
 	,length(std::sqrt((double)size * M_PI * std::pow(radius, 2) / avg_degree))
 	,diffusivity_noninfected(D0)
 	,diffusivity_infected(D1)
@@ -71,7 +72,7 @@ brownian_proximity_graph::brownian_proximity_graph(node_t N, double avg_degree, 
 					const auto& p = partition(cur);
 					/* Scan nodes in partition and add as neighbours if d(n1, n2) <= R */
 					for(const node_data& n2: p)
-						if (distance(n1.position, n2.position) <= radius)
+						if (distance_squared(n1.position, n2.position) <= radius_squared)
 							n1.neighbours.insert(n2.index);
 				}
 			}
@@ -295,7 +296,7 @@ absolutetime_t brownian_proximity_graph::next(rng_t& engine, absolutetime_t maxt
 					for(; state.neighbour_idx < (int) n.neighbours.size(); ++state.neighbour_idx) {
 						const node_data& n2 = node(n.neighbours[state.neighbour_idx]);
 						assert(n2.index == n.neighbours[state.neighbour_idx]);
-						if (distance(n.position, n2.position) > radius) {
+						if (distance_squared(n.position, n2.position) > radius_squared) {
 							/* Create event */
 							next_event = network_event_t {
 								.kind = network_event_kind::neighbour_removed,
@@ -334,7 +335,7 @@ absolutetime_t brownian_proximity_graph::next(rng_t& engine, absolutetime_t maxt
 							/* Get putative neighbour */
 							const node_data& n2 = p[state.inner_partition_node_i];
 							/* Check if node is in range */
-							if ((&n != &n2) && (distance(n.position, n2.position) <= radius)) {
+							if ((&n != &n2) && (distance_squared(n.position, n2.position) <= radius_squared)) {
 								/* Check if node is already a neigbhour, if not report new neighbour */
 								if (n.neighbours.find(n2.index) == n.neighbours.end()) {
 									/* Create event and return */

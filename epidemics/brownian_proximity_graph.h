@@ -98,6 +98,7 @@ struct brownian_proximity_graph : virtual dynamic_network, virtual graph, virtua
 	
 	const node_t size;
 	const float radius;
+	const float radius_squared;
 	const float length;
 	const double diffusivity_noninfected;
 	const double diffusivity_infected;
