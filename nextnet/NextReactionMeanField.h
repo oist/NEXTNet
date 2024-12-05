@@ -20,7 +20,7 @@ public:
 
 	virtual absolutetime_t next(rng_t& engine);
 
-	virtual std::optional<event_t> step(rng_t& engine, absolutetime_t maxtime = INFINITY,
+	virtual std::optional<epidemic_event_t> step(rng_t& engine, absolutetime_t maxtime = INFINITY,
 										event_filter_t event_filter = std::nullopt);
 	
 	virtual void notify_infected_node_neighbour_added(network_event_t event, rng_t& engine);
@@ -31,7 +31,7 @@ public:
     
     const double R0;
     
-    virtual graph& get_network() const;
+    virtual network& get_network() const;
 
     int current_nb_of_infected(){
         return (int) infected.size() - removed;
@@ -51,7 +51,7 @@ private:
          * Reset events are self-loops, a consequently they obey
          * source_node=-1, neighbour_index=-1, neighbours_remaining=0.
          */
-        event_kind kind;
+        epidemic_event_kind kind;
 
         /*
          * Absolute time of infection
@@ -75,7 +75,7 @@ private:
                         std::greater<active_edges_entry>>
       active_edges;
 	
-	std::optional<event_t> step_infection(const active_edges_entry& next, rng_t& engine);
+	std::optional<epidemic_event_t> step_infection(const active_edges_entry& next, rng_t& engine);
 	
-	std::optional<event_t> step_reset(const active_edges_entry& next, rng_t& engine);
+	std::optional<epidemic_event_t> step_reset(const active_edges_entry& next, rng_t& engine);
 };

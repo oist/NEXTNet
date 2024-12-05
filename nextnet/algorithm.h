@@ -11,8 +11,8 @@
 #include "types.h"
 
 #include "random.h"
-#include "graph.h"
-#include "dynamic_graph.h"
+#include "network.h"
+#include "temporal_network.h"
 
 /**
  * TODO: Rename to epidemic_simulation_algorithm
@@ -20,7 +20,7 @@
 struct simulation_algorithm {
     virtual ~simulation_algorithm() {};
     
-    virtual graph& get_network() const = 0;
+    virtual network& get_network() const = 0;
 
     virtual const class transmission_time& transmission_time() const = 0;
 
@@ -28,7 +28,7 @@ struct simulation_algorithm {
 	
 	virtual absolutetime_t next(rng_t& engine) = 0;
 
-	virtual std::optional<event_t> step(rng_t& engine, absolutetime_t maxtime = INFINITY,
+	virtual std::optional<epidemic_event_t> step(rng_t& engine, absolutetime_t maxtime = INFINITY,
 										event_filter_t event_filter = std::nullopt) = 0;
 	
 	virtual void notify_infected_node_neighbour_added(network_event_t event, rng_t& engine) = 0;
@@ -40,16 +40,16 @@ struct simulation_algorithm {
     virtual bool is_infected(node_t) const = 0;
 };
 
-struct simulate_on_dynamic_network {
-	simulate_on_dynamic_network(simulation_algorithm& sim);
+struct simulate_on_temporal_network {
+	simulate_on_temporal_network(simulation_algorithm& sim);
 	
 	absolutetime_t next(rng_t& engine, absolutetime_t maxtime = INFINITY);
 
 	std::optional<network_or_epidemic_event_t> step(rng_t& engine, absolutetime_t maxtime = INFINITY) ;
 	
-	bool simulation_event_filter(event_t ev);
+	bool simulation_event_filter(epidemic_event_t ev);
 	
-	dynamic_network* network;
+	temporal_network* network;
 	simulation_algorithm& simulation;
 	
 	enum class neighbour_state_t : unsigned char {

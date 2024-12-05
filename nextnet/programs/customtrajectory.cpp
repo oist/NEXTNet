@@ -36,7 +36,7 @@ int program_customtrajectory(int argc, const char * argv[]) {
     case 0:
         simulate_trajectory(engine, [input_filename,psi](rng_t& engine) {
             struct {
-                std::unique_ptr<graph> nw;
+                std::unique_ptr<network> nw;
                 std::unique_ptr<simulation_algorithm> simulator;
             } env;
             env.nw.reset(new imported_network(input_filename));
@@ -47,7 +47,7 @@ int program_customtrajectory(int argc, const char * argv[]) {
     case 1:
         simulate_trajectory(engine, [input_filename,psi,rho](rng_t& engine) {
 			struct {
-				std::unique_ptr<graph> nw;
+				std::unique_ptr<network> nw;
 				std::unique_ptr<simulation_algorithm> simulator;
 			} env;
 			env.nw.reset(new imported_network(input_filename));
@@ -62,7 +62,7 @@ int program_customtrajectory(int argc, const char * argv[]) {
     case 2:
         simulate_trajectory(engine, [input_filename,psi,rho](rng_t& engine) {
 			struct {
-				std::unique_ptr<graph> nw;
+				std::unique_ptr<network> nw;
 				std::unique_ptr<simulation_algorithm> simulator;
 			} env;
 			env.nw.reset(new imported_network(input_filename));

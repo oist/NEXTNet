@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "NextReaction.h"
 #include "random.h"
-#include "graph.h"
+#include "network.h"
 #include "types.h"
 #include "utility.h"
 
@@ -15,7 +15,7 @@ absolutetime_t simulate_next_reaction::next(rng_t& engine)
 	return next.time;
 }
 
-std::optional<event_t>
+std::optional<epidemic_event_t>
 simulate_next_reaction::step(rng_t& engine, absolutetime_t maxtime, event_filter_t evf)
 {
     if (std::isnan(maxtime))
@@ -38,13 +38,13 @@ simulate_next_reaction::step(rng_t& engine, absolutetime_t maxtime, event_filter
         ++queue_steps_total;
         
         /* Perform event */
-        std::optional<event_t> result;
+        std::optional<epidemic_event_t> result;
         switch (next.kind) {
-            case event_kind::infection:
-            case event_kind::outside_infection:
+            case epidemic_event_kind::infection:
+            case epidemic_event_kind::outside_infection:
 				result = step_infection(next, evf, engine);
 				break;
-			case event_kind::reset:
+			case epidemic_event_kind::reset:
 				result = step_reset(next, evf, engine);
 				break;
             default: throw std::logic_error("invalid event kind");
@@ -82,7 +82,7 @@ void simulate_next_reaction::notify_infected_node_neighbour_added(network_event_
 	/* Add edge */
 	assert(std::isfinite(t));
 	active_edges_entry e;
-	e.kind = event_kind::infection;
+	e.kind = epidemic_event_kind::infection;
 	e.time = t;
 	e.node = event.target_node;
 	e.source_time = source_state->second.infection_time;
@@ -113,7 +113,7 @@ void simulate_next_reaction::notify_infected_contact(network_event_t event, rng_
 
 	/* Queue infection, this will be the next event that occurs (see assert above) */
 	active_edges_entry e;
-	e.kind = event_kind::infection;
+	e.kind = epidemic_event_kind::infection;
 	e.time = event.time;
 	e.node = event.target_node;
 	e.source_time = source_state->second.infection_time;
@@ -124,7 +124,7 @@ void simulate_next_reaction::notify_infected_contact(network_event_t event, rng_
 	push_edge(e);
 }
 
-std::optional<event_t> simulate_next_reaction::step_infection(const active_edges_entry& next, event_filter_t evf, rng_t& engine)
+std::optional<epidemic_event_t> simulate_next_reaction::step_infection(const active_edges_entry& next, event_filter_t evf, rng_t& engine)
 {
     /*
      * Here, the variables have the following meaning:
@@ -170,7 +170,7 @@ std::optional<event_t> simulate_next_reaction::step_infection(const active_edges
         if (t < next.source_reset) {
             assert(std::isfinite(t));
             active_edges_entry e;
-            e.kind = event_kind::infection;
+            e.kind = epidemic_event_kind::infection;
             e.time = t;
             e.node = sibling;
             e.source_time = next.source_time;
@@ -184,7 +184,7 @@ std::optional<event_t> simulate_next_reaction::step_infection(const active_edges
     }
 
 	/* Create event */
-	const event_t ev { .kind = next.kind, .source_node = next.source_node, .node = next.node, .time = next.time };
+	const epidemic_event_t ev { .kind = next.kind, .source_node = next.source_node, .node = next.node, .time = next.time };
 
     /* Check if event is blocked or putatively infected node is already infected, if so we're done */
     if (is_event_blocked(ev, evf) || is_infected(next.node))
@@ -197,7 +197,7 @@ std::optional<event_t> simulate_next_reaction::step_infection(const active_edges
     const absolutetime_t node_reset_time = next.time + tau_reset;
     if (tau_reset < INFINITY) {
         active_edges_entry e;
-        e.kind = event_kind::reset;
+        e.kind = epidemic_event_kind::reset;
         e.time = node_reset_time;
         e.node = next.node;
 		push_edge(e);
@@ -268,7 +268,7 @@ std::optional<event_t> simulate_next_reaction::step_infection(const active_edges
         if (t < node_reset_time) {
             assert(std::isfinite(t));
             active_edges_entry e;
-            e.kind = event_kind::infection;
+            e.kind = epidemic_event_kind::infection;
             e.time = t;
             e.node = neighbour;
             e.source_time = next.time;
@@ -286,12 +286,12 @@ std::optional<event_t> simulate_next_reaction::step_infection(const active_edges
 	return ev;
 }
 
-std::optional<event_t> simulate_next_reaction::step_reset(const active_edges_entry& next, event_filter_t evf, rng_t& engine) {
+std::optional<epidemic_event_t> simulate_next_reaction::step_reset(const active_edges_entry& next, event_filter_t evf, rng_t& engine) {
     /* The node cannot yet have resetted */
     assert(is_infected(next.node));
 
 	/* Create event and query filter */
-	const event_t ev { .kind = event_kind::reset, .source_node = next.source_node, .node = next.node, .time = next.time };
+	const epidemic_event_t ev { .kind = epidemic_event_kind::reset, .source_node = next.source_node, .node = next.node, .time = next.time };
 	if (is_event_blocked(ev, evf))
 		return std::nullopt;
 	
@@ -318,7 +318,7 @@ std::optional<event_t> simulate_next_reaction::step_reset(const active_edges_ent
 void simulate_next_reaction::add_infections(const std::vector<std::pair<node_t, absolutetime_t>>& v) {
     for(const auto& ve: v) {
         active_edges_entry e;
-        e.kind = event_kind::outside_infection;
+        e.kind = epidemic_event_kind::outside_infection;
         e.time = ve.second;
         e.node = ve.first;
 		push_edge(e);
@@ -346,7 +346,7 @@ void simulate_next_reaction::add_thermal_infections(const std::vector<std::pair<
                 continue;
             }
             active_edges_entry e;
-            e.kind = event_kind::infection;
+            e.kind = epidemic_event_kind::infection;
             e.time = time+tau;
             e.node = neighbour;
             e.source_time = time;
@@ -360,7 +360,7 @@ bool simulate_next_reaction::is_infected(node_t node) const {
     return (infected.find(node) != infected.end());
 }
 
-graph& simulate_next_reaction::get_network() const {
+network& simulate_next_reaction::get_network() const {
     return network;
 }
 

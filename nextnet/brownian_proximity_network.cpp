@@ -5,7 +5,7 @@
 //  Created by Florian G. Pflug on 14.02.23.
 //
 
-#include "brownian_proximity_graph.h"
+#include "brownian_proximity_network.h"
 
 using namespace std::literals;
 
@@ -151,11 +151,11 @@ void brownian_proximity_graph:: move_node(node_data& n, partition_index_t pi_old
 	p_old.pop_back();
 }
 
-void brownian_proximity_graph::notify_epidemic_event(event_t ev, rng_t& engine)
+void brownian_proximity_graph::notify_epidemic_event(epidemic_event_t ev, rng_t& engine)
 {
 	switch (ev.kind) {
-		case event_kind::outside_infection:
-		case event_kind::infection: {
+		case epidemic_event_kind::outside_infection:
+		case epidemic_event_kind::infection: {
 			node_data& n1 = node(ev.node);
 			assert(n1.node_state == NONINFECTED);
 			n1.node_state = INFECTED;
@@ -163,7 +163,7 @@ void brownian_proximity_graph::notify_epidemic_event(event_t ev, rng_t& engine)
 			assert(ninfected <= (std::size_t)size);
 			break;
 		}
-		case event_kind::reset: {
+		case epidemic_event_kind::reset: {
 			node_data& n1 = node(ev.node);
 			assert(n1.node_state == INFECTED);
 			n1.node_state = NONINFECTED;

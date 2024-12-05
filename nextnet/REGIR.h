@@ -3,7 +3,7 @@
 #include "stdafx.h"
 #include "types.h"
 #include "algorithm.h"
-#include "graph.h"
+#include "network.h"
 
 class simulate_regir : public simulation_algorithm  {
 private:
@@ -13,7 +13,7 @@ private:
 		 * Reset events are self-loops, a consequently they obey
 		 * source_node=-1, neighbour_index=-1, neighbours_remaining=0.
 		 */
-		event_kind kind = event_kind::none;
+		epidemic_event_kind kind = epidemic_event_kind::none;
 
 		absolutetime_t source_time = INFINITY;
         node_t source = -1;
@@ -64,7 +64,7 @@ private:
     std::vector<double> active_edges_cumulative_finite_lambdas;
     std::vector<std::size_t> active_edges_infinite_lambdas;
     std::uniform_real_distribution<double> unif01_dist;
-    std::optional<event_t> next_event;
+    std::optional<epidemic_event_t> next_event;
 	std::optional<std::size_t> next_event_edge_pos;
     
 public:
@@ -76,13 +76,13 @@ public:
 		bool SIR = false;
 	};
 	
-    graph& network;
+    network& network;
     const class transmission_time& psi;
 	const class transmission_time* rho = nullptr;
 	const params p;
 	std::unordered_set<node_t> infected;
 	
-	simulate_regir(graph& nw, const class transmission_time& psi_,
+	simulate_regir(class network& nw, const class transmission_time& psi_,
 				   const class transmission_time* rho_ = nullptr,
 				   params p_ = params())
         :lambda_max(std::max(psi_.hazardbound(INFINITY),
@@ -91,7 +91,7 @@ public:
         ,p(p_)
     {}
 
-	virtual graph& get_network() const;
+	virtual class network& get_network() const;
 
 	virtual const class transmission_time& transmission_time() const;
 
@@ -103,7 +103,7 @@ public:
 	
 	virtual absolutetime_t next(rng_t& engine);
 
-	virtual std::optional<event_t> step(rng_t& engine, absolutetime_t maxtime = INFINITY,
+	virtual std::optional<epidemic_event_t> step(rng_t& engine, absolutetime_t maxtime = INFINITY,
 										event_filter_t event_filter = std::nullopt);
 
 	virtual void notify_infected_node_neighbour_added(network_event_t event, rng_t& engine);

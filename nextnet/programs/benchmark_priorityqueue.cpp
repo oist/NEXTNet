@@ -1,6 +1,6 @@
 #include "random.h"
 #include "analysis.h"
-#include "graph.h"
+#include "network.h"
 #include "NextReaction.h"
 
 using namespace std::string_literals;

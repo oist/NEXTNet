@@ -9,7 +9,7 @@
 #include "NextReaction.h"
 #include "nMGA.h"
 #include "random.h"
-#include "graph.h"
+#include "network.h"
 #include "types.h"
 #include "utility.h"
 #include "algorithm.h"

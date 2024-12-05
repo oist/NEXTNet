@@ -4,9 +4,9 @@ project(Epidemics_On_Networks LANGUAGES CXX)
 
 # *** Simulation library sources and headers
 set(LIB_SOURCES
-    nextnet/graph.cpp
-    nextnet/dynamic_graph.cpp
-    nextnet/brownian_proximity_graph.cpp
+    nextnet/network.cpp
+    nextnet/temporal_network.cpp
+    nextnet/brownian_proximity_network.cpp
     nextnet/algorithm.cpp
     nextnet/random.cpp
     nextnet/NextReaction.cpp
@@ -17,9 +17,9 @@ set(LIB_SOURCES
 
 set(LIB_HEADERS
     nextnet/types.h
-    nextnet/graph.h
-    nextnet/dynamic_graph.h
-    nextnet/brownian_proximity_graph.h
+    nextnet/network.h
+    nextnet/temporal_network.h
+    nextnet/brownian_proximity_network.h
     nextnet/random.h
     nextnet/algorithm.h
     nextnet/NextReaction.h
@@ -54,12 +54,12 @@ set(TESTS_SOURCES
     nextnet/tests/plot.cpp
     nextnet/tests/main.cpp
     nextnet/tests/utility.cpp
-    nextnet/tests/graph.cpp
-    nextnet/tests/dynamic_graph.cpp
+    nextnet/tests/network.cpp
+    nextnet/tests/temporal_network.cpp
     nextnet/tests/random.cpp
     nextnet/tests/nextreaction.cpp
-    nextnet/tests/dynamic_nextreaction.cpp
-    nextnet/tests/brownian_proximity_graph.cpp
+    nextnet/tests/temporal_nextreaction.cpp
+    nextnet/tests/brownian_proximity_network.cpp
     nextnet/tests/nmga.cpp
     nextnet/tests/REGIR.cpp)
 

@@ -38,7 +38,7 @@ typedef std::pair<node_t,node_t> edge_t;
  * Type of event that occured during a simulation
  * TODO: Rename to epidemic_event_kind
  */
-enum class event_kind : unsigned int {
+enum class epidemic_event_kind : unsigned int {
     none = 0,
 	infection = 1,
 	outside_infection = 2,
@@ -48,12 +48,12 @@ enum class event_kind : unsigned int {
 /**
  * Translate event kinds to their name
  */
-inline const char* name(event_kind kind) {
+inline const char* name(epidemic_event_kind kind) {
     switch (kind) {
-        case event_kind::none: return "none";
-        case event_kind::infection: return "infection";
-        case event_kind::outside_infection: return "outside_infection";
-        case event_kind::reset: return "reset";
+        case epidemic_event_kind::none: return "none";
+        case epidemic_event_kind::infection: return "infection";
+        case epidemic_event_kind::outside_infection: return "outside_infection";
+        case epidemic_event_kind::reset: return "reset";
         default: return NULL;
     }
 }
@@ -61,15 +61,15 @@ inline const char* name(event_kind kind) {
 /**
  * @brief Translates an epidemic event into a delta of number of infected (+1 or -1)
  */
-inline int delta_infected(event_kind kind) {
+inline int delta_infected(epidemic_event_kind kind) {
 	switch (kind) {
-		case event_kind::infection:
-		case event_kind::outside_infection:
+		case epidemic_event_kind::infection:
+		case epidemic_event_kind::outside_infection:
 			return 1;
-		case event_kind::reset:
+		case epidemic_event_kind::reset:
 			return -1;
 		default:
-			throw std::logic_error("unexpected event kind");
+			throw std::logic_error("unexpected epidemic event kind");
 	}
 }
 
@@ -77,8 +77,8 @@ inline int delta_infected(event_kind kind) {
  * Describes an event that occured
  * TODO: Rename to epidemic_event_t
  */
-struct event_t {
-    event_kind kind = event_kind::none;
+struct epidemic_event_t {
+    epidemic_event_kind kind = epidemic_event_kind::none;
 	node_t source_node = -1;
     node_t node = -1;
     absolutetime_t time = INFINITY;
@@ -122,15 +122,15 @@ struct network_event_t {
  * Describes an event that occured during a simulation on a dynamic network.
  * Can either be a change to the network, or an infection or recovery.
  */
-typedef std::variant<event_t, network_event_t> network_or_epidemic_event_t;
+typedef std::variant<epidemic_event_t, network_event_t> network_or_epidemic_event_t;
 
 /**
  * An event filter, i.e. a function that can decide whether an event should occur (true)
  * or be blocked (false) by returning a boolean value.
  */
-typedef std::optional<std::function<bool(event_t)>> event_filter_t;
+typedef std::optional<std::function<bool(epidemic_event_t)>> event_filter_t;
 
-inline bool is_event_blocked(event_t ev, event_filter_t evf) {
+inline bool is_event_blocked(epidemic_event_t ev, event_filter_t evf) {
 	return evf && !(*evf)(ev);
 }
 

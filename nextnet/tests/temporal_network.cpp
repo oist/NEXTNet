@@ -1,6 +1,6 @@
 #include "tests/stdafx.h"
 #include "tests/statistics.h"
-#include "dynamic_graph.h"
+#include "temporal_network.h"
 
 
 TEST_CASE("dynamic activity driven graph", "[activity_driven_graph]") {
@@ -90,7 +90,7 @@ TEST_CASE("dynamic empirical graph", "[dynamic_graph]") {
     rng_t engine;
 
 	double dt = 4;
-	dynamic_empirical_network g(TEST_DATA_DIR "/test_empirical_network.txt", dynamic_empirical_network::finite_duration, dt);
+	temporal_empirical_network g(TEST_DATA_DIR "/test_empirical_network.txt", temporal_empirical_network::finite_duration, dt);
 	REQUIRE(g.nodes()==14);
 
 	/* evolve network up to time 0 */
@@ -115,7 +115,7 @@ TEST_CASE("dynamic Erdös-Reyni", "[dynamic_graph]") {
 	std::array<std::vector<std::pair<double, bool>>, E> edge_presence;
 	
 	std::mt19937 engine;
-	dynamic_erdos_reyni g(N, (N-1)*P, TAU, engine);
+	temporal_erdos_reyni g(N, (N-1)*P, TAU, engine);
 	
 	/* Initial edge_presence */
 	for(node_t a=0; a < N; ++a) {

@@ -35,7 +35,7 @@ int program_trajectory(int argc, const char * argv[]) {
     if (method == "SI"){
         simulate_trajectory(engine, [R0, psi,n](rng_t& engine) {
 			struct {
-				std::unique_ptr<graph> nw;
+				std::unique_ptr<network> nw;
 				std::unique_ptr<simulation_algorithm> simulator;
 			} env;
 			env.nw.reset(new erdos_reyni(n, R0, engine));
@@ -47,7 +47,7 @@ int program_trajectory(int argc, const char * argv[]) {
     {
         simulate_trajectory(engine, [R0,psi,rho,n](rng_t& engine) {
 			struct {
-				std::unique_ptr<graph> nw;
+				std::unique_ptr<network> nw;
 				std::unique_ptr<simulation_algorithm> simulator;
 			} env;
 			env.nw.reset(new erdos_reyni(n, R0, engine));
@@ -58,7 +58,7 @@ int program_trajectory(int argc, const char * argv[]) {
     } else if (method == "SIR"){
         simulate_trajectory(engine, [R0,psi,rho,n](rng_t& engine) {
 			struct {
-				std::unique_ptr<graph> nw;
+				std::unique_ptr<network> nw;
 				std::unique_ptr<simulation_algorithm> simulator;
 			} env;
 			env.nw.reset(new erdos_reyni(n, R0, engine));

@@ -60,7 +60,7 @@ int program_benchmark(int argc, const char * argv[]) {
 	if ((method == "NR") && (ensemble == "ER")){
 		measure_runtime(engine, [R0, psi, rho,SHUFFLE_NEIGHBOURS,SIR,TMAX,CONCURRENT_EDGES](rng_t& engine, int n) {
 			struct {
-				std::unique_ptr<graph> nw;
+				std::unique_ptr<network> nw;
 				std::unique_ptr<simulation_algorithm> simulator;
 			} env;
 			env.nw.reset(new erdos_reyni(n, R0, engine));
@@ -75,7 +75,7 @@ int program_benchmark(int argc, const char * argv[]) {
     } else if ((method == "NR") && (ensemble == "BA")){
         measure_runtime(engine, [psi, rho,SHUFFLE_NEIGHBOURS,SIR,TMAX,M,CONCURRENT_EDGES](rng_t& engine, int n) {
 			struct {
-				std::unique_ptr<graph> nw;
+				std::unique_ptr<network> nw;
 				std::unique_ptr<simulation_algorithm> simulator;
 			} env;
 			env.nw.reset(new barabasi_albert(n, engine,M));
@@ -90,7 +90,7 @@ int program_benchmark(int argc, const char * argv[]) {
 	} else if ((method == "NMGA") && (ensemble == "ER")){
         measure_runtime(engine, [R0, psi, rho,SIR,SHUFFLE_NEIGHBOURS,TMAX](rng_t& engine, int n) {
 			struct {
-				std::unique_ptr<graph> nw;
+				std::unique_ptr<network> nw;
 				std::unique_ptr<simulation_algorithm> simulator;
 			} env;
 			env.nw.reset(new erdos_reyni(n, R0, engine));
@@ -103,7 +103,7 @@ int program_benchmark(int argc, const char * argv[]) {
 	} else if ((method == "NMGA") && (ensemble == "BA")){
         measure_runtime(engine, [psi, rho,SIR,SHUFFLE_NEIGHBOURS,TMAX,M](rng_t& engine, int n) {
 			struct {
-				std::unique_ptr<graph> nw;
+				std::unique_ptr<network> nw;
 				std::unique_ptr<simulation_algorithm> simulator;
 			} env;
 			env.nw.reset(new barabasi_albert(n, engine,M));

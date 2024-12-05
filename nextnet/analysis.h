@@ -2,7 +2,7 @@
 
 #include "stdafx.h"
 #include "algorithm.h"
-#include "graph.h"
+#include "network.h"
 
 typedef std::function<simulation_algorithm* (rng_t& engine, int n)> simulation_factory_t;
 
@@ -25,7 +25,7 @@ void export_adjacency_dot(const std::vector<std::vector<node_t>>& adjacencyList,
 
 void print_matrix(std::vector<std::vector<double>>& A);
 
-double measure_running_time(graph_adjacencylist& network,rng_t& engine);
+double measure_running_time(network_adjacencylist& network,rng_t& engine);
 
 void generate_data_running_time(rng_t& engine,int size, bool isNMGA);
 
@@ -136,11 +136,11 @@ void simulate_trajectory(rng_t& engine, Factory factory, double I0, double TMAX,
 
 		switch (point -> kind)
 		{
-		case event_kind::infection:
-		case event_kind::outside_infection:
+		case epidemic_event_kind::infection:
+		case epidemic_event_kind::outside_infection:
 			nb_infected +=1;
 			break;
-		case event_kind::reset:
+		case epidemic_event_kind::reset:
 			nb_infected -= 1;
 			break;
 		default: throw std::logic_error("invalid event kind");

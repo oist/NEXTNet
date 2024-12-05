@@ -41,11 +41,11 @@ int program_sis_meanfield_gamma_gamma(int argc, const char * argv[])
             break;
 
         switch (point-> kind) {
-            case event_kind::infection:
-            case event_kind::outside_infection:
+            case epidemic_event_kind::infection:
+            case epidemic_event_kind::outside_infection:
                 current_infected+=1;
                 break;
-            case event_kind::reset:
+            case epidemic_event_kind::reset:
                 current_infected-=1;
                 break;
             default:

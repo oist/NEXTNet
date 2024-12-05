@@ -5,7 +5,7 @@
 //  Created by Florian G. Pflug on 14.02.23.
 //
 
-#include "dynamic_graph.h"
+#include "temporal_network.h"
 
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
@@ -13,7 +13,7 @@
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
 
-void dynamic_network::notify_epidemic_event(event_t ev, rng_t& engine) {
+void temporal_network::notify_epidemic_event(epidemic_event_t ev, rng_t& engine) {
 	/* Do nothing by default */
 }
 
@@ -23,38 +23,38 @@ void dynamic_network::notify_epidemic_event(event_t ev, rng_t& engine) {
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
 
-void graph_mutable::resize(node_t nodes)
+void mutable_network::resize(node_t nodes)
 {
 	adjacencylist.resize((std::size_t)nodes);
 }
 
-bool graph_mutable::has_edge(node_t src, node_t dst)
+bool mutable_network::has_edge(node_t src, node_t dst)
 {
 	auto& al = adjacencylist.at(src);
 	return (al.find(dst) != al.end());
 }
 
-bool graph_mutable::add_edge(node_t src, node_t dst)
+bool mutable_network::add_edge(node_t src, node_t dst)
 {
 	return adjacencylist.at(src).insert(dst).second;
 }
 
-bool graph_mutable::remove_edge(node_t src, node_t dst) {
+bool mutable_network::remove_edge(node_t src, node_t dst) {
 	return (adjacencylist.at(src).erase(dst) > 0);
 }
 
-node_t graph_mutable::nodes() {
+node_t mutable_network::nodes() {
 	return adjacencylist.size();
 }
 
-node_t graph_mutable::neighbour(node_t node, int neighbour_index) {
+node_t mutable_network::neighbour(node_t node, int neighbour_index) {
 	const auto& al = adjacencylist.at(node);
 	if ((neighbour_index < 0) || ((std::size_t)neighbour_index >= al.size()))
 		return -1;
 	return al[neighbour_index];
 }
 
-index_t graph_mutable::outdegree(node_t node) {
+index_t mutable_network::outdegree(node_t node) {
 	return (index_t) adjacencylist.at(node).size();
 }
 
@@ -64,7 +64,7 @@ index_t graph_mutable::outdegree(node_t node) {
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
 
-dynamic_empirical_network::dynamic_empirical_network(std::string path_to_file, dynamic_empirical_network::edge_duration_kind contact_type, interval_t dt)
+temporal_empirical_network::temporal_empirical_network(std::string path_to_file, temporal_empirical_network::edge_duration_kind contact_type, interval_t dt)
 {
 	node_t max_node = 0;
 
@@ -127,7 +127,7 @@ dynamic_empirical_network::dynamic_empirical_network(std::string path_to_file, d
 	resize(max_node + 1);
 }
 
-absolutetime_t dynamic_empirical_network::next(rng_t& engine, absolutetime_t)
+absolutetime_t temporal_empirical_network::next(rng_t& engine, absolutetime_t)
 {
 	/* find next actual event, skipping over events that do nothing */
 	for(network_event_t& event: event_queue) {
@@ -147,7 +147,7 @@ absolutetime_t dynamic_empirical_network::next(rng_t& engine, absolutetime_t)
 	return INFINITY;
 }
 
-std::optional<network_event_t> dynamic_empirical_network::step(rng_t& engine, absolutetime_t max_time)
+std::optional<network_event_t> temporal_empirical_network::step(rng_t& engine, absolutetime_t max_time)
 {
 	/* loop until we find an event, necessary because add/remove may be skipped if edge already exists */
 	while (!event_queue.empty()) {
@@ -179,7 +179,7 @@ std::optional<network_event_t> dynamic_empirical_network::step(rng_t& engine, ab
 	return std::nullopt;
 }
 
-std::vector<std::vector<double>> dynamic_empirical_network::compute_number_of_edges(rng_t& engine){
+std::vector<std::vector<double>> temporal_empirical_network::compute_number_of_edges(rng_t& engine){
 
 	std::vector<std::vector<double>> average_degree;
 	int number_of_edges=0;
@@ -214,7 +214,7 @@ std::vector<std::vector<double>> dynamic_empirical_network::compute_number_of_ed
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
 
-dynamic_sirx_network::dynamic_sirx_network(graph& network_, double kappa0_, double kappa_)
+temporal_sirx_network::temporal_sirx_network(class network& network_, double kappa0_, double kappa_)
 	:network(network_), network_is_undirected(network.is_undirected()), network_size(network.nodes())
 	,kappa0(kappa0_), kappa(kappa_), queue_next_flipped(is_undirected())
 {
@@ -222,7 +222,7 @@ dynamic_sirx_network::dynamic_sirx_network(graph& network_, double kappa0_, doub
 		nonremoved.insert(n);
 }
 
-dynamic_sirx_network::node_state_t dynamic_sirx_network::state(node_t node)
+temporal_sirx_network::node_state_t temporal_sirx_network::state(node_t node)
 {
 	if (is_infected(node)) {
 		if (is_removed(node))
@@ -238,37 +238,37 @@ dynamic_sirx_network::node_state_t dynamic_sirx_network::state(node_t node)
 }
 
 
-bool dynamic_sirx_network::is_undirected()
+bool temporal_sirx_network::is_undirected()
 {
 	return network_is_undirected;
 }
 
-node_t dynamic_sirx_network::nodes()
+node_t temporal_sirx_network::nodes()
 {
 	return network_size;
 }
 
-node_t dynamic_sirx_network::neighbour(node_t node, int neighbour_index)
+node_t temporal_sirx_network::neighbour(node_t node, int neighbour_index)
 {
 	if (is_removed(node))
 		return -1;
 	return network.neighbour(node, neighbour_index);
 }
 
-index_t dynamic_sirx_network::outdegree(node_t node)
+index_t temporal_sirx_network::outdegree(node_t node)
 {
 	if (is_removed(node))
 		return 0;
 	return network.outdegree(node);
 }
 
-void dynamic_sirx_network::notify_epidemic_event(event_t ev, rng_t& engine)
+void temporal_sirx_network::notify_epidemic_event(epidemic_event_t ev, rng_t& engine)
 {
 	assert(current_time <= ev.time);
 	assert(std::isnan(next_time) || ev.time <= next_time);
 	switch(ev.kind) {
-		case event_kind::infection:
-		case event_kind::outside_infection:
+		case epidemic_event_kind::infection:
+		case epidemic_event_kind::outside_infection:
 			/* mark node as infected */
 			infected.insert(ev.node);
 			/* keep track of infected, non-removed nodes. if the nw is undirected,
@@ -283,7 +283,7 @@ void dynamic_sirx_network::notify_epidemic_event(event_t ev, rng_t& engine)
 				queue.clear();
 			}
 			break;
-		case event_kind::reset:
+		case epidemic_event_kind::reset:
 			/* mark node as no longer infected */
 			infected.erase(ev.node);
 			infected_nonremoved.erase(ev.node);
@@ -298,7 +298,7 @@ void dynamic_sirx_network::notify_epidemic_event(event_t ev, rng_t& engine)
 	}
 }
 
-absolutetime_t dynamic_sirx_network::next(rng_t& engine, absolutetime_t)
+absolutetime_t temporal_sirx_network::next(rng_t& engine, absolutetime_t)
 {
 	/* generate next time unless already done previously */
 	double base_time = current_time;
@@ -364,7 +364,7 @@ absolutetime_t dynamic_sirx_network::next(rng_t& engine, absolutetime_t)
 	return next_time;
 }
 
-std::optional<network_event_t> dynamic_sirx_network::step(rng_t& engine, absolutetime_t max_time)
+std::optional<network_event_t> temporal_sirx_network::step(rng_t& engine, absolutetime_t max_time)
 {
 	/* make sure the next event was generated, do nothing if past max_time */
 	next(engine);
@@ -409,7 +409,7 @@ std::optional<network_event_t> dynamic_sirx_network::step(rng_t& engine, absolut
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
 
-dynamic_erdos_reyni::dynamic_erdos_reyni(int size, double avg_degree, double timescale, rng_t& engine)
+temporal_erdos_reyni::temporal_erdos_reyni(int size, double avg_degree, double timescale, rng_t& engine)
 	:erdos_reyni(size, avg_degree, engine)
 	,edge_probability(avg_degree / (size - 1))
 	,alpha(edge_probability / timescale)
@@ -427,7 +427,7 @@ dynamic_erdos_reyni::dynamic_erdos_reyni(int size, double avg_degree, double tim
 	edges_absent = size * (size - 1) / 2 - edges_present;
 }
 
-absolutetime_t dynamic_erdos_reyni::next(rng_t& engine, absolutetime_t) {
+absolutetime_t temporal_erdos_reyni::next(rng_t& engine, absolutetime_t) {
 	if (!std::isnan(next_time))
 		return next_time;
 	
@@ -440,7 +440,7 @@ absolutetime_t dynamic_erdos_reyni::next(rng_t& engine, absolutetime_t) {
 	return next_time;
 }
 
-std::optional<network_event_t> dynamic_erdos_reyni::step(rng_t& engine, absolutetime_t max_time) {
+std::optional<network_event_t> temporal_erdos_reyni::step(rng_t& engine, absolutetime_t max_time) {
 	/* Determine time of next event if necessary, return if after max_time */
 	if (std::isnan(next_time))
 		next(engine);
@@ -522,7 +522,7 @@ std::optional<network_event_t> dynamic_erdos_reyni::step(rng_t& engine, absolute
 	}
 }
 
-void dynamic_erdos_reyni::add_edge(node_t node, node_t neighbour) {
+void temporal_erdos_reyni::add_edge(node_t node, node_t neighbour) {
 	/* add forward edge */
 	std::vector<node_t>& al_node = this->adjacencylist.at(node);
 	al_node.push_back(neighbour);
@@ -538,7 +538,7 @@ void dynamic_erdos_reyni::add_edge(node_t node, node_t neighbour) {
 	edges_present += 1;
 }
 
-void dynamic_erdos_reyni::remove_edge(node_t node, int neighbour_index) {
+void temporal_erdos_reyni::remove_edge(node_t node, int neighbour_index) {
 	using std::swap;
 	
 	/* Remove forward edge */

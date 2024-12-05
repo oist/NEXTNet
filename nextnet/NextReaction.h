@@ -5,7 +5,7 @@
 #include "permutation.h"
 #include "algorithm.h"
 #include "random.h"
-#include "graph.h"
+#include "network.h"
 
 class simulate_next_reaction : public simulation_algorithm {
 public:
@@ -17,14 +17,14 @@ public:
 		bool SIR = false;
 	};
 	
-	simulate_next_reaction(graph& nw, const class transmission_time& psi_,
+	simulate_next_reaction(network& nw, const class transmission_time& psi_,
                            const class transmission_time* rho_ = nullptr,
 						   params p_ = params())
 		:network(nw), psi(psi_), rho(rho_),
 		 p(p_), shuffle_neighbours(p.shuffle_neighbours && !p.edges_concurrent)
     {}
 
-    virtual graph& get_network() const;
+    virtual network& get_network() const;
 
     virtual const class transmission_time& transmission_time() const;
 
@@ -37,7 +37,7 @@ public:
     
 	virtual absolutetime_t next(rng_t& engine);
 
-	virtual std::optional<event_t> step(rng_t& engine, absolutetime_t maxtime = INFINITY,
+	virtual std::optional<epidemic_event_t> step(rng_t& engine, absolutetime_t maxtime = INFINITY,
 										event_filter_t event_filter = std::nullopt);
 	
 	virtual void notify_infected_node_neighbour_added(network_event_t event, rng_t& engine);
@@ -57,7 +57,7 @@ public:
     typedef std::unordered_map<node_t, infected_state_t> infected_nodes_t;
     infected_nodes_t infected;
     
-    graph& network;
+    network& network;
     const class transmission_time& psi;
     const class transmission_time* rho = nullptr;
 	const params p;
@@ -75,7 +75,7 @@ public:
          * Reset events are self-loops, a consequently they obey
          * source_node=-1, neighbour_index=-1, neighbours_remaining=0.
          */
-        event_kind kind;
+        epidemic_event_kind kind;
 
         /*
          * Absolute time of infection
@@ -131,8 +131,8 @@ public:
 
     std::size_t queue_steps_total = 0;
 	
-	std::optional<event_t> step_infection(const active_edges_entry& next, event_filter_t evf, rng_t& engine);
+	std::optional<epidemic_event_t> step_infection(const active_edges_entry& next, event_filter_t evf, rng_t& engine);
 	
-	std::optional<event_t> step_reset(const active_edges_entry& next, event_filter_t evf, rng_t& engine);
+	std::optional<epidemic_event_t> step_reset(const active_edges_entry& next, event_filter_t evf, rng_t& engine);
 };
 

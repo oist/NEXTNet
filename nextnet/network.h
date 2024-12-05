@@ -24,9 +24,9 @@
  * the number of outgoing edges of node n, and `neighbour(n, i)` must return the target
  * of the i-th outgoing edge.
  */
-class graph {
+class network {
 public: 
-    virtual ~graph();
+    virtual ~network();
     
     /**
      * @brief Whether the graph is undirected, i.e. whether for every
@@ -57,7 +57,7 @@ public:
  * This avoid having to override is_undirected() in all undirected graphs to
  * return false. Instead, it suffices to additionally inherit from graph_is_undirected
  */
-class graph_is_undirected {
+class network_is_undirected {
     virtual bool is_undirected();
 };
 
@@ -67,9 +67,9 @@ class graph_is_undirected {
  * Provides function to query the number of dimensions of the embedding space, and the
  * coordinates of individual nodes.
  */
-class graph_embedding {
+class network_embedding {
 public:
-    virtual ~graph_embedding();
+    virtual ~network_embedding();
 
     /**
      * @brief Returns the dimensionality of the embedding space
@@ -102,7 +102,7 @@ public:
  * Implements functions `neighbour()` and `outdegree()`, the constructor
  * is expected to setup the adjacencylist neighbours.
  */
-class graph_adjacencylist : public virtual graph {
+class network_adjacencylist : public virtual network {
 public:
     virtual node_t nodes();
 
@@ -122,7 +122,7 @@ public:
 /**
  * @brief A random Watts-Strogatz network
  */
-class watts_strogatz : public virtual graph_adjacencylist, public virtual graph_is_undirected {
+class watts_strogatz : public virtual network_adjacencylist, public virtual network_is_undirected {
 public:
 	watts_strogatz(node_t size, int k, double p, rng_t& engine);
 
@@ -138,7 +138,7 @@ public:
 /**
  * @brief A random Erdös-Reyni network
  */
-class erdos_reyni : public virtual graph_adjacencylist, public virtual graph_is_undirected {
+class erdos_reyni : public virtual network_adjacencylist, public virtual network_is_undirected {
 public:
     erdos_reyni(int size, double avg_degree, rng_t& engine);
 };
@@ -150,7 +150,7 @@ public:
 /**
  * @brief A fully-connected network with random edge order
  */
-class fully_connected : public virtual graph, public virtual graph_is_undirected {
+class fully_connected : public virtual network, public virtual network_is_undirected {
 public:
     fully_connected(int size, rng_t& engine);
 
@@ -171,7 +171,7 @@ public:
 /**
  * @brief A random acyclic network
  */
-class acyclic : public virtual graph, public virtual graph_is_undirected {
+class acyclic : public virtual network, public virtual network_is_undirected {
 public:
     static double lambda(double mean, int digits);
 
@@ -199,7 +199,7 @@ private:
 /**
  * @brief Network from arbitrary degree distribution. 
  */
-class config_model : public virtual graph_adjacencylist, public virtual graph_is_undirected {
+class config_model : public virtual network_adjacencylist, public virtual network_is_undirected {
 public:
     config_model(std::vector<int> degreelist, rng_t& engine);
 
@@ -224,7 +224,7 @@ std::vector<int> powerlaw_degree_list(double exponent, int size, rng_t& engine);
  *
  * Based on the algorithm described by Serrano & Boguna, 2005.
  */
-class config_model_clustered_serrano : public virtual graph_adjacencylist, public virtual graph_is_undirected {
+class config_model_clustered_serrano : public virtual network_adjacencylist, public virtual network_is_undirected {
 public:
 	/**
 	 * @brief Converts c(k) into a number of triangles per degree class.
@@ -311,7 +311,7 @@ public:
  *
  * The degree distribution scales with k^-3.
  */
-class barabasi_albert : public virtual graph_adjacencylist, public virtual graph_is_undirected {
+class barabasi_albert : public virtual network_adjacencylist, public virtual network_is_undirected {
 public:
     barabasi_albert(int size, rng_t& engine,int m = 1);
 
@@ -322,7 +322,7 @@ public:
 //--------------------------------------
 
 template<unsigned int D>
-class cubic_lattice : public virtual graph, public virtual graph_embedding, public virtual graph_is_undirected {
+class cubic_lattice : public virtual network, public virtual network_embedding, public virtual network_is_undirected {
 public:
     const static unsigned int dimension = D;
 
@@ -471,7 +471,7 @@ typedef cubic_lattice<8> cubic_lattice_8d;
  * 
  * the file must be an adjacency list, i.e., a list of lists;
  */
-class imported_network : public virtual graph_adjacencylist {
+class imported_network : public virtual network_adjacencylist {
 public:
     imported_network(std::string path_to_file);
 
@@ -485,7 +485,7 @@ private:
 //-----Measure edge multiplicity in a network--------
 //---------------------------------------------------
 
-std::vector<std::vector<double>> edge_multiplicity(graph_adjacencylist& nw);
+std::vector<std::vector<double>> edge_multiplicity(network_adjacencylist& nw);
 
 //------------------------------------------
 //--ADD DEGREE CORRELATION TO THE NETWORK---
@@ -494,10 +494,10 @@ std::vector<std::vector<double>> edge_multiplicity(graph_adjacencylist& nw);
  * @brief Add correlation to the network by rewiring its links.
  *
  */
-void add_correlation(double r,graph_adjacencylist& nw,rng_t& engine);
+void add_correlation(double r,network_adjacencylist& nw,rng_t& engine);
 
 // Helper function to verify whether an edge exists or not
-bool edge_exists(node_t a, node_t b, const graph_adjacencylist& nw);
+bool edge_exists(node_t a, node_t b, const network_adjacencylist& nw);
 
 
 //------------------------------------------------
@@ -511,7 +511,7 @@ bool edge_exists(node_t a, node_t b, const graph_adjacencylist& nw);
  * knn(k) should be independent of k.
  *  
  */
-std::vector<double> knn(graph_adjacencylist& nw);
+std::vector<double> knn(network_adjacencylist& nw);
 
 
 /**
@@ -522,7 +522,7 @@ std::vector<double> knn(graph_adjacencylist& nw);
  * den = sum_k [ w(k) * k ^ 2] - ( sum_k [ w(k) * k ] ) ^ 2
  *
  */
-double assortativity(graph_adjacencylist& nw);
+double assortativity(network_adjacencylist& nw);
 
 
 /**
@@ -530,4 +530,4 @@ double assortativity(graph_adjacencylist& nw);
  * to a node of degree k prime
  *
  */
-std::vector<std::vector<double>> Wkk(graph_adjacencylist& nw);
+std::vector<std::vector<double>> Wkk(network_adjacencylist& nw);

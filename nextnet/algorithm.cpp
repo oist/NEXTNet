@@ -18,15 +18,15 @@ void simulation_algorithm::notify_infected_contact(network_event_t event, rng_t&
 //----SIMULATE_ON_DYNAMIC_NETWORK-------
 //--------------------------------------
 
-simulate_on_dynamic_network::simulate_on_dynamic_network(simulation_algorithm& sim)
-	:network(dynamic_cast<dynamic_network*>(&sim.get_network())), simulation(sim)
+simulate_on_temporal_network::simulate_on_temporal_network(simulation_algorithm& sim)
+	:network(dynamic_cast<temporal_network*>(&sim.get_network())), simulation(sim)
 {
 	if (network == NULL)
 		throw std::runtime_error("underlying simulation must use a dynamic_network");
 };
 
 absolutetime_t
-simulate_on_dynamic_network::next(rng_t& engine, absolutetime_t maxtime)
+simulate_on_temporal_network::next(rng_t& engine, absolutetime_t maxtime)
 {
 	const double sim_next = simulation.next(engine);
 	const double nw_next = network->next(engine, std::min(sim_next, maxtime));
@@ -34,7 +34,7 @@ simulate_on_dynamic_network::next(rng_t& engine, absolutetime_t maxtime)
 }
 
 std::optional<network_or_epidemic_event_t>
-simulate_on_dynamic_network::step(rng_t& engine, absolutetime_t maxtime)
+simulate_on_temporal_network::step(rng_t& engine, absolutetime_t maxtime)
 {
 	while (true) {
 		const absolutetime_t nexttime = next(engine, maxtime);
@@ -115,21 +115,21 @@ simulate_on_dynamic_network::step(rng_t& engine, absolutetime_t maxtime)
 			 * won't necessarily be an event to return before nexttime. In that case,
 			 * we start from the top.
 			 */
-			std::function<bool(event_t)> evf = std::bind(&simulate_on_dynamic_network::simulation_event_filter,
+			std::function<bool(epidemic_event_t)> evf = std::bind(&simulate_on_temporal_network::simulation_event_filter,
 														 this, std::placeholders::_1);
-			std::optional<event_t> maybe_ev = simulation.step(engine, nexttime, evf);
+			std::optional<epidemic_event_t> maybe_ev = simulation.step(engine, nexttime, evf);
 			if (!maybe_ev)
 				continue;
 			/* Got a simulation event */
-			const event_t ev = *maybe_ev;
+			const epidemic_event_t ev = *maybe_ev;
 			switch (ev.kind) {
-				case event_kind::outside_infection:
-				case event_kind::infection: {
+				case epidemic_event_kind::outside_infection:
+				case epidemic_event_kind::infection: {
 					/* infection event, initialize empty neighbour table, this makes edges admissible (by default) */
 					infected_neighbour_state.emplace(ev.node, neighbours_states_t());
 					break;
 				}
-				case event_kind::reset: {
+				case epidemic_event_kind::reset: {
 					/* recovery/reset event. remove nodes' neighbour table */
 					const std::size_t r = infected_neighbour_state.erase(ev.node);
 					assert(r == 1);
@@ -148,10 +148,10 @@ simulate_on_dynamic_network::step(rng_t& engine, absolutetime_t maxtime)
 	}
 }
 
-bool simulate_on_dynamic_network::simulation_event_filter(event_t ev)
+bool simulate_on_temporal_network::simulation_event_filter(epidemic_event_t ev)
 {
 	switch (ev.kind) {
-		case event_kind::infection: {
+		case epidemic_event_kind::infection: {
 			/* Infection event, find the state of the neighbour in the source node */
 			auto it = infected_neighbour_state.find(ev.source_node);
 			if (it == infected_neighbour_state.end())

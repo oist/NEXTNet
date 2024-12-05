@@ -10,13 +10,13 @@
 #include "stdafx.h"
 #include "types.h"
 #include "random.h"
-#include "dynamic_graph.h"
+#include "temporal_network.h"
 
 //--------------------------------------
 //----------DYNAMIC NETWORKS------------
 //--------------------------------------
 
-struct brownian_proximity_graph : virtual dynamic_network, virtual graph, virtual graph_embedding {
+struct brownian_proximity_graph : virtual temporal_network, virtual network, virtual network_embedding {
 	enum node_state_t {
 		NONINFECTED = 0,
 		INFECTED = 1
@@ -64,7 +64,7 @@ struct brownian_proximity_graph : virtual dynamic_network, virtual graph, virtua
 	
 	virtual std::optional<network_event_t> step(rng_t& engine, absolutetime_t nexttime = NAN) override;
 
-	virtual void notify_epidemic_event(event_t ev, rng_t& engine) override;
+	virtual void notify_epidemic_event(epidemic_event_t ev, rng_t& engine) override;
 	
 	double node_diffusivity(const node_data& n);
 	

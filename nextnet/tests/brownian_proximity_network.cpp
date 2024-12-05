@@ -2,7 +2,7 @@
 #include "tests/simulate.h"
 #include "tests/plot.h"
 
-#include "brownian_proximity_graph.h"
+#include "brownian_proximity_network.h"
 #include "NextReaction.h"
 #include "algorithm.h"
 
@@ -44,8 +44,8 @@ TEST_CASE("Brownian proximity graph", "[brownian_proximity_graph]") {
 			break;
 		
 		/* add infection */
-		g.notify_epidemic_event(event_t {
-			.kind = event_kind::outside_infection,
+		g.notify_epidemic_event(epidemic_event_t {
+			.kind = epidemic_event_kind::outside_infection,
 			.node = ni,
 			.time = (double) ni,
 			.source_node = -1
@@ -72,7 +72,7 @@ TEST_CASE("Epidemic on Brownian proximity graph", "[brownian_proximity_graph]") 
 	transmission_time_gamma psi(5, 3);
 	//transmission_time_gamma rho(100, 10);
 	simulate_next_reaction nr(g, psi, nullptr);
-	simulate_on_dynamic_network sim(nr);
+	simulate_on_temporal_network sim(nr);
 	
 	nr.add_infections({ std::make_pair(0, 0.0)} );
 	std::size_t ninfected = 0;
@@ -92,8 +92,8 @@ TEST_CASE("Epidemic on Brownian proximity graph", "[brownian_proximity_graph]") 
 					<< "src=" << nw_ev.source_node <<  ", "
 					<< "tgt=" << nw_ev.target_node << std::endl;
 				 */
-			} else if (std::holds_alternative<event_t>(ev)) {
-				const auto ep_ev = std::get<event_t>(ev);
+			} else if (std::holds_alternative<epidemic_event_t>(ev)) {
+				const auto ep_ev = std::get<epidemic_event_t>(ev);
 				ninfected += delta_infected(ep_ev.kind);
 				/*
 				std::cerr << "Epidemic event " << name(ep_ev.kind) << ": "
@@ -135,20 +135,20 @@ TEST_CASE("Plot SIS average trajectory on Brownian proximity graph", "[brownian_
 			std::unique_ptr<transmission_time_gamma> psi;
 			std::unique_ptr<transmission_time_gamma> rho;
 			std::unique_ptr<simulate_next_reaction> nr;
-			std::unique_ptr<simulate_on_dynamic_network> simulator;
+			std::unique_ptr<simulate_on_temporal_network> simulator;
 		} env;
 		env.g = std::make_unique<brownian_proximity_graph>(N, K, RADIUS, D0, D1, GAMMA, engine);
 		env.psi = std::make_unique<transmission_time_gamma>(PSI_MEAN, PSI_VARIANCE);
 		env.rho = std::make_unique<transmission_time_gamma>(RHO_MEAN, RHO_VARIANCE);
 		env.nr = std::make_unique<simulate_next_reaction>(*env.g.get(), *env.psi.get(), env.rho.get());
 		env.nr->add_infections({ std::make_pair(0, 0.0)});
-		env.simulator = std::make_unique<simulate_on_dynamic_network>(*env.nr.get());
+		env.simulator = std::make_unique<simulate_on_temporal_network>(*env.nr.get());
 		return env;
 	}, [](network_or_epidemic_event_t any_ev) {
 		/* Translate event into a pair (time, delta) */
-		if (std::holds_alternative<event_t>(any_ev)) {
+		if (std::holds_alternative<epidemic_event_t>(any_ev)) {
 			/* Epidemic event */
-			const auto ev = std::get<event_t>(any_ev);
+			const auto ev = std::get<epidemic_event_t>(any_ev);
 			return std::make_pair(ev.time, delta_infected(ev.kind));
 		} else if (std::holds_alternative<network_event_t>(any_ev)) {
 			/* Network event */
@@ -160,24 +160,24 @@ TEST_CASE("Plot SIS average trajectory on Brownian proximity graph", "[brownian_
 	std::vector<double> t_sim_erdos, y_sim_erdos_new, y_sim_erdos_total;
 	average_trajectories(engine, [&](rng_t& engine) {
 		struct {
-			std::unique_ptr<dynamic_erdos_reyni> g;
+			std::unique_ptr<temporal_erdos_reyni> g;
 			std::unique_ptr<transmission_time_gamma> psi;
 			std::unique_ptr<transmission_time_gamma> rho;
 			std::unique_ptr<simulate_next_reaction> nr;
-			std::unique_ptr<simulate_on_dynamic_network> simulator;
+			std::unique_ptr<simulate_on_temporal_network> simulator;
 		} env;
-		env.g = std::make_unique<dynamic_erdos_reyni>(N, K, TAU, engine);
+		env.g = std::make_unique<temporal_erdos_reyni>(N, K, TAU, engine);
 		env.psi = std::make_unique<transmission_time_gamma>(PSI_MEAN, PSI_VARIANCE);
 		env.rho = std::make_unique<transmission_time_gamma>(RHO_MEAN, RHO_VARIANCE);
 		env.nr = std::make_unique<simulate_next_reaction>(*env.g.get(), *env.psi.get(), env.rho.get());
 		env.nr->add_infections({ std::make_pair(0, 0.0)});
-		env.simulator = std::make_unique<simulate_on_dynamic_network>(*env.nr.get());
+		env.simulator = std::make_unique<simulate_on_temporal_network>(*env.nr.get());
 		return env;
 	}, [](network_or_epidemic_event_t any_ev) {
 		/* Translate event into a pair (time, delta) */
-		if (std::holds_alternative<event_t>(any_ev)) {
+		if (std::holds_alternative<epidemic_event_t>(any_ev)) {
 			/* Epidemic event */
-			const auto ev = std::get<event_t>(any_ev);
+			const auto ev = std::get<epidemic_event_t>(any_ev);
 			return std::make_pair(ev.time, delta_infected(ev.kind));
 		} else if (std::holds_alternative<network_event_t>(any_ev)) {
 			/* Network event */

@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "random.h"
-#include "graph.h"
+#include "network.h"
 #include "analysis.h"
 
 using namespace std;

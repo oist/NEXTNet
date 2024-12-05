@@ -1,13 +1,13 @@
 #include "stdafx.h"
 #include "REGIR.h"
 #include "random.h"
-#include "graph.h"
+#include "network.h"
 #include "types.h"
 #include "utility.h"
 
 using namespace std::literals;
 
-graph& simulate_regir::get_network() const {
+network& simulate_regir::get_network() const {
 	return network;
 }
 
@@ -127,8 +127,8 @@ absolutetime_t simulate_regir::next(rng_t& engine)
 
     /* Found next event, store & return its time */
 	next_event_edge_pos = edge_i - active_edges.begin();
-    assert(edge_i->kind != event_kind::outside_infection);
-    next_event = event_t {
+    assert(edge_i->kind != epidemic_event_kind::outside_infection);
+    next_event = epidemic_event_t {
             .kind = edge_i->kind,
             .source_node = edge_i->source, .node = edge_i->target,
             .time = next_time
@@ -136,7 +136,7 @@ absolutetime_t simulate_regir::next(rng_t& engine)
     return next_event->time;
 }
 
-std::optional<event_t> simulate_regir::step(rng_t& engine, absolutetime_t maxtime, event_filter_t evf)
+std::optional<epidemic_event_t> simulate_regir::step(rng_t& engine, absolutetime_t maxtime, event_filter_t evf)
 {
     if (std::isnan(maxtime))
         throw std::range_error("maxtime must be finite or +INFINITY");
@@ -151,21 +151,21 @@ std::optional<event_t> simulate_regir::step(rng_t& engine, absolutetime_t maxtim
             return std::nullopt;
 
 		/* Event will be handled or skipped, so update current_time and reset next_event */
-		const event_t ev = *next_event;
+		const epidemic_event_t ev = *next_event;
 		current_time = next_event->time;
 		next_event = std::nullopt;
 
 		/* Remove corresponding active edge or outside infection */
 		switch (ev.kind) {
-			case event_kind::outside_infection: {
+			case epidemic_event_kind::outside_infection: {
 				if (outside_infections.empty() || (outside_infections.top().time != ev.time) || (outside_infections.top().node != ev.node))
 					throw std::logic_error("next outside infection changed between next() and step()");
 				outside_infections.pop();
 				break;
 			}
 
-			case event_kind::infection:
-			case event_kind::reset: {
+			case epidemic_event_kind::infection:
+			case epidemic_event_kind::reset: {
 				/* Re-find active edge.
 				 * NOTE: It would be more efficient to pass the iterator from next() to here. However,
 				 * that would make it impossible to check whether the edge is actually still part of the
@@ -187,8 +187,8 @@ std::optional<event_t> simulate_regir::step(rng_t& engine, absolutetime_t maxtim
 
 		/* Handle event */
 		switch (ev.kind) {
-			case event_kind::infection:
-			case event_kind::outside_infection: {
+			case epidemic_event_kind::infection:
+			case epidemic_event_kind::outside_infection: {
 				/* Infection event */
 
 				/* If the node is already infected, ignore the event */
@@ -201,7 +201,7 @@ std::optional<event_t> simulate_regir::step(rng_t& engine, absolutetime_t maxtim
 				/* Make recovery self-loop if there's a reset time distribution ... */
 				if (rho) {
 					active_edges_entry e;
-					e.kind = event_kind::reset;
+					e.kind = epidemic_event_kind::reset;
 					e.source = ev.node;
 					e.source_time = current_time;
 					e.target = ev.node;
@@ -218,7 +218,7 @@ std::optional<event_t> simulate_regir::step(rng_t& engine, absolutetime_t maxtim
 												" of node " + std::to_string(ev.node) + " is invalid");
 					}
 					active_edges_entry e;
-					e.kind = event_kind::infection;
+					e.kind = epidemic_event_kind::infection;
 					e.source = ev.node;
 					e.source_time = current_time;
 					e.target = neighbour;
@@ -227,7 +227,7 @@ std::optional<event_t> simulate_regir::step(rng_t& engine, absolutetime_t maxtim
 				break;
 			}
 
-			case event_kind::reset: {
+			case epidemic_event_kind::reset: {
 				/* Reset event */
 
 				/* In SIR mode, reset events do not make nodes susceptible again, but only terminate the infections
@@ -288,8 +288,8 @@ absolutetime_t simulate_regir::next_time_outside_infection(absolutetime_t max_ti
 		}
 
 		/* Found next event, store & return its time */
-		next_event = event_t {
-				.kind = event_kind::outside_infection,
+		next_event = epidemic_event_t {
+				.kind = epidemic_event_kind::outside_infection,
 				.source_node = -1, .node = inf.node,
 				.time = inf.time
 		};
@@ -347,11 +347,11 @@ double simulate_regir::phi(absolutetime_t t, interval_t tau) {
 		/* Pick correct distribution to compute the survival probability with */
 		double p;
 		switch (e.kind) {
-			case event_kind::outside_infection:
-			case event_kind::infection:
+			case epidemic_event_kind::outside_infection:
+			case epidemic_event_kind::infection:
 				p = psi.survivalprobability(te + tau - tp, tp, 1);
 				break;
-			case event_kind::reset:
+			case epidemic_event_kind::reset:
 				assert(rho);
 				p = rho->survivalprobability(te + tau - tp, tp, 1);
 				break;
@@ -376,11 +376,11 @@ double simulate_regir::edge_hazard_rate(const active_edges_entry& e, double time
 		/* Compute lambda, check that it's valid and update */
 		double lambda = NAN;
 		switch (e.kind) {
-			case event_kind::outside_infection:
-			case event_kind::infection:
+			case epidemic_event_kind::outside_infection:
+			case epidemic_event_kind::infection:
 				lambda = psi.hazardrate(te);
 				break;
-			case event_kind::reset:
+			case epidemic_event_kind::reset:
 				assert(rho);
 				lambda = rho->hazardrate(te);
 				break;

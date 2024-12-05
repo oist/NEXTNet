@@ -93,7 +93,7 @@ TEST_CASE("Plot SIS average trajectory (REGIR)", "[REGIR]") {
 	std::vector<double> t_sim, y_sim_new, y_sim_total;
 	average_trajectories(engine, [&](rng_t& engine){
 		struct {
-			std::unique_ptr<graph> nw;
+			std::unique_ptr<network> nw;
 			std::unique_ptr<simulation_algorithm> simulator;
 		} env;
 		env.nw.reset(new erdos_reyni(N, R0, engine));
@@ -105,7 +105,7 @@ TEST_CASE("Plot SIS average trajectory (REGIR)", "[REGIR]") {
 	std::vector<double> t_sim_nr, y_sim_new_nr, y_sim_total_nr;
 	average_trajectories(engine, [&](rng_t& engine){
 		struct {
-			std::unique_ptr<graph> nw;
+			std::unique_ptr<network> nw;
 			std::unique_ptr<simulation_algorithm> simulator;
 		} env;
 		env.nw.reset(new erdos_reyni(N, R0, engine));
@@ -171,7 +171,7 @@ TEST_CASE("SIR REGIR on ER Graph", "[REGIR]") {
         if (!point )
             break;
 
-        if (point -> kind == event_kind::reset)
+        if (point -> kind == epidemic_event_kind::reset)
             nb_recovered ++;     
     }
 

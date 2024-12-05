@@ -1,6 +1,6 @@
 #include "tests/stdafx.h"
 
-#include "graph.h"
+#include "network.h"
 #include "NextReaction.h"
 
 /**

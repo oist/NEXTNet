@@ -14,7 +14,7 @@ absolutetime_t simulate_next_reaction_mean_field::next(rng_t& engine)
 	return next.time;
 }
 
-std::optional<event_t> simulate_next_reaction_mean_field::step(rng_t& engine, absolutetime_t maxtime,
+std::optional<epidemic_event_t> simulate_next_reaction_mean_field::step(rng_t& engine, absolutetime_t maxtime,
 															   event_filter_t evf)
 {
     if (std::isnan(maxtime))
@@ -34,13 +34,13 @@ std::optional<event_t> simulate_next_reaction_mean_field::step(rng_t& engine, ab
         active_edges.pop();
         
         /* Perform event */
-        std::optional<event_t> result;
+        std::optional<epidemic_event_t> result;
         switch (next.kind) {
-            case event_kind::infection:
-            case event_kind::outside_infection:
+            case epidemic_event_kind::infection:
+            case epidemic_event_kind::outside_infection:
 				result = step_infection(next, engine);
 				break;
-			case event_kind::reset:
+			case epidemic_event_kind::reset:
 				result = step_reset(next, engine);
 				break;
             default: throw std::logic_error("invalid event kind");
@@ -57,7 +57,7 @@ void simulate_next_reaction_mean_field::notify_infected_node_neighbour_added(net
 	throw std::logic_error("unimplemented");
 }
 
-std::optional<event_t> simulate_next_reaction_mean_field::step_infection(const active_edges_entry& next, rng_t& engine) {
+std::optional<epidemic_event_t> simulate_next_reaction_mean_field::step_infection(const active_edges_entry& next, rng_t& engine) {
     /*
      * Here, the variables have the following meaning:
      *   next.time: The current time, i.e. the time at which the edge fired
@@ -75,7 +75,7 @@ std::optional<event_t> simulate_next_reaction_mean_field::step_infection(const a
     const interval_t tau_reset = (rho ? rho->sample(engine, 0, 1) : INFINITY);
     if (tau_reset < INFINITY) {
         active_edges_entry e;
-        e.kind = event_kind::reset;
+        e.kind = epidemic_event_kind::reset;
         e.time = next.time + tau_reset;
         e.node = next.node;
         active_edges.push(e);
@@ -94,17 +94,17 @@ std::optional<event_t> simulate_next_reaction_mean_field::step_infection(const a
         if (tau_inf > tau_reset) // transmission will not happen. (Note: in our simulations we often choose rho s.t Prob[tau_inf > tau_reset] ~ 1).
             continue;
         active_edges_entry e;
-        e.kind = event_kind::infection;
+        e.kind = epidemic_event_kind::infection;
         e.time = next.time + tau_inf;
         e.node = node;
         active_edges.push(e);
     }
 
     /* Return the infection event */
-    return event_t { .kind = next.kind, .node = next.node, .time = next.time };
+    return epidemic_event_t { .kind = next.kind, .node = next.node, .time = next.time };
 }
 
-std::optional<event_t> simulate_next_reaction_mean_field::step_reset(const active_edges_entry& next, rng_t& engine) {
+std::optional<epidemic_event_t> simulate_next_reaction_mean_field::step_reset(const active_edges_entry& next, rng_t& engine) {
     /* The node cannot yet have resetted */
     assert(is_infected(next.node));
     
@@ -118,13 +118,13 @@ std::optional<event_t> simulate_next_reaction_mean_field::step_reset(const activ
     }
 
     /* Return the reset event */
-    return event_t { .kind = event_kind::reset, .node = next.node, .time = next.time };
+    return epidemic_event_t { .kind = epidemic_event_kind::reset, .node = next.node, .time = next.time };
 }
 
 void simulate_next_reaction_mean_field::add_infections(const std::vector<std::pair<node_t, absolutetime_t>>& v) {
     for(const auto& ve: v) {
         active_edges_entry e;
-        e.kind = event_kind::outside_infection;
+        e.kind = epidemic_event_kind::outside_infection;
         e.time = ve.second;
         e.node = ve.first;
         active_edges.push(e);
@@ -135,7 +135,7 @@ bool simulate_next_reaction_mean_field::is_infected(node_t node) const {
     return (infected.find(node) != infected.end());
 }
 
- graph& simulate_next_reaction_mean_field::get_network() const {
+ network& simulate_next_reaction_mean_field::get_network() const {
      throw std::logic_error("get_network() is unsupported for mean field simulations");
  }
 

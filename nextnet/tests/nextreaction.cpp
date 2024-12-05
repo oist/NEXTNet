@@ -95,7 +95,7 @@ TEST_CASE("Plot SIS average trajectory (NextReaction)", "[nextreaction]") {
     std::vector<double> t_sim_seq, y_sim_new_seq, y_sim_total_seq;
 	average_trajectories(engine, [&](rng_t& engine){
 		struct {
-			std::unique_ptr<graph> nw;
+			std::unique_ptr<network> nw;
 			std::unique_ptr<simulation_algorithm> simulator;
 		} env;
 		env.nw.reset(new erdos_reyni(N, R0, engine));
@@ -109,7 +109,7 @@ TEST_CASE("Plot SIS average trajectory (NextReaction)", "[nextreaction]") {
 	std::vector<double> t_sim_conc, y_sim_new_conc, y_sim_total_conc;
 	average_trajectories(engine, [&](rng_t& engine){
 		struct {
-			std::unique_ptr<graph> nw;
+			std::unique_ptr<network> nw;
 			std::unique_ptr<simulation_algorithm> simulator;
 		} env;
 		env.nw.reset(new erdos_reyni(N, R0, engine));
@@ -175,7 +175,7 @@ TEST_CASE("Fraction of the recovered nodes for SIR on the Erdos-Renyi graph", "[
         if (!point )
             break;
 
-        if (point -> kind == event_kind::reset)
+        if (point -> kind == epidemic_event_kind::reset)
             nb_recovered ++;     
     }
 

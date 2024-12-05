@@ -5,12 +5,12 @@
 
 #include "random.h"
 #include "NextReaction.h"
-#include "dynamic_graph.h"
+#include "temporal_network.h"
 #include "algorithm.h"
 #include "statistics.h"
 
 namespace{
-	struct dynamic_single_edge : virtual graph, virtual dynamic_network {
+	struct dynamic_single_edge : virtual network, virtual temporal_network {
 		bool edge_present;
 		std::vector<absolutetime_t> times;
 
@@ -84,20 +84,20 @@ TEST_CASE("Effective transmission time distribution", "[dynamic_nextreaction]") 
 			std::unique_ptr<dynamic_single_edge> g;
 			std::unique_ptr<transmission_time_polynomial_rate> psi;
 			std::unique_ptr<simulate_next_reaction> nr;
-			std::unique_ptr<simulate_on_dynamic_network> simulator;
+			std::unique_ptr<simulate_on_temporal_network> simulator;
 		} env;
 		env.g = std::make_unique<dynamic_single_edge>(EDGE_STATE_INITIAL, EDGE_FLIP_TIMES);
 		env.psi = std::make_unique<transmission_time_polynomial_rate>(COEFFS);
 		env.nr = std::make_unique<simulate_next_reaction>(*env.g.get(), *env.psi.get(), nullptr);
 		env.nr->add_infections({ std::make_pair(0, INFECTION_TIME)});
-		env.simulator = std::make_unique<simulate_on_dynamic_network>(*env.nr.get());
+		env.simulator = std::make_unique<simulate_on_temporal_network>(*env.nr.get());
 		return env;
 	}, [](network_or_epidemic_event_t any_ev) {
 		/* Translate event into a pair (time, delta) */
-		if (std::holds_alternative<event_t>(any_ev)) {
+		if (std::holds_alternative<epidemic_event_t>(any_ev)) {
 			/* Epidemic event */
-			const auto ev = std::get<event_t>(any_ev);
-			if (ev.kind == event_kind::infection)
+			const auto ev = std::get<epidemic_event_t>(any_ev);
+			if (ev.kind == epidemic_event_kind::infection)
 				return std::make_pair(ev.time, 1.0);
 		}
 		return std::make_pair((double)NAN, (double)NAN);
@@ -161,12 +161,12 @@ TEST_CASE("Effective transmission time distribution", "[dynamic_nextreaction]") 
 TEST_CASE("Epidemic on empirical network nb2 with finite edge durations", "[dynamic_nextreaction]") {
 	rng_t engine(0);
 
-	dynamic_empirical_network g(TEST_DATA_DIR "/college.tab", dynamic_empirical_network::finite_duration, 3);
+	temporal_empirical_network g(TEST_DATA_DIR "/college.tab", temporal_empirical_network::finite_duration, 3);
 	transmission_time_gamma psi(50,3);
 	transmission_time_gamma rho(100,1);
 	simulate_next_reaction nr(g, psi, &rho);
 	nr.add_infections({ std::make_pair(0, 0.0) });
-	simulate_on_dynamic_network sim(nr);
+	simulate_on_temporal_network sim(nr);
 
 	while (sim.step(engine));
 }
@@ -174,12 +174,12 @@ TEST_CASE("Epidemic on empirical network nb2 with finite edge durations", "[dyna
 TEST_CASE("Epidemic on empirical network nb2 with infitesimal edge durations", "[dynamic_nextreaction]") {
 	rng_t engine(0);
 
-	dynamic_empirical_network g(TEST_DATA_DIR "/college.tab", dynamic_empirical_network::infitesimal_duration, 3);
+	temporal_empirical_network g(TEST_DATA_DIR "/college.tab", temporal_empirical_network::infitesimal_duration, 3);
 	transmission_time_gamma psi(50,3);
 	transmission_time_gamma rho(100,1);
 	simulate_next_reaction nr(g, psi, &rho);
 	nr.add_infections({ std::make_pair(0, 0.0) });
-	simulate_on_dynamic_network sim(nr);
+	simulate_on_temporal_network sim(nr);
 
 	while (sim.step(engine));
 }
@@ -202,7 +202,7 @@ TEST_CASE("Epidemic on activity driven graph", "[activity_driven_graph]") {
 	// transmission_time_gamma rho(100,1);
 	simulate_next_reaction nr(graph, psi);
 	nr.add_infections({ std::make_pair(0, 30) });
-	simulate_on_dynamic_network sim(nr);
+	simulate_on_temporal_network sim(nr);
 
 	double tmax = 100;
 	// while(auto ev = sim.step(engine,tmax)){
@@ -215,7 +215,7 @@ TEST_CASE("Epidemic on activity driven graph", "[activity_driven_graph]") {
         std::optional<network_or_epidemic_event_t> any_ev = sim.step(engine,tmax);
 
         if (any_ev.has_value()) {
-            if (std::holds_alternative<event_t>(*any_ev)) {
+            if (std::holds_alternative<epidemic_event_t>(*any_ev)) {
                 /* Epidemic event */
                 // const auto& ev = std::get<event_t>(*any_ev);
 				// std::cerr << "ep ";
@@ -270,20 +270,20 @@ TEST_CASE("Plot SIS average trajectories on activity driven network", "[activity
 			std::unique_ptr<transmission_time_exponential> psi;
 			std::unique_ptr<transmission_time_gamma> rho;
 			std::unique_ptr<simulate_next_reaction> nr;
-			std::unique_ptr<simulate_on_dynamic_network> simulator;
+			std::unique_ptr<simulate_on_temporal_network> simulator;
 		} env;
 		env.g = std::make_unique<activity_driven_network>(activity_rates,eta,m,recovery_rate,engine);
 		env.psi = std::make_unique<transmission_time_exponential>(1/PSI_MEAN);
 		env.rho = std::make_unique<transmission_time_gamma>(RHO_MEAN, RHO_VARIANCE);
 		env.nr = std::make_unique<simulate_next_reaction>(*env.g.get(), *env.psi.get(), env.rho.get());
 		env.nr->add_infections({ std::make_pair(0, 0.0)});
-		env.simulator = std::make_unique<simulate_on_dynamic_network>(*env.nr.get());
+		env.simulator = std::make_unique<simulate_on_temporal_network>(*env.nr.get());
 		return env;
 	}, [](network_or_epidemic_event_t any_ev) {
 		/* Translate event into a pair (time, delta) */
-		if (std::holds_alternative<event_t>(any_ev)) {
+		if (std::holds_alternative<epidemic_event_t>(any_ev)) {
 			/* Epidemic event */
-			const auto ev = std::get<event_t>(any_ev);
+			const auto ev = std::get<epidemic_event_t>(any_ev);
 			return std::make_pair(ev.time, delta_infected(ev.kind));
 		} else if (std::holds_alternative<network_event_t>(any_ev)) {
 			/* Network event */
@@ -316,28 +316,28 @@ TEST_CASE("Plot SIS average trajectories on dynamic empirical network", "[dynami
 	const double TMAX = 2000;
 	const double DT = 2;
 
-	auto run = [&](dynamic_empirical_network::edge_duration_kind duration_kind) -> auto {
+	auto run = [&](temporal_empirical_network::edge_duration_kind duration_kind) -> auto {
 		std::vector<double> t, y_tot, y_new;
 		average_trajectories(engine, [&](rng_t& engine) {
 			struct {
-				std::unique_ptr<dynamic_empirical_network> g;
+				std::unique_ptr<temporal_empirical_network> g;
 				std::unique_ptr<transmission_time_gamma> psi;
 				std::unique_ptr<transmission_time_gamma> rho;
 				std::unique_ptr<simulate_next_reaction> nr;
-				std::unique_ptr<simulate_on_dynamic_network> simulator;
+				std::unique_ptr<simulate_on_temporal_network> simulator;
 			} env;
-			env.g = std::make_unique<dynamic_empirical_network>(TEST_DATA_DIR "/college.tab", duration_kind, DT);
+			env.g = std::make_unique<temporal_empirical_network>(TEST_DATA_DIR "/college.tab", duration_kind, DT);
 			env.psi = std::make_unique<transmission_time_gamma>(PSI_MEAN, PSI_VARIANCE);
 			env.rho = std::make_unique<transmission_time_gamma>(RHO_MEAN, RHO_VARIANCE);
 			env.nr = std::make_unique<simulate_next_reaction>(*env.g.get(), *env.psi.get(), env.rho.get());
 			env.nr->add_infections({ std::make_pair(0, 0.0)});
-			env.simulator = std::make_unique<simulate_on_dynamic_network>(*env.nr.get());
+			env.simulator = std::make_unique<simulate_on_temporal_network>(*env.nr.get());
 			return env;
 		}, [](network_or_epidemic_event_t any_ev) {
 			/* Translate event into a pair (time, delta) */
-			if (std::holds_alternative<event_t>(any_ev)) {
+			if (std::holds_alternative<epidemic_event_t>(any_ev)) {
 				/* Epidemic event */
-				const auto ev = std::get<event_t>(any_ev);
+				const auto ev = std::get<epidemic_event_t>(any_ev);
 				return std::make_pair(ev.time, delta_infected(ev.kind));
 			} else if (std::holds_alternative<network_event_t>(any_ev)) {
 				/* Network event */
@@ -348,8 +348,8 @@ TEST_CASE("Plot SIS average trajectories on dynamic empirical network", "[dynami
 		return std::make_tuple(t, y_tot, y_new);
 	};
 
-	auto edge_fin = run(dynamic_empirical_network::finite_duration);
-	auto edge_infi = run(dynamic_empirical_network::infitesimal_duration);
+	auto edge_fin = run(temporal_empirical_network::finite_duration);
+	auto edge_infi = run(temporal_empirical_network::infitesimal_duration);
 
 	plot("dynamic.empirical.sis.mean.pdf", "SIS average trajectory on dynamic empirical graph [NextReaction]", [&](auto& gp, auto& p) {
 		p.add_plot1d(std::make_pair(std::get<0>(edge_fin), std::get<2>(edge_fin)), "with lines title 'finite edge duration'"s);
@@ -377,24 +377,24 @@ TEST_CASE("Plot SIS average trajectory on dynamic Erdös-Reyni networks", "[dyna
 	std::vector<double> t_sim, y_sim_new, y_sim_total;
 	average_trajectories(engine, [&](rng_t& engine) {
 		struct {
-			std::unique_ptr<dynamic_erdos_reyni> g;
+			std::unique_ptr<temporal_erdos_reyni> g;
 			std::unique_ptr<transmission_time_gamma> psi;
 			std::unique_ptr<transmission_time_gamma> rho;
 			std::unique_ptr<simulate_next_reaction> nr;
-			std::unique_ptr<simulate_on_dynamic_network> simulator;
+			std::unique_ptr<simulate_on_temporal_network> simulator;
 		} env;
-		env.g = std::make_unique<dynamic_erdos_reyni>(N, K, TAU, engine);
+		env.g = std::make_unique<temporal_erdos_reyni>(N, K, TAU, engine);
 		env.psi = std::make_unique<transmission_time_gamma>(PSI_MEAN, PSI_VARIANCE);
 		env.rho = std::make_unique<transmission_time_gamma>(RHO_MEAN, RHO_VARIANCE);
 		env.nr = std::make_unique<simulate_next_reaction>(*env.g.get(), *env.psi.get(), env.rho.get());
 		env.nr->add_infections({ std::make_pair(0, 0.0)});
-		env.simulator = std::make_unique<simulate_on_dynamic_network>(*env.nr.get());
+		env.simulator = std::make_unique<simulate_on_temporal_network>(*env.nr.get());
 		return env;
 	}, [](network_or_epidemic_event_t any_ev) {
 		/* Translate event into a pair (time, delta) */
-		if (std::holds_alternative<event_t>(any_ev)) {
+		if (std::holds_alternative<epidemic_event_t>(any_ev)) {
 			/* Epidemic event */
-			const auto ev = std::get<event_t>(any_ev);
+			const auto ev = std::get<epidemic_event_t>(any_ev);
 			return std::make_pair(ev.time, delta_infected(ev.kind));
 		} else if (std::holds_alternative<network_event_t>(any_ev)) {
 			/* Network event */
@@ -406,7 +406,7 @@ TEST_CASE("Plot SIS average trajectory on dynamic Erdös-Reyni networks", "[dyna
 	std::vector<double> t_sim_static, y_sim_new_static, y_sim_total_static;
 	average_trajectories(engine, [&](rng_t& engine){
 		struct {
-			std::unique_ptr<graph> g;
+			std::unique_ptr<network> g;
 			std::unique_ptr<transmission_time_gamma> psi;
 			std::unique_ptr<transmission_time_gamma> rho;
 			std::unique_ptr<simulation_algorithm> simulator;
@@ -444,23 +444,23 @@ TEST_CASE("Plot SIR average trajectory on SIRX-Erdös-Reyni network", "[nextreac
 	average_trajectories(engine, [&](rng_t& engine) {
 		struct {
 			std::unique_ptr<erdos_reyni> g_static;
-			std::unique_ptr<dynamic_sirx_network> g;
+			std::unique_ptr<temporal_sirx_network> g;
 			std::unique_ptr<transmission_time_gamma> psi;
 			std::unique_ptr<simulate_next_reaction> nr;
-			std::unique_ptr<simulate_on_dynamic_network> simulator;
+			std::unique_ptr<simulate_on_temporal_network> simulator;
 		} env;
 		env.g_static = std::make_unique<erdos_reyni>(N, K, engine);
-		env.g = std::make_unique<dynamic_sirx_network>(*env.g_static.get(), KAPPA0, KAPPA);
+		env.g = std::make_unique<temporal_sirx_network>(*env.g_static.get(), KAPPA0, KAPPA);
 		env.psi = std::make_unique<transmission_time_gamma>(PSI_MEAN, PSI_VARIANCE);
 		env.nr = std::make_unique<simulate_next_reaction>(*env.g.get(), *env.psi.get(), nullptr);
 		env.nr->add_infections({ std::make_pair(0, 0.0)});
-		env.simulator = std::make_unique<simulate_on_dynamic_network>(*env.nr.get());
+		env.simulator = std::make_unique<simulate_on_temporal_network>(*env.nr.get());
 		return env;
 	}, [](network_or_epidemic_event_t any_ev) {
 		/* Translate event into a pair (time, delta) */
-		if (std::holds_alternative<event_t>(any_ev)) {
+		if (std::holds_alternative<epidemic_event_t>(any_ev)) {
 			/* Epidemic event */
-			const auto ev = std::get<event_t>(any_ev);
+			const auto ev = std::get<epidemic_event_t>(any_ev);
 			return std::make_pair(ev.time, delta_infected(ev.kind));
 		} else if (std::holds_alternative<network_event_t>(any_ev)) {
 			/* Network event */
