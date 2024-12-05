@@ -9,21 +9,21 @@
          <BuildActionEntry
             buildForTesting = "NO"
             buildForRunning = "YES"
-            buildForProfiling = "YES"
+            buildForProfiling = "NO"
             buildForArchiving = "NO"
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "984A0C9B27C0DE5C004A0A96"
-               BuildableName = "simulator"
-               BlueprintName = "simulator"
-               ReferencedContainer = "container:epidemics.xcodeproj">
+               BlueprintIdentifier = "F99D7A9F27E21DD400200C18"
+               BuildableName = "tests"
+               BlueprintName = "tests"
+               ReferencedContainer = "container:NEXTNet.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
-      buildConfiguration = "Release"
+      buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
@@ -31,9 +31,12 @@
       </Testables>
    </TestAction>
    <LaunchAction
-      buildConfiguration = "Release"
-      selectedDebuggerIdentifier = ""
-      selectedLauncherIdentifier = "Xcode.IDEFoundation.Launcher.PosixSpawn"
+      buildConfiguration = "Debug"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      enableAddressSanitizer = "YES"
+      enableASanStackUseAfterReturn = "YES"
+      enableUBSanitizer = "YES"
       launchStyle = "0"
       useCustomWorkingDirectory = "YES"
       customWorkingDirectory = "$(PROJECT_DIR)"
@@ -45,12 +48,18 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "984A0C9B27C0DE5C004A0A96"
-            BuildableName = "simulator"
-            BlueprintName = "simulator"
-            ReferencedContainer = "container:epidemics.xcodeproj">
+            BlueprintIdentifier = "F99D7A9F27E21DD400200C18"
+            BuildableName = "tests"
+            BlueprintName = "tests"
+            ReferencedContainer = "container:NEXTNet.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <CommandLineArguments>
+         <CommandLineArgument
+            argument = "--durations yes"
+            isEnabled = "YES">
+         </CommandLineArgument>
+      </CommandLineArguments>
       <EnvironmentVariables>
          <EnvironmentVariable
             key = "MallocNanoZone"
@@ -60,42 +69,26 @@
       </EnvironmentVariables>
    </LaunchAction>
    <ProfileAction
-      buildConfiguration = "Release"
-      shouldUseLaunchSchemeArgsEnv = "NO"
-      savedToolIdentifier = "Time Profiler"
+      buildConfiguration = "Debug"
+      shouldUseLaunchSchemeArgsEnv = "YES"
+      savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
-      debugDocumentVersioning = "YES"
-      enableTestabilityWhenProfilingTests = "No">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
+      debugDocumentVersioning = "YES">
+      <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "984A0C9B27C0DE5C004A0A96"
-            BuildableName = "simulator"
-            BlueprintName = "simulator"
-            ReferencedContainer = "container:epidemics.xcodeproj">
+            BlueprintIdentifier = "F99D7A9F27E21DD400200C18"
+            BuildableName = "tests"
+            BlueprintName = "tests"
+            ReferencedContainer = "container:NEXTNet.xcodeproj">
          </BuildableReference>
-      </BuildableProductRunnable>
-      <CommandLineArguments>
-         <CommandLineArgument
-            argument = "profile"
-            isEnabled = "YES">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "1000000"
-            isEnabled = "YES">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "1000000"
-            isEnabled = "YES">
-         </CommandLineArgument>
-      </CommandLineArguments>
+      </MacroExpansion>
    </ProfileAction>
    <AnalyzeAction
-      buildConfiguration = "Release">
+      buildConfiguration = "Debug">
    </AnalyzeAction>
    <ArchiveAction
-      buildConfiguration = "Release"
+      buildConfiguration = "Debug"
       revealArchiveInOrganizer = "YES">
    </ArchiveAction>
 </Scheme>

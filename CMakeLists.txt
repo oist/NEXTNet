@@ -4,81 +4,81 @@ project(Epidemics_On_Networks LANGUAGES CXX)
 
 # *** Simulation library sources and headers
 set(LIB_SOURCES
-    epidemics/graph.cpp
-    epidemics/dynamic_graph.cpp
-    epidemics/brownian_proximity_graph.cpp
-    epidemics/algorithm.cpp
-    epidemics/random.cpp
-    epidemics/NextReaction.cpp
-    epidemics/NextReactionMeanField.cpp
-    epidemics/nMGA.cpp
-    epidemics/REGIR.cpp
-    epidemics/utility.cpp)
+    nextnet/graph.cpp
+    nextnet/dynamic_graph.cpp
+    nextnet/brownian_proximity_graph.cpp
+    nextnet/algorithm.cpp
+    nextnet/random.cpp
+    nextnet/NextReaction.cpp
+    nextnet/NextReactionMeanField.cpp
+    nextnet/nMGA.cpp
+    nextnet/REGIR.cpp
+    nextnet/utility.cpp)
 
 set(LIB_HEADERS
-    epidemics/types.h
-    epidemics/graph.h
-    epidemics/dynamic_graph.h
-    epidemics/brownian_proximity_graph.h
-    epidemics/random.h
-    epidemics/algorithm.h
-    epidemics/NextReaction.h
-    epidemics/NextReactionMeanField.h
-    epidemics/nMGA.h
-    epidemics/REGIR.h
-    epidemics/permutation.h
-    epidemics/utility.h)
+    nextnet/types.h
+    nextnet/graph.h
+    nextnet/dynamic_graph.h
+    nextnet/brownian_proximity_graph.h
+    nextnet/random.h
+    nextnet/algorithm.h
+    nextnet/NextReaction.h
+    nextnet/NextReactionMeanField.h
+    nextnet/nMGA.h
+    nextnet/REGIR.h
+    nextnet/permutation.h
+    nextnet/utility.h)
 
-SET(LIB_PCH epidemics/stdafx.h)
+SET(LIB_PCH nextnet/stdafx.h)
 
 # *** Command-line simulator sources and headers
 set(SIMULATOR_SOURCES
-    epidemics/analysis.cpp
-    epidemics/main.cpp
-    epidemics/programs/average.cpp
-    epidemics/programs/scale_free.cpp
-    epidemics/programs/benchmark.cpp
-    epidemics/programs/trajectory.cpp
-    epidemics/programs/customtrajectory.cpp
-    epidemics/programs/sis_meanfield_gamma_gamma.cpp
-    epidemics/programs/profile.cpp
-    epidemics/programs/benchmark_priorityqueue.cpp
-    epidemics/programs/custered_configuration_model_serrano.cpp)
+    nextnet/analysis.cpp
+    nextnet/main.cpp
+    nextnet/programs/average.cpp
+    nextnet/programs/scale_free.cpp
+    nextnet/programs/benchmark.cpp
+    nextnet/programs/trajectory.cpp
+    nextnet/programs/customtrajectory.cpp
+    nextnet/programs/sis_meanfield_gamma_gamma.cpp
+    nextnet/programs/profile.cpp
+    nextnet/programs/benchmark_priorityqueue.cpp
+    nextnet/programs/custered_configuration_model_serrano.cpp)
 
 set(SIMULATOR_HEADERS
-    epidemics/analysis.h)
+    nextnet/analysis.h)
 
 # *** Unit tests sources and headers
 set(TESTS_SOURCES
-    epidemics/analysis.cpp
-    epidemics/tests/plot.cpp
-    epidemics/tests/main.cpp
-    epidemics/tests/utility.cpp
-    epidemics/tests/graph.cpp
-    epidemics/tests/dynamic_graph.cpp
-    epidemics/tests/random.cpp
-    epidemics/tests/nextreaction.cpp
-    epidemics/tests/dynamic_nextreaction.cpp
-    epidemics/tests/brownian_proximity_graph.cpp
-    epidemics/tests/nmga.cpp
-    epidemics/tests/REGIR.cpp)
+    nextnet/analysis.cpp
+    nextnet/tests/plot.cpp
+    nextnet/tests/main.cpp
+    nextnet/tests/utility.cpp
+    nextnet/tests/graph.cpp
+    nextnet/tests/dynamic_graph.cpp
+    nextnet/tests/random.cpp
+    nextnet/tests/nextreaction.cpp
+    nextnet/tests/dynamic_nextreaction.cpp
+    nextnet/tests/brownian_proximity_graph.cpp
+    nextnet/tests/nmga.cpp
+    nextnet/tests/REGIR.cpp)
 
 set(TESTS_HEADERS
-    epidemics/tests/statistics.h
-    epidemics/tests/simulate.h
-    epidemics/tests/analytical.h
-    epidemics/tests/parallel.h
-    epidemics/tests/plot.h
-    epidemics/tests/gnuplot-iostream.h
-    epidemics/catch/catch.hpp)
+    nextnet/tests/statistics.h
+    nextnet/tests/simulate.h
+    nextnet/tests/analytical.h
+    nextnet/tests/parallel.h
+    nextnet/tests/plot.h
+    nextnet/tests/gnuplot-iostream.h
+    nextnet/catch/catch.hpp)
 
 set(TESTS_PCH
-    epidemics/tests/stdafx.h)
+    nextnet/tests/stdafx.h)
 
 # *** Global build settings
 
-# Includes are relative to the epidemics/ folder
-include_directories(AFTER SYSTEM epidemics ext/dyndist)
+# Includes are relative to the nextnet/ folder
+include_directories(AFTER SYSTEM nextnet ext/dyndist)
 
 # Use C++17
 set(CMAKE_CXX_STANDARD 17)
@@ -180,11 +180,11 @@ add_executable(tests
 target_precompile_headers(tests
     PUBLIC ${LIB_PCH}
     PUBLIC ${TESTS_PCH})
-set_source_files_properties(epidemics/tests/main.cpp
+set_source_files_properties(nextnet/tests/main.cpp
     PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
 # Test data
-target_compile_definitions(tests PRIVATE TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/epidemics/tests/data")
-message("Test data: ${PROJECT_SOURCE_DIR}/epidemics/tests/data")
+target_compile_definitions(tests PRIVATE TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/nextnet/tests/data")
+message("Test data: ${PROJECT_SOURCE_DIR}/nextnet/tests/data")
 if ((NOT SERIALIZE) AND TBB_FOUND)
     message("Parallelization: Enabled")
     target_link_libraries(tests TBB::tbb)

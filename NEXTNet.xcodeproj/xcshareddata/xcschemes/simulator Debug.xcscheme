@@ -14,10 +14,10 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "F99D7A9F27E21DD400200C18"
-               BuildableName = "tests"
-               BlueprintName = "tests"
-               ReferencedContainer = "container:epidemics.xcodeproj">
+               BlueprintIdentifier = "984A0C9B27C0DE5C004A0A96"
+               BuildableName = "simulator"
+               BlueprintName = "simulator"
+               ReferencedContainer = "container:NEXTNet.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -48,15 +48,15 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "F99D7A9F27E21DD400200C18"
-            BuildableName = "tests"
-            BlueprintName = "tests"
-            ReferencedContainer = "container:epidemics.xcodeproj">
+            BlueprintIdentifier = "984A0C9B27C0DE5C004A0A96"
+            BuildableName = "simulator"
+            BlueprintName = "simulator"
+            ReferencedContainer = "container:NEXTNet.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "--durations yes"
+            argument = "custered_configuration_model_serrano"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>
@@ -74,15 +74,6 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <MacroExpansion>
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "F99D7A9F27E21DD400200C18"
-            BuildableName = "tests"
-            BlueprintName = "tests"
-            ReferencedContainer = "container:epidemics.xcodeproj">
-         </BuildableReference>
-      </MacroExpansion>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">

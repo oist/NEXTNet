@@ -129,8 +129,8 @@
 		F9A4651C2923B2B700393E90 /* profile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = profile.cpp; sourceTree = "<group>"; };
 		F9A4651D2923B2B700393E90 /* sis_meanfield_gamma_gamma.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = sis_meanfield_gamma_gamma.cpp; sourceTree = "<group>"; };
 		F9ADCB9A28128A6D00AEB3C0 /* nextreaction.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = nextreaction.cpp; sourceTree = "<group>"; };
-		F9C0D33429F6956400A99D46 /* brownian_proximity_graph.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = brownian_proximity_graph.cpp; path = epidemics/brownian_proximity_graph.cpp; sourceTree = SOURCE_ROOT; };
-		F9C0D33529F6956400A99D46 /* brownian_proximity_graph.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = brownian_proximity_graph.h; path = epidemics/brownian_proximity_graph.h; sourceTree = SOURCE_ROOT; };
+		F9C0D33429F6956400A99D46 /* brownian_proximity_graph.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = brownian_proximity_graph.cpp; path = nextnet/brownian_proximity_graph.cpp; sourceTree = SOURCE_ROOT; };
+		F9C0D33529F6956400A99D46 /* brownian_proximity_graph.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = brownian_proximity_graph.h; path = nextnet/brownian_proximity_graph.h; sourceTree = SOURCE_ROOT; };
 		F9CFD987299B53DD0078FD70 /* dyndist */ = {isa = PBXFileReference; lastKnownFileType = folder; name = dyndist; path = dyndist/dyndist; sourceTree = "<group>"; };
 		F9CFD988299B55A90078FD70 /* dynamic_graph.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = dynamic_graph.cpp; sourceTree = "<group>"; };
 		F9CFD989299B55A90078FD70 /* dynamic_graph.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = dynamic_graph.h; sourceTree = "<group>"; };
@@ -175,7 +175,7 @@
 		984A0C9327C0DE5C004A0A96 = {
 			isa = PBXGroup;
 			children = (
-				984A0C9E27C0DE5C004A0A96 /* epidemics */,
+				984A0C9E27C0DE5C004A0A96 /* nextnet */,
 				F95E340E2925088200DBCE94 /* ext */,
 				984A0C9D27C0DE5C004A0A96 /* Products */,
 				F9D26B7727E2242B005A272D /* Frameworks */,
@@ -192,7 +192,7 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		984A0C9E27C0DE5C004A0A96 /* epidemics */ = {
+		984A0C9E27C0DE5C004A0A96 /* nextnet */ = {
 			isa = PBXGroup;
 			children = (
 				F9A4651A2923B2B700393E90 /* programs */,
@@ -226,7 +226,7 @@
 				F99D7A9927E21CC000200C18 /* tests */,
 				F99D7A9727E21CC000200C18 /* catch */,
 			);
-			path = epidemics;
+			path = nextnet;
 			sourceTree = "<group>";
 		};
 		F95E340E2925088200DBCE94 /* ext */ = {
@@ -331,7 +331,7 @@
 			dependencies = (
 			);
 			name = simulator;
-			productName = epidemics_update;
+			productName = NEXTNet;
 			productReference = 984A0C9C27C0DE5C004A0A96 /* simulator */;
 			productType = "com.apple.product-type.tool";
 		};
@@ -348,7 +348,7 @@
 			dependencies = (
 			);
 			name = tests;
-			productName = epidemics_update;
+			productName = NEXTNet;
 			productReference = F99D7AAB27E21DD400200C18 /* tests */;
 			productType = "com.apple.product-type.tool";
 		};
@@ -618,7 +618,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEAD_CODE_STRIPPING = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = epidemics/stdafx.h;
+				GCC_PREFIX_HEADER = nextnet/stdafx.h;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -630,7 +630,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEAD_CODE_STRIPPING = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = epidemics/stdafx.h;
+				GCC_PREFIX_HEADER = nextnet/stdafx.h;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -644,13 +644,13 @@
 				DEAD_CODE_STRIPPING = YES;
 				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = epidemics/tests/stdafx.h;
+				GCC_PREFIX_HEADER = nextnet/tests/stdafx.h;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"DYNDIST_ENABLE_ASSERTS=1",
 					"GNUPLOT_DEFAULT_COMMAND=\"\\\"$(GNUPLOT) -persist\\\"\"",
 					"ENABLE_PLOTTING=1",
-					"TEST_DATA_DIR=\"\\\"$(PROJECT_DIR)/epidemics/tests/data\\\"\"",
+					"TEST_DATA_DIR=\"\\\"$(PROJECT_DIR)/nextnet/tests/data\\\"\"",
 				);
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -666,12 +666,12 @@
 				DEAD_CODE_STRIPPING = YES;
 				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = epidemics/tests/stdafx.h;
+				GCC_PREFIX_HEADER = nextnet/tests/stdafx.h;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					NDEBUG,
 					"ENABLE_PLOTTING=1",
 					"GNUPLOT_DEFAULT_COMMAND=\"\\\"$(GNUPLOT) -persist\\\"\"",
-					"TEST_DATA_DIR=\"\\\"$(PROJECT_DIR)/epidemics/tests/data\\\"\"",
+					"TEST_DATA_DIR=\"\\\"$(PROJECT_DIR)/nextnet/tests/data\\\"\"",
 				);
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				PRODUCT_NAME = "$(TARGET_NAME)";

@@ -17,7 +17,7 @@
                BlueprintIdentifier = "F99D7A9F27E21DD400200C18"
                BuildableName = "tests"
                BlueprintName = "tests"
-               ReferencedContainer = "container:epidemics.xcodeproj">
+               ReferencedContainer = "container:NEXTNet.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -51,7 +51,7 @@
             BlueprintIdentifier = "F99D7A9F27E21DD400200C18"
             BuildableName = "tests"
             BlueprintName = "tests"
-            ReferencedContainer = "container:epidemics.xcodeproj">
+            ReferencedContainer = "container:NEXTNet.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <CommandLineArguments>
@@ -80,7 +80,7 @@
             BlueprintIdentifier = "F99D7A9F27E21DD400200C18"
             BuildableName = "tests"
             BlueprintName = "tests"
-            ReferencedContainer = "container:epidemics.xcodeproj">
+            ReferencedContainer = "container:NEXTNet.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
    </ProfileAction>
