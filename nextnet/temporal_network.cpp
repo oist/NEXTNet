@@ -44,7 +44,7 @@ bool mutable_network::remove_edge(node_t src, node_t dst) {
 }
 
 node_t mutable_network::nodes() {
-	return adjacencylist.size();
+	return (node_t)adjacencylist.size();
 }
 
 node_t mutable_network::neighbour(node_t node, int neighbour_index) {
@@ -418,7 +418,7 @@ temporal_erdos_reyni::temporal_erdos_reyni(int size, double avg_degree, double t
 {
 	/* Initial degree-weights node distribution and present/absent edge counters */
 	for(node_t i = 0; (std::size_t)i < this->adjacencylist.size(); ++i) {
-		const unsigned k = this->adjacencylist[i].size();
+		const unsigned k = (unsigned)this->adjacencylist[i].size();
 		weighted_nodes.push_back(k);
 		edges_present += k;
 	}
@@ -477,7 +477,7 @@ std::optional<network_event_t> temporal_erdos_reyni::step(rng_t& engine, absolut
 		 */
 		node_t src, dst;
 		while (true) {
-			std::uniform_int_distribution<node_t> uniform_node(0, this->adjacencylist.size()-1);
+			std::uniform_int_distribution<node_t> uniform_node(0, (node_t)this->adjacencylist.size()-1);
 			/* Draw source node */
 			src = uniform_node(engine);
 			/* Draw destination node that isn't the same as the source node */
@@ -504,9 +504,9 @@ std::optional<network_event_t> temporal_erdos_reyni::step(rng_t& engine, absolut
 		 * We do so by drawing a random node, with nodes weighted by
 		 * their degree, and then drawing a random neighbour of that node
 		 */
-		const node_t src = weighted_nodes(engine);
+		const node_t src = (node_t)weighted_nodes(engine);
 		const std::vector<node_t>& al = this->adjacencylist.at(src);
-		std::uniform_int_distribution<node_t> uniform_neighbour(0, al.size()-1);
+		std::uniform_int_distribution<node_t> uniform_neighbour(0, (node_t)al.size()-1);
 		const int neighbour_index = uniform_neighbour(engine);
 		/* Remove edge */
 		const node_t dst = al[neighbour_index];
@@ -782,7 +782,7 @@ std::tuple<std::vector<double>, std::vector<double>, std::vector<double>> activi
 		a1 += eta*a/(eta*a+recovery_rate);
 		b1 += recovery_rate/(eta*a+recovery_rate);
 	}
-	const node_t N = activity_rates.size();
+	const node_t N = (node_t)activity_rates.size();
 	a1 = (double) a1/N;
 	b1 = (double) b1/N;
 

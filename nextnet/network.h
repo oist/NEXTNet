@@ -351,7 +351,7 @@ public:
     virtual ~cubic_lattice() {}
 
     virtual node_t nodes() {
-        return total_nodes;
+        return (node_t)total_nodes;
     }
 
     virtual node_t neighbour(node_t nidx, int neighbour_index) {
@@ -393,7 +393,7 @@ public:
             e++;
         }
         // For ever non-exterminal component there is one neighbour, otherwise two
-        return 2*dimension - e;
+        return (int)(2*dimension - e);
     }
 
     virtual std::size_t dimensionality() {

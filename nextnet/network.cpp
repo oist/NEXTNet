@@ -564,7 +564,7 @@ struct config_model_clustered_serrano_builder {
 	 * @param _rng Random number generator
 	 */
 	config_model_clustered_serrano_builder(std::vector<node_t> degrees, const std::vector<int>& degree_triangles, double _beta, rng_t& _rng)
-		:kmax(degree_triangles.size() - 1)
+		:kmax((int)degree_triangles.size() - 1)
 		,beta(_beta)
 		,rng(_rng)
 		,pk(kmax + 1, 0)
@@ -801,9 +801,9 @@ struct config_model_clustered_serrano_builder {
 			
 			// a. Update triangle counts, and remove stubs of nodes in satisified degree classes
 			const std::size_t kc = node_stubs[nc].size();
-			on_overlapping_triangle(ka, na);
-			on_overlapping_triangle(kb, nb);
-			on_overlapping_triangle(kc, nc);
+			on_overlapping_triangle((int)ka, na);
+			on_overlapping_triangle((int)kb, nb);
+			on_overlapping_triangle((int)kc, nc);
 		}
 		
 		// IV. Connect stubs
@@ -855,7 +855,7 @@ struct config_model_clustered_serrano_builder {
 				// the connected stub from it, unless it lives in the same
 				// degree class. In that case, it's removed anyway when the
 				// whole class is removed below.
-				const int kp = node_stubs[sp.node].size();
+				const int kp = (int)node_stubs[sp.node].size();
 				if (k != kp)
 					idx_k_stubs_eligible[kp].erase(sp);
 			}
@@ -917,7 +917,7 @@ struct config_model_clustered_serrano_builder {
 	 * @return node degree k
 	 */
 	int draw_k() {
-		return pk(rng);
+		return (int)pk(rng);
 	}
 	
 	/**
@@ -990,7 +990,7 @@ struct config_model_clustered_serrano_builder {
 	 */
 	stub draw_sibling_stub(stub s1) {
 		// Get degree of node
-		const int k = node_stubs[s1.node].size();
+		const int k = (int)node_stubs[s1.node].size();
 		if (k <= 1)
 			throw std::logic_error("cannot draw siblings of node with degree one");
 		// Draw an stub different from s1
@@ -1044,7 +1044,7 @@ config_model_clustered_serrano::config_model_clustered_serrano
 	triangles_unsatisfied = b.triangles_unsatisfied;
 	/* Copy network structure from builder */
 	for(std::size_t i = 0; i < b.node_stubs.size(); ++i) {
-		const auto& ns = b.node_stubs[i];
+		const auto& ns = b.node_stubs[(int)i];
 		// Get adjacencylist for i-th node, make sure it exists
 		adjacencylist.resize(i+1);
 		auto& i_al = adjacencylist[i];

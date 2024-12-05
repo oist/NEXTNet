@@ -17,7 +17,6 @@ TEST_CASE("dynamic activity driven graph", "[activity_driven_graph]") {
 
 	double TMAX = 30;
 	
-	double t = 0 ;
 	while (g.step(engine,TMAX)){}
 		// int k = ev->kind == network_event_kind::neighbour_added ? 1 : 0;
 		// std::cerr << "t="<<  t<< "  |  " <<  ev->source_node << "->" << ev->target_node << " | " << k << std::endl;
@@ -122,7 +121,7 @@ TEST_CASE("dynamic Erdös-Reyni", "[dynamic_graph]") {
 		const int k = g.outdegree(a);
 		for(int j=0; j < k; ++j) {
 			const node_t b = g.neighbour(a, j);
-			const int e = edge_index_undirected(a, b);
+			const int e = (int)edge_index_undirected(a, b);
 			if (a > b)
 				continue;
 			REQUIRE(edge_presence[e].empty());
@@ -137,7 +136,7 @@ TEST_CASE("dynamic Erdös-Reyni", "[dynamic_graph]") {
 	/* Evolve dynamic network */
 	while (auto ev = g.step(engine, TMAX)) {
 		const network_event_t event = *ev;
-		const int e = edge_index_undirected(event.source_node, event.target_node);
+		const int e = (int)edge_index_undirected(event.source_node, event.target_node);
 		
 		switch (event.kind) {
 			case network_event_kind::neighbour_added:

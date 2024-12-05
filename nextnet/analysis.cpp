@@ -86,8 +86,10 @@ void knn_BA() {
 
 // function to compute the derivative of f(x) using central finite differences method
 vector<double> derivative(vector<double>& X, vector<double>& Y) {
-    int n = X.size();
-    int start = 0;
+    std::size_t n = X.size();
+	if (n == 0)
+		return {};
+    std::size_t start = 0;
     vector<double> dydx(n);
     // If multiple points are defined at the same t, the function is not differentiable.
     while(X[start+1] == 0.0){
@@ -100,7 +102,7 @@ vector<double> derivative(vector<double>& X, vector<double>& Y) {
     dydx[n-1] = (Y[n-1] - Y[n-2]) / (X[n-1] - X[n-2]);
 
     // compute the derivatives at the intermediate points using central finite differences
-    for (int i = start+1; i < n-1; i++) {
+    for (std::size_t i = start+1; (i < n-1); i++) {
         dydx[i] = (Y[i+1] - Y[i-1]) / (X[i+1] - X[i-1]);
     }
 

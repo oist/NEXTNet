@@ -207,8 +207,6 @@ TEST_CASE("Epidemic on activity driven graph", "[activity_driven_graph]") {
 	double tmax = 100;
 	// while(auto ev = sim.step(engine,tmax)){
 
-	int cnt = 0;
-
    while(true){
 
         // std::optional<network_or_epidemic_event_t> any_ev = env.simulator -> step(engine,TMAX);
