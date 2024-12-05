@@ -6,7 +6,7 @@
 #include "utility.h"
 
 network& simulate_nmga::get_network() const {
-	return network;
+	return nw;
 }
 
 const class transmission_time& simulate_nmga::transmission_time() const {
@@ -222,9 +222,9 @@ std::optional<epidemic_event_t> simulate_nmga::step(rng_t& engine, absolutetime_
 				}
 
 				/* ... and outgoing edges active */
-				const int neighbours = network.outdegree(ev.node);
+				const int neighbours = nw.outdegree(ev.node);
 				for(int j=0; j < neighbours; ++j) {
-					const node_t neighbour = network.neighbour(ev.node, j);
+					const node_t neighbour = nw.neighbour(ev.node, j);
 					if (neighbour < 0) {
 						/* This should never happen unless the graph reported the wrong number of outgoing edges */
 						throw std::logic_error(std::string("neighbour ") + std::to_string(j + 1) +

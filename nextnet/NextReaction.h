@@ -17,10 +17,10 @@ public:
 		bool SIR = false;
 	};
 	
-	simulate_next_reaction(network& nw, const class transmission_time& psi_,
+	simulate_next_reaction(network& nw_, const class transmission_time& psi_,
                            const class transmission_time* rho_ = nullptr,
 						   params p_ = params())
-		:network(nw), psi(psi_), rho(rho_),
+		:nw(nw_), psi(psi_), rho(rho_),
 		 p(p_), shuffle_neighbours(p.shuffle_neighbours && !p.edges_concurrent)
     {}
 
@@ -57,7 +57,7 @@ public:
     typedef std::unordered_map<node_t, infected_state_t> infected_nodes_t;
     infected_nodes_t infected;
     
-    network& network;
+    network& nw;
     const class transmission_time& psi;
     const class transmission_time* rho = nullptr;
 	const params p;

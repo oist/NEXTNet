@@ -149,7 +149,7 @@ std::optional<epidemic_event_t> simulate_next_reaction::step_infection(const act
 		
         /* This only occurs for infection edges, reset self-loops have no neighbours */
         const node_t neighbour_id = next.source_permutation[next.neighbour_index + 1];
-        const node_t sibling = network.neighbour(next.source_node, neighbour_id);
+        const node_t sibling = nw.neighbour(next.source_node, neighbour_id);
         if (sibling < 0) {
             /* This should never happen unless the graph reported the wrong number of outgoing edges */
             throw std::logic_error(std::string("neighbour ") + std::to_string(neighbour_id) +
@@ -211,7 +211,7 @@ std::optional<epidemic_event_t> simulate_next_reaction::step_infection(const act
      */
 
     /* First, create a permutation to shuffle the neighbours if necessary */
-    const int neighbours_total = network.outdegree(next.node);
+    const int neighbours_total = nw.outdegree(next.node);
     permutation<node_t> pi;
     if (shuffle_neighbours) {
 		/* We should never shuffle neighbours if sibling edges are made active concurrently */
@@ -241,7 +241,7 @@ std::optional<epidemic_event_t> simulate_next_reaction::step_infection(const act
 		r = 0;
 	for(int neighbour_i = 0; neighbour_i < r; ++neighbour_i) {
 		/* Get i-th neighbour according to the permutation */
-		const node_t neighbour = network.neighbour(next.node, pi[neighbour_i]);
+		const node_t neighbour = nw.neighbour(next.node, pi[neighbour_i]);
 		
 		/* This should never happen unless the graph reported the wrong number
 		 * of outgoing edges */
@@ -337,8 +337,8 @@ void simulate_next_reaction::add_thermal_infections(const std::vector<std::pair<
         infected.emplace(node, infected_state_t(time, INFINITY));
         assert(is_infected(node));
         //manually add the infections if infection happpens after their age
-        for (int i =0; i < network.outdegree(node) ; i++ ){
-            node_t neighbour = network.neighbour(node,i);
+        for (int i =0; i < nw.outdegree(node) ; i++ ){
+            node_t neighbour = nw.neighbour(node,i);
             const double tau = psi.sample(engine, 0, 1);
             const double thermal =-log(1-ran(engine))/Lambda;
 
@@ -361,7 +361,7 @@ bool simulate_next_reaction::is_infected(node_t node) const {
 }
 
 network& simulate_next_reaction::get_network() const {
-    return network;
+    return nw;
 }
 
 const transmission_time& simulate_next_reaction::transmission_time() const {

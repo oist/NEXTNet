@@ -76,18 +76,18 @@ public:
 		bool SIR = false;
 	};
 	
-    network& network;
+    network& nw;
     const class transmission_time& psi;
 	const class transmission_time* rho = nullptr;
 	const params p;
 	std::unordered_set<node_t> infected;
 	
-	simulate_regir(class network& nw, const class transmission_time& psi_,
+	simulate_regir(class network& nw_, const class transmission_time& psi_,
 				   const class transmission_time* rho_ = nullptr,
 				   params p_ = params())
         :lambda_max(std::max(psi_.hazardbound(INFINITY),
 							 (rho_ ? rho_->hazardbound(INFINITY) : 0)))
-	    ,network(nw), psi(psi_), rho(rho_)
+	    ,nw(nw_), psi(psi_), rho(rho_)
         ,p(p_)
     {}
 

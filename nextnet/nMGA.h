@@ -75,17 +75,17 @@ public:
 		bool SIR = false;
 	};
 	
-    network& network;
+    network& nw;
     const class transmission_time& psi;
 	const class transmission_time* rho = nullptr;
 	const params p;
 	const double max_dt;
 	std::unordered_set<node_t> infected;
 	
-	simulate_nmga(class network& nw, const class transmission_time& psi_,
+	simulate_nmga(class network& nw_, const class transmission_time& psi_,
 				  const class transmission_time* rho_ = nullptr,
 				  params p_ = params())
-        :network(nw), psi(psi_), rho(rho_)
+        :nw(nw_), psi(psi_), rho(rho_)
         ,p(p_)
         ,max_dt((std::isfinite(p.maximal_dt) && (p.maximal_dt > 0)) ?
                 p.maximal_dt : find_maximal_dt(psi))
