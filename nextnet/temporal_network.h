@@ -43,14 +43,14 @@ private:
 };
 
 
-struct temporal_empirical_network : public virtual temporal_network, public virtual mutable_network
+struct empirical_temporal_network : public virtual temporal_network, public virtual mutable_network
 {
 	enum edge_duration_kind {
 		finite_duration = 1,
 		infitesimal_duration = 2
 	};
 
-	temporal_empirical_network(std::string path_to_file, edge_duration_kind contact_type, double dt);
+	empirical_temporal_network(std::string path_to_file, edge_duration_kind contact_type, double dt);
 
 	virtual absolutetime_t next(rng_t& engine, absolutetime_t maxtime = INFINITY) override;
 

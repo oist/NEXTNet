@@ -25,7 +25,7 @@ void export_adjacency_dot(const std::vector<std::vector<node_t>>& adjacencyList,
 
 void print_matrix(std::vector<std::vector<double>>& A);
 
-double measure_running_time(network_adjacencylist& network,rng_t& engine);
+double measure_running_time(adjacencylist_network& network,rng_t& engine);
 
 void generate_data_running_time(rng_t& engine,int size, bool isNMGA);
 

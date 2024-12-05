@@ -64,7 +64,7 @@ index_t mutable_network::outdegree(node_t node) {
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
 
-temporal_empirical_network::temporal_empirical_network(std::string path_to_file, temporal_empirical_network::edge_duration_kind contact_type, interval_t dt)
+empirical_temporal_network::empirical_temporal_network(std::string path_to_file, empirical_temporal_network::edge_duration_kind contact_type, interval_t dt)
 {
 	node_t max_node = 0;
 
@@ -127,7 +127,7 @@ temporal_empirical_network::temporal_empirical_network(std::string path_to_file,
 	resize(max_node + 1);
 }
 
-absolutetime_t temporal_empirical_network::next(rng_t& engine, absolutetime_t)
+absolutetime_t empirical_temporal_network::next(rng_t& engine, absolutetime_t)
 {
 	/* find next actual event, skipping over events that do nothing */
 	for(network_event_t& event: event_queue) {
@@ -147,7 +147,7 @@ absolutetime_t temporal_empirical_network::next(rng_t& engine, absolutetime_t)
 	return INFINITY;
 }
 
-std::optional<network_event_t> temporal_empirical_network::step(rng_t& engine, absolutetime_t max_time)
+std::optional<network_event_t> empirical_temporal_network::step(rng_t& engine, absolutetime_t max_time)
 {
 	/* loop until we find an event, necessary because add/remove may be skipped if edge already exists */
 	while (!event_queue.empty()) {
@@ -179,7 +179,7 @@ std::optional<network_event_t> temporal_empirical_network::step(rng_t& engine, a
 	return std::nullopt;
 }
 
-std::vector<std::vector<double>> temporal_empirical_network::compute_number_of_edges(rng_t& engine){
+std::vector<std::vector<double>> empirical_temporal_network::compute_number_of_edges(rng_t& engine){
 
 	std::vector<std::vector<double>> average_degree;
 	int number_of_edges=0;

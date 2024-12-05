@@ -44,18 +44,18 @@ network_embedding::~network_embedding()
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
 
-node_t network_adjacencylist::nodes() {
+node_t adjacencylist_network::nodes() {
     return (node_t)adjacencylist.size();
 }    
 
-node_t network_adjacencylist::neighbour(node_t node, int neighbour_index) {
+node_t adjacencylist_network::neighbour(node_t node, int neighbour_index) {
     const auto& n = adjacencylist.at(node);
     if ((neighbour_index < 0) || (n.size() <= (unsigned int)neighbour_index))
         return -1;
     return n[neighbour_index];
 }
 
-index_t network_adjacencylist::outdegree(node_t node) {
+index_t adjacencylist_network::outdegree(node_t node) {
     return (index_t) adjacencylist.at(node).size();
 }
 
@@ -1143,7 +1143,7 @@ barabasi_albert::barabasi_albert(int size, rng_t& engine, int m){
 //--------IMPORTED NETWORK----------
 //--------------------------------------
 
-int imported_network::file_size(std::string path_to_file){
+int empirical_network::file_size(std::string path_to_file){
     
     std::ifstream file(path_to_file);
     std::string line;
@@ -1154,7 +1154,7 @@ int imported_network::file_size(std::string path_to_file){
     return size;
 }
 
-imported_network::imported_network(std::string path_to_file){
+empirical_network::empirical_network(std::string path_to_file){
     std::ifstream file(path_to_file); // Open the CSV file
     std::vector<std::vector<int>> data; // Create a vector to store the data
 
@@ -1230,7 +1230,7 @@ imported_network::imported_network(std::string path_to_file){
 //-----Measure edge multiplicity in a network--------
 //---------------------------------------------------
 
-std::vector<std::vector<double>> edge_multiplicity(network_adjacencylist& nw){
+std::vector<std::vector<double>> edge_multiplicity(adjacencylist_network& nw){
 
     const int SIZE = (int) nw.adjacencylist.size();
 
@@ -1287,7 +1287,7 @@ std::vector<std::vector<double>> edge_multiplicity(network_adjacencylist& nw){
 //---------------------------------------------------
 
 // helper function to verify if edge exists.
-bool edge_exists(node_t a, node_t b, const network_adjacencylist& nw){
+bool edge_exists(node_t a, node_t b, const adjacencylist_network& nw){
     auto it = find(nw.adjacencylist[b].begin(), nw.adjacencylist[b].end(), a);
     if (it == nw.adjacencylist[b].end())
         return false;
@@ -1295,7 +1295,7 @@ bool edge_exists(node_t a, node_t b, const network_adjacencylist& nw){
     return true;
 }
 
-void add_correlation(double r,network_adjacencylist& nw,rng_t& engine){
+void add_correlation(double r,adjacencylist_network& nw,rng_t& engine){
     
     
     // To sample an edge a uniform random without generating the entire list of edges
@@ -1476,7 +1476,7 @@ void add_correlation(double r,network_adjacencylist& nw,rng_t& engine){
 //------------------------------------------------
 
 // Average neighbour's degree for a node of degree k
-std::vector<double> knn(network_adjacencylist& nw) {
+std::vector<double> knn(adjacencylist_network& nw) {
 
     int size = (int) nw.adjacencylist.size();
     std::vector<double> knn_degree(size, 0);
@@ -1524,7 +1524,7 @@ std::vector<double> knn(network_adjacencylist& nw) {
 // r = (<k^2 knn(k)>/<k> - mu^2 ) / (<k^3>/<k> - mu^2)
 // where mu^2 = <k^2>/<k>
 // However <k^2 knn(k)> is tricky to measure, instead, we measure the fraction of links that connect deg i to deg j, W(i,j)
-double assortativity(network_adjacencylist& nw)
+double assortativity(adjacencylist_network& nw)
 {
     
     int size = (int) nw.adjacencylist.size();
@@ -1562,7 +1562,7 @@ double assortativity(network_adjacencylist& nw)
 
 
 //Fraction of links that connect a node of deg k to a node of deg k'
-std::vector<std::vector<double>> Wkk(network_adjacencylist& nw){
+std::vector<std::vector<double>> Wkk(adjacencylist_network& nw){
     
     //Determine k_max (Figured that it was the most sane option and the most readable,
     // at the cost of going through all nodes once more.

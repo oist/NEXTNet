@@ -161,7 +161,7 @@ TEST_CASE("Effective transmission time distribution", "[dynamic_nextreaction]") 
 TEST_CASE("Epidemic on empirical network nb2 with finite edge durations", "[dynamic_nextreaction]") {
 	rng_t engine(0);
 
-	temporal_empirical_network g(TEST_DATA_DIR "/college.tab", temporal_empirical_network::finite_duration, 3);
+	empirical_temporal_network g(TEST_DATA_DIR "/college.tab", empirical_temporal_network::finite_duration, 3);
 	transmission_time_gamma psi(50,3);
 	transmission_time_gamma rho(100,1);
 	simulate_next_reaction nr(g, psi, &rho);
@@ -174,7 +174,7 @@ TEST_CASE("Epidemic on empirical network nb2 with finite edge durations", "[dyna
 TEST_CASE("Epidemic on empirical network nb2 with infitesimal edge durations", "[dynamic_nextreaction]") {
 	rng_t engine(0);
 
-	temporal_empirical_network g(TEST_DATA_DIR "/college.tab", temporal_empirical_network::infitesimal_duration, 3);
+	empirical_temporal_network g(TEST_DATA_DIR "/college.tab", empirical_temporal_network::infitesimal_duration, 3);
 	transmission_time_gamma psi(50,3);
 	transmission_time_gamma rho(100,1);
 	simulate_next_reaction nr(g, psi, &rho);
@@ -314,17 +314,17 @@ TEST_CASE("Plot SIS average trajectories on dynamic empirical network", "[dynami
 	const double TMAX = 2000;
 	const double DT = 2;
 
-	auto run = [&](temporal_empirical_network::edge_duration_kind duration_kind) -> auto {
+	auto run = [&](empirical_temporal_network::edge_duration_kind duration_kind) -> auto {
 		std::vector<double> t, y_tot, y_new;
 		average_trajectories(engine, [&](rng_t& engine) {
 			struct {
-				std::unique_ptr<temporal_empirical_network> g;
+				std::unique_ptr<empirical_temporal_network> g;
 				std::unique_ptr<transmission_time_gamma> psi;
 				std::unique_ptr<transmission_time_gamma> rho;
 				std::unique_ptr<simulate_next_reaction> nr;
 				std::unique_ptr<simulate_on_temporal_network> simulator;
 			} env;
-			env.g = std::make_unique<temporal_empirical_network>(TEST_DATA_DIR "/college.tab", duration_kind, DT);
+			env.g = std::make_unique<empirical_temporal_network>(TEST_DATA_DIR "/college.tab", duration_kind, DT);
 			env.psi = std::make_unique<transmission_time_gamma>(PSI_MEAN, PSI_VARIANCE);
 			env.rho = std::make_unique<transmission_time_gamma>(RHO_MEAN, RHO_VARIANCE);
 			env.nr = std::make_unique<simulate_next_reaction>(*env.g.get(), *env.psi.get(), env.rho.get());
@@ -346,8 +346,8 @@ TEST_CASE("Plot SIS average trajectories on dynamic empirical network", "[dynami
 		return std::make_tuple(t, y_tot, y_new);
 	};
 
-	auto edge_fin = run(temporal_empirical_network::finite_duration);
-	auto edge_infi = run(temporal_empirical_network::infitesimal_duration);
+	auto edge_fin = run(empirical_temporal_network::finite_duration);
+	auto edge_infi = run(empirical_temporal_network::infitesimal_duration);
 
 	plot("dynamic.empirical.sis.mean.pdf", "SIS average trajectory on dynamic empirical graph [NextReaction]", [&](auto& gp, auto& p) {
 		p.add_plot1d(std::make_pair(std::get<0>(edge_fin), std::get<2>(edge_fin)), "with lines title 'finite edge duration'"s);

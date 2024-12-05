@@ -34,7 +34,7 @@ void knn_BA() {
     for (int j = 0; j < nb; j++){
         string path_to_file = "graphs/NETWORK_" + std::to_string(j) + ".dat";
 
-        imported_network nw(path_to_file);
+        empirical_network nw(path_to_file);
         r += assortativity(nw);
         double k1 =0;
         double k2 =0;

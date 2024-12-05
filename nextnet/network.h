@@ -102,7 +102,7 @@ public:
  * Implements functions `neighbour()` and `outdegree()`, the constructor
  * is expected to setup the adjacencylist neighbours.
  */
-class network_adjacencylist : public virtual network {
+class adjacencylist_network : public virtual network {
 public:
     virtual node_t nodes();
 
@@ -122,7 +122,7 @@ public:
 /**
  * @brief A random Watts-Strogatz network
  */
-class watts_strogatz : public virtual network_adjacencylist, public virtual network_is_undirected {
+class watts_strogatz : public virtual adjacencylist_network, public virtual network_is_undirected {
 public:
 	watts_strogatz(node_t size, int k, double p, rng_t& engine);
 
@@ -138,7 +138,7 @@ public:
 /**
  * @brief A random Erdös-Reyni network
  */
-class erdos_reyni : public virtual network_adjacencylist, public virtual network_is_undirected {
+class erdos_reyni : public virtual adjacencylist_network, public virtual network_is_undirected {
 public:
     erdos_reyni(int size, double avg_degree, rng_t& engine);
 };
@@ -199,7 +199,7 @@ private:
 /**
  * @brief Network from arbitrary degree distribution. 
  */
-class config_model : public virtual network_adjacencylist, public virtual network_is_undirected {
+class config_model : public virtual adjacencylist_network, public virtual network_is_undirected {
 public:
     config_model(std::vector<int> degreelist, rng_t& engine);
 
@@ -224,7 +224,7 @@ std::vector<int> powerlaw_degree_list(double exponent, int size, rng_t& engine);
  *
  * Based on the algorithm described by Serrano & Boguna, 2005.
  */
-class config_model_clustered_serrano : public virtual network_adjacencylist, public virtual network_is_undirected {
+class config_model_clustered_serrano : public virtual adjacencylist_network, public virtual network_is_undirected {
 public:
 	/**
 	 * @brief Converts c(k) into a number of triangles per degree class.
@@ -311,7 +311,7 @@ public:
  *
  * The degree distribution scales with k^-3.
  */
-class barabasi_albert : public virtual network_adjacencylist, public virtual network_is_undirected {
+class barabasi_albert : public virtual adjacencylist_network, public virtual network_is_undirected {
 public:
     barabasi_albert(int size, rng_t& engine,int m = 1);
 
@@ -471,9 +471,9 @@ typedef cubic_lattice<8> cubic_lattice_8d;
  * 
  * the file must be an adjacency list, i.e., a list of lists;
  */
-class imported_network : public virtual network_adjacencylist {
+class empirical_network : public virtual adjacencylist_network {
 public:
-    imported_network(std::string path_to_file);
+    empirical_network(std::string path_to_file);
 
 private:
     int file_size(std::string path_to_file);
@@ -485,7 +485,7 @@ private:
 //-----Measure edge multiplicity in a network--------
 //---------------------------------------------------
 
-std::vector<std::vector<double>> edge_multiplicity(network_adjacencylist& nw);
+std::vector<std::vector<double>> edge_multiplicity(adjacencylist_network& nw);
 
 //------------------------------------------
 //--ADD DEGREE CORRELATION TO THE NETWORK---
@@ -494,10 +494,10 @@ std::vector<std::vector<double>> edge_multiplicity(network_adjacencylist& nw);
  * @brief Add correlation to the network by rewiring its links.
  *
  */
-void add_correlation(double r,network_adjacencylist& nw,rng_t& engine);
+void add_correlation(double r,adjacencylist_network& nw,rng_t& engine);
 
 // Helper function to verify whether an edge exists or not
-bool edge_exists(node_t a, node_t b, const network_adjacencylist& nw);
+bool edge_exists(node_t a, node_t b, const adjacencylist_network& nw);
 
 
 //------------------------------------------------
@@ -511,7 +511,7 @@ bool edge_exists(node_t a, node_t b, const network_adjacencylist& nw);
  * knn(k) should be independent of k.
  *  
  */
-std::vector<double> knn(network_adjacencylist& nw);
+std::vector<double> knn(adjacencylist_network& nw);
 
 
 /**
@@ -522,7 +522,7 @@ std::vector<double> knn(network_adjacencylist& nw);
  * den = sum_k [ w(k) * k ^ 2] - ( sum_k [ w(k) * k ] ) ^ 2
  *
  */
-double assortativity(network_adjacencylist& nw);
+double assortativity(adjacencylist_network& nw);
 
 
 /**
@@ -530,4 +530,4 @@ double assortativity(network_adjacencylist& nw);
  * to a node of degree k prime
  *
  */
-std::vector<std::vector<double>> Wkk(network_adjacencylist& nw);
+std::vector<std::vector<double>> Wkk(adjacencylist_network& nw);

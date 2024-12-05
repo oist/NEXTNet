@@ -39,7 +39,7 @@ int program_customtrajectory(int argc, const char * argv[]) {
                 std::unique_ptr<network> nw;
                 std::unique_ptr<simulation_algorithm> simulator;
             } env;
-            env.nw.reset(new imported_network(input_filename));
+            env.nw.reset(new empirical_network(input_filename));
             env.simulator.reset(new simulate_next_reaction(*env.nw,psi));
             return env;
             }, I0, INFINITY,output_filename);
@@ -50,7 +50,7 @@ int program_customtrajectory(int argc, const char * argv[]) {
 				std::unique_ptr<network> nw;
 				std::unique_ptr<simulation_algorithm> simulator;
 			} env;
-			env.nw.reset(new imported_network(input_filename));
+			env.nw.reset(new empirical_network(input_filename));
 			simulate_next_reaction::params p;
 			p.shuffle_neighbours = false;
 			p.edges_concurrent = false;
@@ -65,7 +65,7 @@ int program_customtrajectory(int argc, const char * argv[]) {
 				std::unique_ptr<network> nw;
 				std::unique_ptr<simulation_algorithm> simulator;
 			} env;
-			env.nw.reset(new imported_network(input_filename));
+			env.nw.reset(new empirical_network(input_filename));
 			simulate_next_reaction::params p;
 			p.shuffle_neighbours = true;
 			p.edges_concurrent = false;
