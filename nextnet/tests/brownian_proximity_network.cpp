@@ -16,7 +16,7 @@ TEST_CASE("Brownian proximity graph", "[brownian_proximity_graph]") {
 	const double D1 = 1.0;
 	const double gamma = 1.0;
 	const double dt = 0.1;
-	brownian_proximity_graph g(N, K, r, D0, D1, gamma, dt, engine);
+	brownian_proximity_network g(N, K, r, D0, D1, gamma, dt, engine);
 	
 	/* Slowly add infections */
 	for(node_t ni=0; ni <= N; ++ni) {
@@ -68,7 +68,7 @@ TEST_CASE("Epidemic on Brownian proximity graph", "[brownian_proximity_graph]") 
 	const double dt = 0.1;
 	const double Tmax = 100;
 	const double Tstep = 1;
-	brownian_proximity_graph g(N, K, r, D0, D1, gamma, dt, engine);
+	brownian_proximity_network g(N, K, r, D0, D1, gamma, dt, engine);
 	transmission_time_gamma psi(5, 3);
 	//transmission_time_gamma rho(100, 10);
 	simulate_next_reaction nr(g, psi, nullptr);
@@ -131,13 +131,13 @@ TEST_CASE("Plot SIS average trajectory on Brownian proximity graph", "[brownian_
 	std::vector<double> t_sim, y_sim_new, y_sim_total;
 	average_trajectories(engine, [&](rng_t& engine) {
 		struct {
-			std::unique_ptr<brownian_proximity_graph> g;
+			std::unique_ptr<brownian_proximity_network> g;
 			std::unique_ptr<transmission_time_gamma> psi;
 			std::unique_ptr<transmission_time_gamma> rho;
 			std::unique_ptr<simulate_next_reaction> nr;
 			std::unique_ptr<simulate_on_temporal_network> simulator;
 		} env;
-		env.g = std::make_unique<brownian_proximity_graph>(N, K, RADIUS, D0, D1, GAMMA, engine);
+		env.g = std::make_unique<brownian_proximity_network>(N, K, RADIUS, D0, D1, GAMMA, engine);
 		env.psi = std::make_unique<transmission_time_gamma>(PSI_MEAN, PSI_VARIANCE);
 		env.rho = std::make_unique<transmission_time_gamma>(RHO_MEAN, RHO_VARIANCE);
 		env.nr = std::make_unique<simulate_next_reaction>(*env.g.get(), *env.psi.get(), env.rho.get());

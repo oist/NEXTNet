@@ -16,7 +16,7 @@
 //----------DYNAMIC NETWORKS------------
 //--------------------------------------
 
-struct brownian_proximity_graph : virtual temporal_network, virtual network, virtual network_embedding {
+struct brownian_proximity_network : virtual temporal_network, virtual network, virtual network_embedding {
 	enum node_state_t {
 		NONINFECTED = 0,
 		INFECTED = 1
@@ -34,19 +34,19 @@ struct brownian_proximity_graph : virtual temporal_network, virtual network, vir
 	typedef std::pair<unsigned int, unsigned int> partition_index_t;
 	typedef std::pair<partition_index_t, unsigned int> partition_node_index_t;
 
-	brownian_proximity_graph(node_t N, double avg_degree, double radius,
+	brownian_proximity_network(node_t N, double avg_degree, double radius,
 							 double D, rng_t& engine);
 
-	brownian_proximity_graph(node_t N, double avg_degree, double radius,
+	brownian_proximity_network(node_t N, double avg_degree, double radius,
 							 double D, double dt, rng_t& engine);
 	
-	brownian_proximity_graph(node_t N, double avg_degree, double radius,
+	brownian_proximity_network(node_t N, double avg_degree, double radius,
 							 double D0, double D1, double gamma, rng_t& engine);
 
-	brownian_proximity_graph(node_t N, double avg_degree, double radius,
+	brownian_proximity_network(node_t N, double avg_degree, double radius,
 							 double D0, double D1, double gamma, double dt, rng_t& engine);
 
-	virtual ~brownian_proximity_graph();
+	virtual ~brownian_proximity_network();
 	
 	virtual node_t nodes() override;
 

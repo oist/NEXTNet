@@ -9,24 +9,24 @@
 
 using namespace std::literals;
 
-brownian_proximity_graph::brownian_proximity_graph(node_t N, double avg_degree, double r,
+brownian_proximity_network::brownian_proximity_network(node_t N, double avg_degree, double r,
 												   double D, rng_t& engine)
-	:brownian_proximity_graph(N, avg_degree, r, D, D, 0.0, engine)
+	:brownian_proximity_network(N, avg_degree, r, D, D, 0.0, engine)
 {}
 
-brownian_proximity_graph::brownian_proximity_graph(node_t N, double avg_degree, double r,
+brownian_proximity_network::brownian_proximity_network(node_t N, double avg_degree, double r,
 												   double D, double dt, rng_t& engine)
-	:brownian_proximity_graph(N, avg_degree, r, D, D, 0.0, dt, engine)
+	:brownian_proximity_network(N, avg_degree, r, D, D, 0.0, dt, engine)
 {}
 
 
-brownian_proximity_graph::brownian_proximity_graph(node_t N, double avg_degree, double r,
+brownian_proximity_network::brownian_proximity_network(node_t N, double avg_degree, double r,
 												   double D0, double D1, double gamma_, rng_t& engine)
-	:brownian_proximity_graph(N, avg_degree, r, D0, D1, gamma_,
+	:brownian_proximity_network(N, avg_degree, r, D0, D1, gamma_,
 							  std::pow(r, 2) / (100 * 2 * std::max(D0, D1)), engine)
 {}
 
-brownian_proximity_graph::brownian_proximity_graph(node_t N, double avg_degree, double r,
+brownian_proximity_network::brownian_proximity_network(node_t N, double avg_degree, double r,
 												   double D0, double D1, double gamma_,
 												   double dt, rng_t& engine)
 	:size(N)
@@ -80,15 +80,15 @@ brownian_proximity_graph::brownian_proximity_graph(node_t N, double avg_degree, 
 	}
 }
 			
-brownian_proximity_graph::~brownian_proximity_graph()
+brownian_proximity_network::~brownian_proximity_network()
 {
 }
 
-node_t brownian_proximity_graph::nodes() {
+node_t brownian_proximity_network::nodes() {
 	return size;
 }
 
-node_t brownian_proximity_graph::neighbour(node_t n, int neighbour_index) {
+node_t brownian_proximity_network::neighbour(node_t n, int neighbour_index) {
 	if ((n < 0) || ((std::size_t)n >= node_index.size()))
 		return -1;
 	const node_data& nn = node(n);
@@ -97,25 +97,25 @@ node_t brownian_proximity_graph::neighbour(node_t n, int neighbour_index) {
 	return nn.neighbours[neighbour_index];
 }
 
-index_t brownian_proximity_graph::outdegree(node_t n) {
+index_t brownian_proximity_network::outdegree(node_t n) {
 	if ((n < 0) || ((std::size_t)n >= node_index.size()))
 		return -1;
 	const node_data& nn = node(n);
 	return (index_t)nn.neighbours.size();
 }
 
-std::size_t brownian_proximity_graph::dimensionality() {
+std::size_t brownian_proximity_network::dimensionality() {
 	return 2;
 }
 
-void brownian_proximity_graph::bounds(std::vector<double>& a, std::vector<double>& b) {
+void brownian_proximity_network::bounds(std::vector<double>& a, std::vector<double>& b) {
 	a.resize(2);
 	b.resize(2);
 	a[0] = a[1] = 0.0;
 	b[0] = b[1] = length;
 }
 
-bool brownian_proximity_graph::coordinates(const node_t n, std::vector<double>& position) {
+bool brownian_proximity_network::coordinates(const node_t n, std::vector<double>& position) {
     if ((n < 0) || ((std::size_t)n >= node_index.size()))
         return -1;
     const node_data& nn = node(n);
@@ -125,7 +125,7 @@ bool brownian_proximity_graph::coordinates(const node_t n, std::vector<double>& 
     return true;
 }
 
-void brownian_proximity_graph:: move_node(node_data& n, partition_index_t pi_old, partition_index_t pi_new)
+void brownian_proximity_network:: move_node(node_data& n, partition_index_t pi_old, partition_index_t pi_new)
 {
 	/* Add to new partition and update node index */
 	node_vector_t& p_new = partition(pi_new);
@@ -151,7 +151,7 @@ void brownian_proximity_graph:: move_node(node_data& n, partition_index_t pi_old
 	p_old.pop_back();
 }
 
-void brownian_proximity_graph::notify_epidemic_event(epidemic_event_t ev, rng_t& engine)
+void brownian_proximity_network::notify_epidemic_event(epidemic_event_t ev, rng_t& engine)
 {
 	switch (ev.kind) {
 		case epidemic_event_kind::outside_infection:
@@ -177,7 +177,7 @@ void brownian_proximity_graph::notify_epidemic_event(epidemic_event_t ev, rng_t&
 	}
 }
 
-double brownian_proximity_graph::node_diffusivity(const node_data& n)
+double brownian_proximity_network::node_diffusivity(const node_data& n)
 {
 	const double diffusivity_scale = std::pow((1.0 - (double) ninfected / (double) size), gamma);
 	
@@ -191,7 +191,7 @@ double brownian_proximity_graph::node_diffusivity(const node_data& n)
 	}
 }
 
-absolutetime_t brownian_proximity_graph::next(rng_t& engine, absolutetime_t maxtime)
+absolutetime_t brownian_proximity_network::next(rng_t& engine, absolutetime_t maxtime)
 {
 	using std::swap;
 
@@ -367,7 +367,7 @@ absolutetime_t brownian_proximity_graph::next(rng_t& engine, absolutetime_t maxt
     }
 }
 
-std::optional<network_event_t> brownian_proximity_graph::step(rng_t& engine, absolutetime_t max_time) {
+std::optional<network_event_t> brownian_proximity_network::step(rng_t& engine, absolutetime_t max_time) {
 	/* Generate next event */
 	if (!next_event)
 		next(engine, max_time);
