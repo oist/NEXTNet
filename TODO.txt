@@ -1,3 +1,0 @@
-[ OPEN ]  Add epidemic simulation of temporal networks whose edges have discrete time-stamps
-[ OPEN ]  Prepare brownian motion for case study in paper
-[ OPEN ]  Write documentation
