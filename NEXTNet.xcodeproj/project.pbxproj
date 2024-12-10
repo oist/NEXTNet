@@ -22,10 +22,6 @@
 		F91C25E72911401C00FFAE9C /* libboost_filesystem.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F91C25DE29113CA800FFAE9C /* libboost_filesystem.a */; };
 		F921EC872952A7BF00667339 /* algorithm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F921EC862952A7BF00667339 /* algorithm.cpp */; };
 		F921EC882952A7BF00667339 /* algorithm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F921EC862952A7BF00667339 /* algorithm.cpp */; };
-		F933EDF929D401D200C39FE8 /* scale_free.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F933EDF829D401D200C39FE8 /* scale_free.cpp */; };
-		F93F5D8F299238F300775CFA /* customtrajectory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F93F5D8C299238F300775CFA /* customtrajectory.cpp */; };
-		F93F5D90299238F300775CFA /* trajectory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F93F5D8D299238F300775CFA /* trajectory.cpp */; };
-		F93F5D91299238F300775CFA /* average.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F93F5D8E299238F300775CFA /* average.cpp */; };
 		F946F0412A4408DE0060FA58 /* regir.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F92EBA302A1CAE3300D98D09 /* regir.cpp */; };
 		F946F0432A444A910060FA58 /* nmga.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F99299292910E2B3001432FD /* nmga.cpp */; };
 		F946F0442A444BC20060FA58 /* network.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F99D7A9B27E21CC000200C18 /* network.cpp */; };
@@ -35,12 +31,9 @@
 		F946F0482A444BC20060FA58 /* utility.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F90EC44129C422DD000294C7 /* utility.cpp */; };
 		F946F0492A444BC20060FA58 /* brownian_proximity_network.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F910EA7429F9C92700CB0F4A /* brownian_proximity_network.cpp */; };
 		F946F04A2A444BC20060FA58 /* temporal_network.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F9EACDE4299E7904009C2002 /* temporal_network.cpp */; };
-		F95E340B2924A79700DBCE94 /* benchmark_priorityqueue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F95E340A2924A79700DBCE94 /* benchmark_priorityqueue.cpp */; };
 		F992992C2910E2B3001432FD /* plot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F99299272910E2B3001432FD /* plot.cpp */; };
+		F9A075AA2D06F91C00478FBE /* simulate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F9A075A92D06F91C00478FBE /* simulate.cpp */; };
 		F9A08B1E29F7B28200CF3432 /* brownian_proximity_network.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F9C0D33429F6956400A99D46 /* brownian_proximity_network.cpp */; };
-		F9A4651E2923B2B700393E90 /* benchmark.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F9A4651B2923B2B700393E90 /* benchmark.cpp */; };
-		F9A4651F2923B2B700393E90 /* profile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F9A4651C2923B2B700393E90 /* profile.cpp */; };
-		F9A465202923B2B700393E90 /* sis_meanfield_gamma_gamma.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F9A4651D2923B2B700393E90 /* sis_meanfield_gamma_gamma.cpp */; };
 		F9C0D33629F6956400A99D46 /* brownian_proximity_network.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F9C0D33429F6956400A99D46 /* brownian_proximity_network.cpp */; };
 		F9CFD98A299B55A90078FD70 /* temporal_network.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F9CFD988299B55A90078FD70 /* temporal_network.cpp */; };
 		F9CFD98B299B55A90078FD70 /* temporal_network.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F9CFD988299B55A90078FD70 /* temporal_network.cpp */; };
@@ -49,7 +42,6 @@
 		F9D26B8D27E229BA005A272D /* network.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 982A07D727D5BED900B4772A /* network.cpp */; };
 		F9D26B8E27E229BA005A272D /* analysis.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 984A0CA927C0DF56004A0A96 /* analysis.cpp */; };
 		F9D26B8F27E22A31005A272D /* libtestrunner.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F9D26B6C27E22410005A272D /* libtestrunner.a */; };
-		F9D484BB2ADF95F90088A946 /* custered_configuration_model_serrano.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F9D484B92ADF953A0088A946 /* custered_configuration_model_serrano.cpp */; };
 		F9E1264A291CB5F100C9A221 /* NextReactionMeanField.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F9E12648291CB5F100C9A221 /* NextReactionMeanField.cpp */; };
 		F9E1264B291CB5F100C9A221 /* NextReactionMeanField.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F9E12648291CB5F100C9A221 /* NextReactionMeanField.cpp */; };
 		F9EDD82F2A1C90F5003B3F31 /* REGIR.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F9EDD82D2A1C90F5003B3F31 /* REGIR.cpp */; };
@@ -125,6 +117,9 @@
 		F99D7A9B27E21CC000200C18 /* network.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = network.cpp; sourceTree = "<group>"; };
 		F99D7A9C27E21CC000200C18 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		F99D7AAB27E21DD400200C18 /* tests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = tests; sourceTree = BUILT_PRODUCTS_DIR; };
+		F9A075A92D06F91C00478FBE /* simulate.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = simulate.cpp; sourceTree = "<group>"; };
+		F9A075AB2D07FBFE00478FBE /* any_ptr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = any_ptr.h; sourceTree = "<group>"; };
+		F9A075B22D081E2A00478FBE /* popl.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = popl.hpp; sourceTree = "<group>"; };
 		F9A4651B2923B2B700393E90 /* benchmark.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = benchmark.cpp; sourceTree = "<group>"; };
 		F9A4651C2923B2B700393E90 /* profile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = profile.cpp; sourceTree = "<group>"; };
 		F9A4651D2923B2B700393E90 /* sis_meanfield_gamma_gamma.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = sis_meanfield_gamma_gamma.cpp; sourceTree = "<group>"; };
@@ -199,6 +194,7 @@
 				984A0CA827C0DF3B004A0A96 /* stdafx.h */,
 				986328CC27D728F30029F31F /* types.h */,
 				98CFFC0227F4696F00A6E322 /* utility.cpp */,
+				F9A075AB2D07FBFE00478FBE /* any_ptr.h */,
 				98CFFC0127F4696F00A6E322 /* utility.h */,
 				F91C25E8291140B000FFAE9C /* permutation.h */,
 				F921EC862952A7BF00667339 /* algorithm.cpp */,
@@ -232,6 +228,7 @@
 		F95E340E2925088200DBCE94 /* ext */ = {
 			isa = PBXGroup;
 			children = (
+				F9A075B12D081E1800478FBE /* popl */,
 				F9CFD987299B53DD0078FD70 /* dyndist */,
 				F95E340F2925088200DBCE94 /* prio_queue */,
 			);
@@ -279,9 +276,19 @@
 			path = tests;
 			sourceTree = "<group>";
 		};
+		F9A075B12D081E1800478FBE /* popl */ = {
+			isa = PBXGroup;
+			children = (
+				F9A075B22D081E2A00478FBE /* popl.hpp */,
+			);
+			name = popl;
+			path = popl/include;
+			sourceTree = "<group>";
+		};
 		F9A4651A2923B2B700393E90 /* programs */ = {
 			isa = PBXGroup;
 			children = (
+				F9A075A92D06F91C00478FBE /* simulate.cpp */,
 				F933EDF829D401D200C39FE8 /* scale_free.cpp */,
 				F93F5D8E299238F300775CFA /* average.cpp */,
 				F93F5D8C299238F300775CFA /* customtrajectory.cpp */,
@@ -412,24 +419,16 @@
 			buildActionMask = 2147483647;
 			files = (
 				98CFFC0327F4696F00A6E322 /* utility.cpp in Sources */,
-				F9A4651E2923B2B700393E90 /* benchmark.cpp in Sources */,
 				F9E1264A291CB5F100C9A221 /* NextReactionMeanField.cpp in Sources */,
 				F9CFD98A299B55A90078FD70 /* temporal_network.cpp in Sources */,
-				F933EDF929D401D200C39FE8 /* scale_free.cpp in Sources */,
 				984A0CAF27C0DF81004A0A96 /* random.cpp in Sources */,
 				982A07D927D5BED900B4772A /* network.cpp in Sources */,
-				F93F5D90299238F300775CFA /* trajectory.cpp in Sources */,
 				98B96F7C28111BB800A78600 /* nMGA.cpp in Sources */,
 				F921EC872952A7BF00667339 /* algorithm.cpp in Sources */,
-				F9A4651F2923B2B700393E90 /* profile.cpp in Sources */,
-				F93F5D8F299238F300775CFA /* customtrajectory.cpp in Sources */,
+				F9A075AA2D06F91C00478FBE /* simulate.cpp in Sources */,
 				984A0CA027C0DE5C004A0A96 /* main.cpp in Sources */,
 				F9C0D33629F6956400A99D46 /* brownian_proximity_network.cpp in Sources */,
-				F93F5D91299238F300775CFA /* average.cpp in Sources */,
 				F9EDD82F2A1C90F5003B3F31 /* REGIR.cpp in Sources */,
-				F95E340B2924A79700DBCE94 /* benchmark_priorityqueue.cpp in Sources */,
-				F9D484BB2ADF95F90088A946 /* custered_configuration_model_serrano.cpp in Sources */,
-				F9A465202923B2B700393E90 /* sis_meanfield_gamma_gamma.cpp in Sources */,
 				984A0CAB27C0DF56004A0A96 /* analysis.cpp in Sources */,
 				98B96F7228111BAC00A78600 /* NextReaction.cpp in Sources */,
 			);
@@ -623,6 +622,7 @@
 				USER_HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/nextnet",
 					"$(PROJECT_DIR)/ext/dyndist",
+					"$(PROJECT_DIR)/ext/popl/include",
 				);
 			};
 			name = Debug;
@@ -639,6 +639,7 @@
 				USER_HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/nextnet",
 					"$(PROJECT_DIR)/ext/dyndist",
+					"$(PROJECT_DIR)/ext/popl/include",
 				);
 			};
 			name = Release;
