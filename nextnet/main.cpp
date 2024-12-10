@@ -57,6 +57,7 @@ DECLARE_PROGRAM(average);
 DECLARE_PROGRAM(scale_free);
 DECLARE_PROGRAM(custered_configuration_model_serrano);
 
+DECLARE_PROGRAM(simulate);
 
 int main(int argc, const char * argv[]) {
 

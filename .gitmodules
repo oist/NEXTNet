@@ -4,3 +4,6 @@
 [submodule "ext/dyndist"]
 	path = ext/dyndist
 	url = https://github.com/fgp/dyndist.git
+[submodule "ext/popl"]
+	path = ext/popl
+	url = git@github.com:badaix/popl.git
