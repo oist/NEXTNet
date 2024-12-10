@@ -1,11 +1,11 @@
+#include "popl.hpp"
+
 #include "stdafx.h"
 #include "random.h"
 #include "analysis.h"
 #include "REGIR.h"
 #include "nMGA.h"
 #include "NextReaction.h"
-
-#include "popl.hpp"
 
 using namespace std;
 using namespace std::literals;
@@ -170,7 +170,7 @@ struct factory {
 					break;
 				case NAME:
 					/* collect until non-alphanumeric character */
-					if (isalnum(c)) {
+					if (isalnum(c) || (c == '_') || (c == '-')) {
 						name.push_back(c);
 						continue;
 					}
@@ -260,16 +260,90 @@ struct factory {
 	 * Executes an expression of the form "type(arg1, arg2, ...)" and returns an object instance
 	 */
 	unique_ptr<T> make(std::string s) {
-		auto p = parse(s);
-		auto i = products.find(p.first);
-		if (i == products.end())
-			throw std::runtime_error(p.first + " does not exist");
-		return i->second(p.second);
+		try {
+			auto p = parse(s);
+			auto i = products.find(p.first);
+			if (i == products.end())
+				throw std::runtime_error(p.first + " does not exist");
+			return i->second(p.second);
+		} catch (const runtime_error& e) {
+			throw runtime_error("unable to parse: "s + s + "\nreason: " + e.what());
+		}
 	}
 };
 
+
+/**
+ * Base class for alogrithm factories
+ */
+struct algorithm {
+	typedef pair<string, string> param_t;
+	
+	virtual unique_ptr<simulation_algorithm> create(network& nw, transmission_time& psi, transmission_time* rho,
+													const vector<param_t>& ps) = 0;
+};
+
+/**
+ * Factory for generating algorithm objects of type T
+ */
+template<typename T>
+struct algorithm_implementation : public algorithm {
+	using algorithm::param_t;
+	typedef T algorithm_type;
+	typedef typename algorithm_type::params algorithm_params_type;
+	typedef function<void(algorithm_params_type& p, string value)> setter_function_type;
+	
+	static algorithm_params_type default_params;
+
+	unordered_map<string, setter_function_type> setters;
+	
+	/**
+	 * Add algorithm parameters
+	 */
+	template<typename U>
+	algorithm_implementation param(U algorithm_params_type::*param, string name) {
+		setters.insert({
+			name,
+			[param](algorithm_params_type& p, string value) {
+				p.*param = boost::lexical_cast<U>(value);
+			}
+		});
+		return std::move(*this);
+	}
+	
+	/**
+	 * Create algorithm instance
+	 */
+	virtual unique_ptr<simulation_algorithm> create(network& nw, transmission_time& psi, transmission_time* rho,
+													const vector<param_t>& ps)
+	{
+		algorithm_params_type p;
+		for(const param_t& pv: ps) {
+			/* parameter name and value */
+			const std::string& pname = pv.first;
+			const std::string& pvalue = pv.second;
+			
+			/* lookup setter */
+			auto si = setters.find(pname);
+			if (si == setters.end())
+				throw runtime_error("unknown parameter "s + pname);
+			setter_function_type set = si->second;
+			
+			/* set parameter */
+			set(p, pvalue);
+		}
+		
+		return unique_ptr<simulation_algorithm>(new algorithm_type(nw, psi, rho, p));
+		
+	}
+};
+
+template<typename T>
+typename algorithm_implementation<T>::algorithm_params_type algorithm_implementation<T>::default_params;
+
+
 /*
- * Time distribution arguments and factors
+ * Available time distributions and their arguments
  */
 
 /* Arguments of time distributions */
@@ -292,7 +366,7 @@ auto time_factory = factory<transmission_time>()
 	.add<transmission_time_deterministic, tau>("deterministic");
 
 /*
- * Network arguments and factory
+ * Available networks and their arguments
  */
 
 /**
@@ -330,6 +404,32 @@ auto network_factory = factory<network>()
 	.add<watts_strogatz, size, k, p, rng>("watts-strogatz")
 	.add<barabasi_albert, size, rng, m>("barabasi-albert");
 
+/*
+ * Available algorithms and their parameters
+ */
+
+auto algorithm_next = algorithm_implementation<simulate_next_reaction>()
+	.param(&simulate_next_reaction::params::SIR, "SIR")
+	.param(&simulate_next_reaction::params::edges_concurrent, "edges_concurrent")
+	.param(&simulate_next_reaction::params::shuffle_neighbours, "shuffle_neighbours");
+
+auto algorithm_nmga = algorithm_implementation<simulate_nmga>()
+	.param(&simulate_nmga::params::SIR, "SIR")
+	.param(&simulate_nmga::params::maximal_dt, "maximal_dt")
+	.param(&simulate_nmga::params::approximation_threshold, "approximation_threshold")
+	.param(&simulate_nmga::params::tau_precision, "tau_precision");
+
+auto algorithm_regir = algorithm_implementation<simulate_regir>()
+	.param(&simulate_regir::params::SIR, "SIR")
+	.param(&simulate_regir::params::approximation_threshold, "approximation_threshold")
+	.param(&simulate_regir::params::tau_precision, "tau_precision");
+
+unordered_map<string, algorithm&> algorithms = {
+	{ "next"s, algorithm_next },
+	{ "nmga"s, algorithm_nmga },
+	{ "regir"s, algorithm_regir }
+};
+
 }
 
 /*
@@ -338,12 +438,16 @@ auto network_factory = factory<network>()
 
 int program_simulate(int argc, const char * argv[]) {
 	OptionParser op("options");
-	auto help_opt   = op.add<Switch>("h", "help", "produce help message");
+	auto help_opt = op.add<Switch>("h", "help", "produce help message");
 	auto psi_opt = op.add<Value<std::string>>("p", "transmission", "transmission time (psi)");
 	auto rho_opt = op.add<Value<std::string>>("r", "recovery", "recovery time (rho)");
-	auto nw_opt = op.add<Value<std::string>>("g", "network", "the network to simulat on");
-	auto initial_opt = op.add<Implicit<node_t>>("i", "initial", "initial infected node", -1);
-	auto tmax_opt = op.add<Value<double>>("T", "Tmax", "stop simulation at this time");
+	auto nw_opt = op.add<Value<std::string>>("n", "network", "network to simulat on");
+	auto alg_opt = op.add<Implicit<std::string>>("a", "algorithm", "simulation algorithm to use", "next");
+	auto param_opt = op.add<Value<std::string>>("s", "parameter", "set simulation parameter");
+	auto initial_opt = op.add<Value<node_t>>("i", "initial", "initial infected node");
+	auto ev_opt = op.add<Switch>("e", "epidemic-events", "output epidemic events");
+	auto nv_opt = op.add<Switch>("w", "network-events", "output network events");
+	auto tmax_opt = op.add<Value<double>>("t", "tmax", "stop simulation at this time");
 	auto list_times_opt = op.add<Switch>("", "list-times", "list distributions");
 	auto list_networks_opt = op.add<Switch>("", "list-networks", "list network types");
 	op.parse(argc, argv);
@@ -366,7 +470,7 @@ int program_simulate(int argc, const char * argv[]) {
 		for(const string& s: factories::network_factory.descriptions)
 			cout << s << "\n";
 	}
-	
+
 	unique_ptr<transmission_time> psi;
 	if (psi_opt->is_set())
 		psi = factories::time_factory.make(psi_opt->value());
@@ -378,6 +482,135 @@ int program_simulate(int argc, const char * argv[]) {
 	unique_ptr<network> nw;
 	if (nw_opt->is_set())
 		nw = factories::network_factory.make(nw_opt->value());
+	
+	vector<factories::algorithm::param_t> alg_params;
+	for(size_t i = 0; i < param_opt->count(); ++i) {
+		const std::string& p = param_opt->value(i);
+		std::size_t j = p.find('=');
+		if (j == p.npos)
+			throw runtime_error("invalid parameter setting '"s + p + "', does not contain '='");
+		const std::string pname = p.substr(0, j);
+		const std::string pvalue = p.substr(j+1, p.npos);
+		alg_params.push_back({ pname, pvalue });
+	}
+	
+	unique_ptr<simulation_algorithm> alg;
+	if (alg_opt->is_set()) {
+		auto a_i = factories::algorithms.find(alg_opt->value());
+		if (a_i == factories::algorithms.end())
+			throw runtime_error("unknown algorithm "s + alg_opt->value());
+		factories::algorithm& alg_factory = a_i->second;
+		
+		if (!nw)
+			throw runtime_error("no network specified");
+
+		if (!psi)
+			throw runtime_error("no transmission time distribution specified");
+		
+		alg = alg_factory.create(*nw.get(), *psi.get(), rho.get(), alg_params);
+	} else {
+		throw runtime_error("no simulation algorithm specified");
+	}
+	
+	for(size_t i = 0; i < initial_opt->count(); ++i) {
+		const node_t node = initial_opt->value(i) - 1;
+		if ((node < 0) || (node >= nw->nodes()))
+			throw runtime_error("invalid initial node "s + boost::lexical_cast<string>(initial_opt->value(i)));
+		alg->add_infections({ { node, 0.0 }});
+	}
+	
+	unique_ptr<simulate_on_temporal_network> sotn_alg;
+	if (dynamic_cast<temporal_network*>(nw.get()) != nullptr)
+		sotn_alg.reset(new simulate_on_temporal_network(*alg.get()));
+	
+	cout << "time" << '\t';
+	cout << "epidemic_step" << '\t';
+	cout << "network_step" << '\t';
+	cout << "kind"<< '\t';
+	cout << "node" << '\t';
+	cout << "neighbour" << '\t';
+	cout << "total_infected" << '\t';
+	cout << "total_reset" << '\t';
+	cout << "infected" << '\n';
+
+	const bool epidemic_events = ev_opt->is_set();
+	const bool network_events = nv_opt->is_set();
+	const double tmax = tmax_opt->is_set() ? tmax_opt->value() : INFINITY;
+	size_t epidemic_step = 0;
+	size_t network_step = 0;
+	double infected = 0;
+	double total_infected = 0;
+	double total_reset = 0;
+	while (true) {
+		// Execute next event
+		const std::optional<network_or_epidemic_event_t> any_ev_opt =
+			sotn_alg ? sotn_alg->step(engine, tmax) : alg->step(engine, tmax);
+		
+		// Stop if there are no more events
+		if (!any_ev_opt)
+			break;
+		const network_or_epidemic_event_t any_ev = *any_ev_opt;
+
+		// Fill columns
+		double time;
+		const char* kind;
+		node_t node;
+		node_t neighbour = -1;
+		if (std::holds_alternative<epidemic_event_t>(any_ev)) {
+			// Epidemic event
+			const auto ev = std::get<epidemic_event_t>(any_ev);
+			// Update state
+			time = ev.time;
+			++epidemic_step;
+			switch (ev.kind) {
+				case epidemic_event_kind::outside_infection:
+				case epidemic_event_kind::infection:
+					++total_infected;
+					++infected;
+					break;
+				case epidemic_event_kind::reset:
+					++total_reset;
+					--infected;
+					break;
+				default:
+					break;
+			}
+			// Report event?
+			if (!epidemic_events)
+				continue;
+			// Fill row
+			kind = name(ev.kind);
+			node = ev.node + 1;
+			if (ev.kind == epidemic_event_kind::infection)
+				neighbour = ev.source_node + 1;
+		}
+		else if (std::holds_alternative<network_event_t>(any_ev)) {
+			// Network event
+			const auto ev = std::get<network_event_t>(any_ev);
+			// Update state
+			time = ev.time;
+			++network_step;
+			// Report event?
+			if (!network_events)
+				continue;
+			// Fill row
+			kind = name(ev.kind);
+			node = ev.source_node + 1;
+			neighbour = ev.target_node + 1;
+		}
+		else throw std::logic_error("unknown event type");
+		
+		// Output
+		cout << time << '\t';
+		cout << epidemic_step << '\t';
+		cout << network_step << '\t';
+		cout << kind << '\t';
+		cout << node << '\t';
+		cout << neighbour << '\t';
+		cout << total_infected << '\t';
+		cout << total_reset << '\t';
+		cout << infected << '\n';
+	}
 
 	return 0;
 }
