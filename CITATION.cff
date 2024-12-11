@@ -1,9 +1,17 @@
-@misc{cure2024fastexactsimulationsstochastic,
-      title={Fast and exact simulations of stochastic epidemics on static and temporal networks}, 
-      author={Samuel Cure and Florian G. Pflug and Simone Pigolotti},
-      year={2024},
-      eprint={2412.07095},
-      archivePrefix={arXiv},
-      primaryClass={physics.soc-ph},
-      url={https://arxiv.org/abs/2412.07095}, 
-}
+cff-version: 1.2.0
+message: If you use this software, please cite this article
+title: Fast and exact simulations of stochastic epidemics on static and temporal networks
+authors:
+  - family-names: Cure
+    given-names: Samuel
+  - family-names: Pflug
+    given-names: Florian G.
+  - family-names: Pigolotti
+    given-names: Simone
+year: '2024'
+type: generic
+status: preprint
+publisher:
+  name: arXiv
+url: https://arxiv.org/abs/2412.07095
+
