@@ -4,6 +4,8 @@ The NEXT-NET C++ library contains efficient algorithms for simulating epidemics 
 
 The functionality of this library can be accessed in Python through the package *nextnet* (https://github.com/oist/NEXTNetPy) and in R through *NEXTNetR* (https://github.com/oist/NEXTNetR).
 
+The main algorithms and their performance are discussed in our [preprint](https://arxiv.org/abs/2412.07095).
+
 # Functionality
 
 The NEXT-NET library offers various epidemic models, static and dynamic
