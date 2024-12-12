@@ -313,7 +313,7 @@ public:
  */
 class barabasi_albert : public virtual adjacencylist_network, public virtual network_is_undirected {
 public:
-    barabasi_albert(int size, rng_t& engine,int m = 1);
+    barabasi_albert(int size, rng_t& engine, int m = 1);
 
 };
 
