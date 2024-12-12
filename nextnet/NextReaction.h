@@ -6,6 +6,7 @@
 #include "algorithm.h"
 #include "random.h"
 #include "network.h"
+#include "weighted_network.h"
 
 class simulate_next_reaction : public simulation_algorithm {
 public:
@@ -20,9 +21,12 @@ public:
 	simulate_next_reaction(network& nw_, const class transmission_time& psi_,
                            const class transmission_time* rho_ = nullptr,
 						   params p_ = params())
-		:nw(nw_), psi(psi_), rho(rho_),
+		:nw(nw_), nw_weighted(dynamic_cast<weighted_network*>(&nw)), psi(psi_), rho(rho_),
 		 p(p_), shuffle_neighbours(p.shuffle_neighbours && !p.edges_concurrent)
-    {}
+    {
+		if (!p.edges_concurrent && (nw_weighted != nullptr))
+			throw std::runtime_error("sequential edges mode is not supported for concurrent networks");
+	}
 
     virtual network& get_network() const;
 
@@ -58,6 +62,7 @@ public:
     infected_nodes_t infected;
     
     network& nw;
+	weighted_network* nw_weighted;
     const class transmission_time& psi;
     const class transmission_time* rho = nullptr;
 	const params p;

@@ -183,3 +183,55 @@ TEST_CASE("Fraction of the recovered nodes for SIR on the Erdos-Renyi graph", "[
     REQUIRE(nb_recovered > 0);
     REQUIRE(std::abs(nb_recovered- Pg * size)/(Pg * size) < 0.1);
 }
+
+TEST_CASE("Fraction of the recovered nodes for SIR on the weighted Erdos-Renyi graph", "[nextreaction]") {
+
+// The SIR can be mapped to a percolation process, which allows to derive some precise results:
+
+// we call p the probability that an infected nodes transmits the disease to a given neighbour before recovery;
+// At the end of the epidemic (once there are 0 infected in the network, only recovered or susceptibles), the fraction
+// of recovered is equivalent to the size of the Giant component under a percolation process where we remove each edge with probability p.
+// For networks with a poisson distribution, it is possible to have an exact expression of the expected fraction of recovered.
+
+
+	rng_t engine;
+
+	double MEAN_INFECTION = 10;
+	double VARIANCE_INFECTION = 5;
+	double MEAN_RECOVERY = 14;
+	double VARIANCE_RECOVERY = 7;
+	std::vector<double> WEIGHT_CLASSES = { 1.0, 5.0 } ;
+	std::vector<double> WEIGHT_PROBABILITIES = { 2.0/3.0, 1.0/3.0 } ;
+
+	double R0 = 3.0;
+
+	int size = 100000;
+
+	transmission_time_gamma psi(MEAN_INFECTION, VARIANCE_INFECTION);
+	transmission_time_gamma rho(MEAN_RECOVERY, VARIANCE_RECOVERY);
+
+	weighted_erdos_reyni network(size, R0, WEIGHT_CLASSES, WEIGHT_PROBABILITIES, engine);
+	simulate_next_reaction::params p;
+	p.SIR = true;
+	simulate_next_reaction simulation(network,psi,&rho,p);
+	std::uniform_int_distribution<> dis(0, size-1);
+
+	// initial infected
+	for (node_t i = 0; i < 10; i++)
+	{
+		node_t rand_node = dis(engine);
+		simulation.add_infections({ std::make_pair(rand_node, 0.0)});
+	}
+	
+	int nb_recovered = 0;
+	while (true) {
+		auto point = simulation.step(engine);
+		if (!point )
+			break;
+
+		if (point -> kind == epidemic_event_kind::reset)
+			nb_recovered ++;
+	}
+
+	/* TODO: Check results */
+}
