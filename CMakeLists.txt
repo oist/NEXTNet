@@ -5,6 +5,7 @@ project(Epidemics_On_Networks LANGUAGES CXX)
 # *** Simulation library sources and headers
 set(LIB_SOURCES
     nextnet/network.cpp
+    nextnet/weighted_network.cpp
     nextnet/temporal_network.cpp
     nextnet/brownian_proximity_network.cpp
     nextnet/algorithm.cpp
@@ -18,6 +19,7 @@ set(LIB_SOURCES
 set(LIB_HEADERS
     nextnet/types.h
     nextnet/network.h
+    nextnet/weighted_network.h
     nextnet/temporal_network.h
     nextnet/brownian_proximity_network.h
     nextnet/random.h
@@ -55,6 +57,7 @@ set(TESTS_SOURCES
     nextnet/tests/main.cpp
     nextnet/tests/utility.cpp
     nextnet/tests/network.cpp
+    nextnet/tests/weighted_network.cpp
     nextnet/tests/temporal_network.cpp
     nextnet/tests/random.cpp
     nextnet/tests/nextreaction.cpp
