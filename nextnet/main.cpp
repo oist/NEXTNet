@@ -47,16 +47,6 @@ std::unordered_map<std::string, std::function<dispatcher::program_t>> dispatcher
  *   (4) Add epidemics/programs/NAME.CPP to SIMULATOR_SOURCES in CMakeLists.txt
  */
 
-DECLARE_PROGRAM(sis_meanfield_gamma_gamma);
-DECLARE_PROGRAM(benchmark);
-DECLARE_PROGRAM(benchmark_priorityqueue);
-DECLARE_PROGRAM(profile);
-DECLARE_PROGRAM(trajectory);
-DECLARE_PROGRAM(customtrajectory);
-DECLARE_PROGRAM(average);
-DECLARE_PROGRAM(scale_free);
-DECLARE_PROGRAM(custered_configuration_model_serrano);
-
 DECLARE_PROGRAM(simulate);
 
 int main(int argc, const char * argv[]) {

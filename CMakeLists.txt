@@ -37,15 +37,7 @@ SET(LIB_PCH nextnet/stdafx.h)
 set(SIMULATOR_SOURCES
     nextnet/analysis.cpp
     nextnet/main.cpp
-    nextnet/programs/average.cpp
-    nextnet/programs/scale_free.cpp
-    nextnet/programs/benchmark.cpp
-    nextnet/programs/trajectory.cpp
-    nextnet/programs/customtrajectory.cpp
-    nextnet/programs/sis_meanfield_gamma_gamma.cpp
-    nextnet/programs/profile.cpp
-    nextnet/programs/benchmark_priorityqueue.cpp
-    nextnet/programs/custered_configuration_model_serrano.cpp)
+    nextnet/programs/simulate.cpp)
 
 set(SIMULATOR_HEADERS
     nextnet/analysis.h)
@@ -81,7 +73,7 @@ set(TESTS_PCH
 # *** Global build settings
 
 # Includes are relative to the nextnet/ folder
-include_directories(AFTER SYSTEM nextnet ext/dyndist)
+include_directories(AFTER SYSTEM nextnet ext/dyndist ext/popl/include)
 
 # Use C++17
 set(CMAKE_CXX_STANDARD 17)
