@@ -143,7 +143,7 @@ std::optional<epidemic_event_t> simulate_next_reaction::step_infection(const act
      * activate the next outgoing edge with the same originating node, called a *sibling*
      * edge.
      */
-    if (next.neighbours_remaining > 0) {
+    if (next.neighbours_remaining > 0 && !nw_weighted) {
 		/* Should never happen if we're making sibling edges active concurrently */
 		assert(!p.edges_concurrent);
 		assert(nw_weighted == nullptr);
