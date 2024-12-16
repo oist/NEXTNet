@@ -143,10 +143,10 @@ std::optional<epidemic_event_t> simulate_next_reaction::step_infection(const act
      * activate the next outgoing edge with the same originating node, called a *sibling*
      * edge.
      */
-    if (next.neighbours_remaining > 0 && !nw_weighted) {
+    if (next.neighbours_remaining > 0) {
 		/* Should never happen if we're making sibling edges active concurrently */
 		assert(!p.edges_concurrent);
-		assert(nw_weighted == nullptr);
+		assert(!nw_weighted);
 		
         /* This only occurs for infection edges, reset self-loops have no neighbours */
         const node_t neighbour_id = next.source_permutation[next.neighbour_index + 1];
@@ -263,17 +263,15 @@ std::optional<epidemic_event_t> simulate_next_reaction::step_infection(const act
 		 * If we're adding edges concurrently, however, we simply sample
 		 * from the original psi distribution. The minimum in this case is
 		 * the implicit result of putting all the times into the reaction queue,
-		 * and processing it in order.
+		 * and processing it in order. On weighted networks, only concurrent
+		 * edge mode is supported. There, the "weight" represents a (fractional)
+		 * multiplicity of edges, i.e. a weight of two means two parallel edges.
+		 * The time until an edge fires is (for an integral weight) therefore
+		 * also a minimal over several i.i.d draws of the unmodified distribution.
 		 */
 		assert(p.edges_concurrent || (weight == 1.0));
-		double m;
-		if (p.edges_concurrent) {
-			m = weight;
-		} else {
-			assert(!nw_weighted);
-			m = neighbours_total;
-		}
-		const double tau = psi.sample(engine, 0, m);
+		assert(p.edges_concurrent || !nw_weighted);
+		const double tau = psi.sample(engine, 0, p.edges_concurrent ? weight : neighbours_total);
         if (std::isnan(tau) || (tau < 0))
             throw std::logic_error("transmission times must be non-negative");
         const double t = next.time + tau;
@@ -290,7 +288,7 @@ std::optional<epidemic_event_t> simulate_next_reaction::step_infection(const act
             if (!p.edges_concurrent)
                 e.source_permutation = std::move(pi);
             e.neighbour_index = 0;
-			e.neighbours_remaining = m - 1;
+			e.neighbours_remaining = p.edges_concurrent ? 0 : (neighbours_total - 1);
 			push_edge(e);
         }
     }
