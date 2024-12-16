@@ -32,26 +32,43 @@ public:
     /**
      * Samples from the distribution with survival function Psi( tau | t,m ) and pdf psi(tau)
      * May return infinity to indicate that no further infections occur if pinfinity() > 0.
+	 *
+	 * m is the weight/multiplicity of the edge which scales the hazardrate,
+	 * see also survivalprobability / survivalquantile.
      */
-    virtual interval_t sample(rng_t&, interval_t t, int m) const;
+    virtual interval_t sample(rng_t&, interval_t t, double m) const;
 
     /**
      * Probability Density Function psi(tau) of the samples.
      */
     virtual double density(interval_t tau) const = 0;
 
+	/**
+	 * Probability Density Function psi(tau) of the samples.
+	 *
+	 * m is the weight/multiplicity of the edge which scales the hazardrate,
+	 * see also survivalprobability / survivalquantile.
+	 */
+	virtual double density(interval_t tau, double m) const;
+
     /**
      * "hazard rate" of the process, denoted by lambda in Boguna
      * and defined as lambda(tau) = psi(tau) / survivalprobability(tau).
+	 *
+	 * The reported hazardrate is for edges with weight/multiplicity 1.0,
+	 * and must be scaled for edges with a different weight/mutiplicity.
      */
     virtual double hazardrate(interval_t) const;
-	
+
 	/**
 	 * Upper bound of the "hazard rate" for times up t. Let the hazard
 	 * rate be lambda(tau) = psi(tau) / survivalprobability(tau), then this
 	 * function returns a value m(tau) such that lambda(t) <= m(t)
 	 * for t in [0, tau]. For t = infinity, this function returns a global
 	 * upper bound on lambda(tau) if one exists, otherwise infinity.
+	 *
+	 * The reported hazardbound is for edges with weight/multiplicity 1.0,
+	 * and must be scaled for edges with a different weight/mutiplicity.
 	 */
 	virtual double hazardbound(interval_t) const;
 
@@ -66,20 +83,22 @@ public:
      * Evaluates the survival function  Psi( tau | t, m), 
      * i.e. the probability that none of m edges fire within the time interval [t, t+tau).
      * Since infinity is larger than any finite tau, this probability is always >= pinfinity().
+	 *
+	 * m is used both to support weighted networks where it is equal to the weight
+	 * (i.e. multiplicity) of the edge, and to support the sequential edge mode of the
+	 * next reaction schema.
      */
-    virtual double survivalprobability(interval_t tau, interval_t t, int m) const;
+    virtual double survivalprobability(interval_t tau, interval_t t, double m) const;
 
     /**
-     * Evaluates the inverse of the survival function Psi(tau),
-     * i.e returns the time interval given a probability in 
+     * Evaluates the inverse of the survival function Psi(tau).
      */
     virtual interval_t survivalquantile(double u) const;
 
     /**
-     * Evaluates the inverse of the survival function Psi(tau | t, m),
-     * i.e returns the time interval given a probability in 
+     * Evaluates the inverse of the survival function Psi(tau | t, m).
      */
-    virtual interval_t survivalquantile(double u, interval_t t, int m) const;
+    virtual interval_t survivalquantile(double u, interval_t t, double m) const;
 };
 
 /*----------------------------------------------------*/
@@ -98,13 +117,13 @@ public:
         :lambda(_lambda)
     {}
 
-    virtual double density(interval_t tau) const;
-    virtual double hazardrate(interval_t) const;
-	virtual double hazardbound(interval_t) const;
-    virtual double survivalprobability(interval_t tau) const;
-    virtual double survivalprobability(interval_t tau, interval_t t, int m) const;
-    virtual interval_t survivalquantile(double u) const;
-    virtual interval_t survivalquantile(double u, interval_t t, int m) const;
+    virtual double density(interval_t tau) const override;
+    virtual double hazardrate(interval_t) const override;
+	virtual double hazardbound(interval_t) const override;
+    virtual double survivalprobability(interval_t tau) const override;
+    virtual double survivalprobability(interval_t tau, interval_t t, double m) const override;
+    virtual interval_t survivalquantile(double u) const override;
+    virtual interval_t survivalquantile(double u, interval_t t, double m) const override;
 };
 
 /*----------------------------------------------------*/
@@ -127,16 +146,18 @@ public:
         ,random_distribution(rd)
     {}
 
-    virtual interval_t sample(rng_t& e, interval_t t, int m) const {
+    virtual interval_t sample(rng_t& e, interval_t t, double m) const override {
         if ((t < 0) || !std::isfinite(t))
             throw std::range_error("condition t must be non-negative and finite");
-        if (m < 1)
+        if (m < 0.0)
             throw std::range_error("m must be positive");
         // For m == 1 and t == 0.0 we sample from the base distribution,
         // and may thus use the random distribution class' faster implementation.
         // Otherwise, we sample from a modified distribution and fall back
         // to CDF inversion.
-        if ((m == 1) && (t == 0.0)) {
+		if (m == 0.0)
+			return INFINITY;
+        if ((m == 1.0) && (t == 0.0)) {
             if ((pinfinity > 0) && std::bernoulli_distribution(pinfinity)(e))
                 return INFINITY;
             return random_distribution_t(random_distribution.param())(e);
@@ -144,7 +165,7 @@ public:
         return transmission_time::sample(e, t, m);
     }
 
-    virtual double density(interval_t tau) const {
+    virtual double density(interval_t tau) const override {
         if (tau < 0)
             return 0;
         return (1.0 - pinfinity) * pdf(math_distribution, tau);
@@ -155,7 +176,7 @@ public:
     using transmission_time::survivalprobability;
     using transmission_time::survivalquantile;
     
-    virtual double survivalprobability(interval_t tau) const {
+    virtual double survivalprobability(interval_t tau) const override {
         // distribution has a scaled version of the specified CDF on tau in [0, inf)
         // and point mass pinfinity at tau = infinity
         if (tau < 0)
@@ -165,7 +186,7 @@ public:
         return pinfinity + (1.0 - pinfinity) * cdf(complement(math_distribution, tau));
     }
 
-    virtual interval_t survivalquantile(double u) const {
+    virtual interval_t survivalquantile(double u) const override {
         // distribution has a scaled version of the specified CDF on tau in [0, inf)
         // and point mass pinfinity at tau = infinity, so pinfinity is the lower bound
         // of survivalprobability() and any u-quantile for any u < pinfinity is infinity.
@@ -306,7 +327,7 @@ public:
 
     const double value;
 
-    virtual interval_t sample(rng_t&, interval_t t, int m) const override;
+    virtual interval_t sample(rng_t&, interval_t t, double m) const override;
 
     virtual double density(interval_t tau) const override;
 
@@ -316,11 +337,11 @@ public:
 
     virtual double survivalprobability(interval_t tau) const override;
 
-    virtual double survivalprobability(interval_t tau, interval_t t, int m) const override;
+    virtual double survivalprobability(interval_t tau, interval_t t, double m) const override;
 
     virtual interval_t survivalquantile(double u) const override;
 
-    virtual interval_t survivalquantile(double u, interval_t t, int m) const override;
+    virtual interval_t survivalquantile(double u, interval_t t, double m) const override;
 };
     
 /*----------------------------------------------------*/
