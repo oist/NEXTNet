@@ -36,9 +36,6 @@ public:
 
     virtual void add_infections(const std::vector<std::pair<node_t, absolutetime_t>>& v);
     
-    // thermal_infections manually marks the nodes as infected and manually adds the active edges only if the firing time is later than thermal.
-    virtual void add_thermal_infections(const std::vector<std::pair<node_t, absolutetime_t>>& v,double Lambda,rng_t& engine);
-    
 	virtual absolutetime_t next(rng_t& engine);
 
 	virtual std::optional<epidemic_event_t> step(rng_t& engine, absolutetime_t maxtime = INFINITY,
