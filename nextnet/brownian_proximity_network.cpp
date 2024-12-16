@@ -300,7 +300,8 @@ absolutetime_t brownian_proximity_network::next(rng_t& engine, absolutetime_t ma
 							/* Create event */
 							next_event = network_event_t {
 								.kind = network_event_kind::neighbour_removed,
-								.source_node = n.index, .target_node = n2.index, .time = current_time
+								.source_node = n.index, .target_node = n2.index, .weight = 1.0,
+								.time = current_time
 							};
 							/* And report it */
 							return next_event->time;
@@ -341,7 +342,8 @@ absolutetime_t brownian_proximity_network::next(rng_t& engine, absolutetime_t ma
 									/* Create event and return */
 									next_event = network_event_t {
 										.kind = network_event_kind::neighbour_added,
-										.source_node = n.index, .target_node = n2.index, .time = current_time
+										.source_node = n.index, .target_node = n2.index, .weight = 1.0,
+										.time = current_time
 									};
 									return next_event->time;
 								}

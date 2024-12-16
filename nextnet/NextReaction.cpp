@@ -70,7 +70,7 @@ void simulate_next_reaction::notify_infected_node_neighbour_added(network_event_
 
 	/* Generate firing time of the newly added edge */
 	assert(event.time >= source_state->second.infection_time);
-	const double tau = psi.sample(engine, event.time - source_state->second.infection_time, 1);
+	const double tau = psi.sample(engine, event.time - source_state->second.infection_time, event.weight);
 	if (std::isnan(tau) || (tau < 0))
 		throw std::logic_error("transmission time must be positive");
 	const double t = event.time + tau;
@@ -107,7 +107,7 @@ void simulate_next_reaction::notify_infected_contact(network_event_t event, rng_
 
 	/* Computing tranmission probability */
 	assert(event.time >= source_state->second.infection_time);
-	const double p = psi.hazardrate(event.time - source_state->second.infection_time) * event.infitesimal_duration;
+	const double p = psi.hazardrate(event.time - source_state->second.infection_time) * event.weight;
 	if (!std::bernoulli_distribution(p)(engine))
 		return;
 
@@ -266,8 +266,14 @@ std::optional<epidemic_event_t> simulate_next_reaction::step_infection(const act
 		 * and processing it in order.
 		 */
 		assert(p.edges_concurrent || (weight == 1.0));
-		const int m = p.edges_concurrent ? 1 : neighbours_total;
-		const double tau = psi.sample(engine, 0, m) / weight;
+		double m;
+		if (p.edges_concurrent) {
+			m = weight;
+		} else {
+			assert(!nw_weighted);
+			m = neighbours_total;
+		}
+		const double tau = psi.sample(engine, 0, m);
         if (std::isnan(tau) || (tau < 0))
             throw std::logic_error("transmission times must be non-negative");
         const double t = next.time + tau;

@@ -56,6 +56,7 @@ namespace{
 				.kind = edge_present ? network_event_kind::neighbour_added : network_event_kind::neighbour_removed,
 				.source_node = 0,
 				.target_node = 1,
+				.weight = 1.0,
 				.time = t
 			};
 		}

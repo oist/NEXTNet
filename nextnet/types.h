@@ -114,8 +114,8 @@ struct network_event_t {
 	network_event_kind kind = network_event_kind::none;
 	node_t source_node = -1;
 	node_t target_node = -1;
+	double weight = 1.0;
 	absolutetime_t time = INFINITY;
-	double infitesimal_duration = NAN;
 };
 
 /**

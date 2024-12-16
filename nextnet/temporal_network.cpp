@@ -89,7 +89,8 @@ empirical_temporal_network::empirical_temporal_network(std::string path_to_file,
 					.kind = network_event_kind::neighbour_added,
 					.source_node = src,
 					.target_node = dst,
-					.time = time - dt/2
+					.weight = 1.0,
+					.time = time - dt/2,
 				};
 				event_queue.push_back(ev1);
 
@@ -97,6 +98,7 @@ empirical_temporal_network::empirical_temporal_network(std::string path_to_file,
 					.kind = network_event_kind::neighbour_removed,
 					.source_node = src,
 					.target_node = dst,
+					.weight = 1.0,
 					.time = time + dt/2
 				};
 				event_queue.push_back(ev2);
@@ -107,8 +109,8 @@ empirical_temporal_network::empirical_temporal_network(std::string path_to_file,
 					.kind = network_event_kind::instantenous_contact,
 					.source_node = src,
 					.target_node = dst,
-					.time = time,
-					.infitesimal_duration = dt
+					.weight = dt,
+					.time = time
 				};
 				event_queue.push_back(ev);
 				break;
@@ -348,6 +350,7 @@ absolutetime_t temporal_sirx_network::next(rng_t& engine, absolutetime_t)
 				.kind = network_event_kind::neighbour_removed,
 				.source_node = n,
 				.target_node = nn,
+				.weight = 1.0,
 				.time = next_time
 			});
 		}
@@ -513,11 +516,13 @@ std::optional<network_event_t> temporal_erdos_reyni::step(rng_t& engine, absolut
 		remove_edge(src, neighbour_index);
 		reverse_edge_event = network_event_t {
 			.kind = network_event_kind::neighbour_removed,
-			.source_node = dst, .target_node = src, .time = next_time
+			.source_node = dst, .target_node = src, .weight = 1.0,
+			.time = next_time
 		};
 		return network_event_t {
 			.kind = network_event_kind::neighbour_removed,
-			.source_node = src, .target_node = dst, .time = next_time
+			.source_node = src, .target_node = dst, .weight = 1.0,
+			.time = next_time
 		};
 	}
 }
@@ -865,8 +870,9 @@ std::optional<network_event_t> activity_driven_network::step(rng_t& engine, abso
 	}
 
 
-	return network_event_t{
-					.kind = next.kind,
-					.source_node = next.source_node, .target_node = next.target_node, .time = next.time
-				};
+	return network_event_t {
+		.kind = next.kind,
+		.source_node = next.source_node, .target_node = next.target_node, .weight = 1.0,
+		.time = next.time
+	};
 }
