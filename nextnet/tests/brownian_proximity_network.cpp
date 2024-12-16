@@ -19,7 +19,7 @@ TEST_CASE("Brownian proximity graph", "[brownian_proximity_graph]") {
 	brownian_proximity_network g(N, K, r, D0, D1, gamma, dt, engine);
 	
 	/* Slowly add infections */
-	for(node_t ni=0; ni <= N; ++ni) {
+	for(node_t ni=0; ni <= (int) N; ++ni) {
 		/* Check neighbour relationships */
 		for(node_t n=0; n < g.nodes(); ++n) {
 			std::vector<double> cn;
@@ -40,15 +40,15 @@ TEST_CASE("Brownian proximity graph", "[brownian_proximity_graph]") {
 			
 			REQUIRE(nn1 == nn2);
 		}
-		if (ni >= N)
+		if (ni >= (int) N)
 			break;
-		
+
 		/* add infection */
 		g.notify_epidemic_event(epidemic_event_t {
 			.kind = epidemic_event_kind::outside_infection,
+			.source_node = -1,
 			.node = ni,
-			.time = (double) ni,
-			.source_node = -1
+			.time = (double) ni
 		}, engine);
 		
 		/* evolve */
