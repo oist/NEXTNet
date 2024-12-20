@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(Epidemics_On_Networks LANGUAGES CXX)
+project(NEXTNet LANGUAGES CXX)
 
 # *** Simulation library sources and headers
 set(LIB_SOURCES
