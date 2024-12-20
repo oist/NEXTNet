@@ -516,8 +516,6 @@ TEST_CASE("Measuring average neighbour degree","[graph]") {
     REQUIRE(std::abs( knn(network)[3]-mu )/mu < 0.05);
     REQUIRE(std::abs( knn(network)[5]-mu )/mu < 0.05);
     REQUIRE(std::abs( knn(network)[10]-mu)/mu < 0.05);
-
-    
 }
 
 
