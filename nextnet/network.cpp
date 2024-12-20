@@ -1226,6 +1226,130 @@ empirical_network::empirical_network(std::string path_to_file){
         //     // of a row to a vector
         //     adjacencylist[i].push_back(std::stoi(word));
 
+
+//---------------------------------------------------
+//-----Compute the reproduction_matrix matrix --------
+//---------------------------------------------------
+std::vector<std::vector<double>> reproduction_matrix(network& nw, int clustering,
+                                                     double* out_r, double* out_c, double* out_k1, double* out_k2,
+                                                     double* out_k3, double* out_m_bar,
+                                                     double* out_R0, double* out_R_r, double* out_R_pert)
+{
+    const int SIZE = (int) nw.nodes();
+
+    // degree moments
+    int kmax = 0;
+    double k1 = 0;
+    double k2 = 0;
+    double k3 = 0;
+    double k4 = 0;
+    std::set<int> degrees_set = {};
+    for (node_t node = 0; node < SIZE; node++)
+    {
+        const int k = nw.outdegree(node);
+        degrees_set.insert(k);
+        kmax = std::max(k,kmax);
+        k1 += (double) k/SIZE;
+        k2 += (double) pow(k,2)/SIZE;
+        k3 += (double) pow(k,3)/SIZE;
+        k4 += (double) pow(k,4)/SIZE;
+    }
+    const std::vector<int> unique_degrees(degrees_set.begin(), degrees_set.end());
+    const int klen = (int) unique_degrees.size();
+
+    // Pk
+    std::vector<double> pk(klen,0);
+    std::unordered_map<int, int> pos;
+    for (int i = 0; i < klen; ++i) {
+        const int k = unique_degrees[i];
+        pos[k] = i;
+    }
+
+    // Triangles
+    std::vector<std::vector<int>> T2(klen,std::vector<int>(klen,0));
+    std::vector<int> T1(klen,0);
+    std::vector<std::vector<int>> ekk(klen,std::vector<int>(klen,0));
+    double c = 0;
+    for (node_t node = 0; node < SIZE; node++){
+        double c_node = 0.0;
+        const int k0 = nw.outdegree(node);
+        const int i0 = pos[k0];
+        pk[i0]++;
+        for (index_t neigh_1_i = 0; neigh_1_i < k0; neigh_1_i++) {
+            const node_t neigh_1 = nw.neighbour(node, neigh_1_i);
+            const int k1 = nw.outdegree(neigh_1);
+            const int i1 = pos[k1];
+            ekk[i0][i1] ++;
+            if (clustering >= 3 ){
+                for (index_t neigh_2_i = 0; neigh_2_i < k1; neigh_2_i++) {
+                    const node_t neigh_2 = nw.neighbour(node, neigh_2_i);
+                    if (neigh_2 == node)
+                        continue;
+                    const int k2 = nw.outdegree(neigh_2);
+                    const node_t small_node = (k0 <= k2) ? node : neigh_2;
+                    const node_t large_node = (k0 <= k2) ? neigh_2 : node;
+
+                    // verify if edge exists between node and neighbour n°2
+                    const int ksn = std::min(k0, k2);
+                    bool edge_02 = false;
+                    for(index_t neigh_sn_i = 0; (neigh_sn_i < ksn) && !edge_02; neigh_sn_i++)
+                        edge_02 = edge_02 || (nw.neighbour(small_node, neigh_sn_i) == large_node);
+
+                    // update triangle count
+                    if (edge_02){
+                        T2[i0][i1]++;
+                        T1[i0]++;
+                        c_node++;
+                    }
+                }
+            }
+        }
+        if (k0 > 1){
+            c += c_node/((double) k0*(k0-1)* SIZE);
+        }
+    }
+
+    // Mkk
+    std::vector<std::vector<double>> Mkk(kmax+1,std::vector<double>(kmax+1,0));
+    double m_bar = 0;
+    double m2_bar = 0;
+    for (int k=2; k <= kmax; k++){
+        const int i = pos[k];
+        m_bar += (double) T1[i]/((double) SIZE*k1);
+        m2_bar += (double) (k-1)*T1[i]/(SIZE*k1);
+
+        for (int q=2; q <= kmax; q++){
+            const int j = pos[q];
+            if (ekk[i][j]==0 || pk[j]==0)
+                continue;
+
+            Mkk[i][j] = ekk[i][j]*((double) q-1)/ ((double) q * pk[j]) ;
+            if (clustering >= 3){
+                Mkk[i][j] -= T2[i][j] / ((double) q * pk[j] ) ;
+            }
+        }
+    }
+
+    const double r = assortativity(nw);
+    const double R_unpert = (double) k2/k1 -1 - m_bar;
+    const double R_r = (double) (1-r)*(k2/k1 -1) + r * ( (k3-k2)/(k2-k1) - 1);
+    const double R_pert =  R_unpert*(1-r)+ r*((k3-2*k2+k1)/(k1) -2*m2_bar+m_bar*m_bar)/R_unpert  ;
+    const double R0 = k2/k1-1;
+
+    if (out_r) *out_r = r;
+    if (out_c) *out_c = c;
+    if (out_k1) *out_k1 = k1;
+    if (out_k2) *out_k2 = k2;
+    if (out_k3) *out_k3 = k3;
+    if (out_m_bar) *out_m_bar = m_bar;
+    if (out_R0) *out_R0 = R0;
+    if (out_R_r) *out_R_r = R_r;
+    if (out_R_pert) *out_R_pert = R_pert;
+
+    return Mkk;
+}
+
+
 //---------------------------------------------------
 //-----Measure edge multiplicity in a network--------
 //---------------------------------------------------
