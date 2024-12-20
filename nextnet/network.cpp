@@ -1476,9 +1476,9 @@ void add_correlation(double r,adjacencylist_network& nw,rng_t& engine){
 //------------------------------------------------
 
 // Average neighbour's degree for a node of degree k
-std::vector<double> knn(adjacencylist_network& nw) {
+std::vector<double> knn(network& nw) {
 
-    int size = (int) nw.adjacencylist.size();
+    int size = (int) nw.nodes();
     std::vector<double> knn_degree(size, 0);
     std::vector<double> nb_with_degree(size,0);
 
@@ -1488,13 +1488,12 @@ std::vector<double> knn(adjacencylist_network& nw) {
         int k = nw.outdegree(node);
         
         kmax = std::max(k,kmax);
-        for (node_t neigh : nw.adjacencylist[node])
-        {
+        for (index_t neigh_i = 0; neigh_i < k; neigh_i++) {
+            const node_t neigh = nw.neighbour(node, neigh_i);
             const double k_neigh = (double) nw.outdegree(neigh);
             knn_degree[k] += k_neigh;
             nb_with_degree[k] += 1;
         }
-
     }
 
     while ((int) knn_degree.size() > kmax + 1){
@@ -1524,10 +1523,9 @@ std::vector<double> knn(adjacencylist_network& nw) {
 // r = (<k^2 knn(k)>/<k> - mu^2 ) / (<k^3>/<k> - mu^2)
 // where mu^2 = <k^2>/<k>
 // However <k^2 knn(k)> is tricky to measure, instead, we measure the fraction of links that connect deg i to deg j, W(i,j)
-double assortativity(adjacencylist_network& nw)
+double assortativity(network& nw)
 {
-    
-    int size = (int) nw.adjacencylist.size();
+    int size = nw.nodes();
     std::vector<double> Knn = knn(nw);
     
     double k1 = 0.0;
@@ -1560,33 +1558,29 @@ double assortativity(adjacencylist_network& nw)
 
 }
 
-
 //Fraction of links that connect a node of deg k to a node of deg k'
-std::vector<std::vector<double>> Wkk(adjacencylist_network& nw){
+std::vector<std::vector<double>> Wkk(network& nw){
     
     //Determine k_max (Figured that it was the most sane option and the most readable,
     // at the cost of going through all nodes once more.
     int k_max = 0;
     double total_edges = 0.0;
-    for (node_t node = 0; node < (int) nw.adjacencylist.size(); node++){
-        const int nb_edges = (int) nw.adjacencylist[node].size();
+    const int size = nw.nodes();
+    for (node_t node = 0; node < size; node++){
+        const int nb_edges = nw.outdegree(node);
         k_max = std::max(k_max,nb_edges);
         total_edges += nb_edges;
     }
-    //total_edges /= 2; //Avoid double counting
     
     std::vector<std::vector<double>> w(k_max + 1, std::vector<double> (k_max + 1, 0.0));
-
-    for (node_t node = 0; node < (int) nw.adjacencylist.size(); node++) {
-        
-        const int k = (int) nw.adjacencylist[node].size();
-        
-        for (node_t neigh : nw.adjacencylist[node])
-        {
-            const int k_prime = (int) nw.adjacencylist.at(neigh).size();
-            w.at(k ).at( k_prime) += 1.0 / total_edges;
-        }
-        
+    for (node_t node = 0; node < size; node++)
+    {
+        const int k = nw.outdegree(node);
+        for(index_t neigh_i = 0; neigh_i < k; neigh_i++) {
+            const node_t neigh = nw.neighbour(node, neigh_i);
+            const int k_prime = nw.outdegree(neigh);
+            w.at(k).at(k_prime) += 1.0 / total_edges;
+        }        
     }
     
     return w;

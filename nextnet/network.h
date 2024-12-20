@@ -511,7 +511,7 @@ bool edge_exists(node_t a, node_t b, const adjacencylist_network& nw);
  * knn(k) should be independent of k.
  *  
  */
-std::vector<double> knn(adjacencylist_network& nw);
+std::vector<double> knn(network& nw);
 
 
 /**
@@ -522,7 +522,7 @@ std::vector<double> knn(adjacencylist_network& nw);
  * den = sum_k [ w(k) * k ^ 2] - ( sum_k [ w(k) * k ] ) ^ 2
  *
  */
-double assortativity(adjacencylist_network& nw);
+double assortativity(network& nw);
 
 
 /**
@@ -530,4 +530,4 @@ double assortativity(adjacencylist_network& nw);
  * to a node of degree k prime
  *
  */
-std::vector<std::vector<double>> Wkk(adjacencylist_network& nw);
+std::vector<std::vector<double>> Wkk(network& nw);
