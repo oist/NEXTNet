@@ -38,9 +38,10 @@ struct meanfield_infpop_gamma {
         ,w(qp.second, 0), a(qp.second, 0), r(0.0), s(pow(r0, 1.0 / alpha))
     {
         using namespace std::complex_literals;
+        using namespace boost::math::double_constants;
         // Compute q-th power of p-ths roots w, and poles in the Laplace plane a
         for(unsigned int i=0; i < qp.second; ++i) {
-            w.at(i) = std::exp(1.0i * 2.0 * M_PI * (double)i * (double)qp.first / (double)qp.second);
+            w.at(i) = std::exp(1.0i * 2.0 * pi * (double)i * (double)qp.first / (double)qp.second);
             a.at(i) = rho * (s * w[i] - 1.0);
             r += w.at(i) / a.at(i);
         }

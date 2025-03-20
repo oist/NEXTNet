@@ -8,6 +8,7 @@
 #include "brownian_proximity_network.h"
 
 using namespace std::literals;
+using namespace boost::math::double_constants;
 
 brownian_proximity_network::brownian_proximity_network(node_t N, double avg_degree, double r,
 												   double D, rng_t& engine)
@@ -32,7 +33,7 @@ brownian_proximity_network::brownian_proximity_network(node_t N, double avg_degr
 	:size(N)
 	,radius(r)
 	,radius_squared(std::pow(r, 2))
-	,length(std::sqrt((double)size * M_PI * std::pow(radius, 2) / avg_degree))
+	,length(std::sqrt((double)size * pi * std::pow(radius, 2) / avg_degree))
 	,diffusivity_noninfected(D0)
 	,diffusivity_infected(D1)
 	,gamma(gamma_)
