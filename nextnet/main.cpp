@@ -469,7 +469,7 @@ DECLARE_ARGUMENT(p, int, nullopt);
 auto network_factory = factory<network>()
                            .add<fully_connected, size, rng>("fullyconnected")
                            .add<acyclic, avg_degree, reduced_root_degree, rng>("acyclic")
-                           .add<erdos_reyni, size, avg_degree, rng>("erdos-reyni")
+                           .add<erdos_renyi, size, avg_degree, rng>("erdos-renyi")
                            .add<watts_strogatz, size, k, p, rng>("watts-strogatz")
                            .add<barabasi_albert, size, rng, m>("barabasi-albert");
 
