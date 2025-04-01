@@ -4,66 +4,68 @@
 #include "types.h"
 #include "utility.h"
 
-absolutetime_t simulate_next_reaction_mean_field::next(rng_t& engine)
+absolutetime_t simulate_next_reaction_mean_field::next(rng_t &engine)
 {
-	if (active_edges.empty())
-		return INFINITY;
-	
-	/* Fetch the next infection/reset time, i.e. the time where the next edge fires */
-	const auto next = active_edges.top();
-	return next.time;
+    if (active_edges.empty())
+        return INFINITY;
+
+    /* Fetch the next infection/reset time, i.e. the time where the next edge fires */
+    const auto next = active_edges.top();
+    return next.time;
 }
 
-std::optional<epidemic_event_t> simulate_next_reaction_mean_field::step(rng_t& engine, absolutetime_t maxtime,
-															   event_filter_t evf)
+std::optional<epidemic_event_t> simulate_next_reaction_mean_field::step(rng_t &engine, absolutetime_t maxtime,
+                                                                        event_filter_t evf)
 {
     if (std::isnan(maxtime))
         throw std::range_error("maxtime must be finite or +INFINITY");
     if (evf)
-		throw std::logic_error("event filters are not supported for mean field simulations");
-	
+        throw std::logic_error("event filters are not supported for mean field simulations");
+
     while (true) {
         /* If there are no more infection times, stop */
         if (active_edges.empty())
-			return std::nullopt;
+            return std::nullopt;
 
         /* Fetch the next infection/reset time, i.e. the time where the next edge fires */
         const auto next = active_edges.top();
         if (next.time > maxtime)
-			return std::nullopt;
+            return std::nullopt;
         active_edges.pop();
-        
+
         /* Perform event */
         std::optional<epidemic_event_t> result;
         switch (next.kind) {
             case epidemic_event_kind::infection:
             case epidemic_event_kind::outside_infection:
-				result = step_infection(next, engine);
-				break;
-			case epidemic_event_kind::reset:
-				result = step_reset(next, engine);
-				break;
-            default: throw std::logic_error("invalid event kind");
+                result = step_infection(next, engine);
+                break;
+            case epidemic_event_kind::reset:
+                result = step_reset(next, engine);
+                break;
+            default:
+                throw std::logic_error("invalid event kind");
         }
 
         /* Return event (unless skipped, in which case we continue) */
         if (result)
-            return result;        
+            return result;
     }
 }
 
-void simulate_next_reaction_mean_field::notify_infected_node_neighbour_added(network_event_t event, rng_t& engine)
+void simulate_next_reaction_mean_field::notify_infected_node_neighbour_added(network_event_t event, rng_t &engine)
 {
-	throw std::logic_error("unimplemented");
+    throw std::logic_error("unimplemented");
 }
 
-std::optional<epidemic_event_t> simulate_next_reaction_mean_field::step_infection(const active_edges_entry& next, rng_t& engine) {
+std::optional<epidemic_event_t> simulate_next_reaction_mean_field::step_infection(const active_edges_entry &next, rng_t &engine)
+{
     /*
      * Here, the variables have the following meaning:
      *   next.time: The current time, i.e. the time at which the edge fired
      *   next.node: The node that just got infected (putatively, since it might already be)
      */
-    
+
     /* Check if the putatively infected node is already infected, if so we're done */
     if (is_infected(next.node))
         return std::nullopt;
@@ -85,13 +87,13 @@ std::optional<epidemic_event_t> simulate_next_reaction_mean_field::step_infectio
     we can sample them using the geomertic distribution.*/
     std::geometric_distribution<> skip_edge(p); // comment: equals 0 with prob. p
 
-    for (node_t node=0; node < N; node++) {
+    for (node_t node = 0; node < N; node++) {
         int s = skip_edge(engine);
         if (s + node >= N)
             break;
         node += (node == next.node ? 1 + s : s);
         const interval_t tau_inf = psi.sample(engine, 0, 1); // sample simple r.v from psi distribution with age 0
-        if (tau_inf > tau_reset) // transmission will not happen. (Note: in our simulations we often choose rho s.t Prob[tau_inf > tau_reset] ~ 1).
+        if (tau_inf > tau_reset)                             // transmission will not happen. (Note: in our simulations we often choose rho s.t Prob[tau_inf > tau_reset] ~ 1).
             continue;
         active_edges_entry e;
         e.kind = epidemic_event_kind::infection;
@@ -101,28 +103,30 @@ std::optional<epidemic_event_t> simulate_next_reaction_mean_field::step_infectio
     }
 
     /* Return the infection event */
-    return epidemic_event_t { .kind = next.kind, .node = next.node, .time = next.time };
+    return epidemic_event_t{ .kind = next.kind, .node = next.node, .time = next.time };
 }
 
-std::optional<epidemic_event_t> simulate_next_reaction_mean_field::step_reset(const active_edges_entry& next, rng_t& engine) {
+std::optional<epidemic_event_t> simulate_next_reaction_mean_field::step_reset(const active_edges_entry &next, rng_t &engine)
+{
     /* The node cannot yet have resetted */
     assert(is_infected(next.node));
-    
+
     /* if SIR, increase counter of removed/recovered nodes, and leave the node as infected so that
-    * the node cannot be reinfected. (just a trick to avoid creating a new state, the node is not actually infected anymore.)
-    * else, Mark node as no longer infected. In that case the node simply returns to the susceptible state and can get reinfected again later. */
-    if (SIR){
+     * the node cannot be reinfected. (just a trick to avoid creating a new state, the node is not actually infected anymore.)
+     * else, Mark node as no longer infected. In that case the node simply returns to the susceptible state and can get reinfected again later. */
+    if (SIR) {
         removed += 1;
     } else {
         infected.erase(next.node);
     }
 
     /* Return the reset event */
-    return epidemic_event_t { .kind = epidemic_event_kind::reset, .node = next.node, .time = next.time };
+    return epidemic_event_t{ .kind = epidemic_event_kind::reset, .node = next.node, .time = next.time };
 }
 
-void simulate_next_reaction_mean_field::add_infections(const std::vector<std::pair<node_t, absolutetime_t>>& v) {
-    for(const auto& ve: v) {
+void simulate_next_reaction_mean_field::add_infections(const std::vector<std::pair<node_t, absolutetime_t>> &v)
+{
+    for (const auto &ve : v) {
         active_edges_entry e;
         e.kind = epidemic_event_kind::outside_infection;
         e.time = ve.second;
@@ -131,20 +135,22 @@ void simulate_next_reaction_mean_field::add_infections(const std::vector<std::pa
     }
 }
 
-bool simulate_next_reaction_mean_field::is_infected(node_t node) const {
+bool simulate_next_reaction_mean_field::is_infected(node_t node) const
+{
     return (infected.find(node) != infected.end());
 }
 
- network& simulate_next_reaction_mean_field::get_network() const {
-     throw std::logic_error("get_network() is unsupported for mean field simulations");
- }
+network &simulate_next_reaction_mean_field::get_network() const
+{
+    throw std::logic_error("get_network() is unsupported for mean field simulations");
+}
 
-const transmission_time& simulate_next_reaction_mean_field::transmission_time() const {
+const transmission_time &simulate_next_reaction_mean_field::transmission_time() const
+{
     return psi;
 }
 
-const transmission_time* simulate_next_reaction_mean_field::reset_time() const {
+const transmission_time *simulate_next_reaction_mean_field::reset_time() const
+{
     return rho;
 }
-
-

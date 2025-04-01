@@ -37,14 +37,14 @@
 // Boost
 
 #if defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Weverything"
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#    pragma clang diagnostic push
+#    pragma clang diagnostic ignored "-Weverything"
+#    pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #elif defined(__GNUC__) || defined(__GNUG__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wall"
-#pragma GCC diagnostic ignored "-Wsign-compare"
-#pragma GCC diagnostic ignored "-Wparentheses"
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wall"
+#    pragma GCC diagnostic ignored "-Wsign-compare"
+#    pragma GCC diagnostic ignored "-Wparentheses"
 #endif
 
 #include <boost/math/distributions.hpp>
@@ -52,11 +52,10 @@
 #include <boost/math/tools/roots.hpp>
 #include <boost/math/special_functions/erf.hpp>
 
-
 #if defined(__clang__)
-#pragma clang diagnostic pop
+#    pragma clang diagnostic pop
 #elif defined(__GNUC__) || defined(__GNUG__)
-#pragma GCC diagnostic pop
+#    pragma GCC diagnostic pop
 #endif
 
 /* Make boost::math available as simply bm */
@@ -68,11 +67,11 @@ namespace bm = boost::math;
 #define EXT_PRIO_QUEUE 2
 
 #ifndef NEXT_REACTION_QUEUE
-#define NEXT_REACTION_QUEUE EXT_PRIO_QUEUE
+#    define NEXT_REACTION_QUEUE EXT_PRIO_QUEUE
 #endif
 
 #if NEXT_REACTION_QUEUE == EXT_PRIO_QUEUE
-#include "../ext/prio_queue/prio_queue.hpp"
+#    include "../ext/prio_queue/prio_queue.hpp"
 #endif
 
 // Dynamic Distribution
@@ -84,7 +83,6 @@ namespace bm = boost::math;
  */
 #include "dyndist/rng_stdcxx.h"
 #include "dyndist/vector_distribution.h"
-
 
 // To fix warnings on bools being 'unused'
 

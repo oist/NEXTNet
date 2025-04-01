@@ -9,14 +9,17 @@
 
 using namespace std::string_literals;
 
-struct dispatcher {
-    typedef int program_t(int argc, const char* argv[]);
+struct dispatcher
+{
+    typedef int program_t(int argc, const char *argv[]);
 
-    dispatcher(const std::string& name, const std::function<program_t>& program) {
-        table.insert({name, program});
+    dispatcher(const std::string &name, const std::function<program_t> &program)
+    {
+        table.insert({ name, program });
     }
 
-    static int dispatch(const std::string& name, int argc, const char* argv[]) {
+    static int dispatch(const std::string &name, int argc, const char *argv[])
+    {
         const auto i = table.find(name);
         if (i == table.end())
             throw std::runtime_error("no program named "s + name);
@@ -31,9 +34,9 @@ std::unordered_map<std::string, std::function<dispatcher::program_t>> dispatcher
 #define STRINGIFY(v) STRINGIFY_(v)
 #define STRINGIFY_(v) #v
 
-#define DECLARE_PROGRAM(name) \
-    int program_ ## name(int argc, const char** argv); \
-    dispatcher dispatch_ ## name(STRINGIFY(name), program_ ## name)
+#define DECLARE_PROGRAM(name)                        \
+    int program_##name(int argc, const char **argv); \
+    dispatcher dispatch_##name(STRINGIFY(name), program_##name)
 
 /*
  * The main function decides which of a set of named "programs" to call
@@ -49,9 +52,8 @@ std::unordered_map<std::string, std::function<dispatcher::program_t>> dispatcher
 
 DECLARE_PROGRAM(simulate);
 
-int main(int argc, const char * argv[]) {
-
-
+int main(int argc, const char *argv[])
+{
 
     if (argc < 2)
         throw std::runtime_error("no program name specified");

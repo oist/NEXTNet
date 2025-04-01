@@ -4,8 +4,9 @@
 
 #include "random.h"
 
-template<typename R>
-std::vector<R> parallel(std::size_t n, rng_t& engine, std::function<R(rng_t&)> body) {
+template <typename R>
+std::vector<R> parallel(std::size_t n, rng_t &engine, std::function<R(rng_t &)> body)
+{
 
     /* Pre-allocate result vector */
     std::vector<R> r(n, R());
