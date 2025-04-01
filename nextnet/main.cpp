@@ -529,12 +529,34 @@ int main(int argc, const char *argv[])
     auto list_networks_opt = op.add<Switch>("", "list-networks", "list network types");
 
     try {
+        /* Parse arguments */
         op.parse(argc, argv);
 
+        /* Output help if requested, then stop */
         if (help_opt->is_set()) {
             cout << op << endl;
             return 0;
         }
+
+        /* Output list of time distributions / networks if requested, then stop */
+
+        if (list_times_opt->is_set()) {
+            cout << "time distributions\n";
+            cout << "------------------\n";
+            for (const string &s : factories::time_factory.descriptions)
+                cout << s << "\n";
+            return 0;
+        }
+
+        if (list_networks_opt->is_set()) {
+            cout << "networks\n";
+            cout << "--------\n";
+            for (const string &s : factories::network_factory.descriptions)
+                cout << s << "\n";
+            return 0;
+        }
+
+        /* Run simulation */
 
         if (psi_opt->is_set())
             psi = factories::time_factory.make(psi_opt->value());
@@ -591,27 +613,6 @@ int main(int argc, const char *argv[])
         cerr << "Internal error: " << e.what() << std::endl;
         return 127;
     }
-
-    bool did_list = false;
-
-    if (list_times_opt->is_set()) {
-        cout << "time distributions\n";
-        cout << "------------------\n";
-        for (const string &s : factories::time_factory.descriptions)
-            cout << s << "\n";
-        did_list = true;
-    }
-
-    if (list_networks_opt->is_set()) {
-        cout << "networks\n";
-        cout << "--------\n";
-        for (const string &s : factories::network_factory.descriptions)
-            cout << s << "\n";
-        did_list = true;
-    }
-
-    if (did_list)
-        return 0;
 
     try {
         cout << "time" << '\t';
