@@ -36,8 +36,7 @@ SET(LIB_PCH nextnet/stdafx.h)
 # *** Command-line simulator sources and headers
 set(SIMULATOR_SOURCES
     nextnet/analysis.cpp
-    nextnet/main.cpp
-    nextnet/programs/simulate.cpp)
+    nextnet/main.cpp)
 
 set(SIMULATOR_HEADERS
     nextnet/analysis.h)
