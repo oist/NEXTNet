@@ -70,6 +70,10 @@ set(TESTS_HEADERS
 set(TESTS_PCH
     nextnet/tests/stdafx.h)
 
+# *** Bundled source that shouldn't be formatted
+set(BUNDLED_HEADERS_AND_SOURCES
+    nextnet/catch/catch.hpp)
+
 # *** Global build settings
 
 # Includes are relative to the nextnet/ folder
@@ -88,6 +92,9 @@ add_compile_options(-Wall)
 add_compile_definitions(${CMAKE_DEFINES})
 
 # *** Dependencies
+
+# Add cmake directory to CMake module search path
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 # Boost headers are mandatory, iostreamd and filesystem are optional
 # and allow plots to be generated during test runs
@@ -172,6 +179,7 @@ add_executable(tests
     ${TESTS_PCH}
     ${LIB_HEADERS}
     ${LIB_PCH})
+set_target_properties(tests PROPERTIES EXCLUDE_FROM_ALL TRUE)
 target_precompile_headers(tests
     PUBLIC ${LIB_PCH}
     PUBLIC ${TESTS_PCH})
@@ -200,6 +208,7 @@ else()
     message("Plotting during tests: Disabled")
 endif()
 
+
 # Enable address and undefined behaviour sanitizers for all builds
 if (SANITIZE STREQUAL "debug")
     message("Address and thread sanitizer during tests: Debug builds")
@@ -219,4 +228,26 @@ elseif (SANITIZE STREQUAL "always")
         "-fsanitize=undefined")
 else()
     message("Address and thread sanitizer during tests: Disabled")
+endif()
+
+# *** Code formatter
+if (CLANGFORMAT)
+    message("Creating target 'clangformat' to run clang-format an all source files")
+    include(ClangFormat)
+
+    # Format all sources except third-party files we just bundlet
+    set(FORMAT_SOURCES
+        ${SIMULATOR_SOURCES}
+        ${LIB_SOURCES}
+        ${SIMULATOR_HEADERS}
+        ${LIB_HEADERS}
+        ${TESTS_HEADERS}
+        ${TESTS_SOURCES}
+        ${TESTS_PCH}
+        ${LIB_PCH})
+    list(REMOVE_ITEM FORMAT_SOURCES ${BUNDLED_HEADERS_AND_SOURCES})
+
+    # Create clangformat target, don't build by default
+    clangformat_setup(${FORMAT_SOURCES})
+    set_target_properties(clangformat PROPERTIES EXCLUDE_FROM_ALL TRUE)
 endif()
