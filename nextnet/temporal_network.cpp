@@ -408,12 +408,12 @@ std::optional<network_event_t> temporal_sirx_network::step(rng_t& engine, absolu
 
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
-/*----------- DYNAMIC NETWORK: ERDÖS REYNI -----------*/
+/*----------- DYNAMIC NETWORK: ERDÖS RENYI -----------*/
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
 
-temporal_erdos_reyni::temporal_erdos_reyni(int size, double avg_degree, double timescale, rng_t& engine)
-	:erdos_reyni(size, avg_degree, engine)
+temporal_erdos_renyi::temporal_erdos_renyi(int size, double avg_degree, double timescale, rng_t& engine)
+	:erdos_renyi(size, avg_degree, engine)
 	,edge_probability(avg_degree / (size - 1))
 	,alpha(edge_probability / timescale)
 	,beta((1.0 - edge_probability) / timescale)
@@ -430,7 +430,7 @@ temporal_erdos_reyni::temporal_erdos_reyni(int size, double avg_degree, double t
 	edges_absent = size * (size - 1) / 2 - edges_present;
 }
 
-absolutetime_t temporal_erdos_reyni::next(rng_t& engine, absolutetime_t) {
+absolutetime_t temporal_erdos_renyi::next(rng_t& engine, absolutetime_t) {
 	if (!std::isnan(next_time))
 		return next_time;
 	
@@ -443,7 +443,7 @@ absolutetime_t temporal_erdos_reyni::next(rng_t& engine, absolutetime_t) {
 	return next_time;
 }
 
-std::optional<network_event_t> temporal_erdos_reyni::step(rng_t& engine, absolutetime_t max_time) {
+std::optional<network_event_t> temporal_erdos_renyi::step(rng_t& engine, absolutetime_t max_time) {
 	/* Determine time of next event if necessary, return if after max_time */
 	if (std::isnan(next_time))
 		next(engine);
@@ -527,7 +527,7 @@ std::optional<network_event_t> temporal_erdos_reyni::step(rng_t& engine, absolut
 	}
 }
 
-void temporal_erdos_reyni::add_edge(node_t node, node_t neighbour) {
+void temporal_erdos_renyi::add_edge(node_t node, node_t neighbour) {
 	/* add forward edge */
 	std::vector<node_t>& al_node = this->adjacencylist.at(node);
 	al_node.push_back(neighbour);
@@ -543,7 +543,7 @@ void temporal_erdos_reyni::add_edge(node_t node, node_t neighbour) {
 	edges_present += 1;
 }
 
-void temporal_erdos_reyni::remove_edge(node_t node, int neighbour_index) {
+void temporal_erdos_renyi::remove_edge(node_t node, int neighbour_index) {
 	using std::swap;
 	
 	/* Remove forward edge */

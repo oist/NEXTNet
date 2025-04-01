@@ -133,8 +133,8 @@ struct temporal_sirx_network : public virtual temporal_network
  * + -> -. The steady-state probabilites are then p_+ = alpha / (alpha + beta),
  * and p_- = beta / (alpha + beta).
  */
-struct temporal_erdos_reyni : public virtual temporal_network, public virtual erdos_reyni {
-	temporal_erdos_reyni(int size, double avg_degree, double timescale, rng_t& engine);
+struct temporal_erdos_renyi : public virtual temporal_network, public virtual erdos_renyi {
+	temporal_erdos_renyi(int size, double avg_degree, double timescale, rng_t& engine);
 
 	virtual absolutetime_t next(rng_t& engine, absolutetime_t maxtime = INFINITY) override;
 
@@ -165,6 +165,9 @@ struct temporal_erdos_reyni : public virtual temporal_network, public virtual er
 	/* Degree-weighted node distribution */
 	dyndist::vector_distribution<unsigned> weighted_nodes;
 };
+
+/* Compatibility with previously miss-spelled name */
+typedef temporal_erdos_renyi temporal_erdos_reyni;
 
 
 struct activity_driven_network : virtual temporal_network, virtual mutable_network {

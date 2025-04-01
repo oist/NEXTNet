@@ -132,16 +132,19 @@ public:
 };
 
 //--------------------------------------
-//--------ERDOS REYNI GRAPH-------------
+//--------ERDOS RENYI GRAPH-------------
 //--------------------------------------
 
 /**
  * @brief A random Erdös-Reyni network
  */
-class erdos_reyni : public virtual adjacencylist_network, public virtual network_is_undirected {
+class erdos_renyi : public virtual adjacencylist_network, public virtual network_is_undirected {
 public:
-    erdos_reyni(int size, double avg_degree, rng_t& engine);
+    erdos_renyi(int size, double avg_degree, rng_t& engine);
 };
+
+/* Compatibility with miss-spelled previous name */
+typedef erdos_renyi erdos_reyni;
 
 //--------------------------------------
 //----------FULLY CONNECTED-------------

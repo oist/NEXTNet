@@ -54,11 +54,11 @@ index_t weighted_adjacencylist_network::outdegree(node_t node) {
 
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
-/*------ NETWORK: WEIGHTED ERDÖS-REYNI ---------------*/
+/*------ NETWORK: WEIGHTED ERDÖS-RENYI ---------------*/
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
 
-weighted_erdos_reyni::weighted_erdos_reyni(int size, double avg_degree,
+weighted_erdos_renyi::weighted_erdos_renyi(int size, double avg_degree,
 										   std::function<double(rng_t&)> weightdist, rng_t& engine){
 	/*--------------Initialisation--------------
 
@@ -88,8 +88,8 @@ weighted_erdos_reyni::weighted_erdos_reyni(int size, double avg_degree,
 	}
 }
 
-weighted_erdos_reyni::weighted_erdos_reyni(int size, double avg_degree,
+weighted_erdos_renyi::weighted_erdos_renyi(int size, double avg_degree,
 										   std::vector<double> w, std::vector<double> p,
 										   rng_t& engine)
-	:weighted_erdos_reyni(size, avg_degree, make_dist(w.begin(), w.end(), p.begin(), p.end()), engine)
+	:weighted_erdos_renyi(size, avg_degree, make_dist(w.begin(), w.end(), p.begin(), p.end()), engine)
 {}

@@ -131,11 +131,11 @@ watts_strogatz::watts_strogatz(node_t size, int k, double p, rng_t& engine) {
 
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
-/*-------------- NETWORK: ERDÖS-REYNI ----------------*/
+/*-------------- NETWORK: ERDÖS-RENYI ----------------*/
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
 
-erdos_reyni::erdos_reyni(int size, double avg_degree, rng_t& engine){
+erdos_renyi::erdos_renyi(int size, double avg_degree, rng_t& engine){
     /*--------------Initialisation--------------
 
      Construct erdos-Reyni graph and for each link we add an infection time:

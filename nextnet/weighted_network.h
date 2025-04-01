@@ -67,26 +67,26 @@ public:
 };
 
 //--------------------------------------
-//----------WEIGHTED ERDÖS REYNI--------
+//----------WEIGHTED ERDÖS RENYI--------
 //--------------------------------------
 
 /**
  * @brief A random Erdös-Reyni network
  */
-class weighted_erdos_reyni : public virtual weighted_adjacencylist_network, public virtual network_is_undirected {
+class weighted_erdos_renyi : public virtual weighted_adjacencylist_network, public virtual network_is_undirected {
 public:
 	/**
 	 * Creates a weighted Erdös-Reyni network in which weights are assigned i.i.d. using
 	 * the weightdist function. For each edge, weightdist(engine) is called to randomly generate
 	 * a weight.
 	 */
-	weighted_erdos_reyni(int size, double avg_degree, std::function<double(rng_t&)> weightdist, rng_t& engine);
+	weighted_erdos_renyi(int size, double avg_degree, std::function<double(rng_t&)> weightdist, rng_t& engine);
 	
 	/**
 	 * Creates a weighted Erdös-Reyni network in which weights are assigned i.i.d. by randomly
 	 * sampling weights from the vector w with probabilities p.
 	 */
-	weighted_erdos_reyni(int size, double avg_degree, std::vector<double> w, std::vector<double> p, rng_t& engine);
+	weighted_erdos_renyi(int size, double avg_degree, std::vector<double> w, std::vector<double> p, rng_t& engine);
 	
 private:
 	template<typename ItW, typename ItP>
@@ -99,3 +99,6 @@ private:
 		return [idx, w](rng_t& engine) { return w.at((*idx)(engine)); };
 	}
 };
+
+/* Compatibility with previously miss-spelled name */
+typedef weighted_erdos_renyi weighted_erdos_reyni;
