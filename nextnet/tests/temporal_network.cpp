@@ -82,7 +82,7 @@ TEST_CASE("dynamic empirical graph", "[dynamic_graph]")
     rng_t engine;
 
     double dt = 4;
-    empirical_temporal_network g(TEST_DATA_DIR "/test_empirical_network.txt", empirical_temporal_network::finite_duration, dt);
+    empirical_contact_network g(TEST_DATA_DIR "/test_empirical_network.txt", empirical_contact_network::finite_duration, dt);
     REQUIRE(g.nodes() == 14);
 
     /* evolve network up to time 0 */

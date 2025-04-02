@@ -168,7 +168,7 @@ TEST_CASE("Epidemic on empirical network nb2 with finite edge durations", "[dyna
 {
     rng_t engine(0);
 
-    empirical_temporal_network g(TEST_DATA_DIR "/college.tab", empirical_temporal_network::finite_duration, 3);
+    empirical_contact_network g(TEST_DATA_DIR "/college.tab", empirical_contact_network::finite_duration, 3);
     transmission_time_gamma psi(50, 3);
     transmission_time_gamma rho(100, 1);
     simulate_next_reaction nr(g, psi, &rho);
@@ -182,7 +182,7 @@ TEST_CASE("Epidemic on empirical network nb2 with infitesimal edge durations", "
 {
     rng_t engine(0);
 
-    empirical_temporal_network g(TEST_DATA_DIR "/college.tab", empirical_temporal_network::infitesimal_duration, 3);
+    empirical_contact_network g(TEST_DATA_DIR "/college.tab", empirical_contact_network::infitesimal_duration, 3);
     transmission_time_gamma psi(50, 3);
     transmission_time_gamma rho(100, 1);
     simulate_next_reaction nr(g, psi, &rho);

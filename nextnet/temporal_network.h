@@ -41,7 +41,7 @@ private:
     std::vector<indexed_set<node_t>> adjacencylist;
 };
 
-struct empirical_temporal_network : public virtual temporal_network
+struct empirical_contact_network : public virtual temporal_network
     , public virtual mutable_network
 {
     enum edge_duration_kind {
@@ -49,7 +49,7 @@ struct empirical_temporal_network : public virtual temporal_network
         infitesimal_duration = 2
     };
 
-    empirical_temporal_network(std::string path_to_file, edge_duration_kind contact_type, double dt);
+    empirical_contact_network(std::string path_to_file, edge_duration_kind contact_type, double dt);
 
     virtual absolutetime_t next(rng_t &engine, absolutetime_t maxtime = INFINITY) override;
 
