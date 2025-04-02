@@ -187,7 +187,7 @@ struct factory
                KET_OR_COMMA,
                WS5,
                DONE } state = WS1;
-        for (std::ptrdiff_t i = 0; i < s.size(); ++i) {
+        for (std::ptrdiff_t i = 0; i < (ptrdiff_t)s.size(); ++i) {
             const char c = s[i];
             switch (state) {
                 case WS1:
