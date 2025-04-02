@@ -12,6 +12,13 @@
 #include "random.h"
 #include "network.h"
 
+/**
+ * @brief Temporal network interface, i.e. networks which evolve over time
+ *
+ * Implementations must provide next() which determines the time of the next event,
+ * and step() which performs the corresponding change. Temporal networks may react
+ * to the epidemic state, see notify_epidemic_event().
+ */
 struct temporal_network : public virtual network
 {
     virtual absolutetime_t next(rng_t &engine, absolutetime_t maxtime = INFINITY) = 0;
@@ -21,6 +28,13 @@ struct temporal_network : public virtual network
     virtual void notify_epidemic_event(epidemic_event_t ev, rng_t &engine);
 };
 
+/**
+ * @brief Helper class for implementing mutable networks
+ *
+ * Provides basic mutators like add_edge() and remove_edge(). This avoids having
+ * to implement these in every temporal networks, since the basic temporal network
+ * interface is agnostic to network represenations and does not provide mutators.
+ */
 struct mutable_network : public virtual network
 {
     void resize(node_t nodes);
@@ -41,6 +55,12 @@ private:
     std::vector<indexed_set<node_t>> adjacencylist;
 };
 
+/**
+ * @brief Temporal network defined by short contacts at pre-determined times
+ *
+ * Contact times are read from a file, and either represent instantenous contacts,
+ * or contacts of some finite (usually short) duration dt.
+ */
 struct empirical_contact_network : public virtual temporal_network
     , public virtual mutable_network
 {
@@ -61,6 +81,14 @@ private:
     std::deque<network_event_t> event_queue;
 };
 
+
+/**
+ * @brief Temporal network modeled after the SIRX network of Maier & Brockmann, 2020
+ *
+ * Nodes in a arbitrary underlying network are removed with a rate based on their
+ * infection state. Non-infected nodes have removal rate kappa0, infected nodes have
+ * elevated rate kappa + kappa0.
+ */
 struct temporal_sirx_network : public virtual temporal_network
 {
     enum node_state_t { S = 1,
@@ -170,6 +198,14 @@ struct temporal_erdos_renyi : public virtual temporal_network
 /* Compatibility with previously miss-spelled name */
 typedef temporal_erdos_renyi temporal_erdos_reyni;
 
+/**
+ * @brief Activity-driven network model of Cai, Nie & Holme, 2024.
+ *
+ * Here, nodes are initially inactive and have degree zero. Node i activates with
+ * rate a[i] * eta and upon activation connects to m other uniformly chosen nodes
+ * (which are not necessarily active). Active nodes inactivate with constant rate
+ * recover_rate.
+ */
 struct activity_driven_network : virtual temporal_network
     , virtual mutable_network
 {
