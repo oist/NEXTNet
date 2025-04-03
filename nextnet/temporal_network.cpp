@@ -274,44 +274,64 @@ std::vector<std::vector<double>> empirical_contact_network::compute_number_of_ed
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
 
-temporal_state_network::temporal_state_network(node_t nodes, event_callback_type callback)
-    :event_callback(callback)
+temporal_state_network::temporal_state_network(node_t nodes, directed_kind directed_,
+											   node_state_callback_type callback)
+    :directed(directed_), node_state_callback(callback)
+	,flipped_edge_next(false)
 {
     this->resize(nodes);
 }
 
-void temporal_state_network::enable_node(node_t node, absolutetime_t time, bool inform)
+void temporal_state_network::node_state(node_t node, state_t state, absolutetime_t time)
 {
-    auto& queue_by_node = queue.get<by_node>();
-    if (queue_by_node.find(node) != queue_by_node.end())
-        throw std::logic_error("node is already enabled");
-
-    state_event_type ev = {
-        .time = time,
-        .kind = node_enabled,
-        .node = node,
-        .inform = inform
-    };
-    queue.insert(ev);
+	queue_event(state_event_type {
+		.time = time,
+		.kind = node_callback,
+		.node = node,
+		.state = state
+	});
 }
 
-void temporal_state_network::disable_node(node_t node, absolutetime_t time, bool inform)
+void temporal_state_network::add_edge(node_t node, node_t neighbour, double weight, absolutetime_t time)
 {
-    state_event_type ev = {
-        .time = time,
-        .kind = node_disabled,
-        .node = node,
-        .inform = inform
-    };
-    queue.insert(ev);
+	queue_event(state_event_type {
+		.time = time,
+		.kind = neighbour_added,
+		.node = node,
+		.neighbour = neighbour,
+		.weight = weight
+	});
 }
 
-void temporal_state_network::add_edge(node_t src, node_t dst, double weight, absolutetime_t time, bool inform)
+void temporal_state_network::remove_edge(node_t node, node_t neighbour, absolutetime_t time)
 {
+	queue_event(state_event_type {
+		.time = time,
+		.kind = neighbour_added,
+		.node = node,
+		.neighbour = neighbour
+	});
 }
 
-void temporal_state_network::remove_edge(node_t src, node_t dst, absolutetime_t time, bool inform)
+void temporal_state_network::queue_event(state_event_type ev)
 {
+	if (ev.time < current_time)
+		throw std::range_error("cannot queue event for a time before the current time");
+	
+	queue.insert(ev);
+}
+
+void temporal_state_network::clear_events(node_t node)
+{
+	/* Find and remove all events queued for the node */
+	auto& queue_by_node = queue.get<by_node>();
+	auto rng = queue_by_node.equal_range(node);
+	queue_by_node.erase(rng.first, rng.second);
+}
+
+bool temporal_state_network::is_undirected()
+{
+	return directed == undirected_network;
 }
 
 absolutetime_t temporal_state_network::next(rng_t &engine, absolutetime_t maxtime)
@@ -324,20 +344,81 @@ absolutetime_t temporal_state_network::next(rng_t &engine, absolutetime_t maxtim
 
 std::optional<network_event_t> temporal_state_network::step(rng_t &engine, absolutetime_t max_time)
 {
-    /* Fetch earliest entry from queue, return INFINITY if none exists or past max_time */
-    auto& queue_by_time = queue.get<by_time>();
-    auto queue_earliest = queue_by_time.begin();
-    if (queue_earliest == queue_by_time.end())
-        return std::nullopt;
-    const state_event_type& ev = *queue_earliest;
-    if (ev.time > max_time)
-        return std::nullopt;
+	while (true) {
+		/* Fetch earliest entry from queue, return INFINITY if none exists or past max_time */
+		auto& queue_by_time = queue.get<by_time>();
+		auto queue_earliest = queue_by_time.begin();
+		if (queue_earliest == queue_by_time.end())
+			return std::nullopt;
+		state_event_type ev = *queue_earliest;
+		if (ev.time > max_time)
+			return std::nullopt;
+		
+		/* On undirected networks, edge event are reported for both edge directions
+		 * During the first pass, we don't unqueue and set flipped_edge_next. During
+		 * the second pass (recognized by flipped_edge_next), we report the flipped
+		 * edge and dequeue
+		 */
+		if (flipped_edge_next) {
+			assert(directed == undirected_network);
+			assert((ev.kind == neighbour_added) || (ev.kind == neighbour_removed));
+			assert((ev.node >= 0) && (ev.neighbour >= 0));
+			std::swap(ev.node, ev.neighbour);
+		}
+		if (((ev.kind == neighbour_added) || (ev.kind == neighbour_removed)) &&
+			(directed == undirected_network) && !flipped_edge_next)
+		{
+			flipped_edge_next = true;
+		} else {
+			queue_by_time.erase(queue_earliest);
+		}
+		
+		switch (ev.kind) {
+			case node_callback:
+				node_state_callback(*this, ev.node, node_callback, ev.state);
+				break;
+				
+			case neighbour_added:
+				mutable_weighted_network::add_edge(ev.node, ev.neighbour, ev.weight);
+				return network_event_t {
+					.time = ev.time,
+					.kind = network_event_kind::neighbour_added,
+					.source_node = ev.node,
+					.target_node = ev.neighbour,
+					.weight = ev.weight
+				};
+				
+			case neighbour_removed:
+				mutable_weighted_network::remove_edge(ev.node, ev.neighbour);
+				return network_event_t {
+					.time = ev.time,
+					.kind = network_event_kind::neighbour_removed,
+					.source_node = ev.node,
+					.target_node = ev.neighbour,
+					.weight = ev.weight
+				};
+				
+			default:
+				throw std::logic_error("invalid event in temporal_state_network queue");
+		}
+	}
+}
 
-    /* Dequeue entry */
-    queue_by_time.erase(queue_earliest);
-
-    /* Process entry TODO */
-    return std::nullopt;
+void temporal_state_network::notify_epidemic_event(epidemic_event_t ev, rng_t &engine)
+{
+	state_event_kind ev_kind;
+	switch(ev.kind) {
+		case epidemic_event_kind::infection:
+		case epidemic_event_kind::outside_infection:
+			ev_kind = node_infected;
+			break;
+		case epidemic_event_kind::reset:
+			ev_kind = node_reset;
+			break;
+		default:
+			throw std::logic_error("invalid epidemic event type");
+	}
+	node_state_callback(*this, ev.node, ev_kind, 0);
 }
 
 

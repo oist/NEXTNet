@@ -115,47 +115,67 @@ private:
 /**
  * @brief The temporal_state_network class
  */
-struct temporal_state_network : public virtual temporal_network, public virtual weighted_network, public virtual mutable_weighted_network
+struct temporal_state_network : public virtual temporal_network, public virtual weighted_network
+	, virtual mutable_weighted_network
 {
 public:
-    enum state_even_kind {
-        node_enabled = 1,
-        node_disabled = 2,
-        node_infected = 3,
-        node_reset = 4,
-        neighbour_added = 5,
-        neighbour_removed = 6
+	typedef std::int64_t state_t;
+	
+	enum directed_kind {
+		undirected_network = 1,
+		directed_network = 2
+	};
+	
+    enum state_event_kind {
+        node_callback = 1,
+        node_infected = 2,
+        node_reset = 3,
+        neighbour_added = 4,
+        neighbour_removed = 5
     };
 
     struct state_event_type {
         absolutetime_t time = INFINITY;
-        state_even_kind kind = (state_even_kind)0;
+		state_event_kind kind = (state_event_kind)0;
         node_t node = -1;
         node_t neighbour = -1;
+		state_t state = 0;
         double weight = 0.0;
         bool inform = false;
     };
 
-    typedef std::function<void (const state_event_type&)> event_callback_type;
+    typedef std::function<void (temporal_state_network&, node_t, state_event_kind, state_t)> node_state_callback_type;
 
-    temporal_state_network(node_t nodes, event_callback_type callback);
+    temporal_state_network(node_t nodes, directed_kind directed, node_state_callback_type callback);
 
-    void enable_node(node_t node, absolutetime_t time, bool inform);
+    void node_state(node_t node, state_t state, absolutetime_t time);
+	
+	void add_edge(node_t src, node_t dst, double weight, absolutetime_t time);
 
-    void disable_node(node_t node, absolutetime_t time, bool inform);
+	void remove_edge(node_t src, node_t dst, absolutetime_t time);
 
-    void add_edge(node_t src, node_t dst, double weight, absolutetime_t time, bool inform);
+	void add_edge(node_t src, node_t dst, double weight) {
+		add_edge(src, dst, weight, current_time);
+	}
+	
+	void remove_edge(node_t src, node_t dst) {
+		remove_edge(src, dst, current_time);
+	}
 
-    void remove_edge(node_t src, node_t dst, absolutetime_t time, bool inform);
+	void clear_events(node_t node);
 
+	virtual bool is_undirected() override;
+	
     virtual absolutetime_t next(rng_t &engine, absolutetime_t maxtime = INFINITY) override;
 
     virtual std::optional<network_event_t> step(rng_t &engine, absolutetime_t max_time = NAN) override;
 
+	virtual void notify_epidemic_event(epidemic_event_t ev, rng_t &engine) override;
+	
 private:
     struct by_time {};
     struct by_node {};
-
+	
     typedef bmi::multi_index_container<
         state_event_type,
         bmi::indexed_by<
@@ -164,10 +184,16 @@ private:
         >
     > queue_type;
 
-    event_callback_type event_callback;
+	void queue_event(state_event_type ev);
+	
+	const directed_kind directed;
+	
+    node_state_callback_type node_state_callback;
 
     double current_time = 0.0;
 
+	bool flipped_edge_next;
+	
     queue_type queue;
 };
 
