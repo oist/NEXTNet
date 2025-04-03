@@ -274,7 +274,7 @@ std::vector<std::vector<double>> empirical_contact_network::compute_number_of_ed
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
 
-temporal_state_network::temporal_state_network(std::size_t nodes, event_callback_type callback)
+temporal_state_network::temporal_state_network(node_t nodes, event_callback_type callback)
     :event_callback(callback)
 {
     this->resize(nodes);
@@ -306,15 +306,11 @@ void temporal_state_network::disable_node(node_t node, absolutetime_t time, bool
     queue.insert(ev);
 }
 
-bool temporal_state_network::add_edge(node_t src, node_t dst, absolutetime_t time, bool inform)
+void temporal_state_network::add_edge(node_t src, node_t dst, double weight, absolutetime_t time, bool inform)
 {
 }
 
-bool temporal_state_network::add_edge(node_t src, node_t dst, double weight, absolutetime_t time, bool inform)
-{
-}
-
-bool temporal_state_network::remove_edge(node_t src, node_t dst, absolutetime_t time, bool inform)
+void temporal_state_network::remove_edge(node_t src, node_t dst, absolutetime_t time, bool inform)
 {
 }
 

@@ -138,17 +138,15 @@ public:
 
     typedef std::function<void (const state_event_type&)> event_callback_type;
 
-    temporal_state_network(std::size_t nodes, event_callback_type callback);
+    temporal_state_network(node_t nodes, event_callback_type callback);
 
     void enable_node(node_t node, absolutetime_t time, bool inform);
 
     void disable_node(node_t node, absolutetime_t time, bool inform);
 
-    bool add_edge(node_t src, node_t dst, absolutetime_t time, bool inform);
+    void add_edge(node_t src, node_t dst, double weight, absolutetime_t time, bool inform);
 
-    bool add_edge(node_t src, node_t dst, double weight, absolutetime_t time, bool inform);
-
-    bool remove_edge(node_t src, node_t dst, absolutetime_t time, bool inform);
+    void remove_edge(node_t src, node_t dst, absolutetime_t time, bool inform);
 
     virtual absolutetime_t next(rng_t &engine, absolutetime_t maxtime = INFINITY) override;
 
@@ -167,6 +165,8 @@ private:
     > queue_type;
 
     event_callback_type event_callback;
+
+    double current_time = 0.0;
 
     queue_type queue;
 };
