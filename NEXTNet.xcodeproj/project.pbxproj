@@ -35,7 +35,6 @@
 		F921EC872952A7BF00667339 /* algorithm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F921EC862952A7BF00667339 /* algorithm.cpp */; };
 		F921EC882952A7BF00667339 /* algorithm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F921EC862952A7BF00667339 /* algorithm.cpp */; };
 		F992992C2910E2B3001432FD /* plot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F99299272910E2B3001432FD /* plot.cpp */; };
-		F9A075AA2D06F91C00478FBE /* simulate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F9A075A92D06F91C00478FBE /* simulate.cpp */; };
 		F9A08B1E29F7B28200CF3432 /* brownian_proximity_network.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F9C0D33429F6956400A99D46 /* brownian_proximity_network.cpp */; };
 		F9C0D33629F6956400A99D46 /* brownian_proximity_network.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F9C0D33429F6956400A99D46 /* brownian_proximity_network.cpp */; };
 		F9CFD98A299B55A90078FD70 /* temporal_network.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F9CFD988299B55A90078FD70 /* temporal_network.cpp */; };
@@ -118,7 +117,6 @@
 		F99D7A9B27E21CC000200C18 /* network.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = network.cpp; sourceTree = "<group>"; };
 		F99D7A9C27E21CC000200C18 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		F99D7AAB27E21DD400200C18 /* tests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = tests; sourceTree = BUILT_PRODUCTS_DIR; };
-		F9A075A92D06F91C00478FBE /* simulate.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = simulate.cpp; sourceTree = "<group>"; };
 		F9A075B22D081E2A00478FBE /* popl.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = popl.hpp; sourceTree = "<group>"; };
 		F9ADCB9A28128A6D00AEB3C0 /* nextreaction.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = nextreaction.cpp; sourceTree = "<group>"; };
 		F9C0D33429F6956400A99D46 /* brownian_proximity_network.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = brownian_proximity_network.cpp; path = nextnet/brownian_proximity_network.cpp; sourceTree = SOURCE_ROOT; };
@@ -415,7 +413,6 @@
 				982A07D927D5BED900B4772A /* network.cpp in Sources */,
 				98B96F7C28111BB800A78600 /* nMGA.cpp in Sources */,
 				F921EC872952A7BF00667339 /* algorithm.cpp in Sources */,
-				F9A075AA2D06F91C00478FBE /* simulate.cpp in Sources */,
 				984A0CA027C0DE5C004A0A96 /* main.cpp in Sources */,
 				F9C0D33629F6956400A99D46 /* brownian_proximity_network.cpp in Sources */,
 				F9EDD82F2A1C90F5003B3F31 /* REGIR.cpp in Sources */,
