@@ -65,6 +65,59 @@ index_t mutable_network::outdegree(node_t node)
 
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
+/*----------- MUTABLE_WEIGHTED_NETWORK ---------------*/
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+
+void mutable_weighted_network::resize(node_t nodes)
+{
+    adjacencylist.resize((std::size_t)nodes);
+}
+
+bool mutable_weighted_network::has_edge(node_t src, node_t dst)
+{
+    auto &al = adjacencylist.at(src);
+    return (al.find(dst) != al.end());
+}
+
+void mutable_weighted_network::add_edge(node_t src, node_t dst, double weight)
+{
+    if ((weight < 0) || !std::isfinite(weight))
+        throw std::range_error("weights must be positive and finite");
+    if (weight == 0.0)
+        remove_edge(src, dst);
+    else
+        adjacencylist.at(src)[dst] = weight;
+}
+
+bool mutable_weighted_network::remove_edge(node_t src, node_t dst)
+{
+    return (adjacencylist.at(src).erase(dst) > 0);
+}
+
+node_t mutable_weighted_network::nodes()
+{
+    return (node_t)adjacencylist.size();
+}
+
+node_t mutable_weighted_network::neighbour(node_t node, int neighbour_index, double *weight)
+{
+    const auto &al = adjacencylist.at(node);
+    if ((neighbour_index < 0) || ((std::size_t)neighbour_index >= al.size()))
+        return -1;
+    const auto& n = al[neighbour_index];
+    if (weight != nullptr)
+        *weight = n.second;
+    return n.first;
+}
+
+index_t mutable_weighted_network::outdegree(node_t node)
+{
+    return (index_t)adjacencylist.at(node).size();
+}
+
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
 /*----------- DYNAMIC NETWORK: EMPIRICAL -==----------*/
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/

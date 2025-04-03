@@ -9,8 +9,10 @@
 
 #include "stdafx.h"
 #include "types.h"
+#include "utility.h"
 #include "random.h"
 #include "network.h"
+#include "weighted_network.h"
 
 /**
  * @brief Temporal network interface, i.e. networks which evolve over time
@@ -53,6 +55,34 @@ struct mutable_network : public virtual network
 
 private:
     std::vector<indexed_set<node_t>> adjacencylist;
+};
+
+/**
+ * @brief Helper class for implementing mutable weighted networks
+ *
+ * Provides basic mutators like add_edge() and remove_edge(). This avoids having
+ * to implement these in every temporal networks, since the basic temporal network
+ * interface is agnostic to network represenations and does not provide mutators.
+ */
+struct mutable_weighted_network : public virtual network
+        , public virtual weighted_network
+{
+    void resize(node_t nodes);
+
+    bool has_edge(node_t src, node_t dst);
+
+    void add_edge(node_t src, node_t dst, double weight);
+
+    bool remove_edge(node_t src, node_t dst);
+
+    virtual node_t nodes();
+
+    virtual node_t neighbour(node_t node, int neighbour_index, double *weight);
+
+    virtual index_t outdegree(node_t node);
+
+private:
+    std::vector<indexed_map<node_t, double>> adjacencylist;
 };
 
 /**
