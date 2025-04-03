@@ -317,17 +317,17 @@ TEST_CASE("Plot SIS average trajectories on dynamic empirical network", "[dynami
     const double TMAX         = 2000;
     const double DT           = 2;
 
-    auto run = [&](empirical_temporal_network::edge_duration_kind duration_kind) -> auto {
+    auto run = [&](empirical_contact_network::edge_duration_kind duration_kind) -> auto {
         std::vector<double> t, y_tot, y_new;
         average_trajectories(engine, [&](rng_t &engine) {
 			struct {
-				std::unique_ptr<empirical_temporal_network> g;
+				std::unique_ptr<empirical_contact_network> g;
 				std::unique_ptr<transmission_time_gamma> psi;
 				std::unique_ptr<transmission_time_gamma> rho;
 				std::unique_ptr<simulate_next_reaction> nr;
 				std::unique_ptr<simulate_on_temporal_network> simulator;
 			} env;
-			env.g = std::make_unique<empirical_temporal_network>(TEST_DATA_DIR "/college.tab", duration_kind, DT);
+			env.g = std::make_unique<empirical_contact_network>(TEST_DATA_DIR "/college.tab", duration_kind, DT);
 			env.psi = std::make_unique<transmission_time_gamma>(PSI_MEAN, PSI_VARIANCE);
 			env.rho = std::make_unique<transmission_time_gamma>(RHO_MEAN, RHO_VARIANCE);
 			env.nr = std::make_unique<simulate_next_reaction>(*env.g.get(), *env.psi.get(), env.rho.get());
@@ -347,8 +347,8 @@ TEST_CASE("Plot SIS average trajectories on dynamic empirical network", "[dynami
         return std::make_tuple(t, y_tot, y_new);
     };
 
-    auto edge_fin  = run(empirical_temporal_network::finite_duration);
-    auto edge_infi = run(empirical_temporal_network::infitesimal_duration);
+    auto edge_fin  = run(empirical_contact_network::finite_duration);
+    auto edge_infi = run(empirical_contact_network::infitesimal_duration);
 
     plot("dynamic.empirical.sis.mean.pdf", "SIS average trajectory on dynamic empirical graph [NextReaction]", [&](auto &gp, auto &p) {
         p.add_plot1d(std::make_pair(std::get<0>(edge_fin), std::get<2>(edge_fin)), "with lines title 'finite edge duration'"s);
