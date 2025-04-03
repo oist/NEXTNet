@@ -51,6 +51,11 @@
 #include <boost/math/statistics/univariate_statistics.hpp>
 #include <boost/math/tools/roots.hpp>
 #include <boost/math/special_functions/erf.hpp>
+#include <boost/multi_index_container.hpp>
+#include <boost/multi_index/tag.hpp>
+#include <boost/multi_index/member.hpp>
+#include <boost/multi_index/ordered_index.hpp>
+#include <boost/multi_index/hashed_index.hpp>
 
 #if defined(__clang__)
 #    pragma clang diagnostic pop
@@ -58,8 +63,9 @@
 #    pragma GCC diagnostic pop
 #endif
 
-/* Make boost::math available as simply bm */
+/* Make boost namespaces available under shortcuts */
 namespace bm = boost::math;
+namespace bmi = boost::multi_index;
 
 // Priority Queue
 

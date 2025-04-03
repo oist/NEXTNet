@@ -270,6 +270,83 @@ std::vector<std::vector<double>> empirical_contact_network::compute_number_of_ed
 
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
+/*-- TEMPORAL NETWORK: TEMPORAL_STATE_NETWORK --------*/
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+
+temporal_state_network::temporal_state_network(std::size_t nodes, event_callback_type callback)
+    :event_callback(callback)
+{
+    this->resize(nodes);
+}
+
+void temporal_state_network::enable_node(node_t node, absolutetime_t time, bool inform)
+{
+    auto& queue_by_node = queue.get<by_node>();
+    if (queue_by_node.find(node) != queue_by_node.end())
+        throw std::logic_error("node is already enabled");
+
+    state_event_type ev = {
+        .time = time,
+        .kind = node_enabled,
+        .node = node,
+        .inform = inform
+    };
+    queue.insert(ev);
+}
+
+void temporal_state_network::disable_node(node_t node, absolutetime_t time, bool inform)
+{
+    state_event_type ev = {
+        .time = time,
+        .kind = node_disabled,
+        .node = node,
+        .inform = inform
+    };
+    queue.insert(ev);
+}
+
+bool temporal_state_network::add_edge(node_t src, node_t dst, absolutetime_t time, bool inform)
+{
+}
+
+bool temporal_state_network::add_edge(node_t src, node_t dst, double weight, absolutetime_t time, bool inform)
+{
+}
+
+bool temporal_state_network::remove_edge(node_t src, node_t dst, absolutetime_t time, bool inform)
+{
+}
+
+absolutetime_t temporal_state_network::next(rng_t &engine, absolutetime_t maxtime)
+{
+    auto& queue_by_time = queue.get<by_time>();
+    if (queue_by_time.begin() == queue_by_time.end())
+        return INFINITY;
+    return queue_by_time.begin()->time;
+}
+
+std::optional<network_event_t> temporal_state_network::step(rng_t &engine, absolutetime_t max_time)
+{
+    /* Fetch earliest entry from queue, return INFINITY if none exists or past max_time */
+    auto& queue_by_time = queue.get<by_time>();
+    auto queue_earliest = queue_by_time.begin();
+    if (queue_earliest == queue_by_time.end())
+        return std::nullopt;
+    const state_event_type& ev = *queue_earliest;
+    if (ev.time > max_time)
+        return std::nullopt;
+
+    /* Dequeue entry */
+    queue_by_time.erase(queue_earliest);
+
+    /* Process entry TODO */
+    return std::nullopt;
+}
+
+
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
 /*----------- DYNAMIC NETWORK: SIRX NETWORK ----------*/
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/

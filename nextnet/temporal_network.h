@@ -113,6 +113,66 @@ private:
 
 
 /**
+ * @brief The temporal_state_network class
+ */
+struct temporal_state_network : public virtual temporal_network, public virtual weighted_network, public virtual mutable_weighted_network
+{
+public:
+    enum state_even_kind {
+        node_enabled = 1,
+        node_disabled = 2,
+        node_infected = 3,
+        node_reset = 4,
+        neighbour_added = 5,
+        neighbour_removed = 6
+    };
+
+    struct state_event_type {
+        absolutetime_t time = INFINITY;
+        state_even_kind kind = (state_even_kind)0;
+        node_t node = -1;
+        node_t neighbour = -1;
+        double weight = 0.0;
+        bool inform = false;
+    };
+
+    typedef std::function<void (const state_event_type&)> event_callback_type;
+
+    temporal_state_network(std::size_t nodes, event_callback_type callback);
+
+    void enable_node(node_t node, absolutetime_t time, bool inform);
+
+    void disable_node(node_t node, absolutetime_t time, bool inform);
+
+    bool add_edge(node_t src, node_t dst, absolutetime_t time, bool inform);
+
+    bool add_edge(node_t src, node_t dst, double weight, absolutetime_t time, bool inform);
+
+    bool remove_edge(node_t src, node_t dst, absolutetime_t time, bool inform);
+
+    virtual absolutetime_t next(rng_t &engine, absolutetime_t maxtime = INFINITY) override;
+
+    virtual std::optional<network_event_t> step(rng_t &engine, absolutetime_t max_time = NAN) override;
+
+private:
+    struct by_time {};
+    struct by_node {};
+
+    typedef bmi::multi_index_container<
+        state_event_type,
+        bmi::indexed_by<
+            bmi::ordered_non_unique<bmi::tag<by_time>, bmi::member<state_event_type,absolutetime_t,&state_event_type::time>>,
+            bmi::hashed_non_unique<bmi::tag<by_node>, bmi::member<state_event_type,node_t,&state_event_type::node>>
+        >
+    > queue_type;
+
+    event_callback_type event_callback;
+
+    queue_type queue;
+};
+
+
+/**
  * @brief Temporal network modeled after the SIRX network of Maier & Brockmann, 2020
  *
  * Nodes in a arbitrary underlying network are removed with a rate based on their
