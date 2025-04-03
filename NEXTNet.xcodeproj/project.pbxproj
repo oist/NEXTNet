@@ -184,7 +184,6 @@
 		984A0C9E27C0DE5C004A0A96 /* nextnet */ = {
 			isa = PBXGroup;
 			children = (
-				F9A4651A2923B2B700393E90 /* programs */,
 				984A0CA827C0DF3B004A0A96 /* stdafx.h */,
 				986328CC27D728F30029F31F /* types.h */,
 				98CFFC0227F4696F00A6E322 /* utility.cpp */,
@@ -279,14 +278,6 @@
 			);
 			name = popl;
 			path = popl/include;
-			sourceTree = "<group>";
-		};
-		F9A4651A2923B2B700393E90 /* programs */ = {
-			isa = PBXGroup;
-			children = (
-				F9A075A92D06F91C00478FBE /* simulate.cpp */,
-			);
-			path = programs;
 			sourceTree = "<group>";
 		};
 		F9D26B7727E2242B005A272D /* Frameworks */ = {
