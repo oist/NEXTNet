@@ -27,6 +27,8 @@ class weighted_network : public virtual network
 public:
     virtual ~weighted_network();
 
+	virtual bool is_unweighted();
+	
     /**
      * @brief Returns the target of the i-th outgoing edge of node <node>
      * @param node node to query
@@ -42,6 +44,13 @@ public:
      */
     virtual node_t neighbour(node_t node, int neighbour_index) override;
 };
+
+/**
+ * @brief Converts a points to a network into a pointer to a weighted number if
+ * the network is actually weighted (i.e. an instance of weighted_network and is_unweighted
+ * is false).
+ */
+weighted_network* as_weighted_network(network* nw);
 
 //--------------------------------------
 //------WEIGHTED ADJACENCYLIST GRAPH----

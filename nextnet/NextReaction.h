@@ -24,7 +24,7 @@ public:
                            const class transmission_time *rho_ = nullptr,
                            params p_                           = params())
         : nw(nw_)
-        , nw_weighted(dynamic_cast<weighted_network *>(&nw))
+        , nw_weighted(as_weighted_network(&nw))
         , psi(psi_)
         , rho(rho_)
         , p(p_)
