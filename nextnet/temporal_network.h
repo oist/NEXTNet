@@ -69,7 +69,11 @@ struct mutable_weighted_network : public virtual network
 {
     void resize(node_t nodes);
 
-    bool has_edge(node_t src, node_t dst);
+	bool has_edge(node_t src, node_t dst);
+	
+    bool has_edge(node_t src, node_t dst, double* weight);
+	
+	double edge_weight(node_t src, node_t dst);
 
     void add_edge(node_t src, node_t dst, double weight);
 

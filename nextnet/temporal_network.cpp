@@ -80,6 +80,27 @@ bool mutable_weighted_network::has_edge(node_t src, node_t dst)
     return (al.find(dst) != al.end());
 }
 
+bool mutable_weighted_network::has_edge(node_t src, node_t dst, double* weight)
+{
+	auto &al = adjacencylist.at(src);
+	const auto i = al.find(dst);
+	if (i == al.end()) {
+		*weight = NAN;
+		return false;
+	}
+	*weight = i->second;
+	return true;
+}
+
+double mutable_weighted_network::edge_weight(node_t src, node_t dst)
+{
+	auto &al = adjacencylist.at(src);
+	auto i = al.find(dst);
+	if (i == al.end())
+		return NAN;
+	return i->second;
+}
+
 void mutable_weighted_network::add_edge(node_t src, node_t dst, double weight)
 {
     if ((weight < 0) || !std::isfinite(weight))
