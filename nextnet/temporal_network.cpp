@@ -335,7 +335,11 @@ std::optional<network_event_t> next_reaction_network::step(rng_t &engine, absolu
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
 
-empirical_contact_network::empirical_contact_network(std::string path_to_file, empirical_contact_network::edge_duration_kind contact_type, interval_t dt)
+empirical_contact_network::empirical_contact_network(
+	std::string path_to_file, network_kind kind,
+	edge_duration_kind contact_type, interval_t dt
+)
+	:next_reaction_network(kind)
 {
     node_t max_node = 0;
 
@@ -356,100 +360,39 @@ empirical_contact_network::empirical_contact_network(std::string path_to_file, e
         /* queue event */
         switch (contact_type) {
             case finite_duration: {
-                network_event_t ev1{
+				queue_network_event(network_event_t {
                     .kind        = network_event_kind::neighbour_added,
                     .source_node = src,
                     .target_node = dst,
                     .weight      = 1.0,
                     .time        = time - dt / 2,
-                };
-                event_queue.push_back(ev1);
+				});
 
-                network_event_t ev2{
+				queue_network_event(network_event_t {
                     .kind        = network_event_kind::neighbour_removed,
                     .source_node = src,
                     .target_node = dst,
                     .weight      = 1.0,
                     .time        = time + dt / 2
-                };
-                event_queue.push_back(ev2);
+				});
                 break;
             }
+				
             case infitesimal_duration: {
-                network_event_t ev{
+				queue_network_event(network_event_t {
                     .kind        = network_event_kind::instantenous_contact,
                     .source_node = src,
                     .target_node = dst,
                     .weight      = dt,
                     .time        = time
-                };
-                event_queue.push_back(ev);
+				});
                 break;
             }
         }
     }
 
-    /* make sure events are sorted */
-    auto cmp = [](const network_event_t &a, const network_event_t &b) {
-        return a.time < b.time;
-    };
-    if (!std::is_sorted(event_queue.begin(), event_queue.end(), cmp))
-        std::sort(event_queue.begin(), event_queue.end(), cmp);
-
     /* Allocate adjacency list */
     resize(max_node + 1);
-}
-
-absolutetime_t empirical_contact_network::next(rng_t &engine, absolutetime_t)
-{
-    /* find next actual event, skipping over events that do nothing */
-    for (network_event_t &event : event_queue) {
-        switch (event.kind) {
-            case network_event_kind::neighbour_added:
-                if (!has_edge(event.source_node, event.target_node))
-                    return event.time;
-                break;
-            case network_event_kind::neighbour_removed:
-                if (has_edge(event.source_node, event.target_node))
-                    return event.time;
-                break;
-            default:
-                return event.time;
-        }
-    }
-    return INFINITY;
-}
-
-std::optional<network_event_t> empirical_contact_network::step(rng_t &engine, absolutetime_t max_time)
-{
-    /* loop until we find an event, necessary because add/remove may be skipped if edge already exists */
-    while (!event_queue.empty()) {
-        /* process event if not later than max_time */
-        network_event_t event = event_queue.front();
-        if (!std::isnan(max_time) && (event.time > max_time))
-            break;
-        event_queue.pop_front();
-
-        /* update graph
-         * NOTE: The event-skipping logic below must be kept in sync with next()
-         */
-        switch (event.kind) {
-            case network_event_kind::neighbour_added:
-                /* add edge, report event unless edge already existed */
-                if (add_edge(event.source_node, event.target_node))
-                    return event;
-                break;
-            case network_event_kind::neighbour_removed:
-                /* remove edge, report event if edge didn't exist */
-                if (remove_edge(event.source_node, event.target_node))
-                    return event;
-                break;
-            default:
-                /* never skipped */
-                return event;
-        }
-    }
-    return std::nullopt;
 }
 
 std::vector<std::vector<double>> empirical_contact_network::compute_number_of_edges(rng_t &engine)

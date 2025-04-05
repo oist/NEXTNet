@@ -181,24 +181,17 @@ private:
  * Contact times are read from a file, and either represent instantenous contacts,
  * or contacts of some finite (usually short) duration dt.
  */
-struct empirical_contact_network : public virtual temporal_network
-    , public virtual mutable_network
+struct empirical_contact_network : public virtual next_reaction_network
 {
     enum edge_duration_kind {
         finite_duration      = 1,
         infitesimal_duration = 2
     };
 
-    empirical_contact_network(std::string path_to_file, edge_duration_kind contact_type, double dt);
-
-    virtual absolutetime_t next(rng_t &engine, absolutetime_t maxtime = INFINITY) override;
-
-    virtual std::optional<network_event_t> step(rng_t &engine, absolutetime_t max_time = NAN) override;
+    empirical_contact_network(std::string path_to_file, network_kind,
+							  edge_duration_kind contact_type, double dt);
 
     std::vector<std::vector<double>> compute_number_of_edges(rng_t &engine);
-
-private:
-    std::deque<network_event_t> event_queue;
 };
 
 
