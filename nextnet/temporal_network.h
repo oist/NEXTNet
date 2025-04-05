@@ -89,6 +89,92 @@ private:
     std::vector<indexed_map<node_t, double>> adjacencylist;
 };
 
+
+/**
+ * @brief Base class for nextreaction-based temporal networks.
+ *
+ * Network events can be queued and are reported in order of ascending time.
+ * In addition to network events, arbitrary callbacks can be queued and are executed
+ * at the appropriate time.
+ */
+struct next_reaction_network : public virtual network
+	, public virtual weighted_network, public virtual temporal_network
+	, virtual mutable_weighted_network
+{
+	/**
+	 * @brief Bitfield describing the network properties (all constants must be powers of 2!)
+	 */
+	enum network_kind {
+		directed_kind = 1,
+		weighted_kind = 2
+	};
+	
+	typedef std::function<void ()> event_callback;
+
+protected:
+	struct queue_entry {
+		absolutetime_t time;
+		std::variant<
+			network_event_t,
+			event_callback
+		> event;
+
+		bool operator<(const queue_entry &o) const { return time < o.time; }
+		bool operator<=(const queue_entry &o) const { return time <= o.time; }
+		bool operator==(const queue_entry &o) const { return time == o.time; }
+		bool operator!=(const queue_entry &o) const { return time != o.time; }
+		bool operator>=(const queue_entry &o) const { return time >= o.time; }
+		bool operator>(const queue_entry &o) const { return time > o.time; }
+	};
+
+public:
+	next_reaction_network(network_kind kind_);
+	
+	void queue_network_event(network_event_t ev);
+
+	void queue_callback(absolutetime_t time, event_callback cb);
+
+	virtual bool is_undirected() override;
+	
+	virtual bool is_unweighted() override;
+	
+	virtual absolutetime_t next(rng_t &engine, absolutetime_t maxtime = INFINITY) override;
+
+	virtual std::optional<network_event_t> step(rng_t &engine, absolutetime_t max_time = NAN) override;
+
+	const network_kind kind;
+	
+	double next_time = NAN;
+	
+	double current_time = 0.0;
+
+	bool flipped_edge_next;
+	
+private:
+#if NEXT_REACTION_QUEUE == STD_PRIORITY_QUEUE_DEQUE
+	std::priority_queue<queue_entry, std::deque<queue_entry>,
+						std::greater<queue_entry>>
+		event_queue;
+
+	const queue_entry &top_event() { return event_queue.top(); };
+
+	void pop_event() { event_queue.pop(); };
+
+	void push_event(queue_entry e) { event_queue.push(e); };
+
+#elif NEXT_REACTION_QUEUE == EXT_PRIO_QUEUE
+	rollbear::prio_queue<32, absolutetime_t, queue_entry>
+		event_queue;
+
+	const queue_entry &top_event() { return event_queue.top().second; };
+
+	void pop_event() { event_queue.pop(); };
+
+	void push_event(queue_entry e) { event_queue.push(e.time, e); };
+#endif
+};
+
+
 /**
  * @brief Temporal network defined by short contacts at pre-determined times
  *

@@ -139,7 +139,199 @@ index_t mutable_weighted_network::outdegree(node_t node)
 
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
-/*----------- DYNAMIC NETWORK: EMPIRICAL -==----------*/
+/*----------- NEXT_REACTION_NETWORK ------------------*/
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+
+next_reaction_network::next_reaction_network(network_kind kind_)
+	:kind(kind_)
+{}
+
+bool next_reaction_network::is_undirected()
+{
+	return !(kind & directed_kind);
+}
+
+bool next_reaction_network::is_unweighted()
+{
+	return !(kind & weighted_kind);
+}
+
+void next_reaction_network::queue_network_event(network_event_t ev)
+{
+	if (ev.time < current_time)
+		throw std::range_error("cannot queue past events");
+	
+	push_event(queue_entry {.time = ev.time, .event = ev} );
+	
+	/* Forget cached next_time */
+	if (ev.time < next_time)
+		next_time = NAN;
+}
+
+void next_reaction_network::queue_callback(absolutetime_t time, event_callback cb)
+{
+	if (time < current_time)
+		throw std::range_error("cannot queue past events");
+
+	push_event(queue_entry {.time = time, .event = cb});
+	
+	/* Forget cached next_time */
+	if (time < next_time)
+		next_time = NAN;
+}
+
+absolutetime_t next_reaction_network::next(rng_t &engine, absolutetime_t maxtime)
+{
+	/* If there's a cached next_time, return it */
+	if (!std::isnan(next_time))
+		return next_time;
+	
+	/* Find time of next event that step() will report */
+	while (true) {
+		if (event_queue.empty())
+			return INFINITY;
+		
+		/* Fetch next event, return nothing if past max_time */
+		const queue_entry& top = top_event();
+		if (top.time > maxtime)
+			return INFINITY;
+		
+		/* Check whether step() would skip the event or not */
+		if (const network_event_t* nwev = std::get_if<network_event_t>(&top.event)) {
+			assert(nwev->time == top.time);
+			network_event_t ev = *nwev;
+			switch (nwev->kind) {
+				case network_event_kind::neighbour_added:
+					double w;
+					if (has_edge(ev.source_node, ev.target_node, &w) &&
+						(!(kind & weighted_kind) || (w == ev.weight))) {
+						pop_event();
+						continue;
+					}
+					break;
+				case network_event_kind::neighbour_removed:
+					if (!has_edge(ev.source_node, ev.target_node)) {
+						pop_event();
+						continue;
+					}
+					break;
+				default:
+					break;
+			};
+		} else {
+			/* TODO: This is wrong, we have to handle callback events here somehow
+			 * TODO: But we can neither execute them, nor skip them.  We must scan
+			 * TODO: over them somehow. Maybe the best solution is to have two priorty
+			 * TODO: queues, one for callback and one for events */
+			assert(false);
+		}
+		
+		next_time = top.time;
+		return next_time;
+	}
+}
+
+std::optional<network_event_t> next_reaction_network::step(rng_t &engine, absolutetime_t max_time)
+{
+	while (true) {
+		if (event_queue.empty())
+			return std::nullopt;
+
+		/* Fetch next event, return nothing if past max_time */
+		const queue_entry& top = top_event();
+		if (top.time > max_time)
+			return std::nullopt;
+		
+		assert(current_time <= top.time);
+		current_time = top.time;
+		
+		/* Decode and handle event */
+		assert(std::isnan(next_time) || (next_time >= top.time));
+		if (const network_event_t* nwev = std::get_if<network_event_t>(&top.event)) {
+			/* Network event */
+			assert(nwev->time == top.time);
+
+			/* Get event and flip edge for second pass on undirected networks */
+			network_event_t ev = *nwev;
+			if (flipped_edge_next)
+				std::swap(ev.source_node, ev.target_node);
+			
+			/* Time of the event should agree with cached next_time */
+			assert(std::isnan(next_time) || (next_time == ev.time));
+			
+			/* Execute event
+			 * NOTE: The logic of which events we skip below must match next(),
+			 * otherwise we break the rule that if next() reports a certain
+			 * time t for the next event, step(t) must not return nullopt.
+			 */
+			const double weight = (kind & weighted_kind) ? ev.weight : 1.0;
+			switch (ev.kind) {
+				case network_event_kind::neighbour_added:
+					double w;
+					if (has_edge(ev.source_node, ev.target_node, &w)) {
+						/* Skip if edge exists with correct weight */
+						if (!(kind & weighted_kind) || (w == weight)) {
+							next_time = NAN;
+							pop_event();
+							continue;
+						}
+						/* Remove existing edge with incorrect weight */
+						if ((kind & weighted_kind) && (w != weight)) {
+							remove_edge(ev.source_node, ev.target_node);
+							return network_event_t {
+								.time = ev.time,
+								.kind = network_event_kind::neighbour_removed,
+								.source_node = ev.source_node,
+								.target_node = ev.target_node,
+								.weight = w
+							};
+						}
+					}
+					add_edge(ev.source_node, ev.target_node, weight);
+					break;
+				case network_event_kind::neighbour_removed:
+					/* Skip event if the edge does not exist */
+					if (!has_edge(ev.source_node, ev.target_node)) {
+						next_time = NAN;
+						pop_event();
+						continue;
+					}
+					add_edge(ev.source_node, ev.target_node, weight);
+					break;
+				default:
+					/* do nothing */
+					break;
+			};
+			
+			/* On undirected networks, if this was the first pass for an edge event,
+			 * do a second pass for the flipped version of the edge
+			 */
+			flipped_edge_next = (
+				!flipped_edge_next &&
+				!(kind & directed_kind) &&
+				((ev.kind == network_event_kind::neighbour_added) ||
+   			     (ev.kind == network_event_kind::neighbour_removed)));
+
+			/* Dequeue event (unless we're doing the flipped version next) and return it */
+			if (!flipped_edge_next) {
+				next_time = NAN;
+				pop_event();
+			}
+			return ev;
+		} else if (const event_callback* cbev = std::get_if<event_callback>(&top.event)) {
+			/* Execute callback. Since this is not a reported event, we continue */
+			cbev->operator()();
+		} else {
+			throw std::logic_error("unknown event in queue");
+		}
+	}
+}
+
+
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+/*----------- EMPIRICAL_CONTACT_NETWORK --------------*/
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
 
