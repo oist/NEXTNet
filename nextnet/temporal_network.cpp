@@ -261,6 +261,8 @@ absolutetime_t next_reaction_network::next(rng_t &engine, absolutetime_t maxtime
         } else if (const event_callback_t *cbev = std::get_if<event_callback_t>(&top.event)) {
             /* Execute callback. Since this is not a reported event, we continue */
             cbev->operator()();
+            pop_event();
+            continue;
         }
 
         next_time = top.time;
