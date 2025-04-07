@@ -9,7 +9,6 @@
 
 #include "nextnet/stdafx.h"
 #include "nextnet/types.h"
-// #include "nextnet/analysis.h"
 
 //--------------------------------------
 //----------INFECTION TIMES------------
