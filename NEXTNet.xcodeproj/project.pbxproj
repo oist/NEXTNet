@@ -513,6 +513,7 @@
 				SDKROOT = macosx;
 				USER_HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)",
+					"$(PROJECT_DIR)/ext",
 					"$(PROJECT_DIR)/ext/dyndist",
 				);
 			};
@@ -579,6 +580,7 @@
 				SDKROOT = macosx;
 				USER_HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)",
+					"$(PROJECT_DIR)/ext",
 					"$(PROJECT_DIR)/ext/dyndist",
 				);
 			};
@@ -595,6 +597,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				USER_HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)",
+					"$(PROJECT_DIR)/ext",
 					"$(PROJECT_DIR)/ext/dyndist",
 					"$(PROJECT_DIR)/ext/popl/include",
 				);
@@ -616,6 +619,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				USER_HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)",
+					"$(PROJECT_DIR)/ext",
 					"$(PROJECT_DIR)/ext/dyndist",
 					"$(PROJECT_DIR)/ext/popl/include",
 				);
@@ -644,6 +648,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				USER_HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)",
+					"$(PROJECT_DIR)/ext",
 					"$(PROJECT_DIR)/ext/dyndist",
 				);
 			};
@@ -670,6 +675,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				USER_HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)",
+					"$(PROJECT_DIR)/ext",
 					"$(PROJECT_DIR)/ext/dyndist",
 				);
 			};
@@ -686,6 +692,7 @@
 				SKIP_INSTALL = YES;
 				USER_HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)",
+					"$(PROJECT_DIR)/ext",
 					"$(PROJECT_DIR)/ext/dyndist",
 				);
 			};
@@ -702,6 +709,7 @@
 				SKIP_INSTALL = YES;
 				USER_HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)",
+					"$(PROJECT_DIR)/ext",
 					"$(PROJECT_DIR)/ext/dyndist",
 				);
 			};
