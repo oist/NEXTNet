@@ -81,6 +81,8 @@ struct mutable_weighted_network : public virtual network
 
     virtual node_t nodes();
 
+    virtual node_t neighbour(node_t node, int neighbour_index);
+
     virtual node_t neighbour(node_t node, int neighbour_index, double *weight);
 
     virtual index_t outdegree(node_t node);

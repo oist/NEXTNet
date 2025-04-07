@@ -35,6 +35,7 @@ public:
      * @param neighbour_index index of neighbour to query
      * @param weight pointer to a double in which the weight of the edge is stored
      */
+    using network::neighbour;
     virtual node_t neighbour(node_t node, int neighbour_index, double *weight) = 0;
 
     /**

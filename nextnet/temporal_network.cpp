@@ -121,6 +121,14 @@ node_t mutable_weighted_network::nodes()
     return (node_t)adjacencylist.size();
 }
 
+node_t mutable_weighted_network::neighbour(node_t node, int neighbour_index)
+{
+    const auto &al = adjacencylist.at(node);
+    if ((neighbour_index < 0) || ((std::size_t)neighbour_index >= al.size()))
+        return -1;
+    return al[neighbour_index].first;
+}
+
 node_t mutable_weighted_network::neighbour(node_t node, int neighbour_index, double *weight)
 {
     const auto &al = adjacencylist.at(node);
