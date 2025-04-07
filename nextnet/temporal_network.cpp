@@ -333,7 +333,7 @@ std::optional<network_event_t> next_reaction_network::step(rng_t &engine, absolu
                         pop_event();
                         continue;
                     }
-                    add_edge(ev.source_node, ev.target_node, weight);
+                    remove_edge(ev.source_node, ev.target_node);
                     break;
                 default:
                     /* do nothing */
