@@ -73,7 +73,7 @@ set(BUNDLED_HEADERS_AND_SOURCES
 # *** Global build settings
 
 # Includes are relative to the project folder
-include_directories(AFTER SYSTEM . ext/dyndist ext/popl/include)
+include_directories(AFTER SYSTEM . ext ext/dyndist ext/popl/include)
 
 # Use C++17
 set(CMAKE_CXX_STANDARD 17)

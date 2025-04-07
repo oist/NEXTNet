@@ -77,7 +77,7 @@ namespace bmi = boost::multi_index;
 #endif
 
 #if NEXT_REACTION_QUEUE == EXT_PRIO_QUEUE
-#    include "ext/prio_queue/prio_queue.hpp"
+#    include "prio_queue/prio_queue.hpp"
 #endif
 
 // Dynamic Distribution
