@@ -40,43 +40,7 @@ TEST_CASE("dynamic activity driven graph", "[temporal_network]")
     REQUIRE(abs(av_k - expected_k) < 1.96 * SE);
 }
 
-TEST_CASE("get activity_driven_graph to equilibrium", "[activity_driven_graph]")
-{
-
-    rng_t engine(0);
-
-    const int N = 50;
-    const std::vector<double> activity_rates(N, 1.0);
-    const double recovery_rate = 1.0;
-    const double eta           = 1.0;
-    const double m             = 1;
-    activity_driven_network g(activity_rates, eta, m, recovery_rate, engine);
-
-    g.advance_time(engine, 30);
-
-    std::cerr << "time taken:" << g.step(engine)->time << std::endl;
-
-    double av_k = 0;
-    double k2   = 0;
-    for (node_t node = 0; node < N; node++) {
-        const double k = (double)g.outdegree(node);
-        av_k += k / N;
-        k2 += k * k / N;
-    }
-    double sigma    = sqrt(k2 - av_k * av_k);
-    const double SE = sigma / sqrt((double)N);
-
-    const double a = 1.0;
-    const double b = recovery_rate;
-
-    double expected_k = m * eta * a / (eta * a + b) * (1 + pow(b / (eta * a + b), 2));
-    INFO(av_k);
-    INFO(expected_k);
-
-    REQUIRE(std::abs(av_k - expected_k) < 1.96 * SE);
-}
-
-TEST_CASE("dynamic empirical graph", "[dynamic_graph]")
+TEST_CASE("dynamic empirical graph", "[temporal_network]")
 {
     rng_t engine;
 

@@ -203,8 +203,6 @@ TEST_CASE("Epidemic on activity driven graph", "[temporal_nextreaction]")
     const double m             = 3;
     activity_driven_network graph(activity_rates, eta, m, recovery_rate, engine);
 
-    graph.advance_time(engine, 30);
-
     // transmission_time_gamma psi(5,25);
     transmission_time_exponential psi(5);
     // transmission_time_gamma rho(100,1);

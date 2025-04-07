@@ -365,95 +365,25 @@ typedef temporal_erdos_renyi temporal_erdos_reyni;
  * (which are not necessarily active). Active nodes inactivate with constant rate
  * recover_rate.
  */
-struct activity_driven_network : virtual temporal_network
-    , virtual mutable_network
+struct activity_driven_network : virtual public next_reaction_network
 {
-
-    // activity_driven_network(std::vector<int> degreelist, double eta, double m, transmission_time& psi, transmission_time* rho,rng_t& engine);
-
     enum activity_event_kind {
         none       = 0,
         activate   = 1,
         deactivate = 2
     };
 
-    std::vector<double> activity_rates;
-    double eta;
-    double m;
-    double recovery_rate;
-    rng_t engine;
+    activity_driven_network(std::vector<double> activity_rates, double eta, double m, double b, rng_t &engine);
 
-    // Constructor to initialize the variables
-    activity_driven_network(std::vector<double> activity_rates, double eta, double m, double recovery_rate, rng_t &engine);
+    void activate_node(node_t node, absolutetime_t time);
+    void deactivate_node(node_t node, absolutetime_t time);
 
-    virtual absolutetime_t next(rng_t &engine, absolutetime_t maxtime = INFINITY);
+    const std::vector<double> activity;
+    const double eta;
+    const double m;
+    const double b;
 
-    virtual std::optional<network_event_t> step(rng_t &engine, absolutetime_t max_time = NAN);
+    rng_t& engine;
 
-    void activate_node(node_t node, double time);
-    void deactivate_node(node_t node, double time);
-
-    // void to_equilibrium(rng_t& engine,absolutetime_t max_time = NAN);
-    std::tuple<std::vector<double>, std::vector<double>, std::vector<double>> advance_time(rng_t &engine, absolutetime_t max_time = NAN);
-
-    std::vector<bool> active_nodes;
-
-    int nb_edges = 0;
-
-    /* Time of next edge appearing or vanishing */
-    absolutetime_t next_time = NAN;
-
-    struct active_edges_entry
-    {
-        /*
-         * Event kind r (activation or desactivation)
-         */
-        network_event_kind kind;
-
-        /*
-         * Absolute time of event
-         */
-        absolutetime_t time;
-
-        /*
-         * Node that the edge is pointing to
-         */
-        node_t target_node;
-
-        /*
-         * Node that the edge is leaving from
-         */
-        node_t source_node;
-
-        activity_event_kind activity_event;
-
-        bool operator<(const active_edges_entry &o) const { return time < o.time; }
-        bool operator<=(const active_edges_entry &o) const { return time <= o.time; }
-        bool operator==(const active_edges_entry &o) const { return time == o.time; }
-        bool operator!=(const active_edges_entry &o) const { return time != o.time; }
-        bool operator>=(const active_edges_entry &o) const { return time >= o.time; }
-        bool operator>(const active_edges_entry &o) const { return time > o.time; }
-    };
-
-#if NEXT_REACTION_QUEUE == STD_PRIORITY_QUEUE_DEQUE
-    std::priority_queue<active_edges_entry, std::deque<active_edges_entry>,
-                        std::greater<active_edges_entry>>
-        active_edges;
-
-    const active_edges_entry &top_edge() { return active_edges.top(); };
-
-    void pop_edge() { active_edges.pop(); };
-
-    void push_edge(active_edges_entry e) { active_edges.push(e); };
-
-#elif NEXT_REACTION_QUEUE == EXT_PRIO_QUEUE
-    rollbear::prio_queue<32, absolutetime_t, active_edges_entry>
-        active_edges;
-
-    const active_edges_entry &top_edge() { return active_edges.top().second; };
-
-    void pop_edge() { active_edges.pop(); };
-
-    void push_edge(active_edges_entry e) { active_edges.push(e.time, e); };
-#endif
+    std::vector<bool> active;
 };

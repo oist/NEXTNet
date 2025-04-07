@@ -821,305 +821,71 @@ void temporal_erdos_renyi::remove_edge(node_t node, int neighbour_index)
 
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
-/*----------- DYNAMIC NETWORK: ACTIVITY DRIVEN -------*/
+/*----------- ACTIVITY_DRIVEN_NETWORK ----------------*/
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
 
-activity_driven_network::activity_driven_network(std::vector<double> activity_rates, double eta, double m, double recovery_rate, rng_t &engine)
-    : activity_rates(activity_rates)
+activity_driven_network::activity_driven_network(std::vector<double> activity, double eta, double m, double b, rng_t &engine)
+    : next_reaction_network()
+    , activity(activity)
     , eta(eta)
     , m(m)
-    , recovery_rate(recovery_rate)
+    , b(b)
     , engine(engine)
+    , active(activity.size(), false)
 {
-    const int N = (int)activity_rates.size();
-    resize(N);
+    resize(activity.size());
 
-    active_nodes.resize(N, false);
-
-    std::uniform_int_distribution<> distr(0, N - 1);
-
-    for (node_t node = 0; node < N; node++) {
-        const double ai = activity_rates[node];
-
-        const double activation_time = std::exponential_distribution<>(eta * ai)(engine);
-
-        active_edges_entry e;
-        e.kind           = network_event_kind::neighbour_added;
-        e.source_node    = node;
-        e.target_node    = -1;
-        e.time           = activation_time;
-        e.activity_event = activity_event_kind::activate;
-        push_edge(e);
-    }
-}
-
-absolutetime_t activity_driven_network::next(rng_t &engine, absolutetime_t)
-{
-
-    if (active_edges.empty())
-        return INFINITY;
-
-    auto next = top_edge();
-
-    while (next.activity_event != activity_event_kind::none) {
-
-        switch (next.activity_event) {
-            case activity_event_kind::activate:
-                /* Dequeue event */
-                pop_edge();
-                activate_node(next.source_node, next.time);
-                next = top_edge();
-                break;
-            case activity_event_kind::deactivate:
-                /* Dequeue event */
-                pop_edge();
-                deactivate_node(next.source_node, next.time);
-                next = top_edge();
-                break;
-            default:
-                throw std::runtime_error("invalid event kind");
-                break;
+    for(node_t n = 0; n < (node_t)activity.size(); ++n) {
+        const double ai = eta * activity[n];
+        const double p_active = ai / (ai + b);
+        const bool active = std::bernoulli_distribution(p_active)(engine);
+        if (active && (b > 0)) {
+            activate_node(n, 0);
+            const double t = std::exponential_distribution<>(1.0/b)(engine);
+            queue_callback(t, [this,n,t]() { this->deactivate_node(n, t); });
+        } else if (ai > 0) {
+            const double t = std::exponential_distribution<>(1.0/ai)(engine);
+            queue_callback(t, [this,n,t]() { this->activate_node(n, t); });
         }
     }
 
-    return next.time;
+    /* Execute the events queued for time zero */
+    while(next(engine, 0) == 0)
+        step(engine, 0);
 }
 
-void activity_driven_network::activate_node(node_t node, double time)
+void activity_driven_network::activate_node(node_t node, absolutetime_t time)
 {
+    if (active[node])
+        throw std::logic_error("node is already active");
 
-    std::uniform_int_distribution<> distr(0, (int)activity_rates.size() - 1);
+    active[node] = true;
 
-    if (active_nodes[node])
-        throw std::logic_error("node shouldnt be already active");
-
-    active_nodes[node] = true;
-
-    std::unordered_set<node_t> sampled_neighbors;
-    sampled_neighbors.insert(node);
-    for (int i = 0; i < m; i++) {
-        node_t neigh = distr(engine);
-        while (sampled_neighbors.find(neigh) != sampled_neighbors.end())
-            neigh = distr(engine);
-
-        sampled_neighbors.insert(neigh);
-
-        if (has_edge(node, neigh))
-            continue;
-
-        if (node == neigh)
-            continue;
-
-        active_edges_entry e;
-        e.kind           = network_event_kind::neighbour_added;
-        e.source_node    = node;
-        e.target_node    = neigh;
-        e.time           = time;
-        e.activity_event = activity_event_kind::none;
-        push_edge(e);
-
-        active_edges_entry e2;
-        e2.kind           = network_event_kind::neighbour_added;
-        e2.source_node    = neigh;
-        e2.target_node    = node;
-        e2.time           = time;
-        e2.activity_event = activity_event_kind::none;
-        push_edge(e2);
+    /* Sample m nodes from possible neighbours {1,...,n-1,n+1,...,N} */
+    for(std::size_t nn: sample_without_replacement(nodes()-1, m, engine)) {
+        /* Skip node itself */
+        if ((node_t)nn >= node)
+            ++nn;
+        queue_add_edge(node, (node_t)nn, 1.0, time);
     }
 
-    active_edges_entry e;
-    e.kind           = network_event_kind::neighbour_removed;
-    e.source_node    = node;
-    e.target_node    = -1;
-    e.time           = time + std::exponential_distribution<>(recovery_rate)(engine);
-    e.activity_event = activity_event_kind::deactivate;
-    push_edge(e);
+    /* Queue next deactivaton */
+    const double t = time + std::exponential_distribution<>(1.0/b)(engine);
+    queue_callback(t, [this,node,t]() { this->deactivate_node(node, t); });
 }
 
-void activity_driven_network::deactivate_node(node_t node, double time)
+void activity_driven_network::deactivate_node(node_t node, absolutetime_t time)
 {
+    if (!active[node])
+        throw std::logic_error("node is already inactive");
 
-    std::uniform_int_distribution<> distr(0, (int)activity_rates.size() - 1);
+    index_t i=0;
+    while(node_t nn = neighbour(node, i++) >= 0)
+        queue_remove_edge(node, nn, 1.0, time);
 
-    if (!active_nodes[node])
-        throw std::logic_error("node shouldnt be inactive");
-    active_nodes[node] = false;
-
-    const int k = outdegree(node);
-    for (int ki = 0; ki < k; ki++) {
-        const node_t nei = neighbour(node, ki);
-
-        if ((!has_edge(nei, node)))
-            throw std::logic_error("there should be a link between nei and node");
-
-        if (node == nei)
-            throw std::logic_error("no self links were allowed in the first place");
-
-        active_edges_entry e;
-        e.kind           = network_event_kind::neighbour_removed;
-        e.source_node    = node;
-        e.target_node    = nei;
-        e.time           = time;
-        e.activity_event = activity_event_kind::none;
-        push_edge(e);
-
-        active_edges_entry e2;
-        e2.kind           = network_event_kind::neighbour_removed;
-        e2.source_node    = nei;
-        e2.target_node    = node;
-        e2.time           = time;
-        e2.activity_event = activity_event_kind::none;
-        push_edge(e2);
-    }
-
-    active_edges_entry e;
-    e.kind           = network_event_kind::neighbour_added;
-    e.source_node    = node;
-    e.target_node    = -1;
-    e.time           = time + std::exponential_distribution<>(eta * activity_rates[node])(engine);
-    e.activity_event = activity_event_kind::activate;
-    push_edge(e);
-}
-
-// void activity_driven_network::to_equilibrium(rng_t& engine,absolutetime_t max_time){
-
-// 	double a1=0;
-// 	double b1=0;
-// 	for (double a : activity_rates){
-// 		a1 += eta*a/(eta*a+recovery_rate);
-// 		b1 += recovery_rate/(eta*a+recovery_rate);
-// 	}
-// 	const node_t N = activity_rates.size();
-// 	a1 = (double) a1/N;
-// 	b1 = (double) b1/N;
-
-// 	const double theoretical_mean = m*a1*(1 +b1*b1);
-
-// 	auto has_converged = [this, N,theoretical_mean]() {
-// 		double av_k =0;
-// 		double k2 = 0;
-
-// 		for (node_t node = 0; node < N; node++) {
-// 			const double k = (double) outdegree(node);
-// 			av_k += (double) k / N;
-// 			k2 += (double) k * k / N;
-// 		}
-
-// 		return std::abs(av_k - theoretical_mean)/theoretical_mean < 0.05;
-// 	};
-
-// 	auto next = top_edge();
-// 	double t = next.time;
-// 	while(t < max_time){
-
-// 		for(int i = 0; i<N; i++){
-// 			auto any_ev = step(engine,max_time);
-// 			if (any_ev.has_value()) {
-// 				t = any_ev -> time;
-// 			} else{
-// 				break;
-// 			}
-// 		}
-// 		if (has_converged())
-// 			break;
-// 	}
-// }
-
-std::tuple<std::vector<double>, std::vector<double>, std::vector<double>> activity_driven_network::advance_time(rng_t &engine, absolutetime_t max_time)
-{
-
-    double a1 = 0;
-    double b1 = 0;
-    for (double a : activity_rates) {
-        a1 += eta * a / (eta * a + recovery_rate);
-        b1 += recovery_rate / (eta * a + recovery_rate);
-    }
-    const node_t N = (node_t)activity_rates.size();
-    a1             = (double)a1 / N;
-    b1             = (double)b1 / N;
-
-    // const double theoretical_mean = m*a1*(1 +b1*b1);
-
-    std::vector<double> time_traj;
-    std::vector<double> k1_traj;
-    std::vector<double> k2_traj;
-
-    auto next = top_edge();
-    double t  = next.time;
-    while (t < max_time) {
-
-        for (int i = 0; i < N; i++) {
-            auto any_ev = step(engine);
-            if (any_ev.has_value()) {
-                t = any_ev->time;
-            } else {
-                break;
-            }
-        }
-
-        double av_k = 0;
-        double k2   = 0;
-        for (node_t node = 0; node < N; node++) {
-            const double k = (double)outdegree(node);
-            av_k += (double)k / N;
-            k2 += (double)k * k / N;
-        }
-        time_traj.push_back(t);
-        k1_traj.push_back(av_k);
-        k2_traj.push_back(k2);
-    }
-
-    return std::make_tuple(time_traj, k1_traj, k2_traj);
-}
-
-std::optional<network_event_t> activity_driven_network::step(rng_t &engine, absolutetime_t max_time)
-{
-
-    absolutetime_t next_time = next(engine);
-
-    if (next_time > max_time)
-        return std::nullopt;
-
-    /* If there are no more infection times, stop */
-    if (active_edges.empty())
-        return std::nullopt;
-
-    auto next = top_edge();
-    if (next.time > max_time)
-        return std::nullopt;
-
-    pop_edge();
-
-    std::uniform_int_distribution<> distr(0, (int)activity_rates.size() - 1);
-
-    const node_t src = next.source_node;
-    const node_t dst = next.target_node;
-    // Handle event before returning the edge
-    switch (next.kind) {
-        case network_event_kind::neighbour_added: {
-
-            add_edge(src, dst);
-
-            break;
-        }
-        case network_event_kind::neighbour_removed: {
-
-            const bool r1 = remove_edge(src, dst);
-            // const bool r2 = remove_edge(dst,src);
-            if (!r1)
-                throw std::logic_error("removing edeges fialed");
-            break;
-        }
-        default:
-            throw std::runtime_error("invalid event kind");
-    }
-
-    return network_event_t{
-        .kind        = next.kind,
-        .source_node = next.source_node,
-        .target_node = next.target_node,
-        .weight      = 1.0,
-        .time        = next.time
-    };
+    /* Queue next activation */
+    const double ai = eta * activity[node];
+    const double t = time + std::exponential_distribution<>(1.0/ai)(engine);
+    queue_callback(t, [this,node,t]() { this->deactivate_node(node, t); });
 }
