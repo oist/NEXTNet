@@ -13,7 +13,7 @@ TEST_CASE("dynamic activity driven graph", "[temporal_network]")
     const double m             = 1;
     activity_driven_network g(activity_rates, eta, m, recovery_rate, engine);
 
-    double TMAX = 30;
+    double TMAX = 60;
 
     while (g.step(engine, TMAX)) {
         /* do nothing */

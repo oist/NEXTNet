@@ -835,10 +835,8 @@ activity_driven_network::activity_driven_network(std::vector<double> activity, d
         const bool active     = std::bernoulli_distribution(p_active)(engine);
         if (active && (b > 0)) {
             activate_node(n, 0);
-            const double t = std::exponential_distribution<>(1.0 / b)(engine);
-            queue_callback(t, [this, n, t]() { this->deactivate_node(n, t); });
         } else if (ai > 0) {
-            const double t = std::exponential_distribution<>(1.0 / ai)(engine);
+            const double t = std::exponential_distribution<>(ai)(engine);
             queue_callback(t, [this, n, t]() { this->activate_node(n, t); });
         }
     }
@@ -864,7 +862,7 @@ void activity_driven_network::activate_node(node_t node, absolutetime_t time)
     }
 
     /* Queue next deactivaton */
-    const double t = time + std::exponential_distribution<>(1.0 / b)(engine);
+    const double t = time + std::exponential_distribution<>(b)(engine);
     queue_callback(t, [this, node, t]() { this->deactivate_node(node, t); });
 }
 
@@ -873,12 +871,14 @@ void activity_driven_network::deactivate_node(node_t node, absolutetime_t time)
     if (!active[node])
         throw std::logic_error("node is already inactive");
 
-    index_t i = 0;
-    while (node_t nn = neighbour(node, i++) >= 0)
+    active[node] = false;
+
+    node_t nn;
+    for(int i = 0; (nn = neighbour(node, i)) >= 0; ++i)
         queue_remove_edge(node, nn, 1.0, time);
 
     /* Queue next activation */
     const double ai = eta * activity[node];
-    const double t  = time + std::exponential_distribution<>(1.0 / ai)(engine);
-    queue_callback(t, [this, node, t]() { this->deactivate_node(node, t); });
+    const double t  = time + std::exponential_distribution<>(ai)(engine);
+    queue_callback(t, [this, node, t]() { this->activate_node(node, t); });
 }
