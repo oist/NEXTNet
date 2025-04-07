@@ -85,9 +85,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN true)
 
-# Enable all warnings
+# Enable all warnings, add CMAKE_DEFINES, and tell Boost that
+# we don't have std::unary_function in C++17 mode
 add_compile_options(-Wall)
 add_compile_definitions(${CMAKE_DEFINES})
+add_compile_definitions(BOOST_NO_CXX98_FUNCTION_BASE)
 
 # Boost policies
 cmake_policy(SET CMP0144 NEW)
