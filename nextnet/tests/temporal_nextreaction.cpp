@@ -70,7 +70,7 @@ struct dynamic_single_edge : virtual network
 };
 } // namespace
 
-TEST_CASE("Effective transmission time distribution", "[dynamic_nextreaction]")
+TEST_CASE("Effective transmission time distribution", "[temporal_nextreaction]")
 {
     rng_t engine;
 
@@ -164,7 +164,7 @@ TEST_CASE("Effective transmission time distribution", "[dynamic_nextreaction]")
     CHECK(pval >= 0.01);
 }
 
-TEST_CASE("Epidemic on empirical network nb2 with finite edge durations", "[dynamic_nextreaction]")
+TEST_CASE("Epidemic on empirical network nb2 with finite edge durations", "[temporal_nextreaction]")
 {
     rng_t engine(0);
 
@@ -178,7 +178,7 @@ TEST_CASE("Epidemic on empirical network nb2 with finite edge durations", "[dyna
     while (sim.step(engine));
 }
 
-TEST_CASE("Epidemic on empirical network nb2 with infitesimal edge durations", "[dynamic_nextreaction]")
+TEST_CASE("Epidemic on empirical network nb2 with infitesimal edge durations", "[temporal_nextreaction]")
 {
     rng_t engine(0);
 
@@ -192,7 +192,7 @@ TEST_CASE("Epidemic on empirical network nb2 with infitesimal edge durations", "
     while (sim.step(engine));
 }
 
-TEST_CASE("Epidemic on activity driven graph", "[activity_driven_graph]")
+TEST_CASE("Epidemic on activity driven graph", "[temporal_nextreaction]")
 {
     rng_t engine(0);
 
@@ -249,7 +249,7 @@ TEST_CASE("Epidemic on activity driven graph", "[activity_driven_graph]")
 }
 
 #if ENABLE_PLOTTING
-TEST_CASE("Plot SIS average trajectories on activity driven network", "[activity_driven_graph]")
+TEST_CASE("Plot SIS average trajectories on activity driven network", "[temporal_nextreaction]")
 {
     rng_t engine(2);
 
@@ -302,7 +302,7 @@ TEST_CASE("Plot SIS average trajectories on activity driven network", "[activity
 #endif
 
 #if ENABLE_PLOTTING
-TEST_CASE("Plot SIS average trajectories on dynamic empirical network", "[dynamic_nextreaction]")
+TEST_CASE("Plot SIS average trajectories on dynamic empirical network", "[temporal_nextreaction]")
 {
     rng_t engine(2);
 
@@ -358,7 +358,7 @@ TEST_CASE("Plot SIS average trajectories on dynamic empirical network", "[dynami
 #endif
 
 #if ENABLE_PLOTTING
-TEST_CASE("Plot SIS average trajectory on dynamic Erdös-Reyni networks", "[dynamic_nextreaction]")
+TEST_CASE("Plot SIS average trajectory on dynamic Erdös-Reyni networks", "[temporal_nextreaction]")
 {
     using namespace std::string_literals;
 
@@ -422,7 +422,7 @@ TEST_CASE("Plot SIS average trajectory on dynamic Erdös-Reyni networks", "[dyna
 #endif
 
 #if ENABLE_PLOTTING
-TEST_CASE("Plot SIR average trajectory on SIRX-Erdös-Reyni network", "[nextreaction]")
+TEST_CASE("Plot SIR average trajectory on SIRX-Erdös-Reyni network", "[temporal_nextreaction]")
 {
     using namespace std::string_literals;
 

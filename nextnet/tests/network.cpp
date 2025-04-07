@@ -13,7 +13,7 @@
  *
  * We repeat the above tests for various values of m.
  */
-TEST_CASE("barabasi_albert", "[graph]")
+TEST_CASE("barabasi_albert", "[network]")
 {
     std::mt19937 engine;
     const int SIZE        = 1e4;
@@ -72,7 +72,7 @@ TEST_CASE("barabasi_albert", "[graph]")
 /**
  * @brief Test case to verify `fully_connected`
  */
-TEST_CASE("fully connected networks", "[graph]")
+TEST_CASE("fully connected networks", "[network]")
 {
     std::mt19937 engine;
     const int M = 3;
@@ -95,7 +95,7 @@ TEST_CASE("fully connected networks", "[graph]")
 /**
  * @brief Test case to verify `erdos-reyni`
  */
-TEST_CASE("Erdös-Reyni networks", "[graph]")
+TEST_CASE("Erdös-Reyni networks", "[network]")
 {
     std::mt19937 engine;
     const int M = 100;
@@ -136,7 +136,7 @@ TEST_CASE("Erdös-Reyni networks", "[graph]")
  * such that the distribution conditioned on k >= 1 has the
  * specified mean.
  */
-TEST_CASE("Acyclic networks with modified R0", "[graph]")
+TEST_CASE("Acyclic networks with modified R0", "[network]")
 {
     std::mt19937 engine;
 
@@ -171,7 +171,7 @@ TEST_CASE("Acyclic networks with modified R0", "[graph]")
  * that of any other node (because it has no edge pointing towards
  * the root, while all other nodes have exactly one)
  */
-TEST_CASE("Acyclic networks without root degree reduction", "[graph]")
+TEST_CASE("Acyclic networks without root degree reduction", "[network]")
 {
     std::mt19937 engine;
     const int K = 3;
@@ -236,7 +236,7 @@ TEST_CASE("Acyclic networks without root degree reduction", "[graph]")
  * lower than the average degree of all other nodes (because it has no
  * edge pointing towards the root, while all other nodes have exactly one)
  */
-TEST_CASE("Acyclic networks with root degree reduction", "[graph]")
+TEST_CASE("Acyclic networks with root degree reduction", "[network]")
 {
     std::mt19937 engine;
     const int K = 3;
@@ -299,7 +299,7 @@ TEST_CASE("Acyclic networks with root degree reduction", "[graph]")
  * with the initial degree list that was the input.
  *
  */
-TEST_CASE("Configuration model networks", "[graph]")
+TEST_CASE("Configuration model networks", "[network]")
 {
     std::mt19937 engine;
     const int size = 10000;
@@ -338,7 +338,7 @@ TEST_CASE("Configuration model networks", "[graph]")
  * with the initial degree list that was the input.
  *
  */
-TEST_CASE("Clustered configuration model networks (Serrano)", "[graph]")
+TEST_CASE("Clustered configuration model networks (Serrano)", "[network]")
 {
     std::mt19937 engine;
     const int size = 100;
@@ -378,7 +378,7 @@ TEST_CASE("Clustered configuration model networks (Serrano)", "[graph]")
  * The number of edges should be preserved and should be equal to n
  *
  */
-TEST_CASE("Watts-Strogatz model", "[graph]")
+TEST_CASE("Watts-Strogatz model", "[network]")
 {
     std::mt19937 engine;
     const int size = 1000;
@@ -397,7 +397,7 @@ TEST_CASE("Watts-Strogatz model", "[graph]")
  * @brief Test case to verify `cubic_lattice`
  *
  */
-TEST_CASE("Cubic lattice", "[graph]")
+TEST_CASE("Cubic lattice", "[network]")
 {
     std::mt19937 engine;
 
@@ -492,7 +492,7 @@ TEST_CASE("Cubic lattice", "[graph]")
  * knn(k) should be approx constant and equal to <k^2>/<k>
  * as N-> infinity.
  */
-TEST_CASE("Measuring average neighbour degree", "[graph]")
+TEST_CASE("Measuring average neighbour degree", "[network]")
 {
     std::mt19937 engine;
     int size          = 1000000;
@@ -524,7 +524,7 @@ TEST_CASE("Measuring average neighbour degree", "[graph]")
  * close to 0 as N-> infty. In the case of a ER network,
  * the assortativity should tend to 0;
  */
-TEST_CASE("Measuring degree correlation", "[graph]")
+TEST_CASE("Measuring degree correlation", "[network]")
 {
     std::mt19937 engine;
     int size = 100000;

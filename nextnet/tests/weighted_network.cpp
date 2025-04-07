@@ -6,7 +6,7 @@
 /**
  * @brief Test case to verify `erdos-reyni`
  */
-TEST_CASE("Weighted Erdös-Reyni networks", "[graph]")
+TEST_CASE("Weighted Erdös-Reyni networks", "[weighted_network]")
 {
     std::mt19937 engine;
     const int M = 100;

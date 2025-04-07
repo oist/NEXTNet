@@ -2,9 +2,8 @@
 #include "tests/statistics.h"
 #include "temporal_network.h"
 
-TEST_CASE("dynamic activity driven graph", "[activity_driven_graph]")
+TEST_CASE("dynamic activity driven graph", "[temporal_network]")
 {
-
     rng_t engine(0);
 
     const int N = 50;
@@ -94,7 +93,7 @@ TEST_CASE("dynamic empirical graph", "[dynamic_graph]")
     REQUIRE(g.outdegree(10) == 0);
 }
 
-TEST_CASE("dynamic Erdös-Reyni", "[dynamic_graph]")
+TEST_CASE("dynamic Erdös-Reyni", "[temporal_network]")
 {
     const int N       = 20;
     const int E       = N * (N - 1) / 2;
