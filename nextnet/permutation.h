@@ -1,7 +1,7 @@
 #pragma once
 
-#include "stdafx.h"
-#include "types.h"
+#include "nextnet/stdafx.h"
+#include "nextnet/types.h"
 
 template <typename T>
 struct permutation

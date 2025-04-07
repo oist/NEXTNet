@@ -1,8 +1,8 @@
 #pragma once
 
-#include "tests/stdafx.h"
+#include "nextnet/tests/stdafx.h"
 
-#include "random.h"
+#include "nextnet/random.h"
 
 template <typename R>
 std::vector<R> parallel(std::size_t n, rng_t &engine, std::function<R(rng_t &)> body)

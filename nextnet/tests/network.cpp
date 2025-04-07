@@ -1,7 +1,7 @@
-#include "tests/stdafx.h"
+#include "nextnet/tests/stdafx.h"
 
-#include "network.h"
-#include "NextReaction.h"
+#include "nextnet/network.h"
+#include "nextnet/NextReaction.h"
 
 /**
  * @brief Test case to verify `barabasi_albert`

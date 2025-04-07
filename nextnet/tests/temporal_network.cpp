@@ -1,12 +1,12 @@
-#include "tests/stdafx.h"
-#include "tests/statistics.h"
-#include "temporal_network.h"
+#include "nextnet/tests/stdafx.h"
+#include "nextnet/tests/statistics.h"
+#include "nextnet/temporal_network.h"
 
 TEST_CASE("dynamic activity driven graph", "[temporal_network]")
 {
     rng_t engine(0);
 
-    const int N = 50;
+    const int N = 1000;
     const std::vector<double> activity_rates(N, 1.0);
     const double recovery_rate = 1.0;
     const double eta           = 1.0;

@@ -7,10 +7,10 @@
 
 #pragma once
 
-#include "stdafx.h"
-#include "types.h"
-#include "random.h"
-#include "utility.h"
+#include "nextnet/stdafx.h"
+#include "nextnet/types.h"
+#include "nextnet/random.h"
+#include "nextnet/utility.h"
 
 //--------------------------------------
 //--------------NETWORKS----------------

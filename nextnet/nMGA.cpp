@@ -1,9 +1,9 @@
-#include "stdafx.h"
-#include "nMGA.h"
-#include "random.h"
-#include "network.h"
-#include "types.h"
-#include "utility.h"
+#include "nextnet/stdafx.h"
+#include "nextnet/nMGA.h"
+#include "nextnet/random.h"
+#include "nextnet/network.h"
+#include "nextnet/types.h"
+#include "nextnet/utility.h"
 
 network &simulate_nmga::get_network() const
 {

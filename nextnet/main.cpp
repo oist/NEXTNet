@@ -1,10 +1,10 @@
 #include "popl.hpp"
 
-#include "stdafx.h"
-#include "random.h"
-#include "REGIR.h"
-#include "nMGA.h"
-#include "NextReaction.h"
+#include "nextnet/stdafx.h"
+#include "nextnet/random.h"
+#include "nextnet/REGIR.h"
+#include "nextnet/nMGA.h"
+#include "nextnet/NextReaction.h"
 
 using namespace std;
 using namespace std::literals;

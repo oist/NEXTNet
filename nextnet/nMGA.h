@@ -1,9 +1,9 @@
 #pragma once
 
-#include "stdafx.h"
-#include "types.h"
-#include "algorithm.h"
-#include "network.h"
+#include "nextnet/stdafx.h"
+#include "nextnet/types.h"
+#include "nextnet/algorithm.h"
+#include "nextnet/network.h"
 
 struct all_rates_zero : std::underflow_error
 {

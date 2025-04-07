@@ -1,9 +1,9 @@
-#include "stdafx.h"
-#include "NextReaction.h"
-#include "random.h"
-#include "network.h"
-#include "types.h"
-#include "utility.h"
+#include "nextnet/stdafx.h"
+#include "nextnet/NextReaction.h"
+#include "nextnet/random.h"
+#include "nextnet/network.h"
+#include "nextnet/types.h"
+#include "nextnet/utility.h"
 
 absolutetime_t simulate_next_reaction::next(rng_t &engine)
 {

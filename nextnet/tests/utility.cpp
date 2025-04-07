@@ -1,7 +1,7 @@
-#include "tests/stdafx.h"
+#include "nextnet/tests/stdafx.h"
 
-#include "utility.h"
-#include "tests/statistics.h"
+#include "nextnet/utility.h"
+#include "nextnet/tests/statistics.h"
 
 TEST_CASE("integer_set", "[utility]")
 {

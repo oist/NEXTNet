@@ -16,5 +16,5 @@
 #include <boost/iterator/counting_iterator.hpp>
 #include <boost/math/distributions/kolmogorov_smirnov.hpp>
 
-#include "catch/catch.hpp"
+#include "nextnet/catch/catch.hpp"
 #include "../stdafx.h"

@@ -1,11 +1,11 @@
 #pragma once
 
-#include "tests/stdafx.h"
-#include "tests/parallel.h"
+#include "nextnet/tests/stdafx.h"
+#include "nextnet/tests/parallel.h"
 
-#include "types.h"
-#include "random.h"
-#include "algorithm.h"
+#include "nextnet/types.h"
+#include "nextnet/random.h"
+#include "nextnet/algorithm.h"
 
 /**
  * @brief simulate and return transmission times

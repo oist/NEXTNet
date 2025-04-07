@@ -1,7 +1,7 @@
 #pragma once
 
-#include "tests/stdafx.h"
-#include "utility.h"
+#include "nextnet/tests/stdafx.h"
+#include "nextnet/utility.h"
 
 /**
  * @brief The large-population mean-field solution for gamma transmission times

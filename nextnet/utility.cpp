@@ -5,7 +5,7 @@
 //  Created by Cure Samuel Cyrus on 2022/02/19.
 //
 
-#include "utility.h"
+#include "nextnet/utility.h"
 
 std::pair<unsigned int, unsigned int> fraction(double x, unsigned int L)
 {

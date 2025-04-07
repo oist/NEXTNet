@@ -1,7 +1,7 @@
-#include "tests/stdafx.h"
+#include "nextnet/tests/stdafx.h"
 
-#include "weighted_network.h"
-#include "NextReaction.h"
+#include "nextnet/weighted_network.h"
+#include "nextnet/NextReaction.h"
 
 /**
  * @brief Test case to verify `erdos-reyni`

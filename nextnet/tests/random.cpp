@@ -1,7 +1,7 @@
-#include "tests/stdafx.h"
+#include "nextnet/tests/stdafx.h"
 
-#include "random.h"
-#include "tests/statistics.h"
+#include "nextnet/random.h"
+#include "nextnet/tests/statistics.h"
 
 #define TEST_DISTRIBUTION_MEAN_VARIANCE(name, m, v, N)                                                                  \
     TEST_CASE(STRINGIFY(name) " distribution (m=" STRINGIFY(m) ", v=" STRINGIFY(v) ", N=" STRINGIFY(N) ")", "[random]") \

@@ -5,7 +5,7 @@
 //  Created by Florian G. Pflug on 14.02.23.
 //
 
-#include "brownian_proximity_network.h"
+#include "nextnet/brownian_proximity_network.h"
 
 using namespace std::literals;
 using namespace boost::math::double_constants;

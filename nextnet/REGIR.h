@@ -1,9 +1,9 @@
 #pragma once
 
-#include "stdafx.h"
-#include "types.h"
-#include "algorithm.h"
-#include "network.h"
+#include "nextnet/stdafx.h"
+#include "nextnet/types.h"
+#include "nextnet/algorithm.h"
+#include "nextnet/network.h"
 
 class simulate_regir : public simulation_algorithm
 {

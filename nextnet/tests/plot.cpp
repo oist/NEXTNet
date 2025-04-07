@@ -1,8 +1,8 @@
 #if ENABLE_PLOTTING
 
-#    include "tests/stdafx.h"
-#    include "tests/gnuplot-iostream.h"
-#    include "tests/plot.h"
+#    include "nextnet/tests/stdafx.h"
+#    include "nextnet/tests/gnuplot-iostream.h"
+#    include "nextnet/tests/plot.h"
 
 namespace gp = gnuplotio;
 

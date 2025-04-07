@@ -5,9 +5,9 @@
 //  Created by Samuel Curé on 31/01/2022.
 //
 
-#include "stdafx.h"
-#include "random.h"
-#include "utility.h"
+#include "nextnet/stdafx.h"
+#include "nextnet/random.h"
+#include "nextnet/utility.h"
 
 /*----------------------------------------------------*/
 /*----------------------CLASS-------------------------*/

@@ -1,10 +1,10 @@
-#include "tests/stdafx.h"
-#include "tests/simulate.h"
-#include "tests/plot.h"
+#include "nextnet/tests/stdafx.h"
+#include "nextnet/tests/simulate.h"
+#include "nextnet/tests/plot.h"
 
-#include "brownian_proximity_network.h"
-#include "NextReaction.h"
-#include "algorithm.h"
+#include "nextnet/brownian_proximity_network.h"
+#include "nextnet/NextReaction.h"
+#include "nextnet/algorithm.h"
 
 TEST_CASE("Brownian proximity graph", "[brownian_proximity_graph]")
 {

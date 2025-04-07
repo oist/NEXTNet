@@ -5,8 +5,8 @@
 //
 #pragma once
 
-#include "stdafx.h"
-#include "types.h"
+#include "nextnet/stdafx.h"
+#include "nextnet/types.h"
 
 inline std::size_t hash_combine(std::size_t seed) { return seed; }
 

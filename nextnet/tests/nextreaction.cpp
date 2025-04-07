@@ -1,10 +1,10 @@
-#include "tests/stdafx.h"
-#include "tests/simulate.h"
-#include "tests/analytical.h"
-#include "tests/plot.h"
+#include "nextnet/tests/stdafx.h"
+#include "nextnet/tests/simulate.h"
+#include "nextnet/tests/analytical.h"
+#include "nextnet/tests/plot.h"
 
-#include "random.h"
-#include "NextReaction.h"
+#include "nextnet/random.h"
+#include "nextnet/NextReaction.h"
 
 namespace {
 

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "stdafx.h"
-#include "types.h"
-#include "algorithm.h"
-#include "random.h"
+#include "nextnet/stdafx.h"
+#include "nextnet/types.h"
+#include "nextnet/algorithm.h"
+#include "nextnet/random.h"
 
 class simulate_next_reaction_mean_field : public simulation_algorithm
 {

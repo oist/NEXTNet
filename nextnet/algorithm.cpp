@@ -1,7 +1,7 @@
-#include "stdafx.h"
-#include "algorithm.h"
-#include "random.h"
-#include "types.h"
+#include "nextnet/stdafx.h"
+#include "nextnet/algorithm.h"
+#include "nextnet/random.h"
+#include "nextnet/types.h"
 
 using namespace std::string_literals;
 

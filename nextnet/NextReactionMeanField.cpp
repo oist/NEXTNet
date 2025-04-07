@@ -1,8 +1,8 @@
-#include "stdafx.h"
-#include "NextReactionMeanField.h"
-#include "random.h"
-#include "types.h"
-#include "utility.h"
+#include "nextnet/stdafx.h"
+#include "nextnet/NextReactionMeanField.h"
+#include "nextnet/random.h"
+#include "nextnet/types.h"
+#include "nextnet/utility.h"
 
 absolutetime_t simulate_next_reaction_mean_field::next(rng_t &engine)
 {

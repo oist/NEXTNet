@@ -7,12 +7,12 @@
 
 #pragma once
 
-#include "stdafx.h"
-#include "types.h"
+#include "nextnet/stdafx.h"
+#include "nextnet/types.h"
 
-#include "random.h"
-#include "network.h"
-#include "temporal_network.h"
+#include "nextnet/random.h"
+#include "nextnet/network.h"
+#include "nextnet/temporal_network.h"
 
 /**
  * TODO: Rename to epidemic_simulation_algorithm

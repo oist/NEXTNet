@@ -5,7 +5,7 @@
 //  Created by Florian G. Pflug on 14.02.23.
 //
 
-#include "temporal_network.h"
+#include "nextnet/temporal_network.h"
 
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/

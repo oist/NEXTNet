@@ -1,9 +1,9 @@
-#include "stdafx.h"
-#include "REGIR.h"
-#include "random.h"
-#include "network.h"
-#include "types.h"
-#include "utility.h"
+#include "nextnet/stdafx.h"
+#include "nextnet/REGIR.h"
+#include "nextnet/random.h"
+#include "nextnet/network.h"
+#include "nextnet/types.h"
+#include "nextnet/utility.h"
 
 using namespace std::literals;
 

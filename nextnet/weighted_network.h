@@ -7,11 +7,11 @@
 
 #pragma once
 
-#include "stdafx.h"
-#include "types.h"
-#include "network.h"
-#include "random.h"
-#include "utility.h"
+#include "nextnet/stdafx.h"
+#include "nextnet/types.h"
+#include "nextnet/network.h"
+#include "nextnet/random.h"
+#include "nextnet/utility.h"
 
 //--------------------------------------
 //--------------WEIGHTED NETWORK--------

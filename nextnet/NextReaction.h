@@ -1,12 +1,12 @@
 #pragma once
 
-#include "stdafx.h"
-#include "types.h"
-#include "permutation.h"
-#include "algorithm.h"
-#include "random.h"
-#include "network.h"
-#include "weighted_network.h"
+#include "nextnet/stdafx.h"
+#include "nextnet/types.h"
+#include "nextnet/permutation.h"
+#include "nextnet/algorithm.h"
+#include "nextnet/random.h"
+#include "nextnet/network.h"
+#include "nextnet/weighted_network.h"
 
 class simulate_next_reaction : public simulation_algorithm
 {

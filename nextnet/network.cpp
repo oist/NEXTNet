@@ -5,10 +5,10 @@
 //  Created by Cure Samuel Cyrus on 2022/03/07.
 //
 
-#include "stdafx.h"
-#include "types.h"
-#include "network.h"
-#include "utility.h"
+#include "nextnet/stdafx.h"
+#include "nextnet/types.h"
+#include "nextnet/network.h"
+#include "nextnet/utility.h"
 
 using boost::math::erfc;
 

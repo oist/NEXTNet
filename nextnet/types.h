@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "stdafx.h"
+#include "nextnet/stdafx.h"
 
 /**
  * Represents a node in a graph

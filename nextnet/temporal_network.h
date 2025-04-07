@@ -7,12 +7,12 @@
 
 #pragma once
 
-#include "stdafx.h"
-#include "types.h"
-#include "utility.h"
-#include "random.h"
-#include "network.h"
-#include "weighted_network.h"
+#include "nextnet/stdafx.h"
+#include "nextnet/types.h"
+#include "nextnet/utility.h"
+#include "nextnet/random.h"
+#include "nextnet/network.h"
+#include "nextnet/weighted_network.h"
 
 /**
  * @brief Temporal network interface, i.e. networks which evolve over time

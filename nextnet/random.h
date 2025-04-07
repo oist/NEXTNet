@@ -7,9 +7,9 @@
 
 #pragma once
 
-#include "stdafx.h"
-#include "types.h"
-// #include "analysis.h"
+#include "nextnet/stdafx.h"
+#include "nextnet/types.h"
+// #include "nextnet/analysis.h"
 
 //--------------------------------------
 //----------INFECTION TIMES------------
