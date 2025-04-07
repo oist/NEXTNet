@@ -391,6 +391,51 @@ private:
 
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
+/*-----------SAMPLE_WITHOUT_REPLACEMENT---------------*/
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+
+/**
+ * @brief Samples integers from [A, B) without replacement
+ *
+ * Uses the reservoir sampling algorithm (see Wikipedia):
+ *
+ * (* S has items to sample, R will contain the result *)
+ * ReservoirSample(S[1..n], R[1..k])
+ *   for i = 1 to k
+ *       R[i] := S[i]
+ *   end
+ *   W := exp(log(random())/k)
+ *   while i <= n
+ *       i := i + floor(log(random())/log(1-W)) + 1
+ *       if i <= n
+ *           R[randomInteger(1,k)] := S[i]  // random index between 1 and k, inclusive
+ *           W := W * exp(log(random())/k)
+ *       end
+ *   end
+ * end
+ */
+struct sample_without_replacement {
+    typedef std::vector<std::size_t> reservoir_type;
+
+    typedef typename reservoir_type::const_iterator const_iterator;
+
+    sample_without_replacement(std::size_t N, std::size_t k, rng_t& engine)
+        :sample_without_replacement(0, N, k, engine)
+    {}
+
+    sample_without_replacement(std::size_t A, std::size_t B, std::size_t k, rng_t& engine);
+
+    const_iterator begin() const { return reservoir.begin(); }
+    const_iterator end() const { return reservoir.end(); }
+    std::size_t operator[](const std::size_t i) const { return reservoir[i]; }
+    std::size_t at(const std::size_t i) const { return reservoir.at(i); }
+
+    std::vector<std::size_t> reservoir;
+};
+
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
 /*----------- VARIOUS HELPER FUNCTIONS ---------------*/
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
