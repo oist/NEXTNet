@@ -171,62 +171,65 @@ else()
 endif()
 
 # *** Build unit test runner
-add_executable(tests
-    ${TESTS_SOURCES}
-    ${LIB_SOURCES}
-    ${TESTS_HEADERS}
-    ${TESTS_PCH}
-    ${LIB_HEADERS}
-    ${LIB_PCH})
-set_target_properties(tests PROPERTIES EXCLUDE_FROM_ALL TRUE)
-target_precompile_headers(tests
-    PUBLIC ${LIB_PCH}
-    PUBLIC ${TESTS_PCH})
-set_source_files_properties(nextnet/tests/main.cpp
-    PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
-# Test data
-target_compile_definitions(tests PRIVATE TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/nextnet/tests/data")
-message("Test data: ${PROJECT_SOURCE_DIR}/nextnet/tests/data")
-if ((NOT SERIALIZE) AND TBB_FOUND)
-    message("Parallelization: Enabled")
-    target_link_libraries(tests TBB::tbb)
-    target_link_libraries(simulator PRIVATE TBB::tbb)
-    add_definitions(-DPARALLELIZE=1)
-else()
-    message("Parallelization: Disabled")
-    add_definitions(-DPARALLELIZE=0)
-endif()
-if (Gnuplot AND Boost_FILESYSTEM_FOUND AND Boost_IOSTREAMS_FOUND)
-    message("Plotting during tests: Enabled")
-    target_link_libraries(tests Boost::boost Boost::iostreams Boost::filesystem)
-    target_compile_definitions(tests PRIVATE
-        ENABLE_PLOTTING=1
-        GNUPLOT_DEFAULT_COMMAND="${Gnuplot} -persist"
-     )
-else()
-    message("Plotting during tests: Disabled")
-endif()
+if (UNITTESTS)
+    message("Creating target 'nextnet-unittests' to build unit tests")
+
+    add_executable(nextnet-unittests
+        ${TESTS_SOURCES}
+        ${LIB_SOURCES}
+        ${TESTS_HEADERS}
+        ${TESTS_PCH}
+        ${LIB_HEADERS}
+        ${LIB_PCH})
+    target_precompile_headers(nextnet-unittests
+        PUBLIC ${LIB_PCH}
+        PUBLIC ${TESTS_PCH})
+    set_source_files_properties(nextnet/tests/main.cpp
+        PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
+    # Test data
+    target_compile_definitions(nextnet-unittests PRIVATE TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/nextnet/tests/data")
+    message("Test data: ${PROJECT_SOURCE_DIR}/nextnet/tests/data")
+    if ((NOT SERIALIZE) AND TBB_FOUND)
+        message("Parallelization: Enabled")
+        target_link_libraries(nextnet-unittests TBB::tbb)
+        target_link_libraries(simulator PRIVATE TBB::tbb)
+        add_definitions(-DPARALLELIZE=1)
+    else()
+        message("Parallelization: Disabled")
+        add_definitions(-DPARALLELIZE=0)
+    endif()
+    if (Gnuplot AND Boost_FILESYSTEM_FOUND AND Boost_IOSTREAMS_FOUND)
+        message("Plotting during unit tests: Enabled")
+        target_link_libraries(nextnet-unittests Boost::boost Boost::iostreams Boost::filesystem)
+        target_compile_definitions(nextnet-unittests PRIVATE
+            ENABLE_PLOTTING=1
+            GNUPLOT_DEFAULT_COMMAND="${Gnuplot} -persist"
+         )
+    else()
+        message("Plotting during unit tests: Disabled")
+    endif()
 
 
-# Enable address and undefined behaviour sanitizers for all builds
-if (SANITIZE STREQUAL "debug")
-    message("Address and thread sanitizer during tests: Debug builds")
-    target_compile_options(tests PRIVATE
-        "$<$<CONFIG:DEBUG>:-fsanitize=address>"
-        "$<$<CONFIG:DEBUG>:-fsanitize=undefined>")
-    target_link_options(tests PRIVATE
-        "$<$<CONFIG:DEBUG>:-fsanitize=address>"
-        "$<$<CONFIG:DEBUG>:-fsanitize=undefined>")
-elseif (SANITIZE STREQUAL "always")
-    message("Address and thread sanitizer during tests: Always")
-    target_compile_options(tests PRIVATE
-        "-fsanitize=address"
-        "-fsanitize=undefined")
-    target_link_options(tests PRIVATE
-        "-fsanitize=address"
-        "-fsanitize=undefined")
-else()
-    message("Address and thread sanitizer during tests: Disabled")
+    # Enable address and undefined behaviour sanitizers for all builds
+    if (SANITIZE STREQUAL "debug")
+        message("Address and thread sanitizer during tests: Debug builds")
+        target_compile_options(nextnet-unittests PRIVATE
+            "$<$<CONFIG:DEBUG>:-fsanitize=address>"
+            "$<$<CONFIG:DEBUG>:-fsanitize=undefined>")
+        target_link_options(nextnet-unittests PRIVATE
+            "$<$<CONFIG:DEBUG>:-fsanitize=address>"
+            "$<$<CONFIG:DEBUG>:-fsanitize=undefined>")
+    elseif (SANITIZE STREQUAL "always")
+        message("Address and thread sanitizer during tests: Always")
+        target_compile_options(nextnet-unittests PRIVATE
+            "-fsanitize=address"
+            "-fsanitize=undefined")
+        target_link_options(nextnet-unittests PRIVATE
+            "-fsanitize=address"
+            "-fsanitize=undefined")
+    else()
+        message("Address and thread sanitizer during unit tests: Disabled")
+    endif()
 endif()
 
 # *** Code formatter
