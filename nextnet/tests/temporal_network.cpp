@@ -16,9 +16,8 @@ TEST_CASE("dynamic activity driven graph", "[temporal_network]")
     double TMAX = 30;
 
     while (g.step(engine, TMAX)) {
+        /* do nothing */
     }
-    // int k = ev->kind == network_event_kind::neighbour_added ? 1 : 0;
-    // std::cerr << "t="<<  t<< "  |  " <<  ev->source_node << "->" << ev->target_node << " | " << k << std::endl;
 
     double av_k = 0;
     double k2   = 0;
