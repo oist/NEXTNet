@@ -382,6 +382,7 @@ empirical_contact_network::empirical_contact_network(
 )
 	:next_reaction_network(kind)
 {
+    current_time = INFINITY;
     node_t max_node = 0;
 
     /* read whitespace-separated file */
@@ -400,35 +401,16 @@ empirical_contact_network::empirical_contact_network(
 
         /* queue event */
         switch (contact_type) {
-            case finite_duration: {
-				queue_network_event(network_event_t {
-                    .kind        = network_event_kind::neighbour_added,
-                    .source_node = src,
-                    .target_node = dst,
-                    .weight      = 1.0,
-                    .time        = time - dt / 2,
-				});
-
-				queue_network_event(network_event_t {
-                    .kind        = network_event_kind::neighbour_removed,
-                    .source_node = src,
-                    .target_node = dst,
-                    .weight      = 1.0,
-                    .time        = time + dt / 2
-				});
+            case finite_duration:
+                current_time = std::min(current_time, time - dt / 2.0);
+                queue_add_edge(src, dst, 1.0, time - dt / 2.0);
+                queue_remove_edge(src, dst, 1.0, time + dt / 2.0);
                 break;
-            }
 				
-            case infitesimal_duration: {
-				queue_network_event(network_event_t {
-                    .kind        = network_event_kind::instantenous_contact,
-                    .source_node = src,
-                    .target_node = dst,
-                    .weight      = dt,
-                    .time        = time
-				});
-                break;
-            }
+			case infitesimal_duration:
+				current_time = std::min(current_time, time);
+				queue_instantenous_contact(src, dst, dt, time);
+				break;
         }
     }
 

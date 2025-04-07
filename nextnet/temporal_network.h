@@ -229,10 +229,15 @@ struct empirical_contact_network : public virtual next_reaction_network
         infitesimal_duration = 2
     };
 
-    empirical_contact_network(std::string path_to_file, network_kind,
+	empirical_contact_network(std::string file,
+							  edge_duration_kind contact_type, double dt)
+		:empirical_contact_network(file, (network_kind)0, contact_type, dt)
+	{}
+ 
+	empirical_contact_network(std::string file, network_kind,
 							  edge_duration_kind contact_type, double dt);
 
-    std::vector<std::vector<double>> compute_number_of_edges(rng_t &engine);
+	std::vector<std::vector<double>> compute_number_of_edges(rng_t &engine);
 };
 
 
