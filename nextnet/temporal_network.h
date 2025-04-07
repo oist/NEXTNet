@@ -191,7 +191,7 @@ public:
 
     double current_time = 0.0;
 
-    bool flipped_edge_next;
+    bool flipped_edge_next = false;
 
 private:
 #if NEXT_REACTION_QUEUE == STD_PRIORITY_QUEUE_DEQUE
