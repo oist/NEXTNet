@@ -461,7 +461,7 @@ TEST_CASE("Cubic lattice", "[network]")
                     nn.push_back(nw.node({ i, j - 1 }));
                 } else if (j == +1)
                     nn.push_back(nw.node({ i, j + 1 }));
-                for (index_t k = 0; k < nn.size(); ++k)
+                for (index_t k = 0; k < (index_t)nn.size(); ++k)
                     REQUIRE(nw.neighbour(n, k) == nn[k]);
             }
         }
