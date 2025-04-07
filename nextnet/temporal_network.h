@@ -91,6 +91,13 @@ private:
     std::vector<indexed_map<node_t, double>> adjacencylist;
 };
 
+struct by_time
+{
+};
+struct by_tag
+{
+};
+
 /**
  * @brief Base class for nextreaction-based temporal networks.
  *
@@ -113,10 +120,13 @@ struct next_reaction_network : public virtual network
 
     typedef std::function<void()> event_callback_t;
 
+    typedef std::uint64_t tag_t;
+
 protected:
     struct queue_entry
     {
         absolutetime_t time;
+        tag_t tag;
         std::variant<
             network_event_t,
             event_callback_t>
@@ -144,7 +154,7 @@ public:
      * If the network is undirected, this will also add the reverse edge
      * from dst to src with the same weight at the same time.
      */
-    void queue_add_edge(node_t src, node_t dst, double w, absolutetime_t time);
+    void queue_add_edge(node_t src, node_t dst, double w, absolutetime_t time, tag_t tag = 0);
 
     /**
      * @brief Removed the edge from src to dist at time t
@@ -152,7 +162,7 @@ public:
      * If the network is undirected, this will also remove the reverse edge
      * from dst to src at the same time.
      */
-    void queue_remove_edge(node_t src, node_t dst, double w, absolutetime_t time);
+    void queue_remove_edge(node_t src, node_t dst, double w, absolutetime_t time, tag_t tag = 0);
 
     /**
      * @brief Instantenous contact from src to dst with weight w at time t
@@ -160,14 +170,14 @@ public:
      * If the network is undirected, this will also create a contact in the
      * reverse direction from dst to src at the same time
      */
-    void queue_instantenous_contact(node_t src, node_t dst, double w, absolutetime_t time);
+    void queue_instantenous_contact(node_t src, node_t dst, double w, absolutetime_t time, tag_t tag = 0);
 
     /**
      * @brief Queue network event
      *
      * This queues arbitrary network events
      */
-    void queue_network_event(network_event_t ev);
+    void queue_network_event(network_event_t ev, tag_t tag = 0);
 
     /**
      * @brief Queue callback event
@@ -175,7 +185,9 @@ public:
      * This queues arbitrary callbacks which are executed when next() or step()
      * encounters them in the queue.
      */
-    void queue_callback(absolutetime_t time, event_callback_t cb);
+    void queue_callback(absolutetime_t time, event_callback_t cb, tag_t tag = 0);
+
+    void clear_tag(tag_t tag);
 
     virtual bool is_undirected() override;
 
@@ -194,7 +206,30 @@ public:
     bool flipped_edge_next = false;
 
 private:
-#if NEXT_REACTION_QUEUE == STD_PRIORITY_QUEUE_DEQUE
+    typedef bmi::multi_index_container<
+        queue_entry,
+        bmi::indexed_by<
+            bmi::ordered_non_unique<
+                bmi::tag<by_time>,
+                bmi::member<queue_entry, absolutetime_t, &queue_entry::time>>,
+            bmi::hashed_non_unique<
+                bmi::tag<by_tag>,
+                bmi::member<queue_entry, uint64_t, &queue_entry::tag>>>>
+        queue_type;
+
+    queue_type event_queue;
+
+    const queue_entry &top_event() { return *event_queue.get<by_time>().begin(); }
+
+    void pop_event()
+    {
+        auto &i = event_queue.get<by_time>();
+        i.erase(i.begin());
+    }
+
+    void push_event(queue_entry e) { event_queue.insert(e); };
+
+#if 0
     std::priority_queue<queue_entry, std::deque<queue_entry>,
                         std::greater<queue_entry>>
         event_queue;
@@ -205,7 +240,7 @@ private:
 
     void push_event(queue_entry e) { event_queue.push(e); };
 
-#elif NEXT_REACTION_QUEUE == EXT_PRIO_QUEUE
+#elif 0
     rollbear::prio_queue<32, absolutetime_t, queue_entry>
         event_queue;
 

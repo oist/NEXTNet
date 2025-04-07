@@ -166,58 +166,68 @@ bool next_reaction_network::is_unweighted()
     return !(kind & weighted_kind);
 }
 
-void next_reaction_network::queue_add_edge(node_t src, node_t dst, double w, absolutetime_t time)
+void next_reaction_network::queue_add_edge(node_t src, node_t dst, double w, absolutetime_t time, tag_t tag)
 {
     queue_network_event(network_event_t{
-        .kind        = network_event_kind::neighbour_added,
-        .source_node = src,
-        .target_node = dst,
-        .weight      = w,
-        .time        = time });
+                            .kind        = network_event_kind::neighbour_added,
+                            .source_node = src,
+                            .target_node = dst,
+                            .weight      = w,
+                            .time        = time },
+                        tag);
 }
 
-void next_reaction_network::queue_remove_edge(node_t src, node_t dst, double w, absolutetime_t time)
+void next_reaction_network::queue_remove_edge(node_t src, node_t dst, double w, absolutetime_t time, tag_t tag)
 {
     queue_network_event(network_event_t{
-        .kind        = network_event_kind::neighbour_removed,
-        .source_node = src,
-        .target_node = dst,
-        .weight      = w,
-        .time        = time });
+                            .kind        = network_event_kind::neighbour_removed,
+                            .source_node = src,
+                            .target_node = dst,
+                            .weight      = w,
+                            .time        = time },
+                        tag);
 }
 
-void next_reaction_network::queue_instantenous_contact(node_t src, node_t dst, double w, absolutetime_t time)
+void next_reaction_network::queue_instantenous_contact(node_t src, node_t dst, double w, absolutetime_t time, tag_t tag)
 {
     queue_network_event(network_event_t{
-        .kind        = network_event_kind::instantenous_contact,
-        .source_node = src,
-        .target_node = dst,
-        .weight      = w,
-        .time        = time });
+                            .kind        = network_event_kind::instantenous_contact,
+                            .source_node = src,
+                            .target_node = dst,
+                            .weight      = w,
+                            .time        = time },
+                        tag);
 }
 
-void next_reaction_network::queue_network_event(network_event_t ev)
+void next_reaction_network::queue_network_event(network_event_t ev, tag_t tag)
 {
     if (ev.time < current_time)
         throw std::range_error("cannot queue past events");
 
-    push_event(queue_entry{ .time = ev.time, .event = ev });
+    push_event(queue_entry{ .time = ev.time, .tag = tag, .event = ev });
 
     /* Forget cached next_time */
     if (ev.time < next_time)
         next_time = NAN;
 }
 
-void next_reaction_network::queue_callback(absolutetime_t time, event_callback_t cb)
+void next_reaction_network::queue_callback(absolutetime_t time, event_callback_t cb, tag_t tag)
 {
     if (time < current_time)
         throw std::range_error("cannot queue past events");
 
-    push_event(queue_entry{ .time = time, .event = cb });
+    push_event(queue_entry{ .time = time, .tag = tag, .event = cb });
 
     /* Forget cached next_time */
     if (time < next_time)
         next_time = NAN;
+}
+
+void next_reaction_network::clear_tag(tag_t tag)
+{
+    auto &queue_by_tag = event_queue.get<by_tag>();
+    auto r             = queue_by_tag.equal_range(tag);
+    queue_by_tag.erase(r.first, r.second);
 }
 
 absolutetime_t next_reaction_network::next(rng_t &engine, absolutetime_t maxtime)
