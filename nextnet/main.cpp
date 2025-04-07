@@ -2,7 +2,6 @@
 
 #include "stdafx.h"
 #include "random.h"
-#include "analysis.h"
 #include "REGIR.h"
 #include "nMGA.h"
 #include "NextReaction.h"
