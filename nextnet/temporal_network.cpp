@@ -165,6 +165,40 @@ bool next_reaction_network::is_unweighted()
 	return !(kind & weighted_kind);
 }
 
+void next_reaction_network::queue_add_edge(node_t src, node_t dst, double w, absolutetime_t time)
+{
+	queue_network_event(network_event_t {
+		.kind = network_event_kind::neighbour_added,
+		.source_node = src,
+		.target_node = dst,
+		.weight = w,
+		.time = time
+	});
+}
+
+void next_reaction_network::queue_remove_edge(node_t src, node_t dst, double w, absolutetime_t time)
+{
+	queue_network_event(network_event_t {
+		.kind = network_event_kind::neighbour_removed,
+		.source_node = src,
+		.target_node = dst,
+		.weight = w,
+		.time = time
+	});
+}
+
+void next_reaction_network::queue_instantenous_contact(node_t src, node_t dst, double w, absolutetime_t time)
+{
+	queue_network_event(network_event_t {
+		.kind = network_event_kind::instantenous_contact,
+		.source_node = src,
+		.target_node = dst,
+		.weight = w,
+		.time = time
+	});
+}
+
+
 void next_reaction_network::queue_network_event(network_event_t ev)
 {
 	if (ev.time < current_time)
@@ -177,7 +211,7 @@ void next_reaction_network::queue_network_event(network_event_t ev)
 		next_time = NAN;
 }
 
-void next_reaction_network::queue_callback(absolutetime_t time, event_callback cb)
+void next_reaction_network::queue_callback(absolutetime_t time, event_callback_t cb)
 {
 	if (time < current_time)
 		throw std::range_error("cannot queue past events");
@@ -227,12 +261,9 @@ absolutetime_t next_reaction_network::next(rng_t &engine, absolutetime_t maxtime
 				default:
 					break;
 			};
-		} else {
-			/* TODO: This is wrong, we have to handle callback events here somehow
-			 * TODO: But we can neither execute them, nor skip them.  We must scan
-			 * TODO: over them somehow. Maybe the best solution is to have two priorty
-			 * TODO: queues, one for callback and one for events */
-			assert(false);
+		} else if (const event_callback_t* cbev = std::get_if<event_callback_t>(&top.event)) {
+			/* Execute callback. Since this is not a reported event, we continue */
+			cbev->operator()();
 		}
 		
 		next_time = top.time;
@@ -288,11 +319,11 @@ std::optional<network_event_t> next_reaction_network::step(rng_t &engine, absolu
 						if ((kind & weighted_kind) && (w != weight)) {
 							remove_edge(ev.source_node, ev.target_node);
 							return network_event_t {
-								.time = ev.time,
 								.kind = network_event_kind::neighbour_removed,
 								.source_node = ev.source_node,
 								.target_node = ev.target_node,
-								.weight = w
+								.weight = w,
+								.time = ev.time
 							};
 						}
 					}
@@ -326,10 +357,12 @@ std::optional<network_event_t> next_reaction_network::step(rng_t &engine, absolu
 				next_time = NAN;
 				pop_event();
 			}
+
 			return ev;
-		} else if (const event_callback* cbev = std::get_if<event_callback>(&top.event)) {
+		} else if (const event_callback_t* cbev = std::get_if<event_callback_t>(&top.event)) {
 			/* Execute callback. Since this is not a reported event, we continue */
 			cbev->operator()();
+			pop_event();
 		} else {
 			throw std::logic_error("unknown event in queue");
 		}

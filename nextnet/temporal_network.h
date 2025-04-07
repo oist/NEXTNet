@@ -110,15 +110,15 @@ struct next_reaction_network : public virtual network
 		directed_kind = 1,
 		weighted_kind = 2
 	};
-	
-	typedef std::function<void ()> event_callback;
+
+	typedef std::function<void ()> event_callback_t;
 
 protected:
 	struct queue_entry {
 		absolutetime_t time;
 		std::variant<
 			network_event_t,
-			event_callback
+			event_callback_t
 		> event;
 
 		bool operator<(const queue_entry &o) const { return time < o.time; }
@@ -130,28 +130,67 @@ protected:
 	};
 
 public:
+	next_reaction_network()
+		:next_reaction_network((network_kind)0)
+	{}
+
 	next_reaction_network(network_kind kind_);
-	
+
+	/**
+	 * @brief Adds an edge from src to dist with weight w at time t
+	 *
+	 * If the network is undirected, this will also add the reverse edge
+	 * from dst to src with the same weight at the same time.
+	 */
+	void queue_add_edge(node_t src, node_t dst, double w, absolutetime_t time);
+
+	/**
+	 * @brief Removed the edge from src to dist at time t
+	 *
+	 * If the network is undirected, this will also remove the reverse edge
+	 * from dst to src at the same time.
+	 */
+	void queue_remove_edge(node_t src, node_t dst, double w, absolutetime_t time);
+
+	/**
+	 * @brief Instantenous contact from src to dst with weight w at time t
+	 *
+	 * If the network is undirected, this will also create a contact in the
+	 * reverse direction from dst to src at the same time
+	 */
+	void queue_instantenous_contact(node_t src, node_t dst, double w, absolutetime_t time);
+
+	/**
+	 * @brief Queue network event
+	 *
+	 * This queues arbitrary network events
+	 */
 	void queue_network_event(network_event_t ev);
 
-	void queue_callback(absolutetime_t time, event_callback cb);
+	/**
+	 * @brief Queue callback event
+	 *
+	 * This queues arbitrary callbacks which are executed when next() or step()
+	 * encounters them in the queue.
+	 */
+	void queue_callback(absolutetime_t time, event_callback_t cb);
 
 	virtual bool is_undirected() override;
-	
+
 	virtual bool is_unweighted() override;
-	
+
 	virtual absolutetime_t next(rng_t &engine, absolutetime_t maxtime = INFINITY) override;
 
 	virtual std::optional<network_event_t> step(rng_t &engine, absolutetime_t max_time = NAN) override;
 
 	const network_kind kind;
-	
+
 	double next_time = NAN;
-	
+
 	double current_time = 0.0;
 
 	bool flipped_edge_next;
-	
+
 private:
 #if NEXT_REACTION_QUEUE == STD_PRIORITY_QUEUE_DEQUE
 	std::priority_queue<queue_entry, std::deque<queue_entry>,
