@@ -37,12 +37,10 @@ SET(LIB_PCH nextnet/stdafx.h)
 set(CLI_SOURCES
     nextnet/main.cpp)
 
-set(CLI_HEADERS
-    nextnet/analysis.h)
+set(CLI_HEADERS )
 
 # *** Unit tests sources and headers
 set(TESTS_SOURCES
-    nextnet/analysis.cpp
     nextnet/tests/plot.cpp
     nextnet/tests/main.cpp
     nextnet/tests/utility.cpp
