@@ -414,7 +414,6 @@ empirical_contact_network::empirical_contact_network(
 
 std::vector<std::vector<double>> empirical_contact_network::compute_number_of_edges(rng_t &engine)
 {
-
     std::vector<std::vector<double>> average_degree;
     int number_of_edges = 0;
 
