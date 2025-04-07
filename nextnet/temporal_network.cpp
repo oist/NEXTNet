@@ -829,40 +829,74 @@ void temporal_erdos_renyi::remove_edge(node_t node, int neighbour_index)
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
 
-activity_driven_network::activity_driven_network(std::vector<double> activity, double eta, double m, double b, rng_t &engine)
+activity_driven_network::activity_driven_network(std::vector<double> activity_, std::size_t m_,
+                                                 double eta_sus_, double eta_inf_, double b_sus_, double b_inf_,
+                                                 rng_t &engine_)
     : next_reaction_network()
-    , activity(activity)
-    , eta(eta)
-    , m(m)
-    , b(b)
-    , engine(engine)
-    , active(activity.size(), false)
+    , activity(activity_)
+    , eta_sus(eta_sus_)
+    , eta_inf(eta_inf_)
+    , b_sus(b_sus_)
+    , b_inf(b_inf_)
+    , m(m_)
+    , engine(engine_)
+    , state(activity.size(), node_state{ .active = false, .infected = false })
 {
-    resize(activity.size());
+    /* Allocate space in adjacency lists for N nodes */
+    resize((node_t)activity.size());
 
+    /* Initialze nodes */
     for (node_t n = 0; n < (node_t)activity.size(); ++n) {
-        const double ai       = eta * activity[n];
-        const double p_active = ai / (ai + b);
-        const bool active     = std::bernoulli_distribution(p_active)(engine);
-        if (active && (b > 0)) {
+        /* Compute activation rate ai, and steady-state probability p_active */
+        const double ai       = eta_sus * activity[n];
+        const double p_active = ai / (ai + b_sus);
+        /* Set state according to steady-state probability */
+        const bool active = std::bernoulli_distribution(p_active)(engine);
+        if (active)
             activate_node(n, 0);
-        } else if (ai > 0) {
-            const double t = std::exponential_distribution<>(ai)(engine);
-            queue_callback(t, [this, n, t]() { this->activate_node(n, t); });
-        }
+        else if (ai > 0)
+            queue_activation(n, state[n], 0);
     }
 
-    /* Execute the events queued for time zero */
+    /* Execute the network events queued for time zero to finish initialization */
     while (next(engine, 0) == 0)
         step(engine, 0);
 }
 
+void activity_driven_network::queue_activation(node_t node, node_state s, absolutetime_t time)
+{
+    /* Compute activation rate */
+    const double eta = s.infected ? eta_inf : eta_sus;
+    const double ai  = eta * activity[node];
+    /* Activate immediately if rate is infinite, otherwise generate waiting time and queue */
+    if (ai == INFINITY)
+        activate_node(node, time);
+    else if (ai > 0) {
+        const double t = time + std::exponential_distribution<>(ai)(engine);
+        queue_callback(t, [this, node, t]() { this->activate_node(node, t); }, node);
+    }
+}
+
+void activity_driven_network::queue_deactivation(node_t node, node_state s, absolutetime_t time)
+{
+    /* Compute deactivation rate */
+    const double b = s.infected ? b_inf : b_sus;
+    /* Deactivate immediately if rate is infinite, otherwise generate waiting time and queue */
+    if (b == INFINITY)
+        deactivate_node(node, time);
+    else if (b > 0) {
+        const double t = time + std::exponential_distribution<>(b)(engine);
+        queue_callback(t, [this, node, t]() { this->deactivate_node(node, t); }, node);
+    }
+}
+
 void activity_driven_network::activate_node(node_t node, absolutetime_t time)
 {
-    if (active[node])
+    /* Fetch and update node state */
+    node_state &s = state[node];
+    if (s.active)
         throw std::logic_error("node is already active");
-
-    active[node] = true;
+    s.active = true;
 
     /* Sample m nodes from possible neighbours {1,...,n-1,n+1,...,N} */
     for (std::size_t nn : sample_without_replacement(nodes() - 1, m, engine)) {
@@ -873,23 +907,59 @@ void activity_driven_network::activate_node(node_t node, absolutetime_t time)
     }
 
     /* Queue next deactivaton */
-    const double t = time + std::exponential_distribution<>(b)(engine);
-    queue_callback(t, [this, node, t]() { this->deactivate_node(node, t); });
+    queue_deactivation(node, s, time);
 }
 
 void activity_driven_network::deactivate_node(node_t node, absolutetime_t time)
 {
-    if (!active[node])
+    /* Fetch and update node state */
+    node_state &s = state[node];
+    if (!s.active)
         throw std::logic_error("node is already inactive");
-
-    active[node] = false;
+    s.active = false;
 
     node_t nn;
-    for(int i = 0; (nn = neighbour(node, i)) >= 0; ++i)
+    for (int i = 0; (nn = neighbour(node, i)) >= 0; ++i)
         queue_remove_edge(node, nn, 1.0, time);
 
     /* Queue next activation */
-    const double ai = eta * activity[node];
-    const double t  = time + std::exponential_distribution<>(ai)(engine);
-    queue_callback(t, [this, node, t]() { this->activate_node(node, t); });
+    queue_activation(node, s, time);
+}
+
+void activity_driven_network::notify_epidemic_event(epidemic_event_t ev, rng_t &engine)
+{
+    /* Fetch node state */
+    node_state &s = state[ev.node];
+
+    /* Update infected state of node, re-genereate waiting times if necessary */
+    switch (ev.kind) {
+        case epidemic_event_kind::outside_infection:
+        case epidemic_event_kind::infection:
+            if (s.infected)
+                throw std::logic_error("node is already infected");
+            s.infected = true;
+
+            /* if the deactivation rate of the node changed, re-generate waiting time */
+            if (s.active && (b_sus != b_inf)) {
+                clear_tag(ev.node);
+                queue_deactivation(ev.node, s, ev.time);
+            }
+            break;
+
+        case epidemic_event_kind::reset:
+            if (!s.infected)
+                throw std::logic_error("node is not infected");
+            s.infected = false;
+
+            /* if the deactivation rate of the node changed, re-generate waiting time */
+            if (s.active && (eta_sus != eta_inf)) {
+                clear_tag(ev.node);
+                queue_activation(ev.node, s, ev.time);
+            }
+            break;
+
+        default:
+            throw std::logic_error("unknown event type");
+            break;
+    }
 }

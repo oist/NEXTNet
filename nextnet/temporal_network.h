@@ -409,17 +409,38 @@ struct activity_driven_network : virtual public next_reaction_network
         deactivate = 2
     };
 
-    activity_driven_network(std::vector<double> activity_rates, double eta, double m, double b, rng_t &engine);
+    /* bitfield used to store node states */
+    struct node_state
+    {
+        unsigned char active : 1;
+        unsigned char infected : 1;
+    };
+
+    activity_driven_network(std::vector<double> activity_rates, double eta, double m, double b, rng_t &engine)
+        : activity_driven_network(activity_rates, m, eta, eta, b, b, engine)
+    {
+    }
+
+    activity_driven_network(std::vector<double> activity_rates, std::size_t m,
+                            double eta_sus, double eta_inf, double b_sus, double b_inf,
+                            rng_t &engine);
+
+    virtual void notify_epidemic_event(epidemic_event_t ev, rng_t &engine) override;
 
     void activate_node(node_t node, absolutetime_t time);
     void deactivate_node(node_t node, absolutetime_t time);
 
+    void queue_activation(node_t node, node_state s, absolutetime_t time);
+    void queue_deactivation(node_t node, node_state s, absolutetime_t time);
+
     const std::vector<double> activity;
-    const double eta;
-    const double m;
-    const double b;
+    const double eta_sus;
+    const double eta_inf;
+    const double b_sus;
+    const double b_inf;
+    const std::size_t m;
 
     rng_t &engine;
 
-    std::vector<bool> active;
+    std::vector<node_state> state;
 };
