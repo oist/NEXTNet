@@ -18,17 +18,17 @@ using boost::math::erfc;
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
 
-weighted_network* as_weighted_network(network* nw)
+weighted_network *as_weighted_network(network *nw)
 {
-	if (weighted_network* wnw = dynamic_cast<weighted_network*>(nw))
-		return wnw->is_unweighted() ? nullptr : wnw;
-	else
-		return nullptr;
+    if (weighted_network *wnw = dynamic_cast<weighted_network *>(nw))
+        return wnw->is_unweighted() ? nullptr : wnw;
+    else
+        return nullptr;
 }
 
 bool weighted_network::is_unweighted()
 {
-	return false;
+    return false;
 }
 
 node_t weighted_network::neighbour(node_t node, int neighbour_index)

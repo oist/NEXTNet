@@ -788,7 +788,6 @@ private:
     std::unordered_map<T, std::size_t, hasher, key_equal> index;
 };
 
-
 /**
  * @brief Maps whose elemenets to be accessed by index and randomly drawn
  *
@@ -807,7 +806,7 @@ class indexed_map
 public:
     typedef K key_type;
     typedef M mapped_type;
-    typedef std::pair<const K,M> value_type;
+    typedef std::pair<const K, M> value_type;
     typedef std::size_t size_type;
     typedef Hash hasher;
     typedef KeyEqual key_equal;
@@ -839,7 +838,7 @@ public:
         auto i = find(k);
         if (i != end())
             return i->second;
-        return insert({k, mapped_type()}).first->second;
+        return insert({ k, mapped_type() }).first->second;
     }
 
     iterator begin() { return elements.begin(); }
@@ -884,8 +883,8 @@ public:
             // The first element in value_type is const since
             // we the key is immutable. Here, we have to override
             // that though so we const_cast.
-            swap(const_cast<key_type&>(elements[idx].first),
-                 const_cast<key_type&>(elements.back().first));
+            swap(const_cast<key_type &>(elements[idx].first),
+                 const_cast<key_type &>(elements.back().first));
             swap(elements[idx].second, elements.back().second);
             // Update index entry for former last element
             index[elements[idx].first] = idx;

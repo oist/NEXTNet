@@ -197,7 +197,8 @@ TEST_CASE("Lognormal distribution incremental sampling (pinf>0)", "[random]")
     }
 }
 
-TEST_CASE("sampling without replacement", "[random]") {
+TEST_CASE("sampling without replacement", "[random]")
+{
     rng_t engine;
 
     const std::size_t N = 10;
@@ -205,12 +206,12 @@ TEST_CASE("sampling without replacement", "[random]") {
     const std::size_t K = 3;
 
     std::vector<std::size_t> count(N, 0.0);
-    for(std::size_t l=0; l < M; ++l) {
-        for(std::size_t i: sample_without_replacement(0, N, K, engine))
+    for (std::size_t l = 0; l < M; ++l) {
+        for (std::size_t i : sample_without_replacement(0, N, K, engine))
             count[i] += 1.0;
     }
 
-    const double p1 = (double)K/N;
-    for(std::size_t i=0; i < K; ++i)
-        REQUIRE(ztest((double)count[i] / M, sqrt(p1*(1-p1)), p1) >= 0.05);
+    const double p1 = (double)K / N;
+    for (std::size_t i = 0; i < K; ++i)
+        REQUIRE(ztest((double)count[i] / M, sqrt(p1 * (1 - p1)), p1) >= 0.05);
 }

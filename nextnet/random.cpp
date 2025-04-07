@@ -257,11 +257,12 @@ double transmission_time_polynomial_rate::survivalprobability(interval_t tau) co
 /*----------------------------------------------------*/
 
 sample_without_replacement::sample_without_replacement(
-        std::size_t A, std::size_t B, std::size_t k, rng_t& engine)
+    std::size_t A, std::size_t B, std::size_t k, rng_t &engine)
 {
     if (B - A < k)
         throw std::range_error("interval [" + std::to_string(A) + ", " + std::to_string(B) + ") "
-                               "contains too few elements for a sample of size " + std::to_string(k));
+                                                                                             "contains too few elements for a sample of size " +
+                               std::to_string(k));
 
     /* ReservoirSample(S[1..n], R[1..k])
      *   for i = 1 to k
@@ -279,19 +280,19 @@ sample_without_replacement::sample_without_replacement(
      */
 
     reservoir.reserve(k);
-    for(std::size_t i=0; i < k; ++i)
+    for (std::size_t i = 0; i < k; ++i)
         reservoir.push_back(A + i);
 
-    double W = exp(log(std::uniform_real_distribution<double>(0, 1)(engine)));
-    std::size_t i = k+1;
-    while (i < (B-A)) {
-        const double u = std::uniform_real_distribution<double>(0,1)(engine);
-        i += floor(log(u)/log(1 - W)) + 1;
-        if (i < (B-A)) {
-            const std::size_t j = std::uniform_int_distribution<std::size_t>(0, k-1)(engine);
-            reservoir[j] = i;
-            const double u = std::uniform_real_distribution<double>(0,1)(engine);
-            W *= exp(log(u)/k);
+    double W      = exp(log(std::uniform_real_distribution<double>(0, 1)(engine)));
+    std::size_t i = k + 1;
+    while (i < (B - A)) {
+        const double u = std::uniform_real_distribution<double>(0, 1)(engine);
+        i += floor(log(u) / log(1 - W)) + 1;
+        if (i < (B - A)) {
+            const std::size_t j = std::uniform_int_distribution<std::size_t>(0, k - 1)(engine);
+            reservoir[j]        = i;
+            const double u      = std::uniform_real_distribution<double>(0, 1)(engine);
+            W *= exp(log(u) / k);
         }
     }
 }

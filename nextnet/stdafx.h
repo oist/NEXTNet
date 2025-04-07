@@ -64,7 +64,7 @@
 #endif
 
 /* Make boost namespaces available under shortcuts */
-namespace bm = boost::math;
+namespace bm  = boost::math;
 namespace bmi = boost::multi_index;
 
 // Priority Queue

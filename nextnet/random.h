@@ -415,16 +415,18 @@ private:
  *   end
  * end
  */
-struct sample_without_replacement {
+struct sample_without_replacement
+{
     typedef std::vector<std::size_t> reservoir_type;
 
     typedef typename reservoir_type::const_iterator const_iterator;
 
-    sample_without_replacement(std::size_t N, std::size_t k, rng_t& engine)
-        :sample_without_replacement(0, N, k, engine)
-    {}
+    sample_without_replacement(std::size_t N, std::size_t k, rng_t &engine)
+        : sample_without_replacement(0, N, k, engine)
+    {
+    }
 
-    sample_without_replacement(std::size_t A, std::size_t B, std::size_t k, rng_t& engine);
+    sample_without_replacement(std::size_t A, std::size_t B, std::size_t k, rng_t &engine);
 
     const_iterator begin() const { return reservoir.begin(); }
     const_iterator end() const { return reservoir.end(); }

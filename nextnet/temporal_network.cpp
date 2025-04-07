@@ -80,25 +80,25 @@ bool mutable_weighted_network::has_edge(node_t src, node_t dst)
     return (al.find(dst) != al.end());
 }
 
-bool mutable_weighted_network::has_edge(node_t src, node_t dst, double* weight)
+bool mutable_weighted_network::has_edge(node_t src, node_t dst, double *weight)
 {
-	auto &al = adjacencylist.at(src);
-	const auto i = al.find(dst);
-	if (i == al.end()) {
-		*weight = NAN;
-		return false;
-	}
-	*weight = i->second;
-	return true;
+    auto &al     = adjacencylist.at(src);
+    const auto i = al.find(dst);
+    if (i == al.end()) {
+        *weight = NAN;
+        return false;
+    }
+    *weight = i->second;
+    return true;
 }
 
 double mutable_weighted_network::edge_weight(node_t src, node_t dst)
 {
-	auto &al = adjacencylist.at(src);
-	auto i = al.find(dst);
-	if (i == al.end())
-		return NAN;
-	return i->second;
+    auto &al = adjacencylist.at(src);
+    auto i   = al.find(dst);
+    if (i == al.end())
+        return NAN;
+    return i->second;
 }
 
 void mutable_weighted_network::add_edge(node_t src, node_t dst, double weight)
@@ -134,7 +134,7 @@ node_t mutable_weighted_network::neighbour(node_t node, int neighbour_index, dou
     const auto &al = adjacencylist.at(node);
     if ((neighbour_index < 0) || ((std::size_t)neighbour_index >= al.size()))
         return -1;
-    const auto& n = al[neighbour_index];
+    const auto &n = al[neighbour_index];
     if (weight != nullptr)
         *weight = n.second;
     return n.first;
@@ -152,223 +152,218 @@ index_t mutable_weighted_network::outdegree(node_t node)
 /*----------------------------------------------------*/
 
 next_reaction_network::next_reaction_network(network_kind kind_)
-	:kind(kind_)
-{}
+    : kind(kind_)
+{
+}
 
 bool next_reaction_network::is_undirected()
 {
-	return !(kind & directed_kind);
+    return !(kind & directed_kind);
 }
 
 bool next_reaction_network::is_unweighted()
 {
-	return !(kind & weighted_kind);
+    return !(kind & weighted_kind);
 }
 
 void next_reaction_network::queue_add_edge(node_t src, node_t dst, double w, absolutetime_t time)
 {
-	queue_network_event(network_event_t {
-		.kind = network_event_kind::neighbour_added,
-		.source_node = src,
-		.target_node = dst,
-		.weight = w,
-		.time = time
-	});
+    queue_network_event(network_event_t{
+        .kind        = network_event_kind::neighbour_added,
+        .source_node = src,
+        .target_node = dst,
+        .weight      = w,
+        .time        = time });
 }
 
 void next_reaction_network::queue_remove_edge(node_t src, node_t dst, double w, absolutetime_t time)
 {
-	queue_network_event(network_event_t {
-		.kind = network_event_kind::neighbour_removed,
-		.source_node = src,
-		.target_node = dst,
-		.weight = w,
-		.time = time
-	});
+    queue_network_event(network_event_t{
+        .kind        = network_event_kind::neighbour_removed,
+        .source_node = src,
+        .target_node = dst,
+        .weight      = w,
+        .time        = time });
 }
 
 void next_reaction_network::queue_instantenous_contact(node_t src, node_t dst, double w, absolutetime_t time)
 {
-	queue_network_event(network_event_t {
-		.kind = network_event_kind::instantenous_contact,
-		.source_node = src,
-		.target_node = dst,
-		.weight = w,
-		.time = time
-	});
+    queue_network_event(network_event_t{
+        .kind        = network_event_kind::instantenous_contact,
+        .source_node = src,
+        .target_node = dst,
+        .weight      = w,
+        .time        = time });
 }
-
 
 void next_reaction_network::queue_network_event(network_event_t ev)
 {
-	if (ev.time < current_time)
-		throw std::range_error("cannot queue past events");
-	
-	push_event(queue_entry {.time = ev.time, .event = ev} );
-	
-	/* Forget cached next_time */
-	if (ev.time < next_time)
-		next_time = NAN;
+    if (ev.time < current_time)
+        throw std::range_error("cannot queue past events");
+
+    push_event(queue_entry{ .time = ev.time, .event = ev });
+
+    /* Forget cached next_time */
+    if (ev.time < next_time)
+        next_time = NAN;
 }
 
 void next_reaction_network::queue_callback(absolutetime_t time, event_callback_t cb)
 {
-	if (time < current_time)
-		throw std::range_error("cannot queue past events");
+    if (time < current_time)
+        throw std::range_error("cannot queue past events");
 
-	push_event(queue_entry {.time = time, .event = cb});
-	
-	/* Forget cached next_time */
-	if (time < next_time)
-		next_time = NAN;
+    push_event(queue_entry{ .time = time, .event = cb });
+
+    /* Forget cached next_time */
+    if (time < next_time)
+        next_time = NAN;
 }
 
 absolutetime_t next_reaction_network::next(rng_t &engine, absolutetime_t maxtime)
 {
-	/* If there's a cached next_time, return it */
-	if (!std::isnan(next_time))
-		return next_time;
-	
-	/* Find time of next event that step() will report */
-	while (true) {
-		if (event_queue.empty())
-			return INFINITY;
-		
-		/* Fetch next event, return nothing if past max_time */
-		const queue_entry& top = top_event();
-		if (top.time > maxtime)
-			return INFINITY;
-		
-		/* Check whether step() would skip the event or not */
-		if (const network_event_t* nwev = std::get_if<network_event_t>(&top.event)) {
-			assert(nwev->time == top.time);
-			network_event_t ev = *nwev;
-			switch (nwev->kind) {
-				case network_event_kind::neighbour_added:
-					double w;
-					if (has_edge(ev.source_node, ev.target_node, &w) &&
-						(!(kind & weighted_kind) || (w == ev.weight))) {
-						pop_event();
-						continue;
-					}
-					break;
-				case network_event_kind::neighbour_removed:
-					if (!has_edge(ev.source_node, ev.target_node)) {
-						pop_event();
-						continue;
-					}
-					break;
-				default:
-					break;
-			};
-		} else if (const event_callback_t* cbev = std::get_if<event_callback_t>(&top.event)) {
-			/* Execute callback. Since this is not a reported event, we continue */
-			cbev->operator()();
-		}
-		
-		next_time = top.time;
-		return next_time;
-	}
+    /* If there's a cached next_time, return it */
+    if (!std::isnan(next_time))
+        return next_time;
+
+    /* Find time of next event that step() will report */
+    while (true) {
+        if (event_queue.empty())
+            return INFINITY;
+
+        /* Fetch next event, return nothing if past max_time */
+        const queue_entry &top = top_event();
+        if (top.time > maxtime)
+            return INFINITY;
+
+        /* Check whether step() would skip the event or not */
+        if (const network_event_t *nwev = std::get_if<network_event_t>(&top.event)) {
+            assert(nwev->time == top.time);
+            network_event_t ev = *nwev;
+            switch (nwev->kind) {
+                case network_event_kind::neighbour_added:
+                    double w;
+                    if (has_edge(ev.source_node, ev.target_node, &w) &&
+                        (!(kind & weighted_kind) || (w == ev.weight))) {
+                        pop_event();
+                        continue;
+                    }
+                    break;
+                case network_event_kind::neighbour_removed:
+                    if (!has_edge(ev.source_node, ev.target_node)) {
+                        pop_event();
+                        continue;
+                    }
+                    break;
+                default:
+                    break;
+            };
+        } else if (const event_callback_t *cbev = std::get_if<event_callback_t>(&top.event)) {
+            /* Execute callback. Since this is not a reported event, we continue */
+            cbev->operator()();
+        }
+
+        next_time = top.time;
+        return next_time;
+    }
 }
 
 std::optional<network_event_t> next_reaction_network::step(rng_t &engine, absolutetime_t max_time)
 {
-	while (true) {
-		if (event_queue.empty())
-			return std::nullopt;
+    while (true) {
+        if (event_queue.empty())
+            return std::nullopt;
 
-		/* Fetch next event, return nothing if past max_time */
-		const queue_entry& top = top_event();
-		if (top.time > max_time)
-			return std::nullopt;
-		
-		assert(current_time <= top.time);
-		current_time = top.time;
-		
-		/* Decode and handle event */
-		assert(std::isnan(next_time) || (next_time >= top.time));
-		if (const network_event_t* nwev = std::get_if<network_event_t>(&top.event)) {
-			/* Network event */
-			assert(nwev->time == top.time);
+        /* Fetch next event, return nothing if past max_time */
+        const queue_entry &top = top_event();
+        if (top.time > max_time)
+            return std::nullopt;
 
-			/* Get event and flip edge for second pass on undirected networks */
-			network_event_t ev = *nwev;
-			if (flipped_edge_next)
-				std::swap(ev.source_node, ev.target_node);
-			
-			/* Time of the event should agree with cached next_time */
-			assert(std::isnan(next_time) || (next_time == ev.time));
-			
-			/* Execute event
-			 * NOTE: The logic of which events we skip below must match next(),
-			 * otherwise we break the rule that if next() reports a certain
-			 * time t for the next event, step(t) must not return nullopt.
-			 */
-			const double weight = (kind & weighted_kind) ? ev.weight : 1.0;
-			switch (ev.kind) {
-				case network_event_kind::neighbour_added:
-					double w;
-					if (has_edge(ev.source_node, ev.target_node, &w)) {
-						/* Skip if edge exists with correct weight */
-						if (!(kind & weighted_kind) || (w == weight)) {
-							next_time = NAN;
-							pop_event();
-							continue;
-						}
-						/* Remove existing edge with incorrect weight */
-						if ((kind & weighted_kind) && (w != weight)) {
-							remove_edge(ev.source_node, ev.target_node);
-							return network_event_t {
-								.kind = network_event_kind::neighbour_removed,
-								.source_node = ev.source_node,
-								.target_node = ev.target_node,
-								.weight = w,
-								.time = ev.time
-							};
-						}
-					}
-					add_edge(ev.source_node, ev.target_node, weight);
-					break;
-				case network_event_kind::neighbour_removed:
-					/* Skip event if the edge does not exist */
-					if (!has_edge(ev.source_node, ev.target_node)) {
-						next_time = NAN;
-						pop_event();
-						continue;
-					}
-					add_edge(ev.source_node, ev.target_node, weight);
-					break;
-				default:
-					/* do nothing */
-					break;
-			};
-			
-			/* On undirected networks, if this was the first pass for an edge event,
-			 * do a second pass for the flipped version of the edge
-			 */
-			flipped_edge_next = (
-				!flipped_edge_next &&
-				!(kind & directed_kind) &&
-				((ev.kind == network_event_kind::neighbour_added) ||
-   			     (ev.kind == network_event_kind::neighbour_removed)));
+        assert(current_time <= top.time);
+        current_time = top.time;
 
-			/* Dequeue event (unless we're doing the flipped version next) and return it */
-			if (!flipped_edge_next) {
-				next_time = NAN;
-				pop_event();
-			}
+        /* Decode and handle event */
+        assert(std::isnan(next_time) || (next_time >= top.time));
+        if (const network_event_t *nwev = std::get_if<network_event_t>(&top.event)) {
+            /* Network event */
+            assert(nwev->time == top.time);
 
-			return ev;
-		} else if (const event_callback_t* cbev = std::get_if<event_callback_t>(&top.event)) {
-			/* Execute callback. Since this is not a reported event, we continue */
-			cbev->operator()();
-			pop_event();
-		} else {
-			throw std::logic_error("unknown event in queue");
-		}
-	}
+            /* Get event and flip edge for second pass on undirected networks */
+            network_event_t ev = *nwev;
+            if (flipped_edge_next)
+                std::swap(ev.source_node, ev.target_node);
+
+            /* Time of the event should agree with cached next_time */
+            assert(std::isnan(next_time) || (next_time == ev.time));
+
+            /* Execute event
+             * NOTE: The logic of which events we skip below must match next(),
+             * otherwise we break the rule that if next() reports a certain
+             * time t for the next event, step(t) must not return nullopt.
+             */
+            const double weight = (kind & weighted_kind) ? ev.weight : 1.0;
+            switch (ev.kind) {
+                case network_event_kind::neighbour_added:
+                    double w;
+                    if (has_edge(ev.source_node, ev.target_node, &w)) {
+                        /* Skip if edge exists with correct weight */
+                        if (!(kind & weighted_kind) || (w == weight)) {
+                            next_time = NAN;
+                            pop_event();
+                            continue;
+                        }
+                        /* Remove existing edge with incorrect weight */
+                        if ((kind & weighted_kind) && (w != weight)) {
+                            remove_edge(ev.source_node, ev.target_node);
+                            return network_event_t{
+                                .kind        = network_event_kind::neighbour_removed,
+                                .source_node = ev.source_node,
+                                .target_node = ev.target_node,
+                                .weight      = w,
+                                .time        = ev.time
+                            };
+                        }
+                    }
+                    add_edge(ev.source_node, ev.target_node, weight);
+                    break;
+                case network_event_kind::neighbour_removed:
+                    /* Skip event if the edge does not exist */
+                    if (!has_edge(ev.source_node, ev.target_node)) {
+                        next_time = NAN;
+                        pop_event();
+                        continue;
+                    }
+                    add_edge(ev.source_node, ev.target_node, weight);
+                    break;
+                default:
+                    /* do nothing */
+                    break;
+            };
+
+            /* On undirected networks, if this was the first pass for an edge event,
+             * do a second pass for the flipped version of the edge
+             */
+            flipped_edge_next = (!flipped_edge_next &&
+                                 !(kind & directed_kind) &&
+                                 ((ev.kind == network_event_kind::neighbour_added) ||
+                                  (ev.kind == network_event_kind::neighbour_removed)));
+
+            /* Dequeue event (unless we're doing the flipped version next) and return it */
+            if (!flipped_edge_next) {
+                next_time = NAN;
+                pop_event();
+            }
+
+            return ev;
+        } else if (const event_callback_t *cbev = std::get_if<event_callback_t>(&top.event)) {
+            /* Execute callback. Since this is not a reported event, we continue */
+            cbev->operator()();
+            pop_event();
+        } else {
+            throw std::logic_error("unknown event in queue");
+        }
+    }
 }
-
 
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
@@ -377,12 +372,11 @@ std::optional<network_event_t> next_reaction_network::step(rng_t &engine, absolu
 /*----------------------------------------------------*/
 
 empirical_contact_network::empirical_contact_network(
-	std::string path_to_file, network_kind kind,
-	edge_duration_kind contact_type, interval_t dt
-)
-	:next_reaction_network(kind)
+    std::string path_to_file, network_kind kind,
+    edge_duration_kind contact_type, interval_t dt)
+    : next_reaction_network(kind)
 {
-    current_time = INFINITY;
+    current_time    = INFINITY;
     node_t max_node = 0;
 
     /* read whitespace-separated file */
@@ -406,11 +400,11 @@ empirical_contact_network::empirical_contact_network(
                 queue_add_edge(src, dst, 1.0, time - dt / 2.0);
                 queue_remove_edge(src, dst, 1.0, time + dt / 2.0);
                 break;
-				
-			case infitesimal_duration:
-				current_time = std::min(current_time, time);
-				queue_instantenous_contact(src, dst, dt, time);
-				break;
+
+            case infitesimal_duration:
+                current_time = std::min(current_time, time);
+                queue_instantenous_contact(src, dst, dt, time);
+                break;
         }
     }
 
@@ -446,7 +440,6 @@ std::vector<std::vector<double>> empirical_contact_network::compute_number_of_ed
 
     return average_degree;
 }
-
 
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
@@ -836,22 +829,22 @@ activity_driven_network::activity_driven_network(std::vector<double> activity, d
 {
     resize(activity.size());
 
-    for(node_t n = 0; n < (node_t)activity.size(); ++n) {
-        const double ai = eta * activity[n];
+    for (node_t n = 0; n < (node_t)activity.size(); ++n) {
+        const double ai       = eta * activity[n];
         const double p_active = ai / (ai + b);
-        const bool active = std::bernoulli_distribution(p_active)(engine);
+        const bool active     = std::bernoulli_distribution(p_active)(engine);
         if (active && (b > 0)) {
             activate_node(n, 0);
-            const double t = std::exponential_distribution<>(1.0/b)(engine);
-            queue_callback(t, [this,n,t]() { this->deactivate_node(n, t); });
+            const double t = std::exponential_distribution<>(1.0 / b)(engine);
+            queue_callback(t, [this, n, t]() { this->deactivate_node(n, t); });
         } else if (ai > 0) {
-            const double t = std::exponential_distribution<>(1.0/ai)(engine);
-            queue_callback(t, [this,n,t]() { this->activate_node(n, t); });
+            const double t = std::exponential_distribution<>(1.0 / ai)(engine);
+            queue_callback(t, [this, n, t]() { this->activate_node(n, t); });
         }
     }
 
     /* Execute the events queued for time zero */
-    while(next(engine, 0) == 0)
+    while (next(engine, 0) == 0)
         step(engine, 0);
 }
 
@@ -863,7 +856,7 @@ void activity_driven_network::activate_node(node_t node, absolutetime_t time)
     active[node] = true;
 
     /* Sample m nodes from possible neighbours {1,...,n-1,n+1,...,N} */
-    for(std::size_t nn: sample_without_replacement(nodes()-1, m, engine)) {
+    for (std::size_t nn : sample_without_replacement(nodes() - 1, m, engine)) {
         /* Skip node itself */
         if ((node_t)nn >= node)
             ++nn;
@@ -871,8 +864,8 @@ void activity_driven_network::activate_node(node_t node, absolutetime_t time)
     }
 
     /* Queue next deactivaton */
-    const double t = time + std::exponential_distribution<>(1.0/b)(engine);
-    queue_callback(t, [this,node,t]() { this->deactivate_node(node, t); });
+    const double t = time + std::exponential_distribution<>(1.0 / b)(engine);
+    queue_callback(t, [this, node, t]() { this->deactivate_node(node, t); });
 }
 
 void activity_driven_network::deactivate_node(node_t node, absolutetime_t time)
@@ -880,12 +873,12 @@ void activity_driven_network::deactivate_node(node_t node, absolutetime_t time)
     if (!active[node])
         throw std::logic_error("node is already inactive");
 
-    index_t i=0;
-    while(node_t nn = neighbour(node, i++) >= 0)
+    index_t i = 0;
+    while (node_t nn = neighbour(node, i++) >= 0)
         queue_remove_edge(node, nn, 1.0, time);
 
     /* Queue next activation */
     const double ai = eta * activity[node];
-    const double t = time + std::exponential_distribution<>(1.0/ai)(engine);
-    queue_callback(t, [this,node,t]() { this->deactivate_node(node, t); });
+    const double t  = time + std::exponential_distribution<>(1.0 / ai)(engine);
+    queue_callback(t, [this, node, t]() { this->deactivate_node(node, t); });
 }

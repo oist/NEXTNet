@@ -65,15 +65,15 @@ private:
  * interface is agnostic to network represenations and does not provide mutators.
  */
 struct mutable_weighted_network : public virtual network
-        , public virtual weighted_network
+    , public virtual weighted_network
 {
     void resize(node_t nodes);
 
-	bool has_edge(node_t src, node_t dst);
-	
-    bool has_edge(node_t src, node_t dst, double* weight);
-	
-	double edge_weight(node_t src, node_t dst);
+    bool has_edge(node_t src, node_t dst);
+
+    bool has_edge(node_t src, node_t dst, double *weight);
+
+    double edge_weight(node_t src, node_t dst);
 
     void add_edge(node_t src, node_t dst, double weight);
 
@@ -91,7 +91,6 @@ private:
     std::vector<indexed_map<node_t, double>> adjacencylist;
 };
 
-
 /**
  * @brief Base class for nextreaction-based temporal networks.
  *
@@ -100,121 +99,123 @@ private:
  * at the appropriate time.
  */
 struct next_reaction_network : public virtual network
-	, public virtual weighted_network, public virtual temporal_network
-	, virtual mutable_weighted_network
+    , public virtual weighted_network
+    , public virtual temporal_network
+    , virtual mutable_weighted_network
 {
-	/**
-	 * @brief Bitfield describing the network properties (all constants must be powers of 2!)
-	 */
-	enum network_kind {
-		directed_kind = 1,
-		weighted_kind = 2
-	};
+    /**
+     * @brief Bitfield describing the network properties (all constants must be powers of 2!)
+     */
+    enum network_kind {
+        directed_kind = 1,
+        weighted_kind = 2
+    };
 
-	typedef std::function<void ()> event_callback_t;
+    typedef std::function<void()> event_callback_t;
 
 protected:
-	struct queue_entry {
-		absolutetime_t time;
-		std::variant<
-			network_event_t,
-			event_callback_t
-		> event;
+    struct queue_entry
+    {
+        absolutetime_t time;
+        std::variant<
+            network_event_t,
+            event_callback_t>
+            event;
 
-		bool operator<(const queue_entry &o) const { return time < o.time; }
-		bool operator<=(const queue_entry &o) const { return time <= o.time; }
-		bool operator==(const queue_entry &o) const { return time == o.time; }
-		bool operator!=(const queue_entry &o) const { return time != o.time; }
-		bool operator>=(const queue_entry &o) const { return time >= o.time; }
-		bool operator>(const queue_entry &o) const { return time > o.time; }
-	};
+        bool operator<(const queue_entry &o) const { return time < o.time; }
+        bool operator<=(const queue_entry &o) const { return time <= o.time; }
+        bool operator==(const queue_entry &o) const { return time == o.time; }
+        bool operator!=(const queue_entry &o) const { return time != o.time; }
+        bool operator>=(const queue_entry &o) const { return time >= o.time; }
+        bool operator>(const queue_entry &o) const { return time > o.time; }
+    };
 
 public:
-	next_reaction_network()
-		:next_reaction_network((network_kind)0)
-	{}
+    next_reaction_network()
+        : next_reaction_network((network_kind)0)
+    {
+    }
 
-	next_reaction_network(network_kind kind_);
+    next_reaction_network(network_kind kind_);
 
-	/**
-	 * @brief Adds an edge from src to dist with weight w at time t
-	 *
-	 * If the network is undirected, this will also add the reverse edge
-	 * from dst to src with the same weight at the same time.
-	 */
-	void queue_add_edge(node_t src, node_t dst, double w, absolutetime_t time);
+    /**
+     * @brief Adds an edge from src to dist with weight w at time t
+     *
+     * If the network is undirected, this will also add the reverse edge
+     * from dst to src with the same weight at the same time.
+     */
+    void queue_add_edge(node_t src, node_t dst, double w, absolutetime_t time);
 
-	/**
-	 * @brief Removed the edge from src to dist at time t
-	 *
-	 * If the network is undirected, this will also remove the reverse edge
-	 * from dst to src at the same time.
-	 */
-	void queue_remove_edge(node_t src, node_t dst, double w, absolutetime_t time);
+    /**
+     * @brief Removed the edge from src to dist at time t
+     *
+     * If the network is undirected, this will also remove the reverse edge
+     * from dst to src at the same time.
+     */
+    void queue_remove_edge(node_t src, node_t dst, double w, absolutetime_t time);
 
-	/**
-	 * @brief Instantenous contact from src to dst with weight w at time t
-	 *
-	 * If the network is undirected, this will also create a contact in the
-	 * reverse direction from dst to src at the same time
-	 */
-	void queue_instantenous_contact(node_t src, node_t dst, double w, absolutetime_t time);
+    /**
+     * @brief Instantenous contact from src to dst with weight w at time t
+     *
+     * If the network is undirected, this will also create a contact in the
+     * reverse direction from dst to src at the same time
+     */
+    void queue_instantenous_contact(node_t src, node_t dst, double w, absolutetime_t time);
 
-	/**
-	 * @brief Queue network event
-	 *
-	 * This queues arbitrary network events
-	 */
-	void queue_network_event(network_event_t ev);
+    /**
+     * @brief Queue network event
+     *
+     * This queues arbitrary network events
+     */
+    void queue_network_event(network_event_t ev);
 
-	/**
-	 * @brief Queue callback event
-	 *
-	 * This queues arbitrary callbacks which are executed when next() or step()
-	 * encounters them in the queue.
-	 */
-	void queue_callback(absolutetime_t time, event_callback_t cb);
+    /**
+     * @brief Queue callback event
+     *
+     * This queues arbitrary callbacks which are executed when next() or step()
+     * encounters them in the queue.
+     */
+    void queue_callback(absolutetime_t time, event_callback_t cb);
 
-	virtual bool is_undirected() override;
+    virtual bool is_undirected() override;
 
-	virtual bool is_unweighted() override;
+    virtual bool is_unweighted() override;
 
-	virtual absolutetime_t next(rng_t &engine, absolutetime_t maxtime = INFINITY) override;
+    virtual absolutetime_t next(rng_t &engine, absolutetime_t maxtime = INFINITY) override;
 
-	virtual std::optional<network_event_t> step(rng_t &engine, absolutetime_t max_time = NAN) override;
+    virtual std::optional<network_event_t> step(rng_t &engine, absolutetime_t max_time = NAN) override;
 
-	const network_kind kind;
+    const network_kind kind;
 
-	double next_time = NAN;
+    double next_time = NAN;
 
-	double current_time = 0.0;
+    double current_time = 0.0;
 
-	bool flipped_edge_next;
+    bool flipped_edge_next;
 
 private:
 #if NEXT_REACTION_QUEUE == STD_PRIORITY_QUEUE_DEQUE
-	std::priority_queue<queue_entry, std::deque<queue_entry>,
-						std::greater<queue_entry>>
-		event_queue;
+    std::priority_queue<queue_entry, std::deque<queue_entry>,
+                        std::greater<queue_entry>>
+        event_queue;
 
-	const queue_entry &top_event() { return event_queue.top(); };
+    const queue_entry &top_event() { return event_queue.top(); };
 
-	void pop_event() { event_queue.pop(); };
+    void pop_event() { event_queue.pop(); };
 
-	void push_event(queue_entry e) { event_queue.push(e); };
+    void push_event(queue_entry e) { event_queue.push(e); };
 
 #elif NEXT_REACTION_QUEUE == EXT_PRIO_QUEUE
-	rollbear::prio_queue<32, absolutetime_t, queue_entry>
-		event_queue;
+    rollbear::prio_queue<32, absolutetime_t, queue_entry>
+        event_queue;
 
-	const queue_entry &top_event() { return event_queue.top().second; };
+    const queue_entry &top_event() { return event_queue.top().second; };
 
-	void pop_event() { event_queue.pop(); };
+    void pop_event() { event_queue.pop(); };
 
-	void push_event(queue_entry e) { event_queue.push(e.time, e); };
+    void push_event(queue_entry e) { event_queue.push(e.time, e); };
 #endif
 };
-
 
 /**
  * @brief Temporal network defined by short contacts at pre-determined times
@@ -229,17 +230,17 @@ struct empirical_contact_network : public virtual next_reaction_network
         infitesimal_duration = 2
     };
 
-	empirical_contact_network(std::string file,
-							  edge_duration_kind contact_type, double dt)
-		:empirical_contact_network(file, (network_kind)0, contact_type, dt)
-	{}
- 
-	empirical_contact_network(std::string file, network_kind,
-							  edge_duration_kind contact_type, double dt);
+    empirical_contact_network(std::string file,
+                              edge_duration_kind contact_type, double dt)
+        : empirical_contact_network(file, (network_kind)0, contact_type, dt)
+    {
+    }
 
-	std::vector<std::vector<double>> compute_number_of_edges(rng_t &engine);
+    empirical_contact_network(std::string file, network_kind,
+                              edge_duration_kind contact_type, double dt);
+
+    std::vector<std::vector<double>> compute_number_of_edges(rng_t &engine);
 };
-
 
 /**
  * @brief Temporal network modeled after the SIRX network of Maier & Brockmann, 2020
@@ -383,7 +384,7 @@ struct activity_driven_network : virtual public next_reaction_network
     const double m;
     const double b;
 
-    rng_t& engine;
+    rng_t &engine;
 
     std::vector<bool> active;
 };
