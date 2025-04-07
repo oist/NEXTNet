@@ -669,7 +669,7 @@ temporal_erdos_renyi::temporal_erdos_renyi(int size, double avg_degree, double t
         weighted_nodes.push_back(k);
         edges_present += k;
     }
-    assert(edges_absent % 2 == 0);
+    assert(edges_present % 2 == 0);
     edges_present /= 2;
     edges_absent = size * (size - 1) / 2 - edges_present;
 }
