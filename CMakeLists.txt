@@ -90,6 +90,9 @@ set(CMAKE_VISIBILITY_INLINES_HIDDEN true)
 add_compile_options(-Wall)
 add_compile_definitions(${CMAKE_DEFINES})
 
+# Boost policies
+cmake_policy(SET CMP0144 NEW)
+
 # *** Dependencies
 
 # Add cmake directory to CMake module search path
