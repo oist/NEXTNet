@@ -34,11 +34,11 @@ set(LIB_HEADERS
 SET(LIB_PCH nextnet/stdafx.h)
 
 # *** Command-line simulator sources and headers
-set(SIMULATOR_SOURCES
+set(CLI_SOURCES
     nextnet/analysis.cpp
     nextnet/main.cpp)
 
-set(SIMULATOR_HEADERS
+set(CLI_HEADERS
     nextnet/analysis.h)
 
 # *** Unit tests sources and headers
@@ -140,30 +140,30 @@ else()
 endif()
 
 # *** Build command-line similator
-add_executable(simulator
-    ${SIMULATOR_SOURCES}
+add_executable(nextnet
+    ${CLI_SOURCES}
     ${LIB_SOURCES}
-    ${SIMULATOR_HEADERS}
+    ${CLI_HEADERS}
     ${LIB_HEADERS}
     ${LIB_PCH})
-target_precompile_headers(simulator
+target_precompile_headers(nextnet
     PUBLIC ${LIB_PCH})
 
 # Enable address and undefined behaviour sanitizers for debug builds
 if (SANITIZE STREQUAL "debug")
     message("Address and thread sanitizer during simulations: Debug builds")
-    target_compile_options(simulator PRIVATE
+    target_compile_options(nextnet PRIVATE
         "$<$<CONFIG:DEBUG>:-fsanitize=address>"
         "$<$<CONFIG:DEBUG>:-fsanitize=undefined>")
-    target_link_options(simulator PRIVATE
+    target_link_options(nextnet PRIVATE
         "$<$<CONFIG:DEBUG>:-fsanitize=address>"
         "$<$<CONFIG:DEBUG>:-fsanitize=undefined>")
 elseif (SANITIZE STREQUAL "always")
     message("Address and thread sanitizer during simulations: Always")
-    target_compile_options(simulator PRIVATE
+    target_compile_options(nextnet PRIVATE
         "-fsanitize=address"
         "-fsanitize=undefined")
-    target_link_options(simulator PRIVATE
+    target_link_options(nextnet PRIVATE
         "-fsanitize=address"
         "-fsanitize=undefined")
 else()
@@ -192,7 +192,6 @@ if (UNITTESTS)
     if ((NOT SERIALIZE) AND TBB_FOUND)
         message("Parallelization: Enabled")
         target_link_libraries(nextnet-unittests TBB::tbb)
-        target_link_libraries(simulator PRIVATE TBB::tbb)
         add_definitions(-DPARALLELIZE=1)
     else()
         message("Parallelization: Disabled")
@@ -239,9 +238,9 @@ if (CLANGFORMAT)
 
     # Format all sources except third-party files we just bundlet
     set(FORMAT_SOURCES
-        ${SIMULATOR_SOURCES}
+        ${CLI_SOURCES}
         ${LIB_SOURCES}
-        ${SIMULATOR_HEADERS}
+        ${CLI_HEADERS}
         ${LIB_HEADERS}
         ${TESTS_HEADERS}
         ${TESTS_SOURCES}
