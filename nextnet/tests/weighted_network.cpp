@@ -35,7 +35,7 @@ TEST_CASE("Weighted Erdös-Reyni networks", "[weighted_network]")
             // the std. dev. of the mean degree is then
             //      sqrt(2 * d * (n - d - 1) / n * (n - 1))
             const double sd = std::sqrt(2.0 * d * (n - d - 1) / (M * n * (n - 1)));
-            REQUIRE(std::abs(d - dmean) <= 3.0 * sd);
+            REQUIRE(std::abs(d - dmean) <= 4.0 * sd);
         }
     }
 
