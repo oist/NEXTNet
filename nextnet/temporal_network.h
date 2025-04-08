@@ -417,7 +417,7 @@ struct activity_driven_network : virtual public next_reaction_network
     };
 
     activity_driven_network(std::vector<double> activity_rates, double eta, double m, double b, rng_t &engine)
-        : activity_driven_network(activity_rates, m, eta, eta, b, b, engine)
+        : activity_driven_network(std::move(activity_rates), m, eta, eta, b, b, engine)
     {
     }
 

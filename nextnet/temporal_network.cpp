@@ -833,7 +833,7 @@ activity_driven_network::activity_driven_network(std::vector<double> activity_, 
                                                  double eta_sus_, double eta_inf_, double b_sus_, double b_inf_,
                                                  rng_t &engine_)
     : next_reaction_network()
-    , activity(activity_)
+    , activity(std::move(activity_))
     , eta_sus(eta_sus_)
     , eta_inf(eta_inf_)
     , b_sus(b_sus_)
