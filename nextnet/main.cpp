@@ -40,6 +40,8 @@ int main(int argc, const char *argv[])
     vector<algorithm::param_t> alg_params;
     unique_ptr<simulation_algorithm> alg;
     unique_ptr<simulate_on_temporal_network> sotn_alg;
+	bool epidemic_events = false;
+	bool network_events = false;
 
 	random_engine = &engine;
 	
@@ -51,8 +53,7 @@ int main(int argc, const char *argv[])
     auto alg_opt           = op.add<Value<std::string>>("a", "algorithm", "simulation algorithm to use", "next");
     auto param_opt         = op.add<Value<std::string>>("s", "parameter", "set simulation parameter");
     auto initial_opt       = op.add<Value<node_t>>("i", "initial-infection", "initial infected node");
-    auto ev_opt            = op.add<Value<bool>>("e", "epidemic-events", "output epidemic events", true);
-    auto nv_opt            = op.add<Value<bool>>("w", "network-events", "output network events", false);
+    auto ev_opt            = op.add<Value<std::string>>("w", "report", "report events (e = epidemic, n = network)", "e");
     auto tmax_opt          = op.add<Value<double>>("t", "stopping-time", "stop simulation at this time");
     auto list_times_opt    = op.add<Switch>("", "list-times", "list distributions");
     auto list_networks_opt = op.add<Switch>("", "list-networks", "list network types");
@@ -101,6 +102,9 @@ int main(int argc, const char *argv[])
 			nw = network_factory.make(nw_opt->value());
 			cerr << "INFO: Network nw = " <<  network_factory.parse(nw_opt->value()) << std::endl;
 		}
+		
+		epidemic_events = (ev_opt->value().find("e") != std::string::npos);
+		network_events = (ev_opt->value().find("n") != std::string::npos);
 
         for (size_t i = 0; i < param_opt->count(); ++i) {
             const std::string &p = param_opt->value(i);
@@ -136,7 +140,6 @@ int main(int argc, const char *argv[])
         if (initial_opt->count() == 0)
             std::cerr << "WARNING: No initially infected node specified with -initial-infection, no epidemic will commence" << std::endl;
 
-        unique_ptr<simulate_on_temporal_network> sotn_alg;
 		if (dynamic_cast<temporal_network *>(nw.get()) != nullptr) {
 			std::cerr << "INFO: Simulating on a temporal network" << std::endl;
 			sotn_alg.reset(new simulate_on_temporal_network(*alg.get()));
@@ -164,8 +167,6 @@ int main(int argc, const char *argv[])
         cout << "total_reset" << '\t';
         cout << "infected" << '\n';
 
-        const bool epidemic_events = ev_opt->value();
-        const bool network_events  = nv_opt->value();
         const double tmax          = tmax_opt->is_set() ? tmax_opt->value() : INFINITY;
         size_t epidemic_step       = 0;
         size_t network_step        = 0;
