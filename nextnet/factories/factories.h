@@ -303,6 +303,8 @@ struct rng
 {
 	static const char *name;
 	typedef std::reference_wrapper<rng_t> value_type;
+	static const bool implicit;
+	static const std::function<std::string (const value_type&)> renderer;
 };
 
 template <>

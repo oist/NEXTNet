@@ -187,7 +187,7 @@ rng_t *random_engine = nullptr;
 
 const char *rng::name = nullptr;
 
-const bool rng::implicit = 0;
+const bool rng::implicit = true;
 
 const std::function<std::string (const rng::value_type&)> rng::renderer =
 	[](const std::reference_wrapper<rng_t>&) { return ""; };
