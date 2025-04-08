@@ -9,6 +9,7 @@
 using namespace std;
 using namespace std::literals;
 using namespace popl;
+using namespace factories;
 
 rng_t engine;
 
@@ -27,7 +28,6 @@ struct program_argument_error : public runtime_error
     string invalid_argument;
 };
 
-
 /*
  * Main method
  */
@@ -37,11 +37,11 @@ int main(int argc, const char *argv[])
     unique_ptr<transmission_time> psi;
     unique_ptr<transmission_time> rho;
     unique_ptr<network> nw;
-    vector<factories::algorithm::param_t> alg_params;
+    vector<algorithm::param_t> alg_params;
     unique_ptr<simulation_algorithm> alg;
     unique_ptr<simulate_on_temporal_network> sotn_alg;
 
-	factories::random_engine = &engine;
+	random_engine = &engine;
 	
     OptionParser op("options");
     auto help_opt          = op.add<Switch>("h", "help", "produce help message");
@@ -72,7 +72,7 @@ int main(int argc, const char *argv[])
         if (list_times_opt->is_set()) {
             cout << "time distributions\n";
             cout << "------------------\n";
-            for (const string &s : factories::time_factory.descriptions)
+            for (const string &s : time_factory.descriptions)
                 cout << s << "\n";
             return 0;
         }
@@ -80,21 +80,27 @@ int main(int argc, const char *argv[])
         if (list_networks_opt->is_set()) {
             cout << "networks\n";
             cout << "--------\n";
-            for (const string &s : factories::network_factory.descriptions)
+            for (const string &s : network_factory.descriptions)
                 cout << s << "\n";
             return 0;
         }
 
         /* Run simulation */
 
-        if (psi_opt->is_set())
-            psi = factories::time_factory.make(psi_opt->value());
+		if (psi_opt->is_set()) {
+			psi = time_factory.make(psi_opt->value());
+			cerr << "INFO: Infection time psi = " << time_factory.parse(psi_opt->value()) << std::endl;
+		}
 
-        if (rho_opt->is_set())
-            rho = factories::time_factory.make(rho_opt->value());
+		if (rho_opt->is_set()) {
+			rho = time_factory.make(rho_opt->value());
+			cerr << "INFO: Infection time rho = " <<  time_factory.parse(rho_opt->value()) << std::endl;
+		}
 
-        if (nw_opt->is_set())
-            nw = factories::network_factory.make(nw_opt->value());
+		if (nw_opt->is_set()) {
+			nw = network_factory.make(nw_opt->value());
+			cerr << "INFO: Network nw = " <<  network_factory.parse(nw_opt->value()) << std::endl;
+		}
 
         for (size_t i = 0; i < param_opt->count(); ++i) {
             const std::string &p = param_opt->value(i);
@@ -107,10 +113,10 @@ int main(int argc, const char *argv[])
         }
 
         {
-            auto a_i = factories::algorithms.find(alg_opt->value());
-            if (a_i == factories::algorithms.end())
+            auto a_i = algorithms.find(alg_opt->value());
+            if (a_i == algorithms.end())
                 throw program_argument_error("algorithm", "unknown algorithm "s + alg_opt->value());
-            factories::algorithm &alg_factory = a_i->second;
+            algorithm &alg_factory = a_i->second;
 
             if (!nw)
                 throw program_argument_error("network", "no network specified");
@@ -131,8 +137,10 @@ int main(int argc, const char *argv[])
             std::cerr << "WARNING: No initially infected node specified with -initial-infection, no epidemic will commence" << std::endl;
 
         unique_ptr<simulate_on_temporal_network> sotn_alg;
-        if (dynamic_cast<temporal_network *>(nw.get()) != nullptr)
-            sotn_alg.reset(new simulate_on_temporal_network(*alg.get()));
+		if (dynamic_cast<temporal_network *>(nw.get()) != nullptr) {
+			std::cerr << "INFO: Simulating on a temporal network" << std::endl;
+			sotn_alg.reset(new simulate_on_temporal_network(*alg.get()));
+		}
     } catch (program_argument_error &e) {
         cerr << op << endl;
         cerr << "Error in argument " << e.invalid_argument << ": " << e.what() << endl;
