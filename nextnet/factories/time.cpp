@@ -23,7 +23,7 @@ DECLARE_ARGUMENT_3(tau, double, std::nullopt);
 
 /* Time distribution factory */
 
-factory<transmission_time> time_factory = factory<transmission_time>()
+factory<transmission_time> time_factory = factory<transmission_time>("time")
 	.add<transmission_time_lognormal, mean, variance, pinf>("lognormal")
 	.add<transmission_time_gamma, mean, variance, pinf>("gamma")
 	.add<transmission_time_exponential, lambda>("exponential")

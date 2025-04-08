@@ -197,6 +197,17 @@ struct factory
 	typedef std::function<std::unique_ptr<T> (const std::vector<std::string> &)> factoryfun;
 
 	/**
+	 * Represents a factory function that parses  arguments and outputs them again as strings
+	 */
+	typedef std::function<parsed_expression_t (const std::vector<std::string> &, bool)> parsefun;
+	
+	factory(std::string name_)
+		:name(name_)
+	{}
+	
+	const std::string name;
+	
+	/**
 	 * Map of types names to factory functions
 	 */
 	std::unordered_map<std::string, factoryfun> products;

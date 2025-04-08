@@ -105,7 +105,7 @@ DECLARE_ARGUMENT_3(reduced_root_degree, bool, true);
 
 /* Network factory */
 
-factory<network> network_factory = factory<network>()
+factory<network> network_factory = factory<network>("network")
 	.add<empirical_network, file>("empirical")
 	.add<empirical_contact_network, file, contact_kind, dt>("empirical-contact")
 	.add<erdos_renyi, size, avg_degree, rng>("erdos-renyi")
