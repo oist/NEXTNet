@@ -66,7 +66,7 @@ std::string render_vector(const std::vector<T> v)
 	std::size_t i = 0;
 	s << '{';
 	for(const T& e: v)
-		(i++ ? s : s << ',') << e;
+		(i++ ? (s << ',') : s) << e;
 	s << '}';
 	return s.str();
 }
