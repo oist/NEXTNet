@@ -10,7 +10,7 @@
 
 namespace factories {
 
-std::pair<std::string, std::vector<std::string>> parse_expression(std::string s)
+parsed_expression_t parse_expression(std::string s)
 {
 	std::string name;
 	std::vector<char> bstack;
@@ -167,6 +167,16 @@ std::pair<std::string, std::vector<std::string>> parse_expression(std::string s)
 							"incomplete expression");
 
 	return { name, args };
+}
+
+std::ostream& operator<<(std::ostream& o, const parsed_expression_t& expr)
+{
+	o << expr.first << "(";
+	std::size_t i=0;
+	for(const std::string& s: expr.second)
+		o << (i++ ? "," : "") << s;
+	o << ")";
+	return o;
 }
 
 /**

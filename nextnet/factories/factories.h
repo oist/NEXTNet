@@ -23,10 +23,17 @@ struct factory_error : public std::runtime_error
 };
 
 /**
+ * Stores expressions of the form function(arg1,...,argN)
+ */
+typedef std::pair<std::string, std::vector<std::string>> parsed_expression_t;
+
+/**
  * Parses a string of the form "function(arg1, arg2, "quoted\ arg")" with arbitarry number of arguments
  * into a pair comprising the function name and a vector of arguments.
  */
-extern std::pair<std::string, std::vector<std::string>> parse_expression(std::string s);
+extern parsed_expression_t parse_expression(std::string s);
+
+std::ostream& operator<<(std::ostream& o, const parsed_expression_t& expr);
 
 #define DECLARE_ARGUMENT_5(_name, _type, _dfl, _parser, _renderer) \
 	struct _name                                                            \
@@ -109,6 +116,36 @@ struct argument_tuple_converter<Arg>
 };
 
 /**
+ * Convert of a tuple of arguments into a vector of string values
+ */
+template <typename Arg, typename... Args>
+struct argument_vector_converter
+{
+	template<typename Tuple, std::size_t I = 0>
+	void operator()(bool named, const Tuple &vs, std::vector<std::string>& dst)
+	{
+		if (!Arg::implicit and named)
+			dst.push_back(std::string(Arg::name) + " = " + Arg::renderer(std::get<I>(vs)));
+		else if (!Arg::implicit)
+			dst.push_back(Arg::renderer(std::get<I>(vs)));
+		argument_vector_converter<Args...>().template operator()<Tuple, I+1>(named, vs, dst);
+	}
+};
+template <typename Arg>
+struct argument_vector_converter<Arg>
+{
+	template<typename Tuple, std::size_t I = 0>
+	void operator()(bool named, const Tuple &vs, std::vector<std::string>& dst)
+	{
+		if (!Arg::implicit and named)
+			dst.push_back(std::string(Arg::name) + " = " + Arg::renderer(std::get<I>(vs)));
+		else if (!Arg::implicit)
+			dst.push_back(Arg::renderer(std::get<I>(vs)));
+	}
+};
+
+
+/**
  * Fill vector with descriptions of the arguments in the pack
  */
 template <typename Arg, typename... Args>
@@ -157,12 +194,17 @@ struct factory
 	/**
 	 * Represents a factory function that produces type T given a list of arguments in string form
 	 */
-	typedef std::function<std::unique_ptr<T>(const std::vector<std::string> &)> factoryfun;
+	typedef std::function<std::unique_ptr<T> (const std::vector<std::string> &)> factoryfun;
 
 	/**
 	 * Map of types names to factory functions
 	 */
 	std::unordered_map<std::string, factoryfun> products;
+
+	/**
+	 * Map of types names to parse functions
+	 */
+	std::unordered_map<std::string, parsefun> parsers;
 
 	/**
 	 * List of factory descriptions
@@ -176,14 +218,26 @@ struct factory
 	factory add(std::string name)
 	{
 		/* Create factory function */
-		std::pair<std::string, factoryfun> p = {
+		std::pair<std::string, factoryfun> ff = {
 			name,
 			[](const std::vector<std::string> &v) -> std::unique_ptr<T> {
 				const auto vp = argument_tuple_converter<Args...>()(v);
 				return make_new_from_tuple<U>(vp);
 			}
 		};
-		products.insert(p);
+		products.insert(ff);
+
+		/* Create factory function */
+		std::pair<std::string, parsefun> pf = {
+			name,
+			[name](const std::vector<std::string> &v, bool named) -> parsed_expression_t {
+				const auto vp = argument_tuple_converter<Args...>()(v);
+				std::vector<std::string> r;
+				argument_vector_converter<Args...>()(named, vp, r);
+				return { name, r };
+			}
+		};
+		parsers.insert(pf);
 
 		/* Create description */
 		std::vector<std::string> ds;
@@ -207,8 +261,21 @@ struct factory
 			auto p = parse_expression(s);
 			auto i = products.find(p.first);
 			if (i == products.end())
-				throw factory_error(p.first + " does not exist");
+				throw factory_error("no "s + name + " named " + p.first);
 			return i->second(p.second);
+		} catch (const factory_error &e) {
+			throw factory_error("unable to parse: "s + s + "\nreason: " + e.what());
+		}
+	}
+	
+	parsed_expression_t parse(std::string s, bool named = true)
+	{
+		try {
+			auto p = parse_expression(s);
+			auto i = parsers.find(p.first);
+			if (i == parsers.end())
+				throw factory_error("no "s + name + " named " + p.first);
+			return i->second(p.second, named);
 		} catch (const factory_error &e) {
 			throw factory_error("unable to parse: "s + s + "\nreason: " + e.what());
 		}
