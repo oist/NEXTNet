@@ -7,6 +7,10 @@
 #include "nextnet/REGIR.h"
 #include "nextnet/nMGA.h"
 #include "nextnet/NextReaction.h"
+#include "nextnet/network.h"
+#include "nextnet/weighted_network.h"
+#include "nextnet/temporal_network.h"
+#include "nextnet/brownian_proximity_network.h"
 
 using namespace std;
 using namespace std::literals;
