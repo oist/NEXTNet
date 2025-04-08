@@ -35,12 +35,14 @@ extern std::pair<std::string, std::vector<std::string>> parse_expression(std::st
 		typedef _type value_type;                                           \
 		typedef std::function<value_type (const std::string&)> parser_type; \
 		typedef std::function<std::string (const value_type&)> render_type; \
+		static const std::optional<value_type> defaultvalue;                \
+		static const bool implicit;                                         \
 		static const parser_type parser;                                    \
 		static const render_type renderer;                                  \
-		static const std::optional<value_type> defaultvalue;                \
 	};                                                                      \
 	const std::string _name::name                              = #_name;    \
 	const std::optional<_name::value_type> _name::defaultvalue = _dfl;      \
+	const bool _name::implicit                                 = false;     \
 	const _name::parser_type _name::parser                     = _parser;   \
 	const _name::render_type _name::renderer                   = _renderer;
 
@@ -114,9 +116,8 @@ struct argument_description_converter
 {
 	void operator()(std::vector<std::string> &v)
 	{
-		std::string d = description<Arg>();
-		if (!d.empty())
-			v.push_back(d);
+		if (!Arg::implicit)
+			v.push_back(description<Arg>());
 		argument_description_converter<Args...>()(v);
 	}
 };
@@ -125,9 +126,8 @@ struct argument_description_converter<Arg>
 {
 	void operator()(std::vector<std::string> &v)
 	{
-		std::string d = description<Arg>();
-		if (!d.empty())
-			v.push_back(d);
+		if (!Arg::implicit)
+			v.push_back(description<Arg>());
 	}
 };
 

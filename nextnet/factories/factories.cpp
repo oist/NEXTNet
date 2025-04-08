@@ -177,6 +177,11 @@ rng_t *random_engine = nullptr;
 
 const char *rng::name = nullptr;
 
+const bool rng::implicit = 0;
+
+const std::function<std::string (const rng::value_type&)> rng::renderer =
+	[](const std::reference_wrapper<rng_t>&) { return ""; };
+
 template <>
 std::pair<std::reference_wrapper<rng_t>, int> argument<rng>(const std::vector<std::string> &vs, size_t i)
 {
