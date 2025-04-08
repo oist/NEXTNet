@@ -35,9 +35,17 @@ SET(LIB_PCH nextnet/stdafx.h)
 
 # *** Command-line simulator sources and headers
 set(CLI_SOURCES
-    nextnet/main.cpp)
+    nextnet/main.cpp
+    nextnet/factories/factories.cpp
+    nextnet/factories/network.cpp
+    nextnet/factories/time.cpp
+    nextnet/factories/algorithm.cpp)
 
-set(CLI_HEADERS )
+set(CLI_HEADERS
+    nextnet/factories/factories.h
+    nextnet/factories/network.h
+    nextnet/factories/time.h
+    nextnet/factories/algorithm.h)
 
 # *** Unit tests sources and headers
 set(TESTS_SOURCES

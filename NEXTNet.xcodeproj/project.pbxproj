@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		982A07D927D5BED900B4772A /* network.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 982A07D727D5BED900B4772A /* network.cpp */; };
-		984A0CA027C0DE5C004A0A96 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 984A0C9F27C0DE5C004A0A96 /* main.cpp */; };
 		984A0CAF27C0DF81004A0A96 /* random.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 984A0CAD27C0DF81004A0A96 /* random.cpp */; };
 		98B96F7228111BAC00A78600 /* NextReaction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 98B96F7028111BAC00A78600 /* NextReaction.cpp */; };
 		98B96F7328111BAC00A78600 /* NextReaction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 98B96F7028111BAC00A78600 /* NextReaction.cpp */; };
@@ -28,6 +27,11 @@
 		F91AFF842D0B4AAE00D525A7 /* temporal_nextreaction.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F933EDF629D3FD1400C39FE8 /* temporal_nextreaction.cpp */; };
 		F91AFF852D0B4AAE00D525A7 /* utility.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F90EC44129C422DD000294C7 /* utility.cpp */; };
 		F91AFF862D0B4AAE00D525A7 /* random.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F946A5E0281255F2000668F9 /* random.cpp */; };
+		F91C06D22DA5455A007517F6 /* factories.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F91C06CB2DA53F51007517F6 /* factories.cpp */; };
+		F91C06D32DA5455A007517F6 /* network.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F91C06C52DA53E92007517F6 /* network.cpp */; };
+		F91C06D42DA5455A007517F6 /* algorithm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F91C06C22DA53E92007517F6 /* algorithm.cpp */; };
+		F91C06D52DA5455A007517F6 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 984A0C9F27C0DE5C004A0A96 /* main.cpp */; };
+		F91C06D62DA5455A007517F6 /* time.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F91C06CF2DA54115007517F6 /* time.cpp */; };
 		F91C25E129113CA900FFAE9C /* libboost_system.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F91C25DD29113CA800FFAE9C /* libboost_system.a */; };
 		F91C25E529113CA900FFAE9C /* libboost_iostreams.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F91C25DF29113CA900FFAE9C /* libboost_iostreams.a */; };
 		F91C25E72911401C00FFAE9C /* libboost_filesystem.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F91C25DE29113CA800FFAE9C /* libboost_filesystem.a */; };
@@ -89,6 +93,14 @@
 		F91AFF762D0B3F8A00D525A7 /* weighted_network.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = weighted_network.cpp; sourceTree = "<group>"; };
 		F91AFF772D0B3F8A00D525A7 /* weighted_network.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = weighted_network.h; sourceTree = "<group>"; };
 		F91AFF7A2D0B461F00D525A7 /* weighted_network.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = weighted_network.cpp; sourceTree = "<group>"; };
+		F91C06C12DA53E92007517F6 /* algorithm.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = algorithm.h; sourceTree = "<group>"; };
+		F91C06C22DA53E92007517F6 /* algorithm.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = algorithm.cpp; sourceTree = "<group>"; };
+		F91C06C32DA53E92007517F6 /* factories.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = factories.h; sourceTree = "<group>"; };
+		F91C06C42DA53E92007517F6 /* network.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = network.h; sourceTree = "<group>"; };
+		F91C06C52DA53E92007517F6 /* network.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = network.cpp; sourceTree = "<group>"; };
+		F91C06CB2DA53F51007517F6 /* factories.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = factories.cpp; sourceTree = "<group>"; };
+		F91C06CE2DA54108007517F6 /* time.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = time.h; sourceTree = "<group>"; };
+		F91C06CF2DA54115007517F6 /* time.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = time.cpp; sourceTree = "<group>"; };
 		F91C25DD29113CA800FFAE9C /* libboost_system.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_system.a; path = lib/libboost_system.a; sourceTree = BOOST_DIR; };
 		F91C25DE29113CA800FFAE9C /* libboost_filesystem.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_filesystem.a; path = lib/libboost_filesystem.a; sourceTree = BOOST_DIR; };
 		F91C25DF29113CA900FFAE9C /* libboost_iostreams.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_iostreams.a; path = lib/libboost_iostreams.a; sourceTree = BOOST_DIR; };
@@ -206,11 +218,27 @@
 				F9C0D33429F6956400A99D46 /* brownian_proximity_network.cpp */,
 				F9C0D33529F6956400A99D46 /* brownian_proximity_network.h */,
 				F92123EF2902464200376961 /* matplotlibcpp.h */,
+				F91C06C62DA53E92007517F6 /* factories */,
 				984A0C9F27C0DE5C004A0A96 /* main.cpp */,
 				F99D7A9927E21CC000200C18 /* tests */,
 				F99D7A9727E21CC000200C18 /* catch */,
 			);
 			path = nextnet;
+			sourceTree = "<group>";
+		};
+		F91C06C62DA53E92007517F6 /* factories */ = {
+			isa = PBXGroup;
+			children = (
+				F91C06C32DA53E92007517F6 /* factories.h */,
+				F91C06CB2DA53F51007517F6 /* factories.cpp */,
+				F91C06C12DA53E92007517F6 /* algorithm.h */,
+				F91C06C22DA53E92007517F6 /* algorithm.cpp */,
+				F91C06C42DA53E92007517F6 /* network.h */,
+				F91C06C52DA53E92007517F6 /* network.cpp */,
+				F91C06CE2DA54108007517F6 /* time.h */,
+				F91C06CF2DA54115007517F6 /* time.cpp */,
+			);
+			path = factories;
 			sourceTree = "<group>";
 		};
 		F95E340E2925088200DBCE94 /* ext */ = {
@@ -393,12 +421,16 @@
 				98CFFC0327F4696F00A6E322 /* utility.cpp in Sources */,
 				F9E1264A291CB5F100C9A221 /* NextReactionMeanField.cpp in Sources */,
 				F9CFD98A299B55A90078FD70 /* temporal_network.cpp in Sources */,
+				F91C06D22DA5455A007517F6 /* factories.cpp in Sources */,
+				F91C06D32DA5455A007517F6 /* network.cpp in Sources */,
+				F91C06D42DA5455A007517F6 /* algorithm.cpp in Sources */,
+				F91C06D52DA5455A007517F6 /* main.cpp in Sources */,
+				F91C06D62DA5455A007517F6 /* time.cpp in Sources */,
 				F91AFF782D0B3F8A00D525A7 /* weighted_network.cpp in Sources */,
 				984A0CAF27C0DF81004A0A96 /* random.cpp in Sources */,
 				982A07D927D5BED900B4772A /* network.cpp in Sources */,
 				98B96F7C28111BB800A78600 /* nMGA.cpp in Sources */,
 				F921EC872952A7BF00667339 /* algorithm.cpp in Sources */,
-				984A0CA027C0DE5C004A0A96 /* main.cpp in Sources */,
 				F9C0D33629F6956400A99D46 /* brownian_proximity_network.cpp in Sources */,
 				F9EDD82F2A1C90F5003B3F31 /* REGIR.cpp in Sources */,
 				98B96F7228111BAC00A78600 /* NextReaction.cpp in Sources */,
