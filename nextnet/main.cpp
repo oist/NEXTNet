@@ -1,3 +1,5 @@
+#include <filesystem>
+
 #include "popl.hpp"
 
 #include "nextnet/stdafx.h"
@@ -41,15 +43,26 @@ struct factory_error : public runtime_error
     }
 };
 
-#define DECLARE_ARGUMENT(_name, _type, _defaultvalue)               \
-    struct _name                                                    \
-    {                                                               \
-        static const char *name;                                    \
-        typedef _type value_type;                                   \
-        static const optional<value_type> defaultvalue;             \
-    };                                                              \
-    const char *_name::name                               = #_name; \
-    const optional<_name::value_type> _name::defaultvalue = _defaultvalue
+#define DECLARE_ARGUMENT_5(_name, _type, _defaultvalue, _parser, _renderer) \
+    struct _name                                                            \
+    {                                                                       \
+        static const std::string name;                                      \
+        typedef _type value_type;                                           \
+        typedef std::function<value_type (const std::string&)> parser_type; \
+        typedef std::function<std::string (const value_type&)> render_type; \
+        static const parser_type parser;                                    \
+        static const render_type renderer;                                  \
+        static const optional<value_type> defaultvalue;                     \
+    };                                                                      \
+    const std::string _name::name                         = #_name;         \
+    const optional<_name::value_type> _name::defaultvalue = _defaultvalue;  \
+    const _name::parser_type _name::parser                = _parser;        \
+    const _name::render_type _name::renderer              = _renderer;
+
+#define DECLARE_ARGUMENT_3(_name, _type, _defaultvalue)             \
+    DECLARE_ARGUMENT_5(_name, _type, _defaultvalue,                 \
+                       (&boost::lexical_cast<_type, std::string>),  \
+                       (&boost::lexical_cast<std::string, _type>))
 
 /**
  * Convert argument to correct type for the specified argument Arg
@@ -57,8 +70,14 @@ struct factory_error : public runtime_error
 template <typename Arg>
 pair<typename Arg::value_type, int> argument(const vector<string> &vs, size_t i)
 {
-    if (i < vs.size())
-        return { boost::lexical_cast<typename Arg::value_type>(vs[i]), 1 };
+    if (i < vs.size()) {
+        try {
+            return { Arg::parser(vs[i]), 1 };
+        } catch (const std::exception& e) {
+            throw factory_error("invalid value '"s + vs[i] + "' for argument " + Arg::name +
+                                "\nreason: " + e.what());
+        }
+    }
     else if (Arg::defaultvalue)
         return { *Arg::defaultvalue, 0 };
     else
@@ -72,7 +91,7 @@ template <typename Arg>
 string description()
 {
     if (Arg::defaultvalue)
-        return string(Arg::name) + " = " + boost::lexical_cast<string>(*Arg::defaultvalue);
+        return string(Arg::name) + " = " + Arg::renderer(*Arg::defaultvalue);
     else
         return string(Arg::name);
 }
@@ -172,8 +191,10 @@ struct factory
     static std::pair<string, std::vector<string>> parse(std::string s)
     {
         string name;
+        std::vector<char> bstack;
+        bool qinclude = false;
         std::vector<string> args;
-
+\
         enum { WS1,
                NAME,
                WS2,
@@ -206,19 +227,12 @@ struct factory
                             --i;
                             break;
                         case WS3:
-                            switch (c) {
-                                case '"':
-                                    state = ARG_DQ;
-                                    break;
-                                default:
-                                    state = ARG;
-                                    --i;
-                                    break;
-                            };
+                            state = ARG;
+                            --i;
                             args.push_back(std::string());
                             break;
                         case WS4:
-                            state = KET_OR_COMMA;
+                            state = ARG;
                             --i;
                             break;
                         case WS5:
@@ -246,19 +260,52 @@ struct factory
                     state = WS3;
                     break;
                 case ARG:
-                    /* collect until non-alphanumeric, then update state */
-                    if (isalnum(c) || c == '.' || c == '-' || c == '+') {
-                        args.back().push_back(c);
-                        continue;
+                    /* collect until space, comma or bracket */
+                    if (isspace(c)) {
+                        state = WS4;
+                        --i;
+                        break;
                     }
-                    state = WS4;
-                    --i;
+                    switch (c) {
+                        case '(': bstack.push_back(')'); goto bopen;
+                        case '{': bstack.push_back('}'); goto bopen;
+                        bopen:
+                            args.back().push_back(c);
+                            break;
+                        case ',':
+                        case ')':
+                        case '}':
+                            if (bstack.empty()) {
+                                state = KET_OR_COMMA;
+                                --i;
+                                break;
+                            }
+                            /* in a braced subexpression, braces must match, argument continues */
+                            if (c != ',') {
+                                if (c != bstack.back())
+                                    throw factory_error("expected '"s + bstack.back() + "' but found '" + c + "'");
+                                bstack.pop_back();
+                            }
+                            args.back().push_back(c);
+                            continue;
+                        case '"':
+                            qinclude = !args.back().empty();
+                            if (qinclude)
+                                args.back().push_back(c);
+                            state = ARG_DQ;
+                            break;
+                        default:
+                            args.back().push_back(c);
+                            continue;
+                    }
                     break;
                 case ARG_DQ:
                     /* scan until closing quote, then update state */
                     switch (c) {
                         case '"':
-                            state = WS4;
+                            if (qinclude)
+                                args.back().push_back(c);
+                            state = ARG;
                             break;
                         case '\\':
                             state = ARG_DQE;
@@ -281,8 +328,8 @@ struct factory
                             state = WS3;
                             break;
                         default:
-                            factory_error("unable to parse '" + s + "', " +
-                                          "invalid symbol '" + c + "''");
+                            throw factory_error("unable to parse '" + s + "', " +
+                                                "invalid symbol '" + c + "''");
                     }
                     break;
                 case DONE:
@@ -290,6 +337,10 @@ struct factory
                                         "invalid symbol '" + c + "''");
             }
         }
+
+        if (state != WS5)
+            throw factory_error("unable to parse '" + s + "', " +
+                                "incomplete expression");
 
         return { name, args };
     }
@@ -414,13 +465,13 @@ typename algorithm_implementation<T>::algorithm_params_type algorithm_implementa
 
 /* Arguments of time distributions */
 
-DECLARE_ARGUMENT(pinf, double, 0.0);
-DECLARE_ARGUMENT(lambda, double, nullopt);
-DECLARE_ARGUMENT(mean, double, nullopt);
-DECLARE_ARGUMENT(variance, double, nullopt);
-DECLARE_ARGUMENT(shape, double, nullopt);
-DECLARE_ARGUMENT(scale, double, nullopt);
-DECLARE_ARGUMENT(tau, double, nullopt);
+DECLARE_ARGUMENT_3(pinf, double, 0.0);
+DECLARE_ARGUMENT_3(lambda, double, nullopt);
+DECLARE_ARGUMENT_3(mean, double, nullopt);
+DECLARE_ARGUMENT_3(variance, double, nullopt);
+DECLARE_ARGUMENT_3(shape, double, nullopt);
+DECLARE_ARGUMENT_3(scale, double, nullopt);
+DECLARE_ARGUMENT_3(tau, double, nullopt);
 
 /* Time distribution factory */
 
@@ -456,21 +507,109 @@ string description<rng>() { return ""; }
 
 /* Arguments of networks */
 
-DECLARE_ARGUMENT(size, node_t, nullopt);
-DECLARE_ARGUMENT(avg_degree, double, nullopt);
-DECLARE_ARGUMENT(reduced_root_degree, bool, true);
-DECLARE_ARGUMENT(m, int, nullopt);
-DECLARE_ARGUMENT(k, int, nullopt);
-DECLARE_ARGUMENT(p, int, nullopt);
+empirical_contact_network::edge_duration_kind parse_contact_kind(const std::string& s)
+{
+    if (s == "instantenous")
+        return empirical_contact_network::infitesimal_duration;
+    else if (s == "finite")
+        return empirical_contact_network::finite_duration;
+    else
+        throw std::range_error("contact_kind must be 'instantenous' or 'finite'");
+}
+
+std::string render_contact_kind(const empirical_contact_network::edge_duration_kind& s)
+{
+    switch (s) {
+        case empirical_contact_network::infitesimal_duration:
+            return "instantenous";
+        case empirical_contact_network::finite_duration:
+            return "finite";
+        default:
+            return "?";
+    }
+}
+
+template<typename T>
+std::vector<T> parse_vector(const std::string& s)
+{
+    if ((s.size() < 2) || (s.front() != '{') || (s.back() != '}'))
+        throw std::range_error("list must be surrounded by '{', '}'");
+
+    std::stringstream in(std::string(++s.begin(), --s.end()));
+
+    std::vector<T> r;
+    std::string v;
+    while (std::getline(in, v, ',')) {
+        try{
+            r.push_back(boost::lexical_cast<T>(v));
+        }
+        catch (const boost::bad_lexical_cast& e) {
+            throw std::range_error("invalid list element '"s + v + "'");
+        }
+    }
+    return r;
+}
+
+template<typename T>
+std::string render_vector(const std::vector<T> v)
+{
+    std::stringstream s;
+    std::size_t i = 0;
+    s << '{';
+    for(const T& e: v)
+        (i++ ? s : s << ',') << e;
+    s << '}';
+    return s.str();
+}
+
+DECLARE_ARGUMENT_3(file, std::filesystem::path, nullopt);
+DECLARE_ARGUMENT_5(contact_kind, empirical_contact_network::edge_duration_kind,
+                   empirical_contact_network::infitesimal_duration, parse_contact_kind, render_contact_kind);
+DECLARE_ARGUMENT_3(dt, double, 1.0);
+DECLARE_ARGUMENT_3(size, node_t, nullopt);
+DECLARE_ARGUMENT_3(avg_degree, double, nullopt);
+DECLARE_ARGUMENT_5(weights, std::vector<double>, std::vector<double> { 1.0 },
+                   parse_vector<double>, render_vector<double>);
+DECLARE_ARGUMENT_5(probabilities, std::vector<double>, std::vector<double> { 1.0 },
+                   parse_vector<double>, render_vector<double>);
+DECLARE_ARGUMENT_3(timescale, double, 1.0);
+DECLARE_ARGUMENT_5(activities, std::vector<double>, std::vector<double> { 1.0 },
+                   parse_vector<double>, render_vector<double>);
+DECLARE_ARGUMENT_3(eta_sus, double, nullopt);
+DECLARE_ARGUMENT_3(eta_inf, double, nullopt);
+DECLARE_ARGUMENT_3(b_sus, double, nullopt);
+DECLARE_ARGUMENT_3(b_inf, double, nullopt);
+DECLARE_ARGUMENT_3(k, int, nullopt);
+DECLARE_ARGUMENT_3(p, int, nullopt);
+DECLARE_ARGUMENT_3(m, int, nullopt);
+DECLARE_ARGUMENT_5(degrees, std::vector<int>, nullopt, parse_vector<int>, render_vector<int>);
+DECLARE_ARGUMENT_5(triangles, std::vector<int>, nullopt, parse_vector<int>, render_vector<int>);
+DECLARE_ARGUMENT_3(beta, double, nullopt);
+DECLARE_ARGUMENT_3(edgelength, int, nullopt);
+DECLARE_ARGUMENT_3(radius, double, 1.0);
+DECLARE_ARGUMENT_3(D0, double, 1.0);
+DECLARE_ARGUMENT_3(D1, double, 1.0);
+DECLARE_ARGUMENT_3(gamma, double, 1.0);
+DECLARE_ARGUMENT_3(reduced_root_degree, bool, true);
 
 /* Network factory */
 
 auto network_factory = factory<network>()
-                           .add<fully_connected, size, rng>("fullyconnected")
-                           .add<acyclic, avg_degree, reduced_root_degree, rng>("acyclic")
-                           .add<erdos_renyi, size, avg_degree, rng>("erdos-renyi")
-                           .add<watts_strogatz, size, k, p, rng>("watts-strogatz")
-                           .add<barabasi_albert, size, rng, m>("barabasi-albert");
+   .add<empirical_network, file>("empirical")
+   .add<empirical_contact_network, file, contact_kind, dt>("empirical-contact")
+   .add<erdos_renyi, size, avg_degree, rng>("erdos-renyi")
+   .add<weighted_erdos_renyi, size, avg_degree, weights, probabilities, rng>("weighted-erdos-renyi")
+   .add<temporal_erdos_renyi, size, avg_degree, timescale, rng>("temporal-erdos-renyi")
+   .add<activity_driven_network, activities, m, eta_sus, eta_inf, b_sus, b_inf, rng>("activity-driven")
+   .add<watts_strogatz, size, k, p, rng>("watts-strogatz")
+   .add<barabasi_albert, size, rng, m>("barabasi-albert")
+   .add<config_model, degrees, rng>("config")
+   .add<config_model_clustered_serrano, degrees, triangles, beta, rng>("config-clustered")
+   .add<cubic_lattice_2d, edgelength>("lattice_2d")
+   .add<cubic_lattice_3d, edgelength>("lattice_3d")
+   .add<brownian_proximity_network, size, avg_degree, radius, D0, D1, gamma, rng>("brownian-proximity")
+   .add<acyclic, avg_degree, reduced_root_degree, rng>("acyclic")
+   .add<fully_connected, size, rng>("fullyconnected");
 
 /*
  * Available algorithms and their parameters
