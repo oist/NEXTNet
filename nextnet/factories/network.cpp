@@ -101,6 +101,7 @@ DECLARE_ARGUMENT_3(radius, double, 1.0);
 DECLARE_ARGUMENT_3(D0, double, 1.0);
 DECLARE_ARGUMENT_3(D1, double, 1.0);
 DECLARE_ARGUMENT_3(gamma, double, 1.0);
+DECLARE_ARGUMENT_3(timestep, double, 0.1);
 DECLARE_ARGUMENT_3(reduced_root_degree, bool, true);
 
 /* Network factory */
@@ -118,7 +119,7 @@ factory<network> network_factory = factory<network>("network")
 	.add<config_model_clustered_serrano, degrees, triangles, beta, rng>("config-clustered")
 	.add<cubic_lattice_2d, edgelength>("lattice_2d")
 	.add<cubic_lattice_3d, edgelength>("lattice_3d")
-	.add<brownian_proximity_network, size, avg_degree, radius, D0, D1, gamma, rng>("brownian-proximity")
+	.add<brownian_proximity_network, size, avg_degree, radius, D0, D1, gamma, timestep, rng>("brownian-proximity")
 	.add<acyclic, avg_degree, reduced_root_degree, rng>("acyclic")
 	.add<fully_connected, size, rng>("fullyconnected");
 

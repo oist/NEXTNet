@@ -174,7 +174,7 @@ std::ostream& operator<<(std::ostream& o, const parsed_expression_t& expr)
 	o << expr.first << "(";
 	std::size_t i=0;
 	for(const std::string& s: expr.second)
-		o << (i++ ? "," : "") << s;
+		o << (i++ ? ", " : "") << s;
 	o << ")";
 	return o;
 }
