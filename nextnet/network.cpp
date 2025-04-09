@@ -28,6 +28,11 @@ bool network::is_undirected()
     return false;
 }
 
+bool network::is_simple()
+{
+	return false;
+}
+
 network::~network()
 {
 }
@@ -37,8 +42,14 @@ bool network_is_undirected::is_undirected()
     return true;
 }
 
+bool network_is_simple::is_simple()
+{
+	return true;
+}
+
 network_embedding::~network_embedding()
 {
+	/* Nothing to do, this exits so that the destructor is a virtual function */
 }
 
 /*----------------------------------------------------*/
@@ -46,6 +57,16 @@ network_embedding::~network_embedding()
 /*-------------- NETWORK: ADJACENCY LIST -------------*/
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
+
+bool adjacencylist_network::is_undirected()
+{
+	return undirected;
+}
+
+bool adjacencylist_network::is_simple()
+{
+	return simple;
+}
 
 node_t adjacencylist_network::nodes()
 {
@@ -72,6 +93,7 @@ index_t adjacencylist_network::outdegree(node_t node)
 /*----------------------------------------------------*/
 
 watts_strogatz::watts_strogatz(node_t size, int k, double p, rng_t &engine)
+	:adjacencylist_network(true, true)
 {
     if (k <= 0)
         throw std::range_error("k must be positive for Watts-Strogatz networks");
@@ -149,6 +171,7 @@ watts_strogatz::watts_strogatz(node_t size, int k, double p, rng_t &engine)
 /*----------------------------------------------------*/
 
 erdos_renyi::erdos_renyi(int size, double avg_degree, rng_t &engine)
+	:adjacencylist_network(true, true)
 {
     /*--------------Initialisation--------------
 
@@ -333,8 +356,8 @@ index_t acyclic::outdegree(node_t node)
 //----------------------------------------------------
 
 config_model::config_model(std::vector<int> degreelist, rng_t &engine)
+	: adjacencylist_network(true, false)
 {
-
     // Verify that all half edges can be paired
     const std::size_t size         = degreelist.size();
     const std::size_t total_degree = std::accumulate(degreelist.begin(), degreelist.end(), 0);
@@ -378,12 +401,14 @@ config_model::config_model(std::vector<int> degreelist, rng_t &engine)
         else
             ++multiedges;
     }
+	
+	/* Mark graph as simple if there are no self-loopr or multi-edges */
+	simple = (selfloops == 0) && (multiedges == 0);
 }
 
 //-------- LOGNORMAL CONFIGURATION MODEL --------------
 std::vector<int> lognormal_degree_list(double mean, double variance, int size, rng_t &engine)
 {
-
     const double MU    = 2 * log(mean) - 0.5 * log(pow(mean, 2.0) + variance);
     const double SIGMA = sqrt(log(1 + variance / pow(mean, 2.0)));
 
@@ -567,6 +592,16 @@ struct config_model_clustered_serrano_builder
      * Set to true during network constructions if we fail to construct enough trianglges
      */
     bool triangles_unsatisfied = false;
+	
+	/**
+	 * Number of multi-edges
+	 */
+	std::size_t multiedges = 0;
+	
+	/**
+	 * Number of self-edges
+	 */
+	std::size_t selfedges = 0;
 
     /**
      * @brief The "eligible components" of Serrano & Boguna
@@ -791,25 +826,37 @@ struct config_model_clustered_serrano_builder
         if (ca.is_filled() || cb.is_filled())
             throw std::logic_error("add_edge() called for connected stubs");
 
-        // I. Check whether the two nodes are already connected, if so
+		// I. If we weren't specifically told to allow self-edges, complain about them
+		if (na == nb) {
+			if (!allow_selfedge)
+				throw std::logic_error("add_edge() called for a self-edge but allow_selfedge is false");
+			else
+				++selfedges;
+		}
+
+        // II. Check whether the two nodes are already connected, if so
         // do nothing unless we were asked to create multi-edges
         auto &na_stubs = node_stubs[na];
         auto &nb_stubs = node_stubs[nb];
-        if (!allow_multiedge) {
-            if (na_stubs.size() < nb_stubs.size()) {
-                for (const stub &s : na_stubs)
-                    if (s.node == nb)
-                        return false;
-            } else {
-                for (const stub &s : nb_stubs)
-                    if (s.node == na)
-                        return false;
-            }
-        }
-
-        // II. If we weren't specifically told to allow self-edges, complain about them
-        if (!allow_selfedge && (na == nb))
-            throw std::logic_error("add_edge() called for a self-edge but allow_selfedge is false");
+		if (na_stubs.size() < nb_stubs.size()) {
+			for (const stub &s : na_stubs) {
+				if (s.node == nb) {
+					if (!allow_multiedge)
+						return false;
+					else
+						++multiedges;
+				}
+			}
+		} else {
+			for (const stub &s : nb_stubs) {
+				if (s.node == na) {
+					if (!allow_multiedge)
+						return false;
+					else
+						++multiedges;
+				}
+			}
+		}
 
         // III. Enumerate triangles that will be completed
         // First, build a set of neighbours of a
@@ -1074,10 +1121,14 @@ config_model_clustered_serrano::config_model_clustered_serrano(std::vector<int> 
 {
 }
 
-config_model_clustered_serrano::config_model_clustered_serrano(std::vector<int> degreelist, std::vector<int> degreetriangles, double beta, rng_t &engine)
+config_model_clustered_serrano::config_model_clustered_serrano(std::vector<int> degreelist, std::vector<int> degreetriangles,
+															   double beta, rng_t &engine)
+	: adjacencylist_network(true, false)
 {
     config_model_clustered_serrano_builder b(degreelist, degreetriangles, beta, engine);
     b.build();
+	/* Check if the resulting graph is simple */
+	simple = (b.selfedges == 0) && (b.multiedges == 0);
     triangles_unsatisfied = b.triangles_unsatisfied;
     /* Copy network structure from builder */
     for (std::size_t i = 0; i < b.node_stubs.size(); ++i) {
@@ -1099,8 +1150,12 @@ config_model_clustered_serrano::config_model_clustered_serrano(std::vector<int> 
 //--------------------------------------
 
 barabasi_albert::barabasi_albert(int size, rng_t &engine, int m)
+	: adjacencylist_network(true, false)
 {
-
+	// TODO: We currently always mark Barabasi-Albert networks as not simple.
+	// TODO: We should instead only do so if they actually contains self- or
+	// TODO: multi-edges.
+	
     // To generate efficiently a BA network, we used the approached used in the python library networkx.
     // -> instead of re-initialising the distribution at every step by updating the weights,
     // we sample at uniform random from a list, but each node is duplicated k times where k is their degree.
@@ -1179,89 +1234,52 @@ barabasi_albert::barabasi_albert(int size, rng_t &engine, int m)
 //--------IMPORTED NETWORK----------
 //--------------------------------------
 
-int empirical_network::file_size(std::string path_to_file)
+empirical_network::empirical_network(std::string path_to_file, bool undirected, bool simplify)
+	: adjacencylist_network(undirected, true)
 {
-
+	// Read CSV file and create edge multi-set
+	std::unordered_map<edge_t, std::size_t, pair_hash> edges = {};
     std::ifstream file(path_to_file);
     std::string line;
-
-    int size = 0;
-    while (std::getline(file, line))
-        size++;
-    return size;
+	for(node_t n1 = 0; std::getline(file, line); ++n1) {
+		// Parse each cell of the line and add to edge multiset
+		std::stringstream ss(line);
+		std::string cell;
+		for(node_t n2 = 0; std::getline(ss, cell, ','); ++n2) {
+			const edge_t e = (undirected ? edge_t { std::min(n1, n2), std::max(n1, 2) } : edge_t { n1, n2 } );
+			++edges[e];
+		}
+	}
+	
+	// Convert edges into adjacency list
+	for(const auto& v: edges) {
+		edge_t e = v.first;
+		std::size_t m = (simplify ? 1 : v.second);
+		
+		// Skip self-edges if a simple graph was requested
+		const bool selfedge = (e.first == e.second);
+		if (selfedge && simplify)
+			continue;
+		
+		// Keep track of whether the network is simple;
+		simple = simple && !selfedge && (m == 1);
+		
+		// For undirected graphs, add both forward- and reverse-edges
+		for(int r=0; r < ((undirected && !selfedge) ? 2 : 1 ); ++r) {
+			if (r) std::swap(e.first, e.second);
+			
+			// Get adjacencylist for source node
+			if (adjacencylist.size() <= e.first)
+				adjacencylist.resize(e.first + 1);
+			std::vector<node_t>& al = adjacencylist[e.first];
+			
+			// Retain mulitplicity of edge unless simplify is true
+			for(int i=0; i < m; ++i)
+				al.push_back(e.second);
+		}
+	}
 }
 
-empirical_network::empirical_network(std::string path_to_file)
-{
-    std::ifstream file(path_to_file);   // Open the CSV file
-    std::vector<std::vector<int>> data; // Create a vector to store the data
-
-    std::string line;
-    while (std::getline(file, line)) { // Read each line of the CSV file
-        std::vector<int> row;
-        std::stringstream ss(line);
-        std::string cell;
-        while (std::getline(ss, cell, ',')) { // Parse each cell of the line
-            row.push_back(std::stoi(cell));   // Convert the cell to an integer and add it to the row vector
-        }
-        adjacencylist.push_back(row); // Add the row vector to the data vector
-    }
-
-    // Print the data to verify that it was read correctly
-    // for (const auto& row : adjacencylist) {
-    //     for (const auto& cell : row) {
-    //         std::cout << cell << " ";
-    //     }
-    //     std::cout << std::endl;
-    // }
-    //     std::ifstream file(path_to_file);
-    //     int size = file_size(path_to_file);
-    //     std::cout << "file size :" << size << "\n";
-
-    //     std::string line, value;
-    //     int i = 0;
-    //     while (std::getline(file,line)) {
-    //         std::vector<node_t> neighbours({});
-    // //        adjacencylist.push_back( );
-    //         size_t start;
-    //         size_t end = 0;
-    //         while ((start = line.find_first_not_of(",", end)) != std::string::npos) {
-    //             end = line.find(",", start);
-    //             node_t value = stoi(line.substr(start, end - start));
-
-    //             neighbours.push_back(value);
-    //             // std::cout << value << ",";
-    //         }
-    //         adjacencylist.push_back(neighbours);
-    //         // std::cout << "\n";
-    //         i++;
-    //     }
-}
-// std::string j;
-// while (std::getline(line, j[0],","))
-// {
-//     int num = std::stoi(j);
-//     adjacencylist[i].push_back(num );
-//     adjacencylist[num].push_back( i );
-
-//     std::cout << num << " ";
-// }
-// std::cout << "\n";
-
-// // read an entire row and
-// // store it in a string variable 'line'
-// std::getline(fin,line);
-
-// // used for breaking words
-// std::stringstream s(line);
-
-// // read every column data of a row and
-// // store it in a string variable, 'word'
-// while (std::getline(s, word, ', ')) {
-
-//     // add all the column data
-//     // of a row to a vector
-//     adjacencylist[i].push_back(std::stoi(word));
 
 //---------------------------------------------------
 //-----Compute the reproduction_matrix matrix --------

@@ -34,6 +34,13 @@ public:
      * edge (i,j) there is also an edge (j,i)
      */
     virtual bool is_undirected();
+	
+	/**
+	 * @brief Whether the graph is simple, i.e. does not contain
+	 * self edges (i,i) or multi-edges (i.e. multipel edges (i,j) for the same
+	 * nodes i and j).
+	 */
+	virtual bool is_simple();
 
     /**
      * @brief Return the number of nodes in the graph. If the number is
@@ -61,6 +68,17 @@ public:
 class network_is_undirected
 {
     virtual bool is_undirected();
+};
+
+/**
+ * @brief Convenience class to mark a graph as simple
+ *
+ * This avoid having to override is_simple() in all undirected graphs to
+ * return false. Instead, it suffices to additionally inherit from network_is_simple
+ */
+class network_is_simple
+{
+	virtual bool is_simple();
 };
 
 /**
@@ -108,14 +126,28 @@ public:
 class adjacencylist_network : public virtual network
 {
 public:
+	virtual bool is_undirected();
+	
+	virtual bool is_simple();
+	
     virtual node_t nodes();
 
     virtual node_t neighbour(node_t node, int neighbour_index);
 
     virtual index_t outdegree(node_t node);
 
-    /* Adjacency list of the graph */
-    std::vector<std::vector<node_t>> adjacencylist;
+
+	adjacencylist_network()
+	{}
+	
+	adjacencylist_network(bool undirected_, bool simple_)
+		:undirected(undirected_), simple(simple_)
+	{}
+
+	std::vector<std::vector<node_t>> adjacencylist;
+	
+	bool undirected = false;
+	bool simple = false;
 };
 //
 
@@ -127,10 +159,9 @@ public:
  * @brief A random Watts-Strogatz network
  */
 class watts_strogatz : public virtual adjacencylist_network
-    , public virtual network_is_undirected
 {
 public:
-    watts_strogatz(node_t size, int k, double p, rng_t &engine);
+	watts_strogatz(node_t size, int k, double p, rng_t &engine);
 
     watts_strogatz(int size, double p, rng_t &engine)
         : watts_strogatz(size, 2, p, engine)
@@ -146,7 +177,6 @@ public:
  * @brief A random Erdös-Reyni network
  */
 class erdos_renyi : public virtual adjacencylist_network
-    , public virtual network_is_undirected
 {
 public:
     erdos_renyi(int size, double avg_degree, rng_t &engine);
@@ -164,6 +194,7 @@ typedef erdos_renyi erdos_reyni;
  */
 class fully_connected : public virtual network
     , public virtual network_is_undirected
+	, public virtual network_is_simple
 {
 public:
     fully_connected(int size, rng_t &engine);
@@ -187,6 +218,7 @@ public:
  */
 class acyclic : public virtual network
     , public virtual network_is_undirected
+	, public virtual network_is_simple
 {
 public:
     static double lambda(double mean, int digits);
@@ -215,14 +247,13 @@ private:
  * @brief Network from arbitrary degree distribution.
  */
 class config_model : public virtual adjacencylist_network
-    , public virtual network_is_undirected
 {
 public:
     config_model(std::vector<int> degreelist, rng_t &engine);
 
-    std::size_t selfloops                       = 0;
-    std::size_t multiedges                      = 0;
-    std::unordered_set<edge_t, pair_hash> edges = {};
+private:
+    std::size_t selfloops  = 0;
+    std::size_t multiedges = 0;
 };
 
 // some specific networks using the configuration model:
@@ -330,7 +361,6 @@ public:
  * The degree distribution scales with k^-3.
  */
 class barabasi_albert : public virtual adjacencylist_network
-    , public virtual network_is_undirected
 {
 public:
     barabasi_albert(int size, rng_t &engine, int m = 1);
@@ -344,6 +374,7 @@ template <unsigned int D>
 class cubic_lattice : public virtual network
     , public virtual network_embedding
     , public virtual network_is_undirected
+	, public virtual network_is_simple
 {
 public:
     const static unsigned int dimension = D;
@@ -505,10 +536,7 @@ typedef cubic_lattice<8> cubic_lattice_8d;
 class empirical_network : public virtual adjacencylist_network
 {
 public:
-    empirical_network(std::string path_to_file);
-
-private:
-    int file_size(std::string path_to_file);
+    empirical_network(std::string path_to_file, bool undirected = false, bool simplify = false);
 };
 
 //---------------------------------------------------
