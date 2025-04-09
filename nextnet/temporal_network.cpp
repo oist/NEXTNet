@@ -655,6 +655,9 @@ temporal_sirx_network::temporal_sirx_network(network& nw, double kappa0_, double
 	, kappa(kappa_)
 	, state(nw.nodes(), node_state{ .removed = false, .infected = false })
 {
+	if (!nw.is_simple())
+		throw std::range_error("the underlying network must be simple (no self- or multi-edged)");
+	
 	weighted_network* wnw = dynamic_cast<weighted_network*>(&nw);
 	
 	/* Copy network structure */
