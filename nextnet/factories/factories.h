@@ -283,28 +283,34 @@ struct factory
 	 */
 	object_holder_t make(std::string s)
 	{
+		parsed_expression_t p;
 		try {
-			auto p = parse_expression(s);
+			p = parse_expression(s);
+		} catch (const factory_error &e) {
+			throw factory_error("unable to parse: "s + s + "\nreason: " + e.what());
+		}
+		try {
 			auto i = products.find(p.first);
 			if (i == products.end())
 				throw factory_error("no "s + name + " named " + p.first);
 			return i->second(p.second);
-		} catch (const factory_error &e) {
-			throw factory_error("unable to parse: "s + s + "\nreason: " + e.what());
+		} catch (const std::runtime_error& e) {
+			throw factory_error(name + " " + p.first + ": " + e.what());
 		}
 	}
 	
 	parsed_expression_t parse(std::string s, bool named = true)
 	{
+		parsed_expression_t p;
 		try {
-			auto p = parse_expression(s);
-			auto i = parsers.find(p.first);
-			if (i == parsers.end())
-				throw factory_error("no "s + name + " named " + p.first);
-			return i->second(p.second, named);
+			p = parse_expression(s);
 		} catch (const factory_error &e) {
 			throw factory_error("unable to parse: "s + s + "\nreason: " + e.what());
 		}
+		auto i = parsers.find(p.first);
+		if (i == parsers.end())
+			throw factory_error("no "s + name + " named " + p.first);
+		return i->second(p.second, named);
 	}
 };
 
