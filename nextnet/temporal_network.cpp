@@ -228,6 +228,9 @@ void next_reaction_network::clear_tag(tag_t tag)
     auto &queue_by_tag = event_queue.get<by_tag>();
     auto r             = queue_by_tag.equal_range(tag);
     queue_by_tag.erase(r.first, r.second);
+	
+	/* Forget cached next_time */
+	next_time = NAN;
 }
 
 absolutetime_t next_reaction_network::next(rng_t &engine, absolutetime_t maxtime)
