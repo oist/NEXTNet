@@ -71,6 +71,31 @@ std::string render_vector(const std::vector<T> v)
 	return s.str();
 }
 
+struct network_ref
+{
+	static network_ref parse(const std::string& s) {
+		return { network_factory.parse(s), network_factory.make(s) };
+	}
+	
+	static std::string render(const network_ref& s) {
+		std::stringstream buf;
+		buf << s.expr;
+		return buf.str();
+	}
+	
+	network_ref(parsed_expression_t expr_, factory<network>::object_holder_t nw_)
+		:expr(expr_)
+		, nw(std::move(nw_.first))
+		, holder(std::move(nw_.second))
+	{}
+	
+	operator network&() const { return *nw.get(); };
+	
+	parsed_expression_t expr;
+	std::shared_ptr<network> nw;
+	std::shared_ptr<std::any> holder;
+};
+
 /* Argument declarations */
 
 DECLARE_ARGUMENT_3(file, std::filesystem::path, std::nullopt);
@@ -97,6 +122,10 @@ DECLARE_ARGUMENT_5(degrees, std::vector<int>, std::nullopt, parse_vector<int>, r
 DECLARE_ARGUMENT_5(triangles, std::vector<int>, std::nullopt, parse_vector<int>, render_vector<int>);
 DECLARE_ARGUMENT_3(beta, double, std::nullopt);
 DECLARE_ARGUMENT_3(edgelength, int, std::nullopt);
+DECLARE_ARGUMENT_5(nw, network_ref, std::nullopt,
+				   network_ref::parse, network_ref::render);
+DECLARE_ARGUMENT_3(kappa, double, std::nullopt);
+DECLARE_ARGUMENT_3(kappa0, double, std::nullopt);
 DECLARE_ARGUMENT_3(radius, double, 1.0);
 DECLARE_ARGUMENT_3(D0, double, 1.0);
 DECLARE_ARGUMENT_3(D1, double, 1.0);
@@ -120,6 +149,7 @@ factory<network> network_factory = factory<network>("network")
 	.add<cubic_lattice_2d, edgelength>("lattice_2d")
 	.add<cubic_lattice_3d, edgelength>("lattice_3d")
 	.add<brownian_proximity_network, size, avg_degree, radius, D0, D1, gamma, timestep, rng>("brownian-proximity")
+	.add<temporal_sirx_network, nw, kappa, kappa0>("temporal_sirx")
 	.add<acyclic, avg_degree, reduced_root_degree, rng>("acyclic")
 	.add<fully_connected, size, rng>("fullyconnected");
 
