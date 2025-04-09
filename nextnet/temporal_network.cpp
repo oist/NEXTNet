@@ -13,6 +13,16 @@
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
 
+bool is_simple();
+{
+	/* We only support simply temporal networks since
+	 * there is no way to distinguish between multiple
+	 * edges connecting the same nodes in neighbour
+	 * added/removed events
+	 */
+	return true;
+}
+
 void temporal_network::notify_epidemic_event(epidemic_event_t ev, rng_t &engine)
 {
     /* Do nothing by default */
@@ -37,6 +47,8 @@ bool mutable_network::has_edge(node_t src, node_t dst)
 
 bool mutable_network::add_edge(node_t src, node_t dst)
 {
+	if (src == dst)
+		throw std::logic_error("self-edges are not supported by mutable_network");
     return adjacencylist.at(src).insert(dst).second;
 }
 
@@ -103,6 +115,8 @@ double mutable_weighted_network::edge_weight(node_t src, node_t dst)
 
 void mutable_weighted_network::add_edge(node_t src, node_t dst, double weight)
 {
+	if (src == dst)
+		throw std::logic_error("self-edges are not supported by mutable_network");
     if ((weight < 0) || !std::isfinite(weight))
         throw std::range_error("weights must be positive and finite");
     if (weight == 0.0)
@@ -484,6 +498,11 @@ temporal_erdos_renyi::temporal_erdos_renyi(int size, double avg_degree, double t
     assert(edges_present % 2 == 0);
     edges_present /= 2;
     edges_absent = size * (size - 1) / 2 - edges_present;
+}
+
+bool temporal_erdos_renyi::is_simple()
+{
+	return true;
 }
 
 absolutetime_t temporal_erdos_renyi::next(rng_t &engine, absolutetime_t)

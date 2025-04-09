@@ -23,6 +23,8 @@
  */
 struct temporal_network : public virtual network
 {
+	virtual bool is_simple() override;
+	
     virtual absolutetime_t next(rng_t &engine, absolutetime_t maxtime = INFINITY) = 0;
 
     virtual std::optional<network_event_t> step(rng_t &engine, absolutetime_t max_time = NAN) = 0;
@@ -331,6 +333,8 @@ struct temporal_erdos_renyi : public virtual temporal_network
 {
     temporal_erdos_renyi(int size, double avg_degree, double timescale, rng_t &engine);
 
+	virtual bool is_simple() override;
+	
     virtual absolutetime_t next(rng_t &engine, absolutetime_t maxtime = INFINITY) override;
 
     virtual std::optional<network_event_t> step(rng_t &engine, absolutetime_t max_time = NAN) override;
