@@ -327,7 +327,7 @@ TEST_CASE("Configuration model networks", "[network]")
     config_model nw(degreeList, engine);
     std::size_t nw_degree = 0;
     for (node_t i = 0; i < size; i++)
-        nw_degree += nw.adjacencylist[i].size();
+		nw_degree += nw.outdegree(i);
     REQUIRE(std::abs((long)total_degree - (long)nw_degree) < 0.00001);
 }
 
@@ -368,7 +368,7 @@ TEST_CASE("Clustered configuration model networks (Serrano)", "[network]")
     config_model_clustered_serrano nw(degreeList, 1.0, 1.0, engine);
     std::size_t nw_degree = 0;
     for (node_t i = 0; i < size; i++)
-        nw_degree += nw.adjacencylist[i].size();
+		nw_degree += nw.outdegree(i);
     REQUIRE(std::abs((long)total_degree - (long)nw_degree) < 0.00001);
 }
 
@@ -387,9 +387,8 @@ TEST_CASE("Watts-Strogatz model", "[network]")
     watts_strogatz network(size, p, engine);
 
     int number_of_edges = 0;
-    for (std::vector<int> nei_list : network.adjacencylist) {
-        number_of_edges += (int)nei_list.size();
-    }
+	for(node_t n=0, N=network.nodes(); n < N; ++n)
+		number_of_edges += network.outdegree(n);
     REQUIRE(std::abs(number_of_edges - 2 * size) < 0.01);
 }
 
