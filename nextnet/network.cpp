@@ -428,27 +428,17 @@ std::vector<int> lognormal_degree_list(double mean, double variance, int size, r
     while (total % 2 == 1) {
         const int index = d(engine);
         total -= degreelist[index];
-        ;
         const int k       = distribution(engine);
         degreelist[index] = k;
         total += k;
     }
 
     return degreelist;
-
-    // double g = [](int k) {return (0.5 * erfc( (MU - log[k+1]) / (sqrt(2) * SIGMA) ) )/ ( 1- 0.5*erfc(MU/(sqrt(2)*SIGMA))) };
-
-    // std::uniform_real_distribution<> d(0.0,1.0);
-    // double r = d(engine);
-    // int k = 0;
-    // while (r >= g(k))
-    //     k++;
 }
 
 //-------- SCALE FREE CONFIGURATION MODEL --------------
 std::vector<int> powerlaw_degree_list(double g, int size, rng_t &engine)
 {
-
     const double x0 = 1;
     const double x1 = size;
 
@@ -1402,236 +1392,6 @@ std::vector<std::vector<double>> reproduction_matrix(network &nw, int clustering
     return Mkk;
 }
 
-//---------------------------------------------------
-//-----Measure edge multiplicity in a network--------
-//---------------------------------------------------
-
-std::vector<std::vector<double>> edge_multiplicity(adjacencylist_network &nw)
-{
-
-    const int SIZE = (int)nw.adjacencylist.size();
-
-    int kmax = 0;
-    for (node_t node = 0; node < SIZE; node++) {
-        const int k0 = nw.outdegree(node);
-        kmax         = std::max(k0, kmax);
-    }
-
-    std::vector<double> T2(kmax + 1, 0);
-    std::vector<std::vector<double>> T1(kmax + 1, std::vector<double>(kmax + 1, 0));
-    std::vector<std::vector<double>> e_kk(kmax + 1, std::vector<double>(kmax + 1, 0));
-    std::vector<std::vector<std::vector<double>>> T(kmax + 1, std::vector<std::vector<double>>(kmax + 1, std::vector<double>(kmax + 1, 0)));
-
-    for (node_t node = 0; node < SIZE; node++) {
-
-        const int k0 = nw.outdegree(node);
-        for (node_t neigh_1 : nw.adjacencylist[node]) {
-            const int k1 = nw.outdegree(neigh_1);
-            e_kk[k0][k1]++;
-
-            for (node_t neigh_2 : nw.adjacencylist[neigh_1]) {
-                if (neigh_2 == node)
-                    continue;
-                const int k2      = nw.outdegree(neigh_2);
-                node_t small_node = (k0 <= k2) ? node : neigh_2;
-                node_t large_node = (k0 <= k2) ? neigh_2 : node;
-
-                // verify if edge exists between node and neighbour n°2
-                auto it = std::find(nw.adjacencylist[small_node].begin(), nw.adjacencylist[small_node].end(), large_node);
-                if (it != nw.adjacencylist[small_node].end()) {
-                    T[k0][k1][k2]++;
-                    T1[k0][k1]++;
-                    T2[k0]++;
-                }
-            }
-        }
-    }
-    std::vector<std::vector<double>> mkk(kmax + 1, std::vector<double>(kmax + 1, 0));
-
-    for (int k = 0; k <= kmax; k++) {
-        for (int q = 0; q <= kmax; q++) {
-            if (e_kk[k][q] == 0)
-                continue;
-            mkk[k][q] = T1[k][q] / (e_kk[k][q]);
-        }
-    }
-    return mkk;
-}
-
-//---------------------------------------------------
-//-----ADD DEGREE CORRELATION TO THE NETWORK---------
-//---------------------------------------------------
-
-// helper function to verify if edge exists.
-bool edge_exists(node_t a, node_t b, const adjacencylist_network &nw)
-{
-    auto it = find(nw.adjacencylist[b].begin(), nw.adjacencylist[b].end(), a);
-    if (it == nw.adjacencylist[b].end())
-        return false;
-    // else
-    return true;
-}
-
-void add_correlation(double r, adjacencylist_network &nw, rng_t &engine)
-{
-
-    // To sample an edge a uniform random without generating the entire list of edges
-    // we can sample a node from a discrete distr with their degree as the prob. weights.
-    std::vector<double> degree_list({});
-    for (node_t node = 0; node < (node_t)nw.adjacencylist.size(); node++)
-        degree_list.push_back(nw.adjacencylist[node].size());
-
-    std::discrete_distribution<int> sample_source_node(degree_list.begin(), degree_list.end());
-
-    //    int swap_count = 0;
-
-    //    if (abs(assortativity(nw)-r)/abs(r) < 0.1)
-    //        return;
-    for (int iteration = 0; iteration < 9000; iteration++) {
-
-        //        u--v            u  v        u v
-        //               becomes  |  |   or    X
-        //        x--y            x  y        x y
-        //
-        //
-
-step_1: // Label for goto. Bad practice but here it allows to leave the nested conditions very smoothly.
-
-        // STEP 1 : Link Selection
-        //  Choose at random two links
-        //  label the 4 nodes a,b,c,d s.t:
-        //  deg(a)>= deg(b)>= deg(c)>= deg(d)
-
-        // Pick one node i randomly according to its degree, then pick randomly one of its neighbours j,
-        // => (i,j) is a sampled edge uniformly at random among all edges.
-
-        node_t u = sample_source_node(engine);
-        node_t x = sample_source_node(engine);
-
-        if (u == x)
-            continue; // same source, skip
-
-        // Choose at uniform among their neigbours
-
-        std::uniform_int_distribution<int> neighbour_u(0, (int)nw.adjacencylist[u].size() - 1);
-        std::uniform_int_distribution<int> neighbour_x(0, (int)nw.adjacencylist[x].size() - 1);
-
-        node_t v = nw.adjacencylist[u][neighbour_u(engine)];
-        node_t y = nw.adjacencylist[x][neighbour_x(engine)];
-
-        if (v == y)
-            continue; // same target, skip
-
-        if (x == v && y == u)
-            continue;
-
-        std::pair<int, node_t> p_u = { nw.outdegree(u), u };
-        std::pair<int, node_t> p_x = { nw.outdegree(x), x };
-        std::pair<int, node_t> p_v = { nw.outdegree(v), v };
-        std::pair<int, node_t> p_y = { nw.outdegree(y), y };
-
-        std::vector<std::pair<int, node_t>> sampled_nodes({ p_u, p_x, p_v, p_y });
-        std::sort(sampled_nodes.begin(), sampled_nodes.end());
-
-        node_t a = sampled_nodes[0].second; // Highest degree
-        node_t b = sampled_nodes[1].second;
-        node_t c = sampled_nodes[2].second;
-        node_t d = sampled_nodes[3].second; // Lowest degree
-
-        // STEP 2 : REWIRING
-
-        if (r >= 0) {
-            // STEP 2A: Assortative
-            // pair low (c & d) and pair high (a & b)
-
-            //   c  d        c d             c--d
-            //   |  |   or    X    becomes
-            //   a  b        a b             a--b
-
-            // if highs are already together then skip.
-            if ((a == u && b == v) || (a == x && b == y) || (a == v && b == u) || (a == y && b == x))
-                goto step_1;
-
-            // Check if rewiring leads to multilinks: a-b and/or c-d already exists
-            if (edge_exists(a, b, nw) || edge_exists(c, d, nw))
-                goto step_1;
-
-            // delete u-v edge
-            std::vector<int>::iterator v_index = find(nw.adjacencylist[u].begin(), nw.adjacencylist[u].end(), v);
-            nw.adjacencylist[u].erase(v_index);
-
-            std::vector<int>::iterator u_index = find(nw.adjacencylist[v].begin(), nw.adjacencylist[v].end(), u);
-            nw.adjacencylist[v].erase(u_index);
-
-            // delete x-y edge
-            std::vector<int>::iterator x_index = find(nw.adjacencylist[y].begin(), nw.adjacencylist[y].end(), x);
-            nw.adjacencylist[y].erase(x_index);
-
-            std::vector<int>::iterator y_index = find(nw.adjacencylist[x].begin(), nw.adjacencylist[x].end(), y);
-            nw.adjacencylist[x].erase(y_index);
-
-            // add edge a-b and add edge c-d
-            nw.adjacencylist[a].push_back(b);
-            nw.adjacencylist[b].push_back(a);
-
-            nw.adjacencylist[c].push_back(d);
-            nw.adjacencylist[d].push_back(c);
-
-        } else {
-            // STEP 2B: Disassortative
-            // Pair the highest with the lowest:
-            // (a & d) and (b & c)
-
-            //   c--d        c  d             c d
-            //         or    |  |   becomes    X
-            //   a--b        a  b             a b
-
-            //        u--v            u  v        u v
-            //               becomes  |  |   or    X
-            //        x--y            x  y        x y
-
-            // if correct pairs are already formed then skip.
-            if ((a == u && d == v) || (a == x && d == y) || (c == v && b == u) || (c == y && b == x))
-                goto step_1;
-
-            // Check if rewiring leads to multilinks: a-d and/or b-c already exists
-            if (edge_exists(a, d, nw) || edge_exists(b, c, nw))
-                goto step_1;
-
-            // delete u-v edge
-            auto v_index = find(nw.adjacencylist[u].begin(), nw.adjacencylist[u].end(), v);
-            nw.adjacencylist[u].erase(v_index);
-
-            auto u_index = find(nw.adjacencylist[v].begin(), nw.adjacencylist[v].end(), u);
-            nw.adjacencylist[v].erase(u_index);
-
-            // delete x-y edge
-            auto x_index = find(nw.adjacencylist[y].begin(), nw.adjacencylist[y].end(), x);
-            nw.adjacencylist[y].erase(x_index);
-
-            auto y_index = find(nw.adjacencylist[x].begin(), nw.adjacencylist[x].end(), y);
-            nw.adjacencylist[x].erase(y_index);
-
-            // add edge a-d and add edge b-c
-            nw.adjacencylist[a].push_back(d);
-            nw.adjacencylist[d].push_back(a);
-
-            nw.adjacencylist[c].push_back(b);
-            nw.adjacencylist[b].push_back(c);
-        }
-
-        if (iteration % 1000 == 0) {
-            double cur_r = assortativity(nw);
-            std::cout << "cur r : " << cur_r << "\r";
-            double condition = abs(cur_r - r) / abs(r);
-            if (condition < 0.25 || (r > 0 && cur_r > r) || (r < 0 && cur_r < r)) {
-                std::cout << "converged.\n";
-                break;
-            }
-        }
-    }
-}
-
 //------------------------------------------------
 //-----Measure degree correlation in a network----
 //------------------------------------------------
@@ -1674,17 +1434,14 @@ std::vector<double> knn(network &nw)
     return knn_degree;
 }
 
-//------------------------------------------------
-//-----Measure degree correlation in a network----
-//------------------------------------------------
-
-// From the definition of the assortativity, after simple manipulations we can rewrite:
-// r = (<k^2 knn(k)>/<k> - mu^2 ) / (<k^3>/<k> - mu^2)
-// where mu^2 = <k^2>/<k>
-// However <k^2 knn(k)> is tricky to measure, instead, we measure the fraction of links that connect deg i to deg j, W(i,j)
 double assortativity(network &nw)
 {
-    int size                = nw.nodes();
+	// From the definition of the assortativity, after simple manipulations we can rewrite:
+	// r = (<k^2 knn(k)>/<k> - mu^2 ) / (<k^3>/<k> - mu^2)
+	// where mu^2 = <k^2>/<k>
+	// However <k^2 knn(k)> is tricky to measure, instead, we measure the fraction of links that connect deg i to deg j, W(i,j)
+
+	int size                = nw.nodes();
     std::vector<double> Knn = knn(nw);
 
     double k1    = 0.0;
@@ -1715,9 +1472,9 @@ double assortativity(network &nw)
     return r;
 }
 
-// Fraction of links that connect a node of deg k to a node of deg k'
 std::vector<std::vector<double>> Wkk(network &nw)
 {
+	// Fraction of links that connect a node of deg k to a node of deg k'
 
     // Determine k_max (Figured that it was the most sane option and the most readable,
     //  at the cost of going through all nodes once more.
@@ -1742,3 +1499,169 @@ std::vector<std::vector<double>> Wkk(network &nw)
 
     return w;
 }
+
+//---------------------------------------------------
+//-----ADD DEGREE CORRELATION TO THE NETWORK---------
+//---------------------------------------------------
+
+#if 0
+void add_correlation(double r, adjacencylist_network &nw, rng_t &engine)
+{
+
+	// To sample an edge a uniform random without generating the entire list of edges
+	// we can sample a node from a discrete distr with their degree as the prob. weights.
+	std::vector<double> degree_list({});
+	for (node_t node = 0; node < (node_t)nw.adjacencylist.size(); node++)
+		degree_list.push_back(nw.adjacencylist[node].size());
+
+	std::discrete_distribution<int> sample_source_node(degree_list.begin(), degree_list.end());
+
+	//    int swap_count = 0;
+
+	//    if (abs(assortativity(nw)-r)/abs(r) < 0.1)
+	//        return;
+	for (int iteration = 0; iteration < 9000; iteration++) {
+
+		//        u--v            u  v        u v
+		//               becomes  |  |   or    X
+		//        x--y            x  y        x y
+		//
+		//
+
+step_1: // Label for goto. Bad practice but here it allows to leave the nested conditions very smoothly.
+
+		// STEP 1 : Link Selection
+		//  Choose at random two links
+		//  label the 4 nodes a,b,c,d s.t:
+		//  deg(a)>= deg(b)>= deg(c)>= deg(d)
+
+		// Pick one node i randomly according to its degree, then pick randomly one of its neighbours j,
+		// => (i,j) is a sampled edge uniformly at random among all edges.
+
+		node_t u = sample_source_node(engine);
+		node_t x = sample_source_node(engine);
+
+		if (u == x)
+			continue; // same source, skip
+
+		// Choose at uniform among their neigbours
+
+		std::uniform_int_distribution<int> neighbour_u(0, (int)nw.adjacencylist[u].size() - 1);
+		std::uniform_int_distribution<int> neighbour_x(0, (int)nw.adjacencylist[x].size() - 1);
+
+		node_t v = nw.adjacencylist[u][neighbour_u(engine)];
+		node_t y = nw.adjacencylist[x][neighbour_x(engine)];
+
+		if (v == y)
+			continue; // same target, skip
+
+		if (x == v && y == u)
+			continue;
+
+		std::pair<int, node_t> p_u = { nw.outdegree(u), u };
+		std::pair<int, node_t> p_x = { nw.outdegree(x), x };
+		std::pair<int, node_t> p_v = { nw.outdegree(v), v };
+		std::pair<int, node_t> p_y = { nw.outdegree(y), y };
+
+		std::vector<std::pair<int, node_t>> sampled_nodes({ p_u, p_x, p_v, p_y });
+		std::sort(sampled_nodes.begin(), sampled_nodes.end());
+
+		node_t a = sampled_nodes[0].second; // Highest degree
+		node_t b = sampled_nodes[1].second;
+		node_t c = sampled_nodes[2].second;
+		node_t d = sampled_nodes[3].second; // Lowest degree
+
+		// STEP 2 : REWIRING
+
+		if (r >= 0) {
+			// STEP 2A: Assortative
+			// pair low (c & d) and pair high (a & b)
+
+			//   c  d        c d             c--d
+			//   |  |   or    X    becomes
+			//   a  b        a b             a--b
+
+			// if highs are already together then skip.
+			if ((a == u && b == v) || (a == x && b == y) || (a == v && b == u) || (a == y && b == x))
+				goto step_1;
+
+			// Check if rewiring leads to multilinks: a-b and/or c-d already exists
+			if (edge_exists(a, b, nw) || edge_exists(c, d, nw))
+				goto step_1;
+
+			// delete u-v edge
+			std::vector<int>::iterator v_index = find(nw.adjacencylist[u].begin(), nw.adjacencylist[u].end(), v);
+			nw.adjacencylist[u].erase(v_index);
+
+			std::vector<int>::iterator u_index = find(nw.adjacencylist[v].begin(), nw.adjacencylist[v].end(), u);
+			nw.adjacencylist[v].erase(u_index);
+
+			// delete x-y edge
+			std::vector<int>::iterator x_index = find(nw.adjacencylist[y].begin(), nw.adjacencylist[y].end(), x);
+			nw.adjacencylist[y].erase(x_index);
+
+			std::vector<int>::iterator y_index = find(nw.adjacencylist[x].begin(), nw.adjacencylist[x].end(), y);
+			nw.adjacencylist[x].erase(y_index);
+
+			// add edge a-b and add edge c-d
+			nw.adjacencylist[a].push_back(b);
+			nw.adjacencylist[b].push_back(a);
+
+			nw.adjacencylist[c].push_back(d);
+			nw.adjacencylist[d].push_back(c);
+
+		} else {
+			// STEP 2B: Disassortative
+			// Pair the highest with the lowest:
+			// (a & d) and (b & c)
+
+			//   c--d        c  d             c d
+			//         or    |  |   becomes    X
+			//   a--b        a  b             a b
+
+			//        u--v            u  v        u v
+			//               becomes  |  |   or    X
+			//        x--y            x  y        x y
+
+			// if correct pairs are already formed then skip.
+			if ((a == u && d == v) || (a == x && d == y) || (c == v && b == u) || (c == y && b == x))
+				goto step_1;
+
+			// Check if rewiring leads to multilinks: a-d and/or b-c already exists
+			if (edge_exists(a, d, nw) || edge_exists(b, c, nw))
+				goto step_1;
+
+			// delete u-v edge
+			auto v_index = find(nw.adjacencylist[u].begin(), nw.adjacencylist[u].end(), v);
+			nw.adjacencylist[u].erase(v_index);
+
+			auto u_index = find(nw.adjacencylist[v].begin(), nw.adjacencylist[v].end(), u);
+			nw.adjacencylist[v].erase(u_index);
+
+			// delete x-y edge
+			auto x_index = find(nw.adjacencylist[y].begin(), nw.adjacencylist[y].end(), x);
+			nw.adjacencylist[y].erase(x_index);
+
+			auto y_index = find(nw.adjacencylist[x].begin(), nw.adjacencylist[x].end(), y);
+			nw.adjacencylist[x].erase(y_index);
+
+			// add edge a-d and add edge b-c
+			nw.adjacencylist[a].push_back(d);
+			nw.adjacencylist[d].push_back(a);
+
+			nw.adjacencylist[c].push_back(b);
+			nw.adjacencylist[b].push_back(c);
+		}
+
+		if (iteration % 1000 == 0) {
+			double cur_r = assortativity(nw);
+			std::cout << "cur r : " << cur_r << "\r";
+			double condition = abs(cur_r - r) / abs(r);
+			if (condition < 0.25 || (r > 0 && cur_r > r) || (r < 0 && cur_r < r)) {
+				std::cout << "converged.\n";
+				break;
+			}
+		}
+	}
+}
+#endif

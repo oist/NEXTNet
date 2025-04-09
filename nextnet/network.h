@@ -548,24 +548,6 @@ std::vector<std::vector<double>> reproduction_matrix(network &nw, int clustering
                                                      double *out_k3, double *out_m_bar,
                                                      double *out_R0, double *out_R_r, double *R_pert);
 
-//---------------------------------------------------
-//-----Measure edge multiplicity in a network--------
-//---------------------------------------------------
-
-std::vector<std::vector<double>> edge_multiplicity(adjacencylist_network &nw);
-
-//------------------------------------------
-//--ADD DEGREE CORRELATION TO THE NETWORK---
-//------------------------------------------
-/**
- * @brief Add correlation to the network by rewiring its links.
- *
- */
-void add_correlation(double r, adjacencylist_network &nw, rng_t &engine);
-
-// Helper function to verify whether an edge exists or not
-bool edge_exists(node_t a, node_t b, const adjacencylist_network &nw);
-
 //------------------------------------------------
 //-----Measure degree correlation in a network----
 //------------------------------------------------
@@ -595,3 +577,14 @@ double assortativity(network &nw);
  *
  */
 std::vector<std::vector<double>> Wkk(network &nw);
+
+#if 0
+//------------------------------------------
+//--ADD DEGREE CORRELATION TO THE NETWORK---
+//------------------------------------------
+/**
+ * @brief Add correlation to the network by rewiring its links.
+ *
+ */
+void add_correlation(double r, adjacencylist_network &nw, rng_t &engine);
+#endif
