@@ -137,20 +137,20 @@ DECLARE_ARGUMENT_3(reduced_root_degree, bool, true);
 
 factory<network> network_factory = factory<network>("network")
 	.add<empirical_network, file>("empirical")
-	.add<empirical_contact_network, file, contact_kind, dt>("empirical-contact")
-	.add<erdos_renyi, size, avg_degree, rng>("erdos-renyi")
-	.add<weighted_erdos_renyi, size, avg_degree, weights, probabilities, rng>("weighted-erdos-renyi")
-	.add<temporal_erdos_renyi, size, avg_degree, timescale, rng>("temporal-erdos-renyi")
-	.add<activity_driven_network, activities, m, eta_sus, eta_inf, b_sus, b_inf, rng>("activity-driven")
-	.add<watts_strogatz, size, k, p, rng>("watts-strogatz")
-	.add<barabasi_albert, size, rng, m>("barabasi-albert")
-	.add<config_model, degrees, rng>("config")
-	.add<config_model_clustered_serrano, degrees, triangles, beta, rng>("config-clustered")
+	.add<empirical_contact_network, file, contact_kind, dt>("empirical_contact")
+	.add<erdos_renyi, size, avg_degree, rng>("erdos_renyi")
+	.add<weighted_erdos_renyi, size, avg_degree, weights, probabilities, rng>("weighted_erdos_renyi")
+	.add<temporal_erdos_renyi, size, avg_degree, timescale, rng>("temporal_erdos_renyi")
+	.add<activity_driven_network, activities, m, eta_sus, eta_inf, b_sus, b_inf, rng>("activity_driven")
+	.add<watts_strogatz, size, k, p, rng>("watts_strogatz")
+	.add<barabasi_albert, size, rng, m>("barabasi_albert")
+	.add<config_model, degrees, rng>("config_model")
+	.add<config_model_clustered_serrano, degrees, triangles, beta, rng>("config_model_clustered")
 	.add<cubic_lattice_2d, edgelength>("lattice_2d")
 	.add<cubic_lattice_3d, edgelength>("lattice_3d")
-	.add<brownian_proximity_network, size, avg_degree, radius, D0, D1, gamma, timestep, rng>("brownian-proximity")
 	.add<temporal_sirx_network, nw, kappa, kappa0>("temporal_sirx")
+	.add<brownian_proximity_network, size, avg_degree, radius, D0, D1, gamma, timestep, rng>("brownian_proximity")
 	.add<acyclic, avg_degree, reduced_root_degree, rng>("acyclic")
-	.add<fully_connected, size, rng>("fullyconnected");
+	.add<fully_connected, size, rng>("fully_connected");
 
 } /* namespace factories */
