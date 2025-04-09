@@ -35,6 +35,7 @@ bool network::is_simple()
 
 network::~network()
 {
+	/* Nothing to do, this exits so that the destructor is a virtual function */
 }
 
 bool network_is_undirected::is_undirected()
@@ -1274,6 +1275,7 @@ empirical_network::empirical_network(std::string path_to_file, bool undirected, 
 //---------------------------------------------------
 //-----Compute the reproduction_matrix matrix --------
 //---------------------------------------------------
+
 std::vector<std::vector<double>> reproduction_matrix(network &nw, int clustering,
                                                      double *out_r, double *out_c, double *out_k1, double *out_k2,
                                                      double *out_k3, double *out_m_bar,

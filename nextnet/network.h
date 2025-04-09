@@ -63,7 +63,7 @@ public:
  * @brief Convenience class to mark a graph as undirected
  *
  * This avoid having to override is_undirected() in all undirected graphs to
- * return false. Instead, it suffices to additionally inherit from graph_is_undirected
+ * return false. Instead, it suffices to additionally inherit from network_is_undirected
  */
 class network_is_undirected
 {
