@@ -136,7 +136,7 @@ public:
 
     virtual index_t outdegree(node_t node);
 
-
+protected:
 	adjacencylist_network()
 	{}
 	
