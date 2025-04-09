@@ -34,24 +34,24 @@ public:
             throw std::runtime_error("sequential edges mode is not supported for concurrent networks");
     }
 
-    virtual network &get_network() const;
+    virtual network &get_network() const override;
 
-    virtual const class transmission_time &transmission_time() const;
+    virtual const class transmission_time &transmission_time() const override;
 
-    virtual const class transmission_time *reset_time() const;
+    virtual const class transmission_time *reset_time() const override;
 
-    virtual void add_infections(const std::vector<std::pair<node_t, absolutetime_t>> &v);
+    virtual void add_infections(const std::vector<std::pair<node_t, absolutetime_t>> &v) override;
 
-    virtual absolutetime_t next(rng_t &engine);
+    virtual absolutetime_t next(rng_t &engine) override;
 
     virtual std::optional<epidemic_event_t> step(rng_t &engine, absolutetime_t maxtime = INFINITY,
-                                                 event_filter_t event_filter = std::nullopt);
+                                                 event_filter_t event_filter = std::nullopt) override;
 
-    virtual void notify_infected_node_neighbour_added(network_event_t event, rng_t &engine);
+    virtual void notify_infected_node_neighbour_added(network_event_t event, rng_t &engine) override;
 
-    virtual void notify_infected_contact(network_event_t event, rng_t &engine);
+    virtual void notify_infected_contact(network_event_t event, rng_t &engine) override;
 
-    virtual bool is_infected(node_t) const;
+    virtual bool is_infected(node_t) const override;
 
     struct infected_state_t
     {

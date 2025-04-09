@@ -126,15 +126,15 @@ public:
 class adjacencylist_network : public virtual network
 {
 public:
-	virtual bool is_undirected();
+	virtual bool is_undirected() override;
 	
-	virtual bool is_simple();
+	virtual bool is_simple() override;
 	
-    virtual node_t nodes();
+    virtual node_t nodes() override;
 
-    virtual node_t neighbour(node_t node, int neighbour_index);
+    virtual node_t neighbour(node_t node, int neighbour_index) override;
 
-    virtual index_t outdegree(node_t node);
+    virtual index_t outdegree(node_t node) override;
 
 protected:
 	adjacencylist_network()
@@ -199,11 +199,11 @@ class fully_connected : public virtual network
 public:
     fully_connected(int size, rng_t &engine);
 
-    virtual node_t nodes();
+    virtual node_t nodes() override;
 
-    virtual node_t neighbour(node_t node, int neighbour_index);
+    virtual node_t neighbour(node_t node, int neighbour_index) override;
 
-    virtual index_t outdegree(node_t node);
+    virtual index_t outdegree(node_t node) override;
 
     rng_t &engine;
     std::vector<std::vector<node_t>> neighbours;
@@ -225,9 +225,9 @@ public:
 
     acyclic(double avg_degree, bool reduced_root_degree, rng_t &engine);
 
-    virtual node_t neighbour(node_t node, int neighbour_index);
+    virtual node_t neighbour(node_t node, int neighbour_index) override;
 
-    virtual index_t outdegree(node_t node);
+    virtual index_t outdegree(node_t node) override;
 
     rng_t &engine;
     std::poisson_distribution<> degree_distribution;
@@ -404,12 +404,12 @@ public:
 
     virtual ~cubic_lattice() {}
 
-    virtual node_t nodes()
+    virtual node_t nodes() override
     {
         return (node_t)total_nodes;
     }
 
-    virtual node_t neighbour(node_t nidx, int neighbour_index)
+    virtual node_t neighbour(node_t nidx, int neighbour_index) override
     {
         if ((nidx < 0) || ((std::size_t)nidx >= total_nodes))
             return -1;
@@ -436,7 +436,7 @@ public:
         return node(coords);
     }
 
-    virtual int outdegree(node_t node)
+    virtual int outdegree(node_t node) override
     {
         if ((node < 0) || ((std::size_t)node >= total_nodes))
             return -1;
@@ -453,12 +453,12 @@ public:
         return (int)(2 * dimension - e);
     }
 
-    virtual std::size_t dimensionality()
+    virtual std::size_t dimensionality() override
     {
         return dimension;
     }
 
-    virtual bool coordinates(const node_t node, std::vector<double> &position)
+    virtual bool coordinates(const node_t node, std::vector<double> &position) override
     {
         if ((node < 0) || ((std::size_t)node >= total_nodes))
             return false;
@@ -469,7 +469,7 @@ public:
         return true;
     }
 
-    virtual void bounds(std::vector<double> &a, std::vector<double> &b)
+    virtual void bounds(std::vector<double> &a, std::vector<double> &b) override
     {
         a.resize(dimension);
         b.resize(dimension);
