@@ -116,7 +116,7 @@ DECLARE_ARGUMENT_3(eta_inf, double, std::nullopt);
 DECLARE_ARGUMENT_3(b_sus, double, std::nullopt);
 DECLARE_ARGUMENT_3(b_inf, double, std::nullopt);
 DECLARE_ARGUMENT_3(k, int, std::nullopt);
-DECLARE_ARGUMENT_3(p, int, std::nullopt);
+DECLARE_ARGUMENT_3(p, double, std::nullopt);
 DECLARE_ARGUMENT_3(m, int, std::nullopt);
 DECLARE_ARGUMENT_5(degrees, std::vector<int>, std::nullopt, parse_vector<int>, render_vector<int>);
 DECLARE_ARGUMENT_5(triangles, std::vector<int>, std::nullopt, parse_vector<int>, render_vector<int>);
