@@ -452,203 +452,6 @@ std::vector<std::vector<double>> empirical_contact_network::compute_number_of_ed
     return average_degree;
 }
 
-/*----------------------------------------------------*/
-/*----------------------------------------------------*/
-/*----------- TEMPORAL_SIRX_NETWORK ------------------*/
-/*----------------------------------------------------*/
-/*----------------------------------------------------*/
-
-temporal_sirx_network::temporal_sirx_network(class network &network_, double kappa0_, double kappa_)
-    : network(network_)
-    , network_is_undirected(network.is_undirected())
-    , network_size(network.nodes())
-    , kappa0(kappa0_)
-    , kappa(kappa_)
-    , queue_next_flipped(is_undirected())
-{
-    for (node_t n = 0; n < network_size; ++n)
-        nonremoved.insert(n);
-}
-
-temporal_sirx_network::node_state_t temporal_sirx_network::state(node_t node)
-{
-    if (is_infected(node)) {
-        if (is_removed(node))
-            return X;
-        else
-            return I;
-    } else {
-        if (is_removed(node))
-            return R;
-        else
-            return S;
-    }
-}
-
-bool temporal_sirx_network::is_undirected()
-{
-    return network_is_undirected;
-}
-
-node_t temporal_sirx_network::nodes()
-{
-    return network_size;
-}
-
-node_t temporal_sirx_network::neighbour(node_t node, int neighbour_index)
-{
-    if (is_removed(node))
-        return -1;
-    return network.neighbour(node, neighbour_index);
-}
-
-index_t temporal_sirx_network::outdegree(node_t node)
-{
-    if (is_removed(node))
-        return 0;
-    return network.outdegree(node);
-}
-
-void temporal_sirx_network::notify_epidemic_event(epidemic_event_t ev, rng_t &engine)
-{
-    assert(current_time <= ev.time);
-    assert(std::isnan(next_time) || ev.time <= next_time);
-    switch (ev.kind) {
-        case epidemic_event_kind::infection:
-        case epidemic_event_kind::outside_infection:
-            /* mark node as infected */
-            infected.insert(ev.node);
-            /* keep track of infected, non-removed nodes. if the nw is undirected,
-             * removed nodes cannot be infected, so the node must be non-removed
-             */
-            assert(!is_undirected() || !is_removed(ev.node));
-            if (is_undirected() || !is_removed(ev.node))
-                infected_nonremoved.insert(ev.node);
-            /* clear previously generated next_time since the rates have changed */
-            if (next_time > ev.time) {
-                next_time = NAN;
-                queue.clear();
-            }
-            break;
-        case epidemic_event_kind::reset:
-            /* mark node as no longer infected */
-            infected.erase(ev.node);
-            infected_nonremoved.erase(ev.node);
-            /* clear previously generated next_time since the rates have changed */
-            if (next_time > ev.time) {
-                next_time = NAN;
-                queue.clear();
-            }
-            break;
-        default:
-            break;
-    }
-}
-
-absolutetime_t temporal_sirx_network::next(rng_t &engine, absolutetime_t)
-{
-    /* generate next time unless already done previously */
-    double base_time = current_time;
-    while (std::isnan(next_time)) {
-        /* should not have queued events */
-        assert(queue.empty());
-
-        /* I. find the time of the next node removal */
-        /* removal rate is kappa0 for all non-removed nodes,
-         * and additionally kappa for all non-removed infected nodes */
-        const double r0 = nonremoved.size() * kappa0;
-        const double r  = infected_nonremoved.size() * kappa;
-        if (r + r0 == 0.0) {
-            /* total rates are both zero, next event at infinity */
-            next_time = INFINITY;
-            return next_time;
-        }
-        std::exponential_distribution dist(r0 + r);
-        next_time = base_time + dist(engine);
-
-        /* II. find the removed node
-         * Determine whether to remove non-specifically or specifically an infected node.
-         * Total rate of non-specific removal is r0 = size * kappa0,
-         * total rate of specific removal of infected nodes is r = infected.size * kappa,
-         * so the probability of a non-specific removal is p0 = r0 / (r + r0).
-         */
-        node_t n        = -1;
-        const double p0 = r0 / (r0 + r);
-        if (std::bernoulli_distribution(p0)(engine)) {
-            /* non-specific removal */
-            n = *nonremoved(engine);
-        } else {
-            /* specific removal of infected node */
-            n = *infected_nonremoved(engine);
-        }
-
-        /* III. queue events for the removal of all (outgoing) edges of the node
-         * For undirected networks, we remove incoming and outgoing nodes, for directed
-         * networks only all outgoing nodes (so the node can still be infected!)
-         * NOTE: for directed networks, it would be great to remove also incoming edges,
-         * but there's currently no way to find them all. So instead we keep incoming edges,
-         * meaning that removed nodes can still be infected for directed networks,
-         * but can't infect others.
-         */
-        for (int i = 0, nn = 0; (nn = network.neighbour(n, i)) >= 0; ++i) {
-            queue.push_back(network_event_t{
-                .kind        = network_event_kind::neighbour_removed,
-                .source_node = n,
-                .target_node = nn,
-                .weight      = 1.0,
-                .time        = next_time });
-        }
-
-        /* if the node has no neighbours, mark as removed and move to next event */
-        if (queue.empty()) {
-            nonremoved.erase(n);
-            infected_nonremoved.erase(n);
-            base_time = next_time;
-            next_time = NAN;
-        }
-    }
-
-    return next_time;
-}
-
-std::optional<network_event_t> temporal_sirx_network::step(rng_t &engine, absolutetime_t max_time)
-{
-    /* make sure the next event was generated, do nothing if past max_time */
-    next(engine);
-    if (next_time > max_time)
-        return std::nullopt;
-
-    /* get next event off queue, it's time must be next_time */
-    assert(!queue.empty());
-    network_event_t ev = queue.front();
-    const node_t node  = ev.source_node;
-    assert(ev.time == next_time);
-    assert(current_time <= next_time);
-    current_time = next_time;
-    /* for undirected networks, report each edge twice, flipped and unflipped */
-    if (queue_next_flipped) {
-        /* flip edge this time, next time report unflipped edge */
-        assert(is_undirected());
-        std::swap(ev.source_node, ev.target_node);
-        queue_next_flipped = false;
-    } else {
-        /* report unflipped edge and dequeue */
-        queue.pop_front();
-        queue_next_flipped = is_undirected();
-        /* and clear next_time only once we've emptied the queue */
-        if (queue.empty())
-            next_time = NAN;
-    }
-
-    /* when first reporting an edge, update network */
-    if (!queue_next_flipped) {
-        nonremoved.erase(node);
-        infected_nonremoved.erase(node);
-    }
-
-    /* return event */
-    return ev;
-}
 
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
@@ -821,6 +624,106 @@ void temporal_erdos_renyi::remove_edge(node_t node, int neighbour_index)
     /* update counters */
     edges_absent += 1;
     edges_present -= 1;
+}
+
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+/*----------- TEMPORAL_SIRX_NETWORK ------------------*/
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+
+temporal_sirx_network::network_kind temporal_sirx_network::kind(network* nw)
+{
+	network_kind r = (network_kind)0;
+	r = (network_kind) (r | (nw->is_undirected() ? (network_kind)0 : directed_kind));
+	r = (network_kind) (r | (dynamic_cast<weighted_network*>(nw) ? weighted_kind : (network_kind)0));
+	return r;
+}
+
+temporal_sirx_network::temporal_sirx_network(network& nw, double kappa0_, double kappa_, rng_t& engine)
+	: next_reaction_network(kind(&nw))
+	, kappa0(kappa0_)
+	, kappa(kappa_)
+	, state(nw.nodes(), node_state{ .removed = false, .infected = false })
+{
+	weighted_network* wnw = dynamic_cast<weighted_network*>(&nw);
+	
+	/* Copy network structure */
+	resize((node_t)nw.nodes());
+	for(node_t n = 0, N = nw.nodes(); n < N; ++n) {
+		node_t nn;
+		double w = 1.0;
+		for(int i = 0; (nn = (wnw ? wnw->neighbour(n, i, &w) : nw.neighbour(n, i))) >= 0; i++)
+			add_edge(n, nn, w);
+	}
+	
+	/* Queue removals */
+	for(node_t n = 0, N = nw.nodes(); n < N; ++n)
+		queue_removal(n, state[n], 0, engine);
+}
+
+void temporal_sirx_network::queue_removal(node_t node, node_state s, absolutetime_t time, rng_t& engine)
+{
+	/* Compute deactivation rate */
+	const double k = s.infected ? (kappa0 + kappa) : kappa0;
+	/* Deactivate immediately if rate is infinite, otherwise generate waiting time and queue */
+	if (k == INFINITY)
+		remove_node(node, time);
+	else if (k > 0) {
+		const double t = time + std::exponential_distribution<>(k)(engine);
+		queue_callback(t, [this, node, t]() { this->remove_node(node, t); }, node);
+	}
+}
+
+void temporal_sirx_network::remove_node(node_t node, absolutetime_t time)
+{
+	/* Fetch and update node state */
+	node_state &s = state[node];
+	if (s.removed)
+		throw std::logic_error("node is already removed");
+	s.removed = true;
+
+	node_t nn;
+	for (int i = 0; (nn = neighbour(node, i)) >= 0; ++i)
+		queue_remove_edge(node, nn, 1.0, time);
+}
+
+void temporal_sirx_network::notify_epidemic_event(epidemic_event_t ev, rng_t &engine)
+{
+	/* Fetch node state */
+	node_state &s = state[ev.node];
+
+	/* Update infected state of node, re-genereate waiting times if necessary */
+	switch (ev.kind) {
+		case epidemic_event_kind::outside_infection:
+		case epidemic_event_kind::infection:
+			if (s.infected)
+				throw std::logic_error("node is already infected");
+			s.infected = true;
+
+			/* if the remove rate of the node changed, re-generate waiting time */
+			if (!s.removed && (kappa != 0)) {
+				clear_tag(ev.node);
+				queue_removal(ev.node, s, ev.time, engine);
+			}
+			break;
+
+		case epidemic_event_kind::reset:
+			if (!s.infected)
+				throw std::logic_error("node is not infected");
+			s.infected = false;
+
+			/* if the remove rate of the node changed, re-generate waiting time */
+			if (!s.removed && (kappa != 0)) {
+				clear_tag(ev.node);
+				queue_removal(ev.node, s, ev.time, engine);
+			}
+			break;
+
+		default:
+			throw std::logic_error("unknown event type");
+			break;
+	}
 }
 
 /*----------------------------------------------------*/

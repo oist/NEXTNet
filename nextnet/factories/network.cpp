@@ -148,7 +148,7 @@ factory<network> network_factory = factory<network>("network")
 	.add<config_model_clustered_serrano, degrees, triangles, beta, rng>("config_model_clustered")
 	.add<cubic_lattice_2d, edgelength>("lattice_2d")
 	.add<cubic_lattice_3d, edgelength>("lattice_3d")
-	.add<temporal_sirx_network, nw, kappa, kappa0>("temporal_sirx")
+	.add<temporal_sirx_network, nw, kappa0, kappa, rng>("temporal_sirx")
 	.add<brownian_proximity_network, size, avg_degree, radius, D0, D1, gamma, timestep, rng>("brownian_proximity")
 	.add<acyclic, avg_degree, reduced_root_degree, rng>("acyclic")
 	.add<fully_connected, size, rng>("fully_connected");

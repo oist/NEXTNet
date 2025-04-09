@@ -284,58 +284,29 @@ struct empirical_contact_network : public virtual next_reaction_network
  * infection state. Non-infected nodes have removal rate kappa0, infected nodes have
  * elevated rate kappa + kappa0.
  */
-struct temporal_sirx_network : public virtual temporal_network
+struct temporal_sirx_network : virtual public next_reaction_network
 {
-    enum node_state_t { S = 1,
-                        I = 2,
-                        R = 3,
-                        X = 4 };
+	/* bitfield used to store node states */
+	struct node_state
+	{
+		unsigned char removed : 1;
+		unsigned char infected : 1;
+	};
 
-    temporal_sirx_network(network &network, double kappa0, double kappa);
+	static network_kind kind(network*);
+	
+	temporal_sirx_network(network& network, double kappa0, double kappa, rng_t& engine);
 
-    virtual bool is_undirected() override;
+	virtual void notify_epidemic_event(epidemic_event_t ev, rng_t &engine) override;
 
-    virtual node_t nodes() override;
+	void remove_node(node_t node, absolutetime_t time);
 
-    virtual node_t neighbour(node_t node, int neighbour_index) override;
+	void queue_removal(node_t node, node_state s, absolutetime_t time, rng_t& engine);
 
-    virtual index_t outdegree(node_t node) override;
+	const double kappa0;
+	const double kappa;
 
-    virtual void notify_epidemic_event(epidemic_event_t ev, rng_t &engine) override;
-
-    virtual absolutetime_t next(rng_t &engine, absolutetime_t maxtime = INFINITY) override;
-
-    virtual std::optional<network_event_t> step(rng_t &engine, absolutetime_t max_time = NAN) override;
-
-    bool is_removed(node_t node) { return (nonremoved.find(node) == nonremoved.end()); }
-
-    bool is_infected(node_t node) { return (infected.find(node) != infected.end()); }
-
-    node_state_t state(node_t node);
-
-    network &network;
-
-    const bool network_is_undirected;
-
-    const node_t network_size;
-
-    const double kappa0;
-
-    const double kappa;
-
-    indexed_set<node_t> nonremoved;
-
-    indexed_set<node_t> infected_nonremoved;
-
-    std::unordered_set<node_t> infected;
-
-    std::deque<network_event_t> queue;
-
-    bool queue_next_flipped = false;
-
-    double current_time = 0.0;
-
-    double next_time = NAN;
+	std::vector<node_state> state;
 };
 
 /**

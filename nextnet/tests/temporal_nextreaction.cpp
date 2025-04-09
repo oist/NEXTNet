@@ -444,7 +444,7 @@ TEST_CASE("Plot SIR average trajectory on SIRX-Erdös-Reyni network", "[temporal
 			std::unique_ptr<simulate_on_temporal_network> simulator;
 		} env;
 		env.g_static = std::make_unique<erdos_reyni>(N, K, engine);
-		env.g = std::make_unique<temporal_sirx_network>(*env.g_static.get(), KAPPA0, KAPPA);
+		env.g = std::make_unique<temporal_sirx_network>(*env.g_static.get(), KAPPA0, KAPPA, engine);
 		env.psi = std::make_unique<transmission_time_gamma>(PSI_MEAN, PSI_VARIANCE);
 		env.nr = std::make_unique<simulate_next_reaction>(*env.g.get(), *env.psi.get(), nullptr);
 		env.nr->add_infections({ std::make_pair(0, 0.0)});
