@@ -34,9 +34,9 @@ struct program_argument_error : public runtime_error
 
 int main(int argc, const char *argv[])
 {
-    unique_ptr<transmission_time> psi;
-    unique_ptr<transmission_time> rho;
-    unique_ptr<network> nw;
+	factory<transmission_time>::object_holder_t psi;
+	factory<transmission_time>::object_holder_t rho;
+	factory<network>::object_holder_t nw;
     vector<algorithm::param_t> alg_params;
     unique_ptr<simulation_algorithm> alg;
     unique_ptr<simulate_on_temporal_network> sotn_alg;
@@ -122,25 +122,25 @@ int main(int argc, const char *argv[])
                 throw program_argument_error("algorithm", "unknown algorithm "s + alg_opt->value());
             algorithm &alg_factory = a_i->second;
 
-            if (!nw)
+            if (!nw.first)
                 throw program_argument_error("network", "no network specified");
 
-            if (!psi)
+            if (!psi.first)
                 throw program_argument_error("transmission-time", "no transmission time distribution specified");
 
-            alg = alg_factory.create(*nw.get(), *psi.get(), rho.get(), alg_params);
+            alg = alg_factory.create(*nw.first.get(), *psi.first.get(), rho.first.get(), alg_params);
         }
 
         for (size_t i = 0; i < initial_opt->count(); ++i) {
             const node_t node = initial_opt->value(i) - 1;
-            if ((node < 0) || (node >= nw->nodes()))
+            if ((node < 0) || (node >= nw.first->nodes()))
                 throw program_argument_error("initial-infection", "invalid initial node "s + boost::lexical_cast<string>(initial_opt->value(i)));
             alg->add_infections({ { node, 0.0 } });
         }
         if (initial_opt->count() == 0)
             std::cerr << "WARNING: No initially infected node specified with -initial-infection, no epidemic will commence" << std::endl;
 
-		if (dynamic_cast<temporal_network *>(nw.get()) != nullptr) {
+		if (dynamic_cast<temporal_network *>(nw.first.get()) != nullptr) {
 			std::cerr << "INFO: Simulating on a temporal network" << std::endl;
 			sotn_alg.reset(new simulate_on_temporal_network(*alg.get()));
 		}

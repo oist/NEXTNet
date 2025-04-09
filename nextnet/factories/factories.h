@@ -192,9 +192,16 @@ template <typename T>
 struct factory
 {
 	/**
+	  * Unique ptr containing an object plus a unique ptr to an any containing a tuple of
+	  * of all the argument values. Keeping the any around until the object is destroyed
+	  * ensures that by-reference survive for the lieftime of the object.
+	 */
+	typedef std::pair<std::unique_ptr<T>, std::unique_ptr<std::any>> object_holder_t;
+	
+	/**
 	 * Represents a factory function that produces type T given a list of arguments in string form
 	 */
-	typedef std::function<std::unique_ptr<T> (const std::vector<std::string> &)> factoryfun;
+	typedef std::function<object_holder_t (const std::vector<std::string> &)> factoryfun;
 
 	/**
 	 * Represents a factory function that parses  arguments and outputs them again as strings
@@ -231,9 +238,11 @@ struct factory
 		/* Create factory function */
 		std::pair<std::string, factoryfun> ff = {
 			name,
-			[](const std::vector<std::string> &v) -> std::unique_ptr<T> {
+			[](const std::vector<std::string> &v) -> object_holder_t {
 				const auto vp = argument_tuple_converter<Args...>()(v);
-				return make_new_from_tuple<U>(vp);
+				auto vp_ptr = std::make_unique<std::any>(std::move(vp));
+				return { make_new_from_tuple<U>(std::any_cast<decltype(vp)&>(*vp_ptr)),
+					     std::move(vp_ptr) };
 			}
 		};
 		products.insert(ff);
@@ -265,8 +274,14 @@ struct factory
 
 	/**
 	 * Executes an expression of the form "type(arg1, arg2, ...)" and returns an object instance
+	 *
+	 * The return value is a pair comprising a unique_ptr_ and a *holder*. The holder
+	 * is a tuple stored in an std::any that holds instances of all parameter values. For
+	 * most parameters this is unnecessary, but for by-reference parameters keeping
+	 * this any around with the unique_ptr ensures that these parameters are not
+	 * destructed before the object is.
 	 */
-	std::unique_ptr<T> make(std::string s)
+	object_holder_t make(std::string s)
 	{
 		try {
 			auto p = parse_expression(s);
