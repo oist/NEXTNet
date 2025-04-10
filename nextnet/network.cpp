@@ -1260,12 +1260,12 @@ empirical_network::empirical_network(std::string path_to_file, bool undirected, 
 			if (r) std::swap(e.first, e.second);
 			
 			// Get adjacencylist for source node
-			if (adjacencylist.size() <= e.first)
+			if (adjacencylist.size() <= (size_t)e.first)
 				adjacencylist.resize(e.first + 1);
 			std::vector<node_t>& al = adjacencylist[e.first];
 			
 			// Retain mulitplicity of edge unless simplify is true
-			for(int i=0; i < m; ++i)
+			for(std::size_t i=0; i < m; ++i)
 				al.push_back(e.second);
 		}
 	}
