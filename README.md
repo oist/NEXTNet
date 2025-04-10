@@ -18,7 +18,7 @@ cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ../
 make
 ```
 
-To simulate an epidemic starting until time t=2500 from node 1 of a Watts-Strogatz network of size N=10.000 nodes with  parameters K=6 and beta=0.1, gamma distributed infection times with mean 8 and variance 1, and log-normally distributed recovery times with mean 50 and variance 20 run
+To simulate an epidemic starting until time t=250 from node 1 of a Watts-Strogatz network of size N=10.000 nodes with  parameters K=6 and beta=0.1, gamma distributed infection times with mean 8 and variance 1, and log-normally distributed recovery times with mean 50 and variance 20 run
 
 ```
 ./nextnet -n 'watts_strogatz(10000, 4, 0.2)' -p 'gamma(8,1)' -r 'lognormal(30,20)' -i 1 -t 250 > trajectory.txt
