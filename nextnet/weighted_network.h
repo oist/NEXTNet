@@ -68,14 +68,29 @@ weighted_network *as_weighted_network(network *nw);
 class weighted_adjacencylist_network : public virtual weighted_network
 {
 public:
-    virtual node_t nodes() override;
+	virtual bool is_undirected() override;
 
-    virtual node_t neighbour(node_t node, int neighbour_index, double *weight) override;
+	virtual bool is_simple() override;
 
-    virtual index_t outdegree(node_t node) override;
+	virtual node_t nodes() override;
+
+	virtual node_t neighbour(node_t node, int neighbour_index, double *weight) override;
+
+	virtual index_t outdegree(node_t node) override;
+
+protected:
+	weighted_adjacencylist_network()
+	{}
+
+	weighted_adjacencylist_network(bool undirected_, bool simple_)
+		:undirected(undirected_), simple(simple_)
+	{}
 
     /* Adjacency list of the graph */
     std::vector<std::vector<std::pair<node_t, double>>> adjacencylist;
+
+	bool undirected = false;
+	bool simple = false;
 };
 
 //--------------------------------------

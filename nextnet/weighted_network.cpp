@@ -47,6 +47,16 @@ weighted_network::~weighted_network()
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
 
+bool weighted_adjacencylist_network::is_undirected()
+{
+	return undirected;
+}
+
+bool weighted_adjacencylist_network::is_simple()
+{
+	return simple;
+}
+
 node_t weighted_adjacencylist_network::nodes()
 {
     return (node_t)adjacencylist.size();
