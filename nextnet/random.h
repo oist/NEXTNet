@@ -278,24 +278,25 @@ public:                                                                         
 
 /*-----------TRANSMISSION TIMES DEFINED IN TERMS OF BOOST AND C++ STDLIB ---------*/
 
+TRANSMISSION_TIME_GENERIC_1PARAM(transmission_time_exponential_pinf,
+                                 exponential_distribution, exponential_distribution, rate, 1/rate)
+};
+
 TRANSMISSION_TIME_GENERIC_SAMENAME_MEAN_VARIANCE(lognormal,
                                                  mu, 2 * log(m) - 0.5 * log(pow(m, 2.0) + v),
                                                  sigma, sqrt(log(1 + v / pow(m, 2.0))))
-}
-;
+};
 
 TRANSMISSION_TIME_GENERIC_SAMENAME_MEAN_VARIANCE(gamma,
                                                  shape, pow(m, 2.0) / v,
                                                  scale, v / m)
 virtual double hazardbound(interval_t) const;
-}
-;
+};
 
 TRANSMISSION_TIME_GENERIC_SAMENAME_2PARAM(weibull, shape, scale,
                                           scale *std::tgamma(1 + 1 / shape),
                                           pow(scale, 2) * (std::tgamma(1 + 2 / shape) - pow(std::tgamma(1 + 1 / shape), 2)))
-}
-;
+};
 
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
