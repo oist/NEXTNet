@@ -258,7 +258,7 @@ public:                                                                         
     TRANSMISSION_TIME_GENERIC_BOOST(name, boost_tpl, std_tpl)                           \
 public:                                                                                 \
     const double mean;                                                                  \
-    name(double p1name, double p2name, double pinf = 0.0)                               \
+    name(double p1name, double pinf = 0.0)                                              \
         : transmission_time_generic_boost(bm_dist_t(p1name), std_dist_t(p1name), pinf)  \
         , mean(meanformula)                                                             \
     {                                                                                   \
