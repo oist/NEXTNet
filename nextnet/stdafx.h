@@ -47,6 +47,13 @@
 #    pragma GCC diagnostic ignored "-Wall"
 #    pragma GCC diagnostic ignored "-Wsign-compare"
 #    pragma GCC diagnostic ignored "-Wparentheses"
+#    pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
+#include <boost/config.hpp>
+
+#ifndef BOOST_NO_CXX98_FUNCTION_BASE
+#define BOOST_NO_CXX98_FUNCTION_BASE
 #endif
 
 #include <boost/math/distributions.hpp>
