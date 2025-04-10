@@ -13,7 +13,7 @@
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
 
-bool is_simple();
+bool temporal_network::is_simple()
 {
 	/* We only support simply temporal networks since
 	 * there is no way to distinguish between multiple
