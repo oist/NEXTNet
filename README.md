@@ -1,10 +1,42 @@
 # Overview
 
-The NEXT-NET C++ library contains efficient algorithms for simulating epidemics with time-varying infectiousness (so-called "non-Markovian" epidemics) on complex networks. The main algorithm provided by NEXT-NET is based on the next reaction method, and scales to networks with millions of nodes. The 
+The *NEXT-NET* C++ library contains efficient algorithms for simulating epidemics with time-varying infectiousness (so-called "non-Markovian" epidemics) on complex networks. The main algorithm provided by *NEXT-NET* is based on the next reaction method and scales to networks with millions of nodes, see our [preprint](https://arxiv.org/abs/2412.07095).
 
-The functionality of this library can be accessed in Python through the package *nextnet* (https://github.com/oist/NEXTNetPy) and in R through *NEXTNetR* (https://github.com/oist/NEXTNetR).
+The recommended way of using *NEXT-NET* is through our wrappers for Python and R, which are *nextnet* (https://github.com/oist/NEXTNetPy) for Python and *NEXTNetR* (https://github.com/oist/NEXTNetR) for R. *See these repositories for how to install and use those wrappers.*
 
-The main algorithms and their performance are discussed in our [preprint](https://arxiv.org/abs/2412.07095).
+However, for quick experiments the C++ library includes a simply command-line interface for running simulations on a range of networks.
+
+# Synopsis
+
+To download and install the *NEXT-NET* command-line tool do
+```
+git clone --recurse-submodules https://github.com/oist/NEXTNet.git
+cd NEXTNet
+mkdir build
+cd build
+cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ../
+make
+```
+
+To simulate an epidemic starting until time t=2500 from node 1 of a Watts-Strogatz network of size N=10.000 nodes with  parameters K=6 and beta=0.1, gamma distributed infection times with mean 8 and variance 1, and log-normally distributed recovery times with mean 50 and variance 20 run
+
+```
+./nextnet -n 'watts_strogatz(10000, 4, 0.2)' -p 'gamma(8,1)' -r 'lognormal(30,20)' -i 1 -t 250 > trajectory.txt
+```
+
+To plot the resulting number of currently infected nodes over time using gnuplot, run
+
+```
+set key autotitle columnhead
+set log y
+plot 'trajectory.txt' using 1:9 with lines
+```
+
+The available network types and infection time distributions can be listed with 
+```
+./nextnet --list-networks
+./nextnet --list-times
+```
 
 # Functionality
 
