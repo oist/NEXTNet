@@ -47,7 +47,7 @@
 #    pragma GCC diagnostic ignored "-Wall"
 #    pragma GCC diagnostic ignored "-Wsign-compare"
 #    pragma GCC diagnostic ignored "-Wparentheses"
-#    pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#    pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
 #include <boost/config.hpp>
