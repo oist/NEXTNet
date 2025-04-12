@@ -1,17 +1,27 @@
 cff-version: 1.2.0
-message: If you use this software, please cite this article
-title: Fast and exact simulations of stochastic epidemics on static and temporal networks
+message: If you use this software, please cite the article from preferred-citation.
 authors:
   - family-names: Cure
     given-names: Samuel
   - family-names: Pflug
     given-names: Florian G.
-  - family-names: Pigolotti
-    given-names: Simone
-year: '2024'
-type: generic
-status: preprint
-publisher:
-  name: arXiv
-url: https://arxiv.org/abs/2412.07095
-
+    orcid: https://orcid.org/0000-0002-5344-5359
+title: NEXT-NET
+version: '0.9'
+doi: 10.48550/arXiv.2412.07095
+date-released: '2024-04-12'
+preferred-citation:
+  type: article
+  status: preprint
+  authors:
+    - family-names: Cure
+      given-names: Samuel
+    - family-names: Pflug
+      given-names: Florian G.
+    - family-names: Pigolotti
+      given-names: Simone
+  title: Fast and exact simulations of stochastic epidemics on static and temporal networks
+  year: 2024
+  journal: arXiv
+  number: '2412.07095'
+  doi: 10.48550/arXiv.2412.07095
