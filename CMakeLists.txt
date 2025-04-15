@@ -78,6 +78,42 @@ set(TESTS_PCH
 set(BUNDLED_HEADERS_AND_SOURCES
     nextnet/catch/catch.hpp)
 
+# *** Variables
+
+# Set a default build type if none was specified
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+	message(STATUS "Defaulting to CMAKE_BUILD_TYPE=RelWithDebInfo.")
+	set(CMAKE_BUILD_TYPE Debug CACHE STRING "build type" FORCE)
+	set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+else()
+	message(STATUS "CMAKE_BUILD_TYPE=" ${CMAKE_BUILD_TYPE})
+endif()
+
+if(NOT SANITIZE)
+	set(SANITIZE "debug" CACHE STRING "whether to enable address and thread sanitizers" FORCE)
+	set_property(CACHE SANITIZE PROPERTY STRINGS "always" "debug" "never")
+endif()
+
+if(NOT UNITTESTS)
+	set(UNITTESTS NO CACHE BOOL "whether to enable target nextnet-unittests" FORCE)
+	set_property(CACHE UNITTESTS PROPERTY TYPE BOOL)
+endif()
+
+if(NOT SANITIZE_UNITTESTS)
+	set(SANITIZE_UNITTESTS "always" CACHE STRING "whether to enable address and thread sanitizer during tests" FORCE)
+	set_property(CACHE SANITIZE_UNITTESTS PROPERTY STRINGS "always" "debug" "never")
+endif()
+
+if(NOT SINGLETHREADED)
+	set(SINGLETHREADED NO CACHE BOOL "whether to parallelize unit tests" FORCE)
+	set_property(CACHE SINGLETHREADED PROPERTY TYPE BOOL)
+endif()
+
+if(NOT CLANGFORMAT)
+	set(CLANGFORMAT NO CACHE BOOL "whether to enable target clangformat" FORCE)
+	set_property(CACHE CLANGFORMAT PROPERTY TYPE BOOL)
+endif()
+
 # *** Global build settings
 
 # Includes are relative to the project folder
@@ -95,7 +131,6 @@ set(CMAKE_VISIBILITY_INLINES_HIDDEN true)
 # we don't have std::unary_function in C++17 mode
 add_compile_options(-Wall)
 add_compile_definitions(${CMAKE_DEFINES})
-add_compile_definitions(BOOST_NO_CXX98_FUNCTION_BASE)
 
 # Boost policies
 cmake_policy(SET CMP0144 NEW)
@@ -110,46 +145,12 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 find_package(Boost CONFIG REQUIRED OPTIONAL_COMPONENTS iostreams filesystem)
 link_libraries(Boost::boost)
 include_directories(${Boost_INCLUDE_DIRS})
-if (Boost_FILESYSTEM_FOUND)
-    message("Boost filesystem: Found")
-else()
-    message("Boost filesystem: Not Found")
-endif()
-if (Boost_IOSTREAMS_FOUND)
-    message("Boost iostreams: Found")
-else()
-    message("Boost iostreams: Not Found")
-endif()
-
-# Intel Thread Building Blocks are optional, if present
-# they speed up the tests by executing simulations in parallel
-if (NOT SERIALIZE)
-    find_package(TBB)
-    if (TBB_FOUND)
-        message("Thread Building Blocks: Found")
-        add_compile_definitions(TBB_SUPPRESS_DEPRECATED_MESSAGES)
-    else()
-        message("Thread Building Blocks: Not Found")
-    endif()
-else()
-    # It seems that the mere presence of TBB on a system causes
-    # the parallel STL backend that uses TBB to be selected, which
-    # then causes linker errors if TBB is not actually linked. It
-    # seems that defining this macro forces the serial backend and
-    # prevents the linker errors. This is probably the wrong solution
-    # but it works.
-    add_compile_definitions(_PSTL_PAR_BACKEND_SERIAL)
-endif()
-
-# Gnuplot is optional, if present can generate plos
-find_program(Gnuplot gnuplot)
-if (Gnuplot)
-    message("Gnuplot: Found (${Gnuplot})")
-else()
-    message("Gnuplot: Not Found")
-endif()
+# Some boost libraries attempt to use std::unary_function if this is
+# not set, which causes problems since C++17 removed this class.
+add_compile_definitions(NEXTNET_BOOST_NO_CXX98_FUNCTION_BASE)
 
 # *** Build command-line similator
+   message(STATUS "nextnet: enabling target")
 add_executable(nextnet
     ${CLI_SOURCES}
     ${LIB_SOURCES}
@@ -158,10 +159,13 @@ add_executable(nextnet
     ${LIB_PCH})
 target_precompile_headers(nextnet
     PUBLIC ${LIB_PCH})
+# Keep nextnet single-threaded, avoid having to link TBB even if its present
+target_compile_definitions(nextnet PRIVATE _PSTL_PAR_BACKEND_SERIAL)
+target_compile_definitions(nextnet PRIVATE NEXTNET_BOOST_NO_CXX17_HDR_EXECUTION)
 
 # Enable address and undefined behaviour sanitizers for debug builds
 if (SANITIZE STREQUAL "debug")
-    message("Address and thread sanitizer during simulations: Debug builds")
+    message(STATUS "nextnet: SANITIZE=${SANITIZE}, enabling addresses and thread sanitizer for debug builds")
     target_compile_options(nextnet PRIVATE
         "$<$<CONFIG:DEBUG>:-fsanitize=address>"
         "$<$<CONFIG:DEBUG>:-fsanitize=undefined>")
@@ -169,7 +173,7 @@ if (SANITIZE STREQUAL "debug")
         "$<$<CONFIG:DEBUG>:-fsanitize=address>"
         "$<$<CONFIG:DEBUG>:-fsanitize=undefined>")
 elseif (SANITIZE STREQUAL "always")
-    message("Address and thread sanitizer during simulations: Always")
+    message(STATUS "nextnet: SANITIZE=${SANITIZE}, enabling addresses and thread sanitizer for all builds")
     target_compile_options(nextnet PRIVATE
         "-fsanitize=address"
         "-fsanitize=undefined")
@@ -177,12 +181,12 @@ elseif (SANITIZE STREQUAL "always")
         "-fsanitize=address"
         "-fsanitize=undefined")
 else()
-    message("Address and thread sanitizer during simulations: Disabled")
+    message(STATUS "nextnet: SANITIZE=${SANITIZE}, disabling addresses and thread sanitizer for all builds")
 endif()
 
 # *** Build unit test runner
 if (UNITTESTS)
-    message("Creating target 'nextnet-unittests' to build unit tests")
+    message(STATUS "nextnet-unittests: UNITTESTS=${UNITTESTS}, enabling target")
 
     add_executable(nextnet-unittests
         ${TESTS_SOURCES}
@@ -198,38 +202,76 @@ if (UNITTESTS)
         PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
     # Test data
     target_compile_definitions(nextnet-unittests PRIVATE TEST_DATA_DIR="${PROJECT_SOURCE_DIR}/nextnet/tests/data")
-    message("Test data: ${PROJECT_SOURCE_DIR}/nextnet/tests/data")
-    if ((NOT SERIALIZE) AND TBB_FOUND)
-        message("Parallelization: Enabled")
-        target_link_libraries(nextnet-unittests TBB::tbb)
-        add_definitions(-DPARALLELIZE=1)
+    message(STATUS "nextnet-unittests: test data in ${PROJECT_SOURCE_DIR}/nextnet/tests/data")
+
+    # These boost libraries are optional
+    if (Boost_FILESYSTEM_FOUND)
+        message(STATUS "Boost filesystem: Found")
     else()
-        message("Parallelization: Disabled")
-        add_definitions(-DPARALLELIZE=0)
+        message(STATUS "Boost filesystem: Not found")
     endif()
-    if (Gnuplot AND Boost_FILESYSTEM_FOUND AND Boost_IOSTREAMS_FOUND)
-        message("Plotting during unit tests: Enabled")
-        target_link_libraries(nextnet-unittests Boost::boost Boost::iostreams Boost::filesystem)
-        target_compile_definitions(nextnet-unittests PRIVATE
-            ENABLE_PLOTTING=1
-            GNUPLOT_DEFAULT_COMMAND="${Gnuplot} -persist"
-         )
+    if (Boost_IOSTREAMS_FOUND)
+        message(STATUS "Boost iostreams: Found")
     else()
-        message("Plotting during unit tests: Disabled")
+        message(STATUS "Boost iostreams: Not found")
     endif()
 
+    # Gnuplot is optional, if present can generate plos
+    find_program(Gnuplot gnuplot)
+    if (Gnuplot)
+        message(STATUS "Gnuplot: Found (${Gnuplot})")
+    else()
+        message(STATUS "Gnuplot: Not found")
+    endif()
+
+    if (Gnuplot AND Boost_FILESYSTEM_FOUND AND Boost_IOSTREAMS_FOUND)
+        message(STATUS "nextnet-unittests: enabling plotting")
+        target_link_libraries(nextnet-unittests Boost::boost Boost::iostreams Boost::filesystem)
+        target_compile_definitions(nextnet-unittests PRIVATE ENABLE_PLOTTING=1)
+	target_compile_definitions(nextnet-unittests PRIVATE GNUPLOT_DEFAULT_COMMAND="${Gnuplot} -persist")
+    else()
+        message(STATUS "nextnet-unittests: disabling plotting")
+    endif()
+
+    # Intel Thread Building Blocks are optional, if present
+    # they speed up the tests by executing simulations in parallel
+    if (NOT SINGLETHREADED)
+        find_package(TBB)
+		if (TBB_FOUND)
+			message(STATUS "TBB: Found")
+		else()
+			message(STATUS "TBB: Not found")
+		endif()
+    endif()
+    if (NOT SINGLETHREADED AND TBB_FOUND)
+        message(STATUS "nextnet-unittests: SINGLETHREADED=${SINGLETHREADED}, enabling parallelization")
+        target_link_libraries(nextnet-unittests TBB::tbb)
+        target_compile_definitions(nextnet-unittests PRIVATE TBB_SUPPRESS_DEPRECATED_MESSAGES)
+        target_compile_definitions(nextnet-unittests PRIVATE PARALLELIZE=1)
+    else()
+        message(STATUS "nextnet-unittests: SINGLETHREADED=${SINGLETHREADED}, disabling parallelization")
+        # It seems that the mere presence of TBB on a system causes
+        # the parallel STL backend that uses TBB to be selected, which
+        # then causes linker errors if TBB is not actually linked. It
+        # seems that defining this macro forces the serial backend and
+        # prevents the linker errors. This is probably the wrong solution
+        # but it works.
+        target_compile_definitions(nextnet-unittests PRIVATE _PSTL_PAR_BACKEND_SERIAL)
+        target_compile_definitions(nextnet-unittests PRIVATE NEXTNET_BOOST_NO_CXX17_HDR_EXECUTION)
+        target_compile_definitions(nextnet-unittests PRIVATE PARALLELIZE=0)
+    endif()
 
     # Enable address and undefined behaviour sanitizers for all builds
-    if (SANITIZE STREQUAL "debug")
-        message("Address and thread sanitizer during tests: Debug builds")
+    if (SANITIZE_UNITTESTS STREQUAL "debug")
+		message(STATUS "nextnet-unittests: SANITIZE_UNITTESTS=${SANITIZE_UNITTESTS}, enabling addresses and thread sanitizer for debug builds")
         target_compile_options(nextnet-unittests PRIVATE
             "$<$<CONFIG:DEBUG>:-fsanitize=address>"
             "$<$<CONFIG:DEBUG>:-fsanitize=undefined>")
         target_link_options(nextnet-unittests PRIVATE
             "$<$<CONFIG:DEBUG>:-fsanitize=address>"
             "$<$<CONFIG:DEBUG>:-fsanitize=undefined>")
-    elseif (SANITIZE STREQUAL "always")
-        message("Address and thread sanitizer during tests: Always")
+    elseif (SANITIZE_UNITTESTS STREQUAL "always")
+		message(STATUS "nextnet-unittests: SANITIZE_UNITTESTS=${SANITIZE_UNITTESTS}, enabling addresses and thread sanitizer for all builds")
         target_compile_options(nextnet-unittests PRIVATE
             "-fsanitize=address"
             "-fsanitize=undefined")
@@ -237,13 +279,15 @@ if (UNITTESTS)
             "-fsanitize=address"
             "-fsanitize=undefined")
     else()
-        message("Address and thread sanitizer during unit tests: Disabled")
+		message(STATUS "nextnet-unittests: SANITIZE_UNITTESTS=${SANITIZE_UNITTESTS}, disabling addresses and thread sanitizer for all builds")
     endif()
+else()
+    message(STATUS "nextnet-unittests: UNITTESTS=${UNITTESTS}, disabling target")
 endif()
 
 # *** Code formatter
 if (CLANGFORMAT)
-    message("Creating target 'clangformat' to run clang-format an all source files")
+    message(STATUS "clangformat: CLANGFORMAT=${CLANGFORMAT}, enabling target")
     include(ClangFormat)
 
     # Format all sources except third-party files we just bundlet
@@ -261,4 +305,6 @@ if (CLANGFORMAT)
     # Create clangformat target, don't build by default
     clangformat_setup(${FORMAT_SOURCES})
     set_target_properties(clangformat PROPERTIES EXCLUDE_FROM_ALL TRUE)
+else()
+    message(STATUS "clangformat: CLANGFORMAT=${CLANGFORMAT}, disabling target")
 endif()
