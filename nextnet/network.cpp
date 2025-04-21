@@ -1225,21 +1225,46 @@ barabasi_albert::barabasi_albert(int size, rng_t &engine, int m)
 //--------IMPORTED NETWORK----------
 //--------------------------------------
 
-empirical_network::empirical_network(std::string path_to_file, bool undirected, bool simplify)
+empirical_network::empirical_network(std::string path_to_file, bool undirected, bool simplify, char sep)
 	: adjacencylist_network(undirected, true)
 {
-	// Read CSV file and create edge multi-set
+	// Read adjacencylist / edgelist file and create edge multi-set
+	const bool sep_is_space = std::isspace(sep);
 	std::unordered_map<edge_t, std::size_t, pair_hash> edges = {};
     std::ifstream file(path_to_file);
     std::string line;
-	for(node_t n1 = 0; std::getline(file, line); ++n1) {
-		// Parse each cell of the line and add to edge multiset
-		std::stringstream ss(line);
-		std::string cell;
-		for(node_t n2 = 0; std::getline(ss, cell, ','); ++n2) {
-			const edge_t e = (undirected ? edge_t { std::min(n1, n2), std::max(n1, 2) } : edge_t { n1, n2 } );
+    while (std::getline(file, line)) {
+		std::stringstream is(line);
+		
+		// Read source node
+    	node_t n1; 
+    	if (!(is >> n1) || (n1 < 0))
+    		throw std::runtime_error("invalid line: " + line);
+    	
+    	// Read list of outgoing edges separated by ,
+    	while (true) {
+    		// Consume sep unless it's whitespace
+    		char c = sep;
+			if (!sep_is_space && !(is >> c)) break;
+			if (sep != c)
+				throw std::runtime_error("invalid line: " + line);
+    		
+    		// Read next target node
+    		node_t n2;
+    		if (!(is >> n2) || (n2 < 0)) {
+    			// No node or id < 0. No node is allowed if sep is whitespace
+    			if (!sep_is_space || (n2 < 0))
+					throw std::runtime_error("invalid line: " + line);
+				else
+					 break;
+    		}
+    		
+			// Collect edge
+			const edge_t e = (undirected
+			                  ? edge_t { std::min(n1, n2), std::max(n1, 2) }
+			                  : edge_t { n1, n2 } );
 			++edges[e];
-		}
+    	}
 	}
 	
 	// Convert edges into adjacency list
@@ -1255,13 +1280,16 @@ empirical_network::empirical_network(std::string path_to_file, bool undirected, 
 		// Keep track of whether the network is simple;
 		simple = simple && !selfedge && (m == 1);
 		
+		// Resizse adjacencylist
+		const node_t nmax = std::max(e.first, e.second);
+		if (adjacencylist.size() <= (std::size_t)nmax)
+			adjacencylist.resize(nmax + 1);
+		
 		// For undirected graphs, add both forward- and reverse-edges
 		for(int r=0; r < ((undirected && !selfedge) ? 2 : 1 ); ++r) {
 			if (r) std::swap(e.first, e.second);
 			
 			// Get adjacencylist for source node
-			if (adjacencylist.size() <= (size_t)e.first)
-				adjacencylist.resize(e.first + 1);
 			std::vector<node_t>& al = adjacencylist[e.first];
 			
 			// Retain mulitplicity of edge unless simplify is true
