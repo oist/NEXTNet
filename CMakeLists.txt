@@ -163,6 +163,10 @@ target_precompile_headers(nextnet
 target_compile_definitions(nextnet PRIVATE _PSTL_PAR_BACKEND_SERIAL)
 target_compile_definitions(nextnet PRIVATE NEXTNET_BOOST_NO_CXX17_HDR_EXECUTION)
 
+# On older versions of GCC, we have to link libstdc++fs
+target_link_libraries(nextnet PRIVATE
+	$<$<AND:$<CXX_COMPILER_ID:GNU>,$<VERSION_LESS:$<CXX_COMPILER_VERSION>,9.0>>:stdc++fs>)
+
 # Enable address and undefined behaviour sanitizers for debug builds
 if (SANITIZE STREQUAL "debug")
     message(STATUS "nextnet: SANITIZE=${SANITIZE}, enabling addresses and thread sanitizer for debug builds")
