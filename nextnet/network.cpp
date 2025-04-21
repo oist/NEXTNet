@@ -1316,7 +1316,6 @@ std::vector<std::vector<double>> reproduction_matrix(network &nw, int clustering
     double k1                 = 0;
     double k2                 = 0;
     double k3                 = 0;
-    double k4                 = 0;
     std::set<int> degrees_set = {};
     for (node_t node = 0; node < SIZE; node++) {
         const int k = nw.outdegree(node);
@@ -1325,7 +1324,6 @@ std::vector<std::vector<double>> reproduction_matrix(network &nw, int clustering
         k1 += (double)k / SIZE;
         k2 += (double)pow(k, 2) / SIZE;
         k3 += (double)pow(k, 3) / SIZE;
-        k4 += (double)pow(k, 4) / SIZE;
     }
     const std::vector<int> unique_degrees(degrees_set.begin(), degrees_set.end());
     const int klen = (int)unique_degrees.size();
