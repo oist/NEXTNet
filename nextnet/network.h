@@ -536,7 +536,7 @@ typedef cubic_lattice<8> cubic_lattice_8d;
 class empirical_network : public virtual adjacencylist_network
 {
 public:
-    empirical_network(std::istream& file, bool undirected = false, bool simplify = false, char sep = ' ');
+    empirical_network(std::istream& file, bool undirected = true, bool simplify = false, char sep = ' ');
 };
 
 //---------------------------------------------------
