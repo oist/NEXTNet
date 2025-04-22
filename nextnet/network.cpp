@@ -1264,6 +1264,11 @@ empirical_network::empirical_network(std::istream& file, bool undirected, bool s
 			                  : edge_t { n1, n2 } );
 			++edges[e];
     	}
+    	
+    	// Must read whole line
+    	is >> std::ws;
+    	if (!is.eof())
+    		throw std::runtime_error("invalid line: " + line);
 	}
 	
 	// Convert edges into adjacency list
