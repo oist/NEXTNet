@@ -99,6 +99,8 @@ struct network_ref
 /* Argument declarations */
 
 DECLARE_ARGUMENT_5(file, istream_ref, std::nullopt, istream_ref::parse, istream_ref::render)
+DECLARE_ARGUMENT_3(undirected, bool, true)
+DECLARE_ARGUMENT_3(simplify, bool, false)
 DECLARE_ARGUMENT_5(contact_kind, empirical_contact_network::edge_duration_kind,
 				   empirical_contact_network::infitesimal_duration, parse_contact_kind, render_contact_kind);
 DECLARE_ARGUMENT_3(dt, double, 1.0);
@@ -136,7 +138,7 @@ DECLARE_ARGUMENT_3(reduced_root_degree, bool, true);
 /* Network factory */
 
 factory<network> network_factory = factory<network>("network")
-	.add<empirical_network, file>("empirical")
+	.add<empirical_network, file, undirected, simplify>("empirical")
 	.add<empirical_contact_network, file, contact_kind, dt>("empirical_contact")
 	.add<erdos_renyi, size, avg_degree, rng>("erdos_renyi")
 	.add<weighted_erdos_renyi, size, avg_degree, weights, probabilities, rng>("weighted_erdos_renyi")

@@ -99,6 +99,11 @@ int main(int argc, const char *argv[])
 		if (nw_opt->is_set()) {
 			nw = network_factory.make(nw_opt->value());
 			cerr << "INFO: Network nw = " <<  network_factory.parse(nw_opt->value()) << std::endl;
+			const std::string k = nw.first->is_undirected() ? "undirected" : "directed" ;
+			const std::string s = nw.first->is_simple() ? "simple" : "has self- or multi-edges";
+			const std::string w = (dynamic_cast<weighted_network*>(nw.first.get()) != nullptr) ? "weighted" : "unweighted";
+			const std::string t = (dynamic_cast<temporal_network*>(nw.first.get()) != nullptr) ? "temporal" : "static";
+			cerr << "INFO: Network nw is " << k << ", " << s << ", " << w << " and " << t << std::endl;
 		}
 		
 		epidemic_events = (ev_opt->value().find("e") != std::string::npos);
