@@ -407,7 +407,7 @@ std::optional<network_event_t> next_reaction_network::step(rng_t &engine, absolu
 /*----------------------------------------------------*/
 
 empirical_contact_network::empirical_contact_network(
-    std::string path_to_file, network_kind kind,
+    std::istream& file, network_kind kind,
     edge_duration_kind contact_type, interval_t dt)
     : next_reaction_network(kind)
 {
@@ -415,9 +415,6 @@ empirical_contact_network::empirical_contact_network(
     node_t max_node = 0;
 
     /* read whitespace-separated file */
-    std::ifstream file(path_to_file);
-    if (!file.is_open())
-        throw std::runtime_error("unable to open file: " + path_to_file);
     std::string line;
     while (std::getline(file, line)) {
         /* read line of the form: src <space> dst <space> time */

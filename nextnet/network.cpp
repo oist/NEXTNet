@@ -1225,13 +1225,12 @@ barabasi_albert::barabasi_albert(int size, rng_t &engine, int m)
 //--------IMPORTED NETWORK----------
 //--------------------------------------
 
-empirical_network::empirical_network(std::string path_to_file, bool undirected, bool simplify, char sep)
+empirical_network::empirical_network(std::istream& file, bool undirected, bool simplify, char sep)
 	: adjacencylist_network(undirected, true)
 {
 	// Read adjacencylist / edgelist file and create edge multi-set
 	const bool sep_is_space = std::isspace(sep);
 	std::unordered_map<edge_t, std::size_t, pair_hash> edges = {};
-    std::ifstream file(path_to_file);
     std::string line;
     while (std::getline(file, line)) {
 		std::stringstream is(line);
