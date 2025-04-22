@@ -347,7 +347,6 @@ struct istream_ref
 
 	std::filesystem::path path;
 	std::shared_ptr<std::istream> file;
-	std::any holder;
 };
 
 

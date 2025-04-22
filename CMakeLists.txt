@@ -39,13 +39,15 @@ set(CLI_SOURCES
     nextnet/factories/factories.cpp
     nextnet/factories/network.cpp
     nextnet/factories/time.cpp
-    nextnet/factories/algorithm.cpp)
+    nextnet/factories/algorithm.cpp
+    nextnet/pstream/pstream.cpp)
 
 set(CLI_HEADERS
     nextnet/factories/factories.h
     nextnet/factories/network.h
     nextnet/factories/time.h
-    nextnet/factories/algorithm.h)
+    nextnet/factories/algorithm.h
+    nextnet/pstream/pstream.h)
 
 # *** Unit tests sources and headers
 set(TESTS_SOURCES
@@ -76,7 +78,9 @@ set(TESTS_PCH
 
 # *** Bundled source that shouldn't be formatted
 set(BUNDLED_HEADERS_AND_SOURCES
-    nextnet/catch/catch.hpp)
+    nextnet/catch/catch.hpp
+    nextnet/pstream/pstream.h
+    nextnet/pstream/pstream.cpp)
 
 # *** Variables
 

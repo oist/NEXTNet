@@ -7,12 +7,8 @@
 
 #include "nextnet/stdafx.h"
 #include "nextnet/factories/factories.h"
+#include "nextnet/pstream/pstream.h"
 
-#ifndef BOOST_PROCESS_USE_STD_FS
-#define BOOST_PROCESS_USE_STD_FS
-#endif
-
-#include <boost/process.hpp>
 
 namespace factories {
 
@@ -217,21 +213,12 @@ std::string description<rng>()
 istream_ref istream_ref::parse(const std::string& path) {
 	istream_ref r { .path = path };
 
-	if (r.path.extension() == ".gz") {
-		using namespace boost::process;
-
-		struct holder {
-			std::shared_ptr<ipstream> filtered;
-			std::optional<child> filter;
-		};
-		auto h = std::make_shared<holder>();
-		h->filter.emplace(search_path("zcat"), path, std_out > *(h->filtered));
-
-		r.file = h->filtered;
-		r.holder = h;
-	} else {
+	if (r.path.extension() == ".gz")
+		r.file = std::make_shared<redi::ipstream>(
+			"zcat", std::vector<std::string> { path },
+			redi::pstreambuf::pstdout);
+	else
 		r.file = std::make_shared<std::ifstream>(path);
-	}
 
 	return r;
 }
