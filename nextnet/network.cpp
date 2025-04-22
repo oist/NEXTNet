@@ -1260,7 +1260,7 @@ empirical_network::empirical_network(std::istream& file, bool undirected, bool s
     		
 			// Collect edge
 			const edge_t e = (undirected
-			                  ? edge_t { std::min(n1, n2), std::max(n1, 2) }
+			                  ? edge_t { std::min(n1, n2), std::max(n1, n2) }
 			                  : edge_t { n1, n2 } );
 			++edges[e];
     	}
