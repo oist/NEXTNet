@@ -137,7 +137,9 @@ add_compile_options(-Wall)
 add_compile_definitions(${CMAKE_DEFINES})
 
 # Boost policies
-cmake_policy(SET CMP0144 NEW)
+if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.27") 
+	cmake_policy(SET CMP0144 NEW)
+endif()
 
 # *** Dependencies
 
