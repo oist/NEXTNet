@@ -87,7 +87,7 @@ set(BUNDLED_HEADERS_AND_SOURCES
 # Set a default build type if none was specified
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 	message(STATUS "Defaulting to CMAKE_BUILD_TYPE=RelWithDebInfo.")
-	set(CMAKE_BUILD_TYPE Debug CACHE STRING "build type" FORCE)
+	set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "build type" FORCE)
 	set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 else()
 	message(STATUS "CMAKE_BUILD_TYPE=" ${CMAKE_BUILD_TYPE})
