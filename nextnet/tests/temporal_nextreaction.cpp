@@ -168,7 +168,8 @@ TEST_CASE("Epidemic on empirical network nb2 with finite edge durations", "[temp
 {
     rng_t engine(0);
 
-    empirical_contact_network g(TEST_DATA_DIR "/college.tab", empirical_contact_network::finite_duration, 3);
+    std::ifstream file(TEST_DATA_DIR "/college.tab");
+    empirical_contact_network g(file, empirical_contact_network::finite_duration, 3);
     transmission_time_gamma psi(50, 3);
     transmission_time_gamma rho(100, 1);
     simulate_next_reaction nr(g, psi, &rho);
@@ -182,7 +183,8 @@ TEST_CASE("Epidemic on empirical network nb2 with infitesimal edge durations", "
 {
     rng_t engine(0);
 
-    empirical_contact_network g(TEST_DATA_DIR "/college.tab", empirical_contact_network::infitesimal_duration, 3);
+    std::ifstream file(TEST_DATA_DIR "/college.tab");
+    empirical_contact_network g(file, empirical_contact_network::infitesimal_duration, 3);
     transmission_time_gamma psi(50, 3);
     transmission_time_gamma rho(100, 1);
     simulate_next_reaction nr(g, psi, &rho);
@@ -319,13 +321,15 @@ TEST_CASE("Plot SIS average trajectories on dynamic empirical network", "[tempor
         std::vector<double> t, y_tot, y_new;
         average_trajectories(engine, [&](rng_t &engine) {
 			struct {
+				std::unique_ptr<std::ifstream> f;
 				std::unique_ptr<empirical_contact_network> g;
 				std::unique_ptr<transmission_time_gamma> psi;
 				std::unique_ptr<transmission_time_gamma> rho;
 				std::unique_ptr<simulate_next_reaction> nr;
 				std::unique_ptr<simulate_on_temporal_network> simulator;
 			} env;
-			env.g = std::make_unique<empirical_contact_network>(TEST_DATA_DIR "/college.tab", duration_kind, DT);
+			env.f = std::make_unique<std::ifstream>(TEST_DATA_DIR "/college.tab");
+			env.g = std::make_unique<empirical_contact_network>(*env.f.get(), duration_kind, DT);
 			env.psi = std::make_unique<transmission_time_gamma>(PSI_MEAN, PSI_VARIANCE);
 			env.rho = std::make_unique<transmission_time_gamma>(RHO_MEAN, RHO_VARIANCE);
 			env.nr = std::make_unique<simulate_next_reaction>(*env.g.get(), *env.psi.get(), env.rho.get());

@@ -44,7 +44,8 @@ TEST_CASE("dynamic empirical graph", "[temporal_network]")
     rng_t engine;
 
     double dt = 4;
-    empirical_contact_network g(TEST_DATA_DIR "/test_empirical_network.txt", empirical_contact_network::finite_duration, dt);
+    std::ifstream file(TEST_DATA_DIR "/test_empirical_network.txt");
+    empirical_contact_network g(file, empirical_contact_network::finite_duration, dt);
     REQUIRE(g.nodes() == 14);
 
     /* evolve network up to time 0 */
