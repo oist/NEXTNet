@@ -1232,6 +1232,7 @@ empirical_network::empirical_network(std::istream& file, bool undirected, bool s
 	const bool sep_is_space = std::isspace(sep);
 	std::unordered_map<edge_t, std::size_t, pair_hash> edges = {};
     std::string line;
+    node_t size = 0;
     while (std::getline(file, line)) {
 		std::stringstream is(line);
 		
@@ -1240,6 +1241,9 @@ empirical_network::empirical_network(std::istream& file, bool undirected, bool s
     	if (!(is >> n1) || (n1 < 0))
     		throw std::runtime_error("invalid line: " + line);
     	
+        // Keep track of size
+        size = std::max(size, n1 + 1);
+        
     	// Read list of outgoing edges separated by ,
     	while (true) {
     		// Consume sep unless it's whitespace
@@ -1258,6 +1262,9 @@ empirical_network::empirical_network(std::istream& file, bool undirected, bool s
 					 break;
     		}
     		
+            // Keep track of size
+            size = std::max(size, n2 + 1);
+            
 			// Collect edge
 			const edge_t e = (undirected
 			                  ? edge_t { std::min(n1, n2), std::max(n1, n2) }
@@ -1272,6 +1279,7 @@ empirical_network::empirical_network(std::istream& file, bool undirected, bool s
 	}
 	
 	// Convert edges into adjacency list
+    adjacencylist.resize(size);
 	for(const auto& v: edges) {
 		edge_t e = v.first;
 		std::size_t m = (simplify ? 1 : v.second);
@@ -1283,11 +1291,6 @@ empirical_network::empirical_network(std::istream& file, bool undirected, bool s
 		
 		// Keep track of whether the network is simple;
 		simple = simple && !selfedge && (m == 1);
-		
-		// Resizse adjacencylist
-		const node_t nmax = std::max(e.first, e.second);
-		if (adjacencylist.size() <= (std::size_t)nmax)
-			adjacencylist.resize(nmax + 1);
 		
 		// For undirected graphs, add both forward- and reverse-edges
 		for(int r=0; r < ((undirected && !selfedge) ? 2 : 1 ); ++r) {
