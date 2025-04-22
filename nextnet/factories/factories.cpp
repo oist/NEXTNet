@@ -8,6 +8,12 @@
 #include "nextnet/stdafx.h"
 #include "nextnet/factories/factories.h"
 
+#ifndef BOOST_PROCESS_USE_STD_FS
+#define BOOST_PROCESS_USE_STD_FS
+#endif
+
+#include <boost/process.hpp>
+
 namespace factories {
 
 parsed_expression_t parse_expression(std::string s)
@@ -202,6 +208,36 @@ template <>
 std::string description<rng>()
 {
 	return "";
+}
+
+/**
+ * istream_ref: Argument used to pass an istream that reads from a user-specified file
+ */
+
+istream_ref istream_ref::parse(const std::string& path) {
+	istream_ref r { .path = path };
+
+	if (r.path.extension() == ".gz") {
+		using namespace boost::process;
+
+		struct holder {
+			std::shared_ptr<ipstream> filtered;
+			std::optional<child> filter;
+		};
+		auto h = std::make_shared<holder>();
+		h->filter.emplace(search_path("zcat"), path, std_out > *(h->filtered));
+
+		r.file = h->filtered;
+		r.holder = h;
+	} else {
+		r.file = std::make_shared<std::ifstream>(path);
+	}
+
+	return r;
+}
+
+std::string istream_ref::render(const istream_ref& is) {
+	return is.path;
 }
 
 

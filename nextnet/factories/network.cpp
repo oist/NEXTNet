@@ -96,24 +96,6 @@ struct network_ref
 	std::shared_ptr<std::any> holder;
 };
 
-struct istream_ref
-{
-	static istream_ref parse(const std::string& path) {
-		return { .path {path}, .file = std::make_shared<std::ifstream>(path) };
-	}
-	
-	static std::string render(const istream_ref& is) {
-		return is.path;
-	}
-	
-	operator std::istream&() const {
-		return *file.get();
-	}
-	
-	std::string path;
-	std::shared_ptr<std::istream> file;
-};
-
 /* Argument declarations */
 
 DECLARE_ARGUMENT_5(file, istream_ref, std::nullopt, istream_ref::parse, istream_ref::render)

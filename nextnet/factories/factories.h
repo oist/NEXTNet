@@ -334,6 +334,23 @@ std::pair<std::reference_wrapper<rng_t>, int> argument<rng>(const std::vector<st
 template <>
 std::string description<rng>();
 
+/**
+ * @brief Argument used to pass an istream that reads from a user-specified file
+ */
+
+struct istream_ref
+{
+	static istream_ref parse(const std::string& path);
+	static std::string render(const istream_ref& is);
+
+	operator std::istream&() const { return *file.get(); }
+
+	std::filesystem::path path;
+	std::shared_ptr<std::istream> file;
+	std::any holder;
+};
+
+
 } // namespace factories
 
 #include "nextnet/factories/algorithm.h"
