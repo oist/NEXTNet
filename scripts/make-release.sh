@@ -16,5 +16,5 @@ fi
 
 echo "Building full archive for version $ver (including submodules)" >&2
 mkdir -p archives
-./scripts/git-archive-all.sh --tree-ish v$ver archives/NEXTNet-$ver-full.tar
-gzip --best archives/NEXTNet-$ver-full.tar
+./scripts/git-archive-all.sh --tree-ish v$ver archives/NEXTNet-v$ver-full.tar
+gzip --best archives/NEXTNet-v$ver-full.tar
