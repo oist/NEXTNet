@@ -23,11 +23,11 @@ if [ $(git ls-remote --tags origin v$ver | wc -l) != 0 ]; then
 	exit 1
 fi
 
-echo "Updating VERSION" >&2
-echo $ver > VERSION
+echo "Updating .version" >&2
+echo $ver > .version
 
 echo "Comitting version bump to $ver" >&2
-git add VERSION
+git add .version
 git commit -m "Incremented version to $ver"
 
 echo "Tagging as v$ver and latest" >&2
@@ -38,4 +38,3 @@ git push origin master v$ver
 
 echo "Updating 'latest-release' on origin" >&2
 git push -f origin v$ver:refs/tags/latest-release
-
