@@ -86,6 +86,7 @@ index_t weighted_adjacencylist_network::outdegree(node_t node)
 
 weighted_erdos_renyi::weighted_erdos_renyi(int size, double avg_degree,
                                            std::function<double(rng_t &)> weightdist, rng_t &engine)
+    :weighted_adjacencylist_network(true, true)
 {
     /*--------------Initialisation--------------
 
