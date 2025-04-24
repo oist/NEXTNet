@@ -19,7 +19,9 @@ void output_network_meta(std::ostream& dst, network& nw, char dsep)
     network_embedding* enw = dynamic_cast<network_embedding*>(&nw);
     std::size_t d = enw ? enw->dimensionality() : 0;
 
-    dst << "N=" << nw.nodes() << ", is_undirected=" << nw.is_undirected();
+    const node_t N = nw.nodes();
+    dst << "N=";
+    ((N >= 0) ? dst << nw.nodes() : dst << "infinite" ) << ", is_undirected=" << nw.is_undirected();
     dst << ", is_simple=" << nw.is_simple() << ", is_weighted=" << (wnw != nullptr);
     dst << ", is_embedded=" << (enw != nullptr);
     if (enw != nullptr) {
