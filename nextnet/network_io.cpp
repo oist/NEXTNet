@@ -46,6 +46,7 @@ void output_adjacencylist(std::ostream& dst, network& nw, bool include_weights, 
     weighted_network* wnw = dynamic_cast<weighted_network*>(&nw);
     network_embedding* enw = dynamic_cast<network_embedding*>(&nw);
 
+    const bool is_undirected = nw.is_undirected();
     include_weights = include_weights && (wnw != nullptr);
     include_coords = include_coords && (enw != nullptr);
     std::size_t d = enw ? enw->dimensionality() : 0;
@@ -87,6 +88,10 @@ void output_adjacencylist(std::ostream& dst, network& nw, bool include_weights, 
             // Get neighbour (and edge weight if applicable)
             double w = NAN;
             const node_t nn = include_weights ? wnw->neighbour(n, i, &w) : nw.neighbour(n, i);
+
+            // Only output edge if (src <= dist) for undirected networks
+            if (is_undirected && (n > nn))
+                continue;
 
             // Output neighbour
             dst << csep << (nn+1);
