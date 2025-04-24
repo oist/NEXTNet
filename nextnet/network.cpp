@@ -1296,7 +1296,6 @@ empirical_network::empirical_network(std::istream& file, bool undirected, bool s
 	}
 }
 
-
 //---------------------------------------------------
 //-----Compute the reproduction_matrix matrix --------
 //---------------------------------------------------
