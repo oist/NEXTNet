@@ -6,7 +6,7 @@
 #include "nextnet/factories/factories.h"
 
 using namespace std;
-using namespace std::literals;
+using namespace literals;
 using namespace popl;
 using namespace factories;
 
@@ -51,13 +51,13 @@ int main(int argc, const char *argv[])
 	
     OptionParser op("options");
     auto help_opt          = op.add<Switch>("h", "help", "produce help message");
-    auto psi_opt           = op.add<Value<std::string>>("p", "transmission-time", "transmission time (psi)");
-    auto rho_opt           = op.add<Value<std::string>>("r", "recovery-time", "recovery time (rho)");
-    auto nw_opt            = op.add<Value<std::string>>("n", "network", "network to simulat on");
-    auto alg_opt           = op.add<Value<std::string>>("a", "algorithm", "simulation algorithm to use", "next");
-    auto param_opt         = op.add<Value<std::string>>("s", "parameter", "set simulation parameter");
+    auto psi_opt           = op.add<Value<string>>("p", "transmission-time", "transmission time (psi)");
+    auto rho_opt           = op.add<Value<string>>("r", "recovery-time", "recovery time (rho)");
+    auto nw_opt            = op.add<Value<string>>("n", "network", "network to simulat on");
+    auto alg_opt           = op.add<Value<string>>("a", "algorithm", "simulation algorithm to use", "next");
+    auto param_opt         = op.add<Value<string>>("s", "parameter", "set simulation parameter");
     auto initial_opt       = op.add<Value<node_t>>("i", "initial-infection", "initial infected node");
-    auto ev_opt            = op.add<Value<std::string>>("w", "report", "report events (e = epidemic, n = network)", "e");
+    auto ev_opt            = op.add<Value<string>>("w", "report", "report events (e = epidemic, n = network)", "e");
     auto tmax_opt          = op.add<Value<double>>("t", "stopping-time", "stop simulation at this time");
     auto out_nw_opt        = op.add<Value<string>>("g", "output-network", "file to output network to");
     auto out_opt           = op.add<Value<string>>("o", "output", "output file");
@@ -100,12 +100,12 @@ int main(int argc, const char *argv[])
         /* Parse algorithm parameters */
 
         for (size_t i = 0; i < param_opt->count(); ++i) {
-            const std::string &p = param_opt->value(i);
-            std::size_t j        = p.find('=');
+            const string &p = param_opt->value(i);
+            size_t j        = p.find('=');
             if (j == p.npos)
                 throw program_argument_error("parameter", "invalid parameter setting '"s + p + "', does not contain '='");
-            const std::string pname  = p.substr(0, j);
-            const std::string pvalue = p.substr(j + 1, p.npos);
+            const string pname  = p.substr(0, j);
+            const string pvalue = p.substr(j + 1, p.npos);
             alg_params.push_back({ pname, pvalue });
         }
 
@@ -144,7 +144,7 @@ int main(int argc, const char *argv[])
             alg->add_infections({ { node, 0.0 } });
         }
         if (initial_opt->count() == 0)
-            std::cerr << "WARNING: No initially infected node specified with -initial-infection, no epidemic will commence" << std::endl;
+            cerr << "WARNING: No initially infected node specified with -initial-infection, no epidemic will commence" << endl;
 
         /* Create simulate_on_temporal_network algorithm if necessary */
 
@@ -155,10 +155,10 @@ int main(int argc, const char *argv[])
         cerr << "Error in argument " << e.invalid_argument << ": " << e.what() << endl;
         return 1;
     } catch (runtime_error &e) {
-        cerr << "Error: " << e.what() << std::endl;
+        cerr << "Error: " << e.what() << endl;
         return 1;
     } catch (exception &e) {
-        cerr << "Internal error: " << e.what() << std::endl;
+        cerr << "Internal error: " << e.what() << endl;
         return 127;
     }
 
@@ -231,7 +231,7 @@ int main(int argc, const char *argv[])
         double total_reset         = 0;
         while (true) {
             // Execute next event
-            const std::optional<network_or_epidemic_event_t> any_ev_opt =
+            const optional<network_or_epidemic_event_t> any_ev_opt =
                 sotn_alg ? sotn_alg->step(engine, tmax) : alg->step(engine, tmax);
 
             // Stop if there are no more events
@@ -244,9 +244,9 @@ int main(int argc, const char *argv[])
             const char *kind;
             node_t node;
             node_t neighbour = -1;
-            if (std::holds_alternative<epidemic_event_t>(any_ev)) {
+            if (holds_alternative<epidemic_event_t>(any_ev)) {
                 // Epidemic event
-                const auto ev = std::get<epidemic_event_t>(any_ev);
+                const auto ev = get<epidemic_event_t>(any_ev);
                 // Update state
                 time = ev.time;
                 ++epidemic_step;
@@ -271,9 +271,9 @@ int main(int argc, const char *argv[])
                 node = ev.node + 1;
                 if (ev.kind == epidemic_event_kind::infection)
                     neighbour = ev.source_node + 1;
-            } else if (std::holds_alternative<network_event_t>(any_ev)) {
+            } else if (holds_alternative<network_event_t>(any_ev)) {
                 // Network event
-                const auto ev = std::get<network_event_t>(any_ev);
+                const auto ev = get<network_event_t>(any_ev);
                 // Update state
                 time = ev.time;
                 ++network_step;
@@ -301,7 +301,7 @@ int main(int argc, const char *argv[])
 
         return 0;
     } catch (exception &e) {
-        cerr << "Internal error: " << e.what() << std::endl;
+        cerr << "Internal error: " << e.what() << endl;
         return 127;
     }
 }
