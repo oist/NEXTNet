@@ -215,7 +215,7 @@ istream_ref istream_ref::parse(const std::string& path) {
 
 	if (r.path.extension() == ".gz")
 		r.file = std::make_shared<redi::ipstream>(
-			"zcat", std::vector<std::string> { "zcat", path },
+			"gzcat", std::vector<std::string> { "gzcat", path },
 			redi::pstreambuf::pstdout);
 	else
 		r.file = std::make_shared<std::ifstream>(path);
