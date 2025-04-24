@@ -15,7 +15,7 @@
 
 void output_network_meta(std::ostream& dst, network& nw, char dsep)
 {
-    weighted_network* wnw = dynamic_cast<weighted_network*>(&nw);
+    weighted_network* wnw = as_weighted_network(&nw);
     network_embedding* enw = dynamic_cast<network_embedding*>(&nw);
     std::size_t d = enw ? enw->dimensionality() : 0;
 
@@ -43,7 +43,7 @@ void output_network_meta(std::ostream& dst, network& nw, char dsep)
 void output_adjacencylist(std::ostream& dst, network& nw, bool include_weights, bool include_coords,
                           bool include_meta, bool include_header, char csep, char dsep, char wsep)
 {
-    weighted_network* wnw = dynamic_cast<weighted_network*>(&nw);
+    weighted_network* wnw = as_weighted_network(&nw);
     network_embedding* enw = dynamic_cast<network_embedding*>(&nw);
 
     const bool is_undirected = nw.is_undirected();
