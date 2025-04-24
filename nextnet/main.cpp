@@ -64,6 +64,8 @@ int main(int argc, const char *argv[])
     auto list_times_opt    = op.add<Switch>("", "list-times", "list distributions");
     auto list_networks_opt = op.add<Switch>("", "list-networks", "list network types");
 
+    /* Parse arguments and setup things */
+
     try {
         /* Parse arguments */
         op.parse(argc, argv);
@@ -137,6 +139,8 @@ int main(int argc, const char *argv[])
             alg = alg_factory.create(*nw.first.get(), *psi.first.get(), rho.first.get(), alg_params);
         }
 
+        /* Add initial infections */
+
         for (size_t i = 0; i < initial_opt->count(); ++i) {
             const node_t node = initial_opt->value(i) - 1;
             if ((node < 0) || (node >= nw.first->nodes()))
@@ -161,6 +165,8 @@ int main(int argc, const char *argv[])
         cerr << "Internal error: " << e.what() << endl;
         return 127;
     }
+
+    /* Open outputs */
 
     try {
         if (out_opt->is_set() && (out_opt->value() != "-"s)) {
