@@ -93,6 +93,38 @@ protected:
 	bool simple = false;
 };
 
+//-------------------------------------------
+//--------WEIGHTED EMPIRICAL NETWORK---------
+//-------------------------------------------
+
+/**
+ * @brief Weighted empirical network read from a file
+ *
+ * The file must contain lines of the form
+ *
+ * <nodeA> <csep> <nodeB1> <wsep> <weight1> <csep> <nodeB2> <wsep> <weight2> ...
+ *
+ * where <csep> is ' ' by default and wsep is ':'. Each such line defines
+ * edges A -> B1, A -> B2, ... with weights w1, w2, ... Multiple lines for
+ * the same node A are allowed and the edges are merged by summing their weights.
+ * This class than thus read adjacencylist and well as edgelist files. Lines
+ * starting with '#' are ignored.
+ *
+ * If undirected is true, the network is assumed to be undirected, i.e.
+ * for every edge (a,b) the reverse edge (b,a) is also added. If
+ * simplify is true, self-edges are removed. Multi-edges per definition
+ * do not exist -- what would be a multi-edge in an unweighted networks
+ * is simply an edge with a higher weight here.
+ * 
+ */
+class weighted_empirical_network : public virtual weighted_adjacencylist_network
+{
+public:
+    weighted_empirical_network(
+        std::istream& file, bool undirected = true, bool simplify = false,
+        node_t idxbase = 1, char csep = ' ', char wsep = ':');
+};
+
 //--------------------------------------
 //----------WEIGHTED ERDÖS RENYI--------
 //--------------------------------------
