@@ -151,6 +151,7 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 # Boost headers are mandatory, iostreamd and filesystem are optional
 # and allow plots to be generated during test runs
 find_package(Boost CONFIG REQUIRED OPTIONAL_COMPONENTS iostreams filesystem)
+message(STATUS "Boost: Found (" ${Boost_DIR} ")")
 link_libraries(Boost::boost)
 include_directories(${Boost_INCLUDE_DIRS})
 # Some boost libraries attempt to use std::unary_function if this is
