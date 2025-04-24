@@ -156,8 +156,13 @@ int main(int argc, const char *argv[])
                 throw program_argument_error("initial-infection", "invalid initial node "s + boost::lexical_cast<string>(initial_opt->value(i)));
             alg->add_infections({ { node, 0.0 } });
         }
-        if (initial_opt->count() == 0)
-            cerr << "WARNING: No initially infected node specified with -initial-infection, no epidemic will commence" << endl;
+        if (initial_opt->count() == 0) {
+            if (nw.first->nodes() > 0) {
+                const node_t n = std::uniform_int_distribution<node_t>(0, nw.first->nodes()-1)(*random_engine);
+                alg->add_infections({ { n, 0.0 } });
+            } else
+                alg->add_infections({ { 0, 0.0 } });
+        }
 
         /* Create simulate_on_temporal_network algorithm if necessary */
 
