@@ -10,8 +10,6 @@ using namespace literals;
 using namespace popl;
 using namespace factories;
 
-rng_t engine;
-
 /*
  * Errors
  */
@@ -33,7 +31,8 @@ struct program_argument_error : public runtime_error
 
 int main(int argc, const char *argv[])
 {
-	factory<transmission_time>::object_holder_t psi;
+    rng_t engine;
+    factory<transmission_time>::object_holder_t psi;
 	factory<transmission_time>::object_holder_t rho;
 	factory<network>::object_holder_t nw;
     vector<algorithm::param_t> alg_params;
@@ -47,8 +46,6 @@ int main(int argc, const char *argv[])
 	bool epidemic_events = false;
 	bool network_events = false;
 
-	random_engine = &engine;
-	
     OptionParser op("options");
     auto help_opt          = op.add<Switch>("h", "help", "produce help message");
     auto psi_opt           = op.add<Value<string>>("p", "transmission-time", "transmission time (psi)");
@@ -59,6 +56,7 @@ int main(int argc, const char *argv[])
     auto initial_opt       = op.add<Value<node_t>>("i", "initial-infection", "initial infected node");
     auto ev_opt            = op.add<Value<string>>("w", "report", "report events (e = epidemic, n = network)", "e");
     auto tmax_opt          = op.add<Value<double>>("t", "stopping-time", "stop simulation at this time");
+    auto seed_opt          = op.add<Value<std::size_t>>("z", "seed", "random number generator seed");
     auto out_nw_opt        = op.add<Value<string>>("g", "output-network", "file to output network to");
     auto out_opt           = op.add<Value<string>>("o", "output", "output file");
     auto list_times_opt    = op.add<Switch>("", "list-times", "list distributions");
@@ -110,6 +108,17 @@ int main(int argc, const char *argv[])
             const string pvalue = p.substr(j + 1, p.npos);
             alg_params.push_back({ pname, pvalue });
         }
+
+        /* Setup rng */
+        if (seed_opt->is_set()) {
+            std::seed_seq seed { seed_opt->value() };
+            engine.seed(seed);
+        } else {
+            std::random_device rd;
+            std::seed_seq seed { rd() };
+            engine.seed(seed);
+        }
+        random_engine = &engine;
 
         /* Parse times and networks */
 
