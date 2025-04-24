@@ -2,6 +2,7 @@
 
 #include "nextnet/stdafx.h"
 #include "nextnet/random.h"
+#include "nextnet/network_io.h"
 #include "nextnet/factories/factories.h"
 
 using namespace std;
@@ -38,6 +39,11 @@ int main(int argc, const char *argv[])
     vector<algorithm::param_t> alg_params;
     unique_ptr<simulation_algorithm> alg;
     unique_ptr<simulate_on_temporal_network> sotn_alg;
+    unique_ptr<ostream> nw_out_file;
+    unique_ptr<ostream> out_file;
+    ostream* nw_out = nullptr;
+    ostream* out = nullptr;
+
 	bool epidemic_events = false;
 	bool network_events = false;
 
@@ -53,6 +59,8 @@ int main(int argc, const char *argv[])
     auto initial_opt       = op.add<Value<node_t>>("i", "initial-infection", "initial infected node");
     auto ev_opt            = op.add<Value<std::string>>("w", "report", "report events (e = epidemic, n = network)", "e");
     auto tmax_opt          = op.add<Value<double>>("t", "stopping-time", "stop simulation at this time");
+    auto out_nw_opt        = op.add<Value<string>>("g", "output-network", "file to output network to");
+    auto out_opt           = op.add<Value<string>>("o", "output", "output file");
     auto list_times_opt    = op.add<Switch>("", "list-times", "list distributions");
     auto list_networks_opt = op.add<Switch>("", "list-networks", "list network types");
 
@@ -84,30 +92,12 @@ int main(int argc, const char *argv[])
             return 0;
         }
 
-        /* Run simulation */
+        /* Whether to output networks and/or epidemic events */
 
-		if (psi_opt->is_set()) {
-			psi = time_factory.make(psi_opt->value());
-			cerr << "INFO: Infection time psi = " << time_factory.parse(psi_opt->value()) << std::endl;
-		}
+        epidemic_events = (ev_opt->value().find("e") != string::npos);
+        network_events = (ev_opt->value().find("n") != string::npos);
 
-		if (rho_opt->is_set()) {
-			rho = time_factory.make(rho_opt->value());
-			cerr << "INFO: Infection time rho = " <<  time_factory.parse(rho_opt->value()) << std::endl;
-		}
-
-		if (nw_opt->is_set()) {
-			nw = network_factory.make(nw_opt->value());
-			cerr << "INFO: Network nw = " <<  network_factory.parse(nw_opt->value()) << std::endl;
-			const std::string k = nw.first->is_undirected() ? "undirected" : "directed" ;
-			const std::string s = nw.first->is_simple() ? "simple" : "has self- or multi-edges";
-			const std::string w = (dynamic_cast<weighted_network*>(nw.first.get()) != nullptr) ? "weighted" : "unweighted";
-			const std::string t = (dynamic_cast<temporal_network*>(nw.first.get()) != nullptr) ? "temporal" : "static";
-			cerr << "INFO: Network nw is " << k << ", " << s << ", " << w << " and " << t << std::endl;
-		}
-		
-		epidemic_events = (ev_opt->value().find("e") != std::string::npos);
-		network_events = (ev_opt->value().find("n") != std::string::npos);
+        /* Parse algorithm parameters */
 
         for (size_t i = 0; i < param_opt->count(); ++i) {
             const std::string &p = param_opt->value(i);
@@ -118,6 +108,19 @@ int main(int argc, const char *argv[])
             const std::string pvalue = p.substr(j + 1, p.npos);
             alg_params.push_back({ pname, pvalue });
         }
+
+        /* Parse times and networks */
+
+        if (psi_opt->is_set())
+            psi = time_factory.make(psi_opt->value());
+
+        if (rho_opt->is_set())
+            rho = time_factory.make(rho_opt->value());
+
+        if (nw_opt->is_set())
+            nw = network_factory.make(nw_opt->value());
+
+        /* Create simulation */
 
         {
             auto a_i = algorithms.find(alg_opt->value());
@@ -143,10 +146,10 @@ int main(int argc, const char *argv[])
         if (initial_opt->count() == 0)
             std::cerr << "WARNING: No initially infected node specified with -initial-infection, no epidemic will commence" << std::endl;
 
-		if (dynamic_cast<temporal_network *>(nw.first.get()) != nullptr) {
-			std::cerr << "INFO: Simulating on a temporal network" << std::endl;
+        /* Create simulate_on_temporal_network algorithm if necessary */
+
+        if (dynamic_cast<temporal_network *>(nw.first.get()) != nullptr)
 			sotn_alg.reset(new simulate_on_temporal_network(*alg.get()));
-		}
     } catch (program_argument_error &e) {
         cerr << op << endl;
         cerr << "Error in argument " << e.invalid_argument << ": " << e.what() << endl;
@@ -160,15 +163,65 @@ int main(int argc, const char *argv[])
     }
 
     try {
-        cout << "time" << '\t';
-        cout << "epidemic_step" << '\t';
-        cout << "network_step" << '\t';
-        cout << "kind" << '\t';
-        cout << "node" << '\t';
-        cout << "neighbour" << '\t';
-        cout << "total_infected" << '\t';
-        cout << "total_reset" << '\t';
-        cout << "infected" << '\n';
+        if (out_opt->is_set() && (out_opt->value() != "-"s)) {
+            out_file = make_unique<ofstream>(out_opt->value(), ios_base::out | ios_base::trunc);
+            if (!*out_file)
+                throw runtime_error("failed to create "s + out_opt->value());
+            out = out_file.get();
+        } else
+            out = &cout;
+
+        if (out_nw_opt->is_set() && (out_nw_opt->value() != "-"s)) {
+            nw_out_file = make_unique<ofstream>(out_nw_opt->value(), ios_base::out | ios_base::trunc);
+            if (!*nw_out_file)
+                throw runtime_error("failed to create "s + out_nw_opt->value());
+            nw_out = nw_out_file.get();
+        }
+        else if (out_nw_opt->is_set())
+            nw_out = &cout;
+
+    } catch (runtime_error &e) {
+        cerr << "Error: " << e.what() << endl;
+        return 1;
+    } catch (exception &e) {
+        cerr << "Internal error: " << e.what() << endl;
+        return 127;
+    }
+
+    try {
+        *out << "#algorithm = " << alg_opt->value();
+        if (sotn_alg)
+            *out << " (temporal)";
+        *out << endl;
+
+        if (psi_opt->is_set())
+            *out << "#psi = " << time_factory.parse(psi_opt->value()) << endl;
+
+        if (rho_opt->is_set())
+            *out << "#rho = " <<  time_factory.parse(rho_opt->value()) << endl;
+
+        if (nw_opt->is_set()) {
+            *out << "#nw = " <<  network_factory.parse(nw_opt->value()) << endl;
+            if (nw_out != out) {
+                *out << "#nw ";
+                output_network_meta(*out, *nw.first);
+            }
+        }
+
+        if (nw_out) {
+            output_adjacencylist(*nw_out, *nw.first);
+            nw_out->flush();
+        }
+
+        *out << "time" << '\t';
+        *out << "epidemic_step" << '\t';
+        *out << "network_step" << '\t';
+        *out << "kind" << '\t';
+        *out << "node" << '\t';
+        *out << "neighbour" << '\t';
+        *out << "total_infected" << '\t';
+        *out << "total_reset" << '\t';
+        *out << "infected" << '\n';
 
         const double tmax          = tmax_opt->is_set() ? tmax_opt->value() : INFINITY;
         size_t epidemic_step       = 0;
@@ -235,15 +288,15 @@ int main(int argc, const char *argv[])
                 throw logic_error("unknown event type");
 
             // Output
-            cout << time << '\t';
-            cout << epidemic_step << '\t';
-            cout << network_step << '\t';
-            cout << kind << '\t';
-            cout << node << '\t';
-            cout << neighbour << '\t';
-            cout << total_infected << '\t';
-            cout << total_reset << '\t';
-            cout << infected << '\n';
+            *out << time << '\t';
+            *out << epidemic_step << '\t';
+            *out << network_step << '\t';
+            *out << kind << '\t';
+            *out << node << '\t';
+            *out << neighbour << '\t';
+            *out << total_infected << '\t';
+            *out << total_reset << '\t';
+            *out << infected << '\n';
         }
 
         return 0;

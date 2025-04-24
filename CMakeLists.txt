@@ -36,6 +36,7 @@ SET(LIB_PCH nextnet/stdafx.h)
 # *** Command-line simulator sources and headers
 set(CLI_SOURCES
     nextnet/main.cpp
+    nextnet/network_io.cpp
     nextnet/factories/factories.cpp
     nextnet/factories/network.cpp
     nextnet/factories/time.cpp
@@ -43,6 +44,7 @@ set(CLI_SOURCES
     nextnet/pstream/pstream.cpp)
 
 set(CLI_HEADERS
+    nextnet/network_io.h
     nextnet/factories/factories.h
     nextnet/factories/network.h
     nextnet/factories/time.h
