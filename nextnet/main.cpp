@@ -58,6 +58,7 @@ int main(int argc, const char *argv[])
     auto tmax_opt          = op.add<Value<double>>("t", "stopping-time", "stop simulation at this time");
     auto seed_opt          = op.add<Value<std::size_t>>("z", "seed", "random number generator seed");
     auto out_nw_opt        = op.add<Value<string>>("g", "output-network", "file to output network to");
+    auto out_emb_opt       = op.add<Switch>("e", "output-embedding", "include spatial embedding in network output");
     auto out_opt           = op.add<Value<string>>("o", "output", "output file");
     auto list_times_opt    = op.add<Switch>("", "list-times", "list distributions");
     auto list_networks_opt = op.add<Switch>("", "list-networks", "list network types");
@@ -229,7 +230,7 @@ int main(int argc, const char *argv[])
         }
 
         if (nw_out) {
-            output_adjacencylist(*nw_out, *nw.first);
+            output_adjacencylist(*nw_out, *nw.first, true, out_emb_opt->is_set());
             nw_out->flush();
         }
 
