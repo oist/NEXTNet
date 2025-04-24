@@ -33,14 +33,14 @@ public:
      * @brief Whether the graph is undirected, i.e. whether for every
      * edge (i,j) there is also an edge (j,i)
      */
-    virtual bool is_undirected();
+    virtual bool is_undirected() = 0;
 	
 	/**
 	 * @brief Whether the graph is simple, i.e. does not contain
 	 * self edges (i,i) or multi-edges (i.e. multipel edges (i,j) for the same
 	 * nodes i and j).
 	 */
-	virtual bool is_simple();
+    virtual bool is_simple() = 0;
 
     /**
      * @brief Return the number of nodes in the graph. If the number is
@@ -65,7 +65,7 @@ public:
  * This avoid having to override is_undirected() in all undirected graphs to
  * return false. Instead, it suffices to additionally inherit from network_is_undirected
  */
-class network_is_undirected
+class network_is_undirected : public virtual network
 {
     virtual bool is_undirected();
 };
@@ -76,7 +76,7 @@ class network_is_undirected
  * This avoid having to override is_simple() in all undirected graphs to
  * return false. Instead, it suffices to additionally inherit from network_is_simple
  */
-class network_is_simple
+class network_is_simple : public virtual network
 {
 	virtual bool is_simple();
 };
@@ -272,7 +272,6 @@ std::vector<int> powerlaw_degree_list(double exponent, int size, rng_t &engine);
  * Based on the algorithm described by Serrano & Boguna, 2005.
  */
 class config_model_clustered_serrano : public virtual adjacencylist_network
-    , public virtual network_is_undirected
 {
 public:
     /**

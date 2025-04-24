@@ -19,6 +19,7 @@
 struct brownian_proximity_network : virtual temporal_network
     , virtual network
     , virtual network_embedding
+    , virtual network_is_undirected
 {
     enum node_state_t {
         NONINFECTED = 0,

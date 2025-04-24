@@ -12,6 +12,7 @@
 namespace {
 struct dynamic_single_edge : virtual network
     , virtual temporal_network
+    , virtual network_is_undirected
 {
     bool edge_present;
     std::vector<absolutetime_t> times;

@@ -101,7 +101,6 @@ protected:
  * @brief A random Erdös-Reyni network
  */
 class weighted_erdos_renyi : public virtual weighted_adjacencylist_network
-    , public virtual network_is_undirected
 {
 public:
     /**

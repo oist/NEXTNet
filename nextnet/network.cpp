@@ -23,16 +23,6 @@ node_t network::nodes()
     return -1;
 }
 
-bool network::is_undirected()
-{
-    return false;
-}
-
-bool network::is_simple()
-{
-	return false;
-}
-
 network::~network()
 {
 	/* Nothing to do, this exits so that the destructor is a virtual function */
