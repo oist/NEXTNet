@@ -60,13 +60,18 @@ void output_adjacencylist(std::ostream& dst, network& nw, bool include_weights, 
         if (include_coords)
             for(std::size_t i = 0; i < d; ++i)
                 dst << (i ? dsep : csep) << "x" << i;
-        dst << csep << "neighbours" << std::endl;
+        dst << csep;
+        if (include_weights)
+            dst << "neighbour:weight";
+        else
+            dst << "neighbour";
+        dst << csep << "..." << std::endl;
     }
 
     // Output nodes
     std::vector<double> x(d, 0.0);
     for(node_t n=0, N=nw.nodes(); n < N; ++n) {
-        dst << n;
+        dst << (n+1);
 
         // Output coordinates
         if (include_coords) {
@@ -82,7 +87,7 @@ void output_adjacencylist(std::ostream& dst, network& nw, bool include_weights, 
             const node_t nn = include_weights ? wnw->neighbour(n, i, &w) : nw.neighbour(n, i);
 
             // Output neighbour
-            dst << csep << nn;
+            dst << csep << (nn+1);
 
             // Output weight
             if (include_weights)
