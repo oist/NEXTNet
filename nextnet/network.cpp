@@ -1215,7 +1215,8 @@ barabasi_albert::barabasi_albert(int size, rng_t &engine, int m)
 //--------IMPORTED NETWORK----------
 //--------------------------------------
 
-empirical_network::empirical_network(std::istream& file, bool undirected, bool simplify, char sep)
+empirical_network::empirical_network(std::istream& file, bool undirected,
+                                     bool simplify, node_t idxbase, char sep)
 	: adjacencylist_network(undirected, true)
 {
 	// Read adjacencylist / edgelist file and create edge multi-set
@@ -1223,36 +1224,50 @@ empirical_network::empirical_network(std::istream& file, bool undirected, bool s
 	std::unordered_map<edge_t, std::size_t, pair_hash> edges = {};
     std::string line;
     node_t size = 0;
+    std::size_t l = 0;
     while (std::getline(file, line)) {
+        // Skip empty and commented lined
+        if ((line.size() == 0) || (line[0] == '#'))
+            continue;
+        
+        // Read line from string buffer
 		std::stringstream is(line);
+        ++l;
 		
 		// Read source node
     	node_t n1; 
-    	if (!(is >> n1) || (n1 < 0))
+    	if (!(is >> n1)) {
+            // Skip first non-commented line if it looks like a header
+            if (l == 1) continue;
     		throw std::runtime_error("invalid line: " + line);
+        }
     	
-        // Keep track of size
+        // Translate to zero-based node indices and keep track of size
+        if (n1 < idxbase)
+			throw std::runtime_error("invalid node " + std::to_string(n1));
+        n1 -= idxbase;
         size = std::max(size, n1 + 1);
         
-    	// Read list of outgoing edges separated by ,
+    	// Read list of outgoing edges separated by csep
     	while (true) {
-    		// Consume sep unless it's whitespace
+    		// Consume sep unless it's whitespace, break if end of line
     		char c = sep;
 			if (!sep_is_space && !(is >> c)) break;
 			if (sep != c)
 				throw std::runtime_error("invalid line: " + line);
     		
-    		// Read next target node
+    		// Read next target node, break if end of line
     		node_t n2;
-    		if (!(is >> n2) || (n2 < 0)) {
-    			// No node or id < 0. No node is allowed if sep is whitespace
-    			if (!sep_is_space || (n2 < 0))
-					throw std::runtime_error("invalid line: " + line);
-				else
-					 break;
+    		if (!(is >> n2)) {
+                if (sep_is_space) break;
+                // There was a non-ws csep but no following node, complain
+                throw std::runtime_error("invalid line: " + line);
     		}
-    		
-            // Keep track of size
+            
+            // Translate to zero-based node indices and keep track of size
+            if (n2 < idxbase)
+				throw std::runtime_error("invalid node " + std::to_string(n2));
+            n2 -= idxbase;
             size = std::max(size, n2 + 1);
             
 			// Collect edge
@@ -1262,8 +1277,7 @@ empirical_network::empirical_network(std::istream& file, bool undirected, bool s
 			++edges[e];
     	}
     	
-    	// Must read whole line
-    	is >> std::ws;
+    	// Must have read whole line
     	if (!is.eof())
     		throw std::runtime_error("invalid line: " + line);
 	}

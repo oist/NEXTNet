@@ -527,15 +527,31 @@ typedef cubic_lattice<8> cubic_lattice_8d;
 //--------------------------------------
 //--------IMPORTED NETWORK----------
 //--------------------------------------
+
 /**
- * @brief Network generated from an adjacency list
+ * @brief Weighted empirical network read from a file
  *
- * the file must be an adjacency list, i.e., a list of lists;
+ * The file must contain lines of the form
+ *
+ * <nodeA> <csep> <nodeB1> <csep> <nodeB2> ...
+ *
+ * where <csep> is ' ' by default. Each such line defines edges A -> B1,
+ * A -> B2, ... with weights w1, w2, ... Multiple lines for the same node A
+ * are allowed and the edges are merged; this class than thus read
+ * adjacencylist and well as edgelist files. Lines starting with '#' are
+ * ignored.
+ *
+ * If undirected is true, the network is assumed to be undirected, i.e.
+ * for every edge (a,b) the reverse edge (b,a) is also added. If
+ * simplify is true, self-edges and multi-edges are removed.
+ * 
  */
 class empirical_network : public virtual adjacencylist_network
 {
 public:
-    empirical_network(std::istream& file, bool undirected = true, bool simplify = false, char sep = ' ');
+    empirical_network(
+        std::istream& file, bool undirected = true, bool simplify = false,
+        node_t idxbase = 1, char sep = ' ');
 };
 
 //---------------------------------------------------
