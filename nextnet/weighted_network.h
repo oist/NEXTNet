@@ -78,10 +78,17 @@ public:
 
 	virtual index_t outdegree(node_t node) override;
 
+    weighted_adjacencylist_network(std::vector<std::vector<std::pair<node_t, double>>>&& al,
+                                   bool undirected_, bool simple_)
+        :adjacencylist(std::move(al))
+        ,undirected(undirected_)
+        ,simple(simple_)
+    {}
+
 protected:
 	weighted_adjacencylist_network()
 	{}
-
+        
 	weighted_adjacencylist_network(bool undirected_, bool simple_)
 		:undirected(undirected_), simple(simple_)
 	{}

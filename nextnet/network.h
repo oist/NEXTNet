@@ -136,10 +136,17 @@ public:
 
     virtual index_t outdegree(node_t node) override;
 
+    adjacencylist_network(std::vector<std::vector<node_t>>&& al,
+                          bool undirected_, bool simple_)
+        :adjacencylist(std::move(al))
+        ,undirected(undirected_)
+        ,simple(simple_)
+    {}
+
 protected:
 	adjacencylist_network()
 	{}
-	
+	    
 	adjacencylist_network(bool undirected_, bool simple_)
 		:undirected(undirected_), simple(simple_)
 	{}
