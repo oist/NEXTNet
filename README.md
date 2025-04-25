@@ -1,14 +1,12 @@
 # Overview
 
-The *NEXT-NET* C++ library contains efficient algorithms for simulating epidemics with time-varying infectiousness (so-called "non-Markovian" epidemics) on complex networks. The main algorithm provided by *NEXT-NET* is based on the next reaction method and scales to networks with millions of nodes, see our [preprint](https://arxiv.org/abs/2412.07095).
+The *NEXT-NET* (*N*ext-reaction-based *E*pidemics e*X*tended to *T*emporal *Net*works) C++ library contains efficient algorithms for simulating epidemics with time-varying infectiousness (so-called "non-Markovian" epidemics) on complex networks. The main algorithm provided by *NEXT-NET* is based on the next reaction method and scales to networks with millions of nodes, see our [preprint](https://arxiv.org/abs/2412.07095).
 
-The recommended way of using *NEXT-NET* is through our wrappers for Python and R, which are *nextnet* (https://github.com/oist/NEXTNetPy) for Python and *NEXTNetR* (https://github.com/oist/NEXTNetR) for R. *See these repositories for how to install and use those wrappers.*
-
-However, for quick experiments the C++ library includes a simply command-line interface for running simulations on a range of networks.
+The recommended way of using *NEXT-NET* is through our wrappers [*NEXTNetR*](https://oist.github.io/NEXTNetR) and [*nextnet*](https://github.com/oist/NEXTNetPy) for R and Python. Currently, the R wrapper provides the most complete access to the features of the *NEXT-NET* library. For quick experiments the C++ library also includes a simply command-line interface for running simulations on a range of networks.
 
 # Synopsis
 
-To download and install the *NEXT-NET* command-line tool do
+To download and install the *NEXT-NET* command-line interface do
 ```
 git clone --recurse-submodules https://github.com/oist/NEXTNet.git
 cd NEXTNet
@@ -60,7 +58,7 @@ networks, transmission time distributions, and simulation algorithms.
 * *Configuration mode*l. Random networks with given degree distributions
 * *Clustered configuration model*. Random networks with given degree distribution and clustering coefficients.
 * *Lattice*. Regular spatial networks.
-* *Empirical networks*. Networks defined by an adjacency list, i.e. a list of neighbours of each node.
+* *Empirical networks*. Networks defined by an adjacency list, i.e. a list of neighbours of each node. See (*NEXTNet-EmpiricalNetworks*)[https://github.com/oist/NEXTNet-EmpiricalNetworks] for a list of empirical networks that can directly be loaded into *NEXTNet*.
 
 ### Temporal networks
 
@@ -86,8 +84,3 @@ Time distributions define (a) the time it takes from the infection of a node unt
 * [*Next reaction method*](https://doi.org/10.1063/1.2799998). The most efficient algorithm available, in which the runtime to find the next infection depends only weakly on the number of infected nodes. Scales to networks with millions of nodes. 
 * [*REGIR* (**Re**jection **Gi**llespie algorithm for non-Markovian **R**eactions *)](https://arxiv.org/abs/2212.05059). Based on a similar approximation as *nGMA*, but removes the quadratic growth of the time it takes to find the next infection. Typically slower than the *next reaction method* but scales similarly with network size.
 * [*nMGA* (**n**on-**M**arkovian **G**illespie **A**lgorithm)](https://doi.org/10.1103/PhysRevE.90.042108). An approximate algorithms which works well on small networks. However, the runtime to find the next infection grows quadratically with the number of infected nodes, which limits the scalability to large networks.
-
-# Examples
-
-TBD
-
