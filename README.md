@@ -1,6 +1,6 @@
 # Overview
 
-The *NEXT-NET* (*N*ext-reaction-based *E*pidemics e*X*tended to *T*emporal *Net*works) C++ library contains efficient algorithms for simulating epidemics with time-varying infectiousness (so-called "non-Markovian" epidemics) on complex networks. The main algorithm provided by *NEXT-NET* is based on the next reaction method and scales to networks with millions of nodes, see our [preprint](https://arxiv.org/abs/2412.07095).
+The *NEXT-NET* (**N**ext-reaction-based **E**pidemics e**X**tended to **T**emporal **Net**works) C++ library contains efficient algorithms for simulating epidemics with time-varying infectiousness (so-called "non-Markovian" epidemics) on complex networks. The main algorithm provided by *NEXT-NET* is based on the next reaction method and scales to networks with millions of nodes, see our [preprint](https://arxiv.org/abs/2412.07095).
 
 The recommended way of using *NEXT-NET* is through our wrappers [*NEXTNetR*](https://oist.github.io/NEXTNetR) and [*nextnet*](https://github.com/oist/NEXTNetPy) for R and Python. Currently, the R wrapper provides the most complete access to the features of the *NEXT-NET* library. For quick experiments the C++ library also includes a simply command-line interface for running simulations on a range of networks.
 
