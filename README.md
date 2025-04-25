@@ -58,7 +58,7 @@ networks, transmission time distributions, and simulation algorithms.
 * *Configuration mode*l. Random networks with given degree distributions
 * *Clustered configuration model*. Random networks with given degree distribution and clustering coefficients.
 * *Lattice*. Regular spatial networks.
-* *Empirical networks*. Networks defined by an adjacency list, i.e. a list of neighbours of each node. See (*NEXTNet-EmpiricalNetworks*)[https://github.com/oist/NEXTNet-EmpiricalNetworks] for a list of empirical networks that can directly be loaded into *NEXTNet*.
+* *Empirical networks*. Networks defined by an adjacency list, i.e. a list of neighbours of each node. See [*NEXTNet-EmpiricalNetworks*](https://github.com/oist/NEXTNet-EmpiricalNetworks) for a list of empirical networks that can directly be loaded into *NEXTNet*.
 
 ### Temporal networks
 
