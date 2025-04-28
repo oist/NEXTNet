@@ -57,7 +57,7 @@ public:
      * If faster or  numerically more stable algorithms
      * exists, subclasses should override this method.
      */
-    virtual double density(interval_t tau, double m) const;
+    virtual double density(interval_t tau, interval_t t, double m) const;
 
     /**
      * Hazard rate lambda(tau) = psi(tau) / Psi(tau).

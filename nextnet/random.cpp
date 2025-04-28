@@ -43,9 +43,18 @@ interval_t transmission_time::sample(rng_t &rng, interval_t t, double m) const
     return this->survivalquantile(u, t, m);
 }
 
-double transmission_time::density(interval_t tau, double m) const
+double transmission_time::density(interval_t tau, interval_t t, double m) const
 {
-    return m * this->hazardrate(tau) * this->survivalprobability(tau, 0, m);
+    if ((t < 0) || !std::isfinite(t))
+        throw std::range_error("condition t must be non-negative and finite");
+    if (m < 0.0)
+        throw std::range_error("m must be positive");
+    // By default, compute the conditional density from the hazard rate
+    // psi(tau | t, m) = m * l(t + tau) Psi(tau | t, m).
+    // TODO: This is slighly convoluted since the hazard rate is by default
+    // defined in terms of psi(tau) and Psi(tau), should we inline this
+    // definition here?
+    return m * this->hazardrate(t + tau) * this->survivalprobability(tau, t, m);
 }
 
 double transmission_time::hazardrate(interval_t tau) const
