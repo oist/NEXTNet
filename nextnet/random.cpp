@@ -38,7 +38,7 @@ interval_t transmission_time::sample(rng_t &rng, interval_t t, double m) const
         throw std::range_error("m must be positive");
     if (m == 0.0)
         return INFINITY;
-    // sample by inverting the survival function
+    // By default, sample using the quantile function
     const double u = std::uniform_real_distribution<double>(0, 1)(rng);
     return this->survivalquantile(u, t, m);
 }
@@ -50,6 +50,8 @@ double transmission_time::density(interval_t tau, double m) const
 
 double transmission_time::hazardrate(interval_t tau) const
 {
+    // By default, compute the hazard rate from psi and Psi as
+    // lambda(tau) = psi(tau) / Psi(tau).
     return this->density(tau) / this->survivalprobability(tau);
 }
 
