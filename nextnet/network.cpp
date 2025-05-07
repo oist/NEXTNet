@@ -1419,7 +1419,7 @@ std::vector<std::vector<double>> reproduction_matrix(
     if (out_k2) *out_k2 = k2;
     if (out_k3) *out_k3 = k3;
     if (out_m1) *out_m1 = m1;
-    if (out_m2) *out_m1 = m2;
+    if (out_m2) *out_m2 = m2;
     if (out_R0) *out_R0 = R0;
     if (out_R_r) *out_R_r = R_r;
     if (out_R_pert) *out_R_pert = R_pert;
