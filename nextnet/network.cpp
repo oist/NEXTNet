@@ -1316,7 +1316,7 @@ empirical_network::empirical_network(std::istream& file, bool undirected,
 
 std::vector<std::vector<double>> reproduction_matrix(network &nw, int clustering,
                                                      double *out_r, double *out_c, double *out_k1, double *out_k2,
-                                                     double *out_k3, double *out_m_bar,
+                                                     double *out_k3, double *out_m1, double* out_m2,
                                                      double *out_R0, double *out_R_r, double *out_R_pert)
 {
     const int SIZE = (int)nw.nodes();
@@ -1392,12 +1392,12 @@ std::vector<std::vector<double>> reproduction_matrix(network &nw, int clustering
 
     // Mkk
     std::vector<std::vector<double>> Mkk(kmax + 1, std::vector<double>(kmax + 1, 0));
-    double m_bar  = 0;
-    double m2_bar = 0;
+    double m1  = 0;
+    double m2 = 0;
     for (int k = 2; k <= kmax; k++) {
         const int i = pos[k];
-        m_bar += (double)T1[i] / ((double)SIZE * k1);
-        m2_bar += (double)(k - 1) * T1[i] / (SIZE * k1);
+        m1 += (double)T1[i] / ((double)SIZE * k1);
+        m2 += (double)(k - 1) * T1[i] / (SIZE * k1);
 
         for (int q = 2; q <= kmax; q++) {
             const int j = pos[q];
@@ -1412,9 +1412,9 @@ std::vector<std::vector<double>> reproduction_matrix(network &nw, int clustering
     }
 
     const double r        = assortativity(nw);
-    const double R_unpert = (double)k2 / k1 - 1 - m_bar;
+    const double R_unpert = (double)k2 / k1 - 1 - m1;
     const double R_r      = (double)(1 - r) * (k2 / k1 - 1) + r * ((k3 - k2) / (k2 - k1) - 1);
-    const double R_pert   = R_unpert * (1 - r) + r * ((k3 - 2 * k2 + k1) / (k1)-2 * m2_bar + m_bar * m_bar) / R_unpert;
+    const double R_pert   = R_unpert * (1 - r) + r * ((k3 - 2 * k2 + k1) / (k1)-2 * m2 + m1 * m1) / R_unpert;
     const double R0       = k2 / k1 - 1;
 
     if (out_r) *out_r = r;
@@ -1422,7 +1422,8 @@ std::vector<std::vector<double>> reproduction_matrix(network &nw, int clustering
     if (out_k1) *out_k1 = k1;
     if (out_k2) *out_k2 = k2;
     if (out_k3) *out_k3 = k3;
-    if (out_m_bar) *out_m_bar = m_bar;
+    if (out_m1) *out_m1 = m1;
+    if (out_m2) *out_m1 = m2;
     if (out_R0) *out_R0 = R0;
     if (out_R_r) *out_R_r = R_r;
     if (out_R_pert) *out_R_pert = R_pert;

@@ -567,7 +567,7 @@ public:
 
 std::vector<std::vector<double>> reproduction_matrix(network &nw, int clustering,
                                                      double *out_r, double *out_c, double *out_k1, double *out_k2,
-                                                     double *out_k3, double *out_m_bar,
+                                                     double *out_k3, double *out_m1, double* out_m2,
                                                      double *out_R0, double *out_R_r, double *R_pert);
 
 //------------------------------------------------
