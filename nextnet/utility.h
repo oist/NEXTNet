@@ -250,7 +250,7 @@ public:
         const_iterator operator++(int)
         {
             const_iterator r = *this;
-            *this ++;
+            this->operator++();
             return r;
         }
 
@@ -266,7 +266,7 @@ public:
         const_iterator operator--(int)
         {
             const_iterator r = *this;
-            *this --;
+            this->operator--();
             return r;
         }
 
