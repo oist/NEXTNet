@@ -37,6 +37,9 @@
 		F91C25E72911401C00FFAE9C /* libboost_filesystem.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F91C25DE29113CA800FFAE9C /* libboost_filesystem.a */; };
 		F921EC872952A7BF00667339 /* algorithm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F921EC862952A7BF00667339 /* algorithm.cpp */; };
 		F921EC882952A7BF00667339 /* algorithm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F921EC862952A7BF00667339 /* algorithm.cpp */; };
+		F94AF7122DCBA00D00620B0E /* network_io.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F94AF7112DCBA00D00620B0E /* network_io.cpp */; };
+		F94AF7132DCBA00D00620B0E /* network_io.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F94AF7112DCBA00D00620B0E /* network_io.cpp */; };
+		F94AF7172DCBA08D00620B0E /* pstream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F94AF7152DCBA08D00620B0E /* pstream.cpp */; };
 		F992992C2910E2B3001432FD /* plot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F99299272910E2B3001432FD /* plot.cpp */; };
 		F9A08B1E29F7B28200CF3432 /* brownian_proximity_network.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F9C0D33429F6956400A99D46 /* brownian_proximity_network.cpp */; };
 		F9C0D33629F6956400A99D46 /* brownian_proximity_network.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F9C0D33429F6956400A99D46 /* brownian_proximity_network.cpp */; };
@@ -111,6 +114,10 @@
 		F92EBA302A1CAE3300D98D09 /* regir.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = regir.cpp; sourceTree = "<group>"; };
 		F933EDF629D3FD1400C39FE8 /* temporal_nextreaction.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = temporal_nextreaction.cpp; sourceTree = "<group>"; };
 		F946A5E0281255F2000668F9 /* random.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = random.cpp; sourceTree = "<group>"; };
+		F94AF7102DCBA00D00620B0E /* network_io.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = network_io.h; sourceTree = "<group>"; };
+		F94AF7112DCBA00D00620B0E /* network_io.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = network_io.cpp; sourceTree = "<group>"; };
+		F94AF7142DCBA08D00620B0E /* pstream.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pstream.h; sourceTree = "<group>"; };
+		F94AF7152DCBA08D00620B0E /* pstream.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = pstream.cpp; sourceTree = "<group>"; };
 		F95E34152925088200DBCE94 /* prio_queue.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = prio_queue.hpp; sourceTree = "<group>"; };
 		F9906FA22CC2264F00ADC766 /* statistics.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = statistics.h; sourceTree = "<group>"; };
 		F99299252910E2B3001432FD /* simulate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = simulate.h; sourceTree = "<group>"; };
@@ -211,6 +218,8 @@
 				984A0CAE27C0DF81004A0A96 /* random.h */,
 				982A07D727D5BED900B4772A /* network.cpp */,
 				982A07D827D5BED900B4772A /* network.h */,
+				F94AF7112DCBA00D00620B0E /* network_io.cpp */,
+				F94AF7102DCBA00D00620B0E /* network_io.h */,
 				F91AFF762D0B3F8A00D525A7 /* weighted_network.cpp */,
 				F91AFF772D0B3F8A00D525A7 /* weighted_network.h */,
 				F9CFD988299B55A90078FD70 /* temporal_network.cpp */,
@@ -221,6 +230,7 @@
 				F91C06C62DA53E92007517F6 /* factories */,
 				984A0C9F27C0DE5C004A0A96 /* main.cpp */,
 				F99D7A9927E21CC000200C18 /* tests */,
+				F94AF7162DCBA08D00620B0E /* pstream */,
 				F99D7A9727E21CC000200C18 /* catch */,
 			);
 			path = nextnet;
@@ -239,6 +249,15 @@
 				F91C06CF2DA54115007517F6 /* time.cpp */,
 			);
 			path = factories;
+			sourceTree = "<group>";
+		};
+		F94AF7162DCBA08D00620B0E /* pstream */ = {
+			isa = PBXGroup;
+			children = (
+				F94AF7142DCBA08D00620B0E /* pstream.h */,
+				F94AF7152DCBA08D00620B0E /* pstream.cpp */,
+			);
+			path = pstream;
 			sourceTree = "<group>";
 		};
 		F95E340E2925088200DBCE94 /* ext */ = {
@@ -426,7 +445,9 @@
 				F91C06D42DA5455A007517F6 /* algorithm.cpp in Sources */,
 				F91C06D52DA5455A007517F6 /* main.cpp in Sources */,
 				F91C06D62DA5455A007517F6 /* time.cpp in Sources */,
+				F94AF7132DCBA00D00620B0E /* network_io.cpp in Sources */,
 				F91AFF782D0B3F8A00D525A7 /* weighted_network.cpp in Sources */,
+				F94AF7172DCBA08D00620B0E /* pstream.cpp in Sources */,
 				984A0CAF27C0DF81004A0A96 /* random.cpp in Sources */,
 				982A07D927D5BED900B4772A /* network.cpp in Sources */,
 				98B96F7C28111BB800A78600 /* nMGA.cpp in Sources */,
@@ -450,6 +471,7 @@
 				F921EC882952A7BF00667339 /* algorithm.cpp in Sources */,
 				F9E1264B291CB5F100C9A221 /* NextReactionMeanField.cpp in Sources */,
 				F91AFF812D0B4AAE00D525A7 /* network.cpp in Sources */,
+				F94AF7122DCBA00D00620B0E /* network_io.cpp in Sources */,
 				F992992C2910E2B3001432FD /* plot.cpp in Sources */,
 				F9CFD98B299B55A90078FD70 /* temporal_network.cpp in Sources */,
 				F9A08B1E29F7B28200CF3432 /* brownian_proximity_network.cpp in Sources */,
