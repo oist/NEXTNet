@@ -1314,10 +1314,10 @@ empirical_network::empirical_network(std::istream& file, bool undirected,
 //-----Compute the reproduction_matrix matrix --------
 //---------------------------------------------------
 
-std::vector<std::vector<double>> reproduction_matrix(network &nw, int clustering,
-                                                     double *out_r, double *out_c, double *out_k1, double *out_k2,
-                                                     double *out_k3, double *out_m1, double* out_m2,
-                                                     double *out_R0, double *out_R_r, double *out_R_pert)
+std::vector<std::vector<double>> reproduction_matrix(
+	 network &nw, double *out_r, double *out_c, double *out_k1, double *out_k2,
+	 double *out_k3, double *out_m1, double* out_m2,
+	 double *out_R0, double *out_R_r, double *out_R_pert)
 {
     const int SIZE = (int)nw.nodes();
 
@@ -1361,29 +1361,27 @@ std::vector<std::vector<double>> reproduction_matrix(network &nw, int clustering
             const int k1         = nw.outdegree(neigh_1);
             const int i1         = pos[k1];
             ekk[i0][i1]++;
-            if (clustering >= 3) {
-                for (index_t neigh_2_i = 0; neigh_2_i < k1; neigh_2_i++) {
-                    const node_t neigh_2 = nw.neighbour(node, neigh_2_i);
-                    if (neigh_2 == node)
-                        continue;
-                    const int k2            = nw.outdegree(neigh_2);
-                    const node_t small_node = (k0 <= k2) ? node : neigh_2;
-                    const node_t large_node = (k0 <= k2) ? neigh_2 : node;
+			for (index_t neigh_2_i = 0; neigh_2_i < k1; neigh_2_i++) {
+				const node_t neigh_2 = nw.neighbour(neigh_1, neigh_2_i);
+				if (neigh_2 == node)
+					continue;
+				const int k2            = nw.outdegree(neigh_2);
+				const int ksn = std::min(k0, k2);
+				const node_t small_node = (ksn == k0) ? node : neigh_2;
+				const node_t large_node = (ksn == k0) ? neigh_2 : node;
 
-                    // verify if edge exists between node and neighbour n°2
-                    const int ksn = std::min(k0, k2);
-                    bool edge_02  = false;
-                    for (index_t neigh_sn_i = 0; (neigh_sn_i < ksn) && !edge_02; neigh_sn_i++)
-                        edge_02 = edge_02 || (nw.neighbour(small_node, neigh_sn_i) == large_node);
+				// verify if edge exists between node and neighbour n°2
+				bool edge_02  = false;
+				for (index_t neigh_sn_i = 0; (neigh_sn_i < ksn) && !edge_02; neigh_sn_i++)
+					edge_02 = edge_02 || (nw.neighbour(small_node, neigh_sn_i) == large_node);
 
-                    // update triangle count
-                    if (edge_02) {
-                        T2[i0][i1]++;
-                        T1[i0]++;
-                        c_node++;
-                    }
-                }
-            }
+				// update triangle count
+				if (edge_02) {
+					T2[i0][i1]++;
+					T1[i0]++;
+					c_node++;
+				}
+			}
         }
         if (k0 > 1) {
             c += c_node / ((double)k0 * (k0 - 1) * SIZE);
@@ -1405,9 +1403,7 @@ std::vector<std::vector<double>> reproduction_matrix(network &nw, int clustering
                 continue;
 
             Mkk[i][j] = ekk[i][j] * ((double)q - 1) / ((double)q * pk[j]);
-            if (clustering >= 3) {
-                Mkk[i][j] -= T2[i][j] / ((double)q * pk[j]);
-            }
+            Mkk[i][j] -= T2[i][j] / ((double)q * pk[j]);
         }
     }
 
