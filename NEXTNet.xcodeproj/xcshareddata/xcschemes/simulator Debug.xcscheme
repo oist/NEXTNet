@@ -72,7 +72,7 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "-n &quot;fullyconnected(10)&quot;"
+            argument = "-n &quot;barabasi_albert(100000, 10)&quot;"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
