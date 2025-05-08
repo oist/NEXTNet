@@ -42,12 +42,14 @@
 #    pragma clang diagnostic push
 #    pragma clang diagnostic ignored "-Weverything"
 #    pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#    pragma clang diagnostic ignored "-Wno-pedantic"
 #elif defined(__GNUC__) || defined(__GNUG__)
 #    pragma GCC diagnostic push
 #    pragma GCC diagnostic ignored "-Wall"
 #    pragma GCC diagnostic ignored "-Wsign-compare"
 #    pragma GCC diagnostic ignored "-Wparentheses"
 #    pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#    pragma GCC diagnostic ignored "-Wno-pedantic"
 #endif
 
 #include <boost/config.hpp>
