@@ -108,8 +108,8 @@ void simulate_next_reaction::notify_infected_contact(network_event_t event, rng_
 
     /* Computing tranmission probability */
     assert(event.time >= source_state->second.infection_time);
-    const double p = psi.hazardrate(event.time - source_state->second.infection_time) * event.weight;
-    if (!std::bernoulli_distribution(p)(engine))
+    const double p_noinf = exp(-psi.hazardrate(event.time - source_state->second.infection_time) * event.weight);
+    if (std::bernoulli_distribution(p_noinf)(engine))
         return;
 
     /* Queue infection, this will be the next event that occurs (see assert above) */
