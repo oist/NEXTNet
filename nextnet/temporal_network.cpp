@@ -262,10 +262,8 @@ absolutetime_t next_reaction_network::next(rng_t &engine, absolutetime_t maxtime
 
         /* Fetch next event, return nothing if past max_time */
         const queue_entry &top = top_event();
-		if (top.time > maxtime) {
-			next_time = INFINITY;
-			break;
-		}
+		if (top.time > maxtime)
+			return INFINITY;
 
         /* Check whether step() would skip the event or not */
         if (const network_event_t *nwev = std::get_if<network_event_t>(&top.event)) {
