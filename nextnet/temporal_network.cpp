@@ -484,6 +484,9 @@ temporal_erdos_renyi::temporal_erdos_renyi(int size, double avg_degree, double t
     , beta((1.0 - edge_probability) / timescale)
     , edges_present(0)
 {
+	if (size > (UINTMAX_MAX >> 1))
+		throw std::range_error(std::string("maximal number of nodes is ") + std::to_string(UINTMAX_MAX >> 1));
+	
     /* Initial degree-weights node distribution and present/absent edge counters */
     for (node_t i = 0; (std::size_t)i < this->adjacencylist.size(); ++i) {
         const unsigned k = (unsigned)this->adjacencylist[i].size();
@@ -492,7 +495,7 @@ temporal_erdos_renyi::temporal_erdos_renyi(int size, double avg_degree, double t
     }
     assert(edges_present % 2 == 0);
     edges_present /= 2;
-    edges_absent = size * (size - 1) / 2 - edges_present;
+    edges_absent = std::uintmax_t(size) * (size - 1) / 2 - edges_present;
 }
 
 bool temporal_erdos_renyi::is_simple()

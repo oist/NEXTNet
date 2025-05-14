@@ -11,6 +11,7 @@
 
 #include <iostream>
 #include <cstdlib>
+#include <cstdint>
 #include <cmath>
 #include <memory>
 #include <vector>

@@ -358,8 +358,8 @@ struct temporal_erdos_renyi : public virtual temporal_network
     /* Unreported event for the reverse edge of the last edge event reported  */
     std::optional<network_event_t> reverse_edge_event;
 
-    unsigned int edges_absent;
-    unsigned int edges_present;
+    std::uintmax_t edges_absent;
+    std::uintmax_t edges_present;
 
     /* Degree-weighted node distribution */
     dyndist::vector_distribution<unsigned> weighted_nodes;
