@@ -399,6 +399,43 @@ public:
 
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
+/*-----------TRANSMISSION TIME: INFECTIOUSNESS -------*/
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+
+class transmission_time_infectiousness : public transmission_time
+{
+public:
+    transmission_time_infectiousness(const std::vector<double>& tau,
+                                     const std::vector<double>& lambda);
+
+public:
+    std::map<double, double> lambda;
+    std::map<double, double> lambda_cumulative;
+    std::map<double, double> lambda_cumulative_inverse;
+    double lambda_max;
+    double lambda_extrapolate;
+
+    double interpolate(std::map<double, double> table, double x, double extrapolation_slope) const;
+
+    virtual double density(interval_t tau) const override;
+
+    virtual double hazardrate(interval_t) const override;
+
+    double totalhazard(interval_t) const;
+
+    double totalhazard_inverse(interval_t) const;
+
+    virtual double hazardbound(interval_t) const override;
+
+    virtual double survivalprobability(interval_t tau) const override;
+
+    virtual double survivalquantile(interval_t tau) const override;
+};
+
+
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
 /*-----------SUB RNGS---------------------------------*/
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/

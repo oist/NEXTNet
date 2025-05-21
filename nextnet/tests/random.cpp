@@ -58,6 +58,58 @@ TEST_CASE("Polynomial rate distribution", "[random]")
     //    transmission_time_polynomial_rate({1.0, 2.0, 3.0});
 }
 
+TEST_CASE("Infectiousness distribution", "[random]")
+{
+    std::mt19937 engine;
+
+    const std::size_t N = 10000;
+    transmission_time_infectiousness d{ {1.0, 1.5, 3.5, 4.0}, {0.0, 0.5, 0.5, 0.0} };
+    const double pinf_exp = std::exp(-1.25);
+    std::vector<double> s_finite;
+    s_finite.reserve(N);
+    std::size_t n_infinite = 0;
+    for (std::size_t i = 0; i < N; ++i) {
+        const double s = d.sample(engine, 0, 1);
+        if (std::isfinite(s))
+            s_finite.push_back(s);
+        else
+            ++n_infinite;
+    }
+
+    for(double tau = 0; tau <= 5.0; tau += 0.1) {
+        double lambda, Psi;
+        if (tau <= 1.0) {
+            lambda = 0.0;
+            Psi = 1.0;
+        }
+        else if (tau <= 1.5) {
+            lambda = tau - 1.0;
+            Psi = std::exp(-lambda*lambda/2.0);
+        }
+        else if (tau <= 3.5) {
+            lambda = 0.5;
+            Psi = std::exp(-(0.125 + (tau - 1.5)*0.5));
+        }
+        else if (tau <= 4.0) {
+            lambda = 0.5 - (tau - 3.5);
+            Psi = std::exp(-(0.125 + 1 + (0.25 - lambda/2.0)*(tau - 3.5)));
+        }
+        else {
+            lambda = 0.0;
+            Psi = pinf_exp;
+        }
+        REQUIRE(d.hazardrate(tau) == lambda);
+        REQUIRE(d.survivalprobability(tau) == Psi);
+        //REQUIRE(d.survivalquantile(d.survivalprobability(tau)) - tau);
+    }
+
+    const double p_isinf = ztest((double)n_infinite/N, sqrt(pinf_exp*(1 - pinf_exp)) / sqrt(N), pinf_exp);
+    REQUIRE(p_isinf >= 0.01);
+
+    const double p_ks = kstest(s_finite, [&d, pinf_exp](double x) { return (1.0 - d.survivalprobability(x)) / (1 - pinf_exp); });
+    REQUIRE(p_ks >= 0.01);
+}
+
 TEST_CASE("Lognormal distribution incremental sampling (pinf=0)", "[random]")
 {
     std::mt19937 engine;

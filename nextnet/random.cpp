@@ -263,6 +263,124 @@ double transmission_time_polynomial_rate::survivalprobability(interval_t tau) co
 
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
+/*-----------TRANSMISSION TIME: INFECTIOUSNESS -------*/
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+
+transmission_time_infectiousness::transmission_time_infectiousness(const std::vector<double>& taus, const std::vector<double>& lambdas)
+{
+    if ((taus.size() != lambdas.size()) || (taus.size() == 0))
+        throw std::runtime_error("size of tau and lambda vectors must agree and be non-empty");
+
+    /* Fill ordered map representing lambda(tau) */
+    lambda_max = 0.0;
+    lambda_extrapolate = lambdas.back();
+    for(std::size_t i=0,n=taus.size(); i < n; ++i) {
+        lambda.emplace(taus[i], lambdas[i]);
+        lambda_max = std::max(lambda_max, lambdas[i]);
+    }
+
+    /* Fill ordered map representing Lambda(tau) = int 0 to tau lambda(tau') dtau' */
+    double lambda_cum = 0;
+    double tau_last = 0;
+    double lambda_last = 0;
+    for(const auto& i: lambda) {
+        const double tau_i = i.first;
+        const double lambda_i = i.second;
+
+        const double dtau = (tau_i - tau_last);
+        assert(dtau >= 0.0);
+        if (dtau == 0.0)
+            throw std::runtime_error("tau vector must not contain duplicate values");
+
+        lambda_cum += dtau * (lambda_i + lambda_last) / 2.0;
+        lambda_cumulative.emplace(tau_i, lambda_cum);
+        lambda_cumulative_inverse.emplace(lambda_cum, tau_i);
+
+        tau_last = tau_i;
+        lambda_last = lambda_i;
+    }
+}
+
+double transmission_time_infectiousness::interpolate(std::map<double, double> table_xy, double x, double extrapolation_slope) const
+{
+    /* Find i,j with x_i <= x < x_j.
+     * First, find first x_j > x. If no such element exits, extrapolate.
+     * Otherwise, set i = j-1 or x_i = 0 if x_j is the first element.
+     * Finally, compute y as weighted avg,
+     * y(x) = (y_i * (x - x_i) + y_j * (x_j - x)) / (x_j - x_i).
+     */
+    const auto j = table_xy.upper_bound(x);
+    const bool i_valid = (j != table_xy.begin());
+    auto i = j; if (i_valid) --i;
+    const double x_i = i_valid ? i->first : 0;
+    const double y_i = i_valid ? i->second : 0;
+
+    if (j != table_xy.end()) {
+        /* interpolate */
+        const double x_j = j->first;
+        const double y_j = j->second;
+        return (y_i * (x_j - x) + y_j * (x - x_i)) / (x_j - x_i);
+    } else {
+        /* extrapolate */
+        return y_i + (x - x_i) * extrapolation_slope;
+    }
+}
+
+
+double transmission_time_infectiousness::density(interval_t tau) const
+{
+    if (tau < 0)
+        return 0.0;
+    return hazardrate(tau) * std::exp(-totalhazard(tau));
+}
+
+double transmission_time_infectiousness::hazardrate(interval_t tau) const
+{
+    if (tau <= 0)
+        return 0.0;
+
+    return interpolate(lambda, tau, 0);
+}
+
+double transmission_time_infectiousness::totalhazard(interval_t tau) const
+{
+    if (tau <= 0)
+        return 0.0;
+    return interpolate(lambda_cumulative, tau, lambda_extrapolate);
+}
+
+double transmission_time_infectiousness::totalhazard_inverse(interval_t I) const
+{
+    if (I < 0)
+        return NAN;
+    return interpolate(lambda_cumulative_inverse, I, 1/lambda_extrapolate);
+}
+
+
+double transmission_time_infectiousness::hazardbound(interval_t) const
+{
+    return lambda_max;
+}
+
+double transmission_time_infectiousness::survivalprobability(interval_t tau) const
+{
+    if (tau < 0)
+        return 0.0;
+    return std::exp(-totalhazard(tau));
+}
+
+double transmission_time_infectiousness::survivalquantile(double p) const
+{
+    if ((p < 0) || (p > 1.0))
+        return NAN;
+    if (p == 0.0)
+        return INFINITY;
+    return totalhazard_inverse(-std::log(p));
+}
+
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
 /*-----------SAMPLE_WITHOUT_REPLACEMENT---------------*/
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
