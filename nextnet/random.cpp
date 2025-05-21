@@ -293,9 +293,16 @@ transmission_time_infectiousness::transmission_time_infectiousness(const std::ve
         if (dtau == 0.0)
             throw std::runtime_error("tau vector must not contain duplicate values");
 
+		/* Update Lambda(tau) */
         lambda_cum += dtau * (lambda_i + lambda_last) / 2.0;
 		Lambda_i = lambda_cum;
-        lambda_inverse.emplace(lambda_cum, std::make_pair(tau_i, lambda_i));
+		
+		/* Update Lambda^(-1)(tau).
+		 * NOTE: It is essential that we overwrite existing entries here.
+		 * If lambda(tau) === 0 on an interval, the map needs to contain
+		 * the endpoint, not the starting point of that interval
+		 */
+		lambda_inverse[lambda_cum] = std::make_pair(tau_i, lambda_i);
 
         tau_last = tau_i;
         lambda_last = lambda_i;
