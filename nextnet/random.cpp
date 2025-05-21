@@ -297,7 +297,12 @@ transmission_time_infectiousness::transmission_time_infectiousness(const std::ve
         lambda_cum += dtau * (lambda_i + lambda_last) / 2.0;
 		Lambda_i = lambda_cum;
 		
-		/* Update Lambda^(-1)(tau) */
+		/* Update Lambda^(-1)(L)
+		 * We keep track of ranges where Lambda(tau) is constant, by updating
+		 * the right side as long as lambda_cum does not change. Technically,
+		 * the Lambda^(-1)(L) is not well-defined on these ranges, see
+		 * totalhazard_inverse().
+		 */
 		auto e = lambda_inverse.find(lambda_cum);
 		if (e == lambda_inverse.end())
 			lambda_inverse.emplace(lambda_cum, std::make_pair(std::make_pair(tau_i, tau_i), lambda_i));
@@ -386,6 +391,10 @@ double transmission_time_infectiousness::totalhazard_inverse(interval_t Lambda) 
 	 * First, find first Lambda_j > Lambda. If no such element exists, extrapolate.
 	 * Otherwise, set i = j-1 or Lambda_i = 0 if Lambda_j is the first element.
 	 * Finally, compute tau by inverting totalhazard() locally.
+	 * NOTE: If lambda(tau) == 0 on an interval, Lambda(tau) is constant there,
+	 * and the inverse is not well-defined. In that case, we must be careful to
+	 * use the correct (left or right) boundary of such intervals -- generally,
+	 * for tau_i we want to use the right boundary, and for tau_j the left one.
 	 */
 	const auto j = lambda_inverse.upper_bound(Lambda);
 	const bool i_valid = (j != lambda_inverse.begin());
@@ -402,6 +411,7 @@ double transmission_time_infectiousness::totalhazard_inverse(interval_t Lambda) 
 		 *   dtau_point^2 * a + dtau_point * b + c
 		 * where a = 0.5 * dlambda / dtau, b = lambda_i, c = -dLambda_point. Therefore
 		 * dtau_point = (sqrt(b^2 - 4*a*c) - b) / 2a
+		 * Note that a can be zero, in which case the equation is not actually quadratic.
 		 */
 		const double tau_j = j->second.first.first;
 		const double lambda_j = j->second.second;
