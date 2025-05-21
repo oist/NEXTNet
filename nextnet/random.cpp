@@ -383,10 +383,9 @@ double transmission_time_infectiousness::totalhazard_inverse(interval_t Lambda) 
         return NAN;
 	
 	/* Find i,j with Lambda_i <= Lambda < Lambda_j.
-	 * First, find first Lambda_j > Lambda. Lambdaf no such element eLambdaits, eLambdatrapolate.
+	 * First, find first Lambda_j > Lambda. If no such element exists, extrapolate.
 	 * Otherwise, set i = j-1 or Lambda_i = 0 if Lambda_j is the first element.
-	 * Finalltau, compute tau as weighted avg,
-	 * tau(Lambda) = (tau_i * (Lambda - Lambda_i) + tau_j * (Lambda_j - Lambda)) / (Lambda_j - Lambda_i).
+	 * Finally, compute tau by inverting totalhazard() locally.
 	 */
 	const auto j = lambda_inverse.upper_bound(Lambda);
 	const bool i_valid = (j != lambda_inverse.begin());
@@ -397,9 +396,10 @@ double transmission_time_infectiousness::totalhazard_inverse(interval_t Lambda) 
 	const double dLambda_point = Lambda - Lambda_i;
 
 	if (j != lambda_inverse.end()) {
-		/* interpolate by solving a quadratic equation. We have in totalhazard that
-		 * dLambda_point = dtau_point * (lambda_i + 0.5 * dlambda * dtau_point / dtau)
-		 *               = dtau_point^2 * a + dtau_point * b with
+		/* interpolate by solving a quadratic equation. We have in totalhazard() that
+		 *   dLambda_point = dtau_point * (lambda_i + 0.5 * dlambda * dtau_point / dtau)
+         * meaning
+		 *   dtau_point^2 * a + dtau_point * b + c
 		 * where a = 0.5 * dlambda / dtau, b = lambda_i, c = -dLambda_point. Therefore
 		 * dtau_point = (sqrt(b^2 - 4*a*c) - b) / 2a
 		 */
