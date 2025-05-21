@@ -297,12 +297,12 @@ transmission_time_infectiousness::transmission_time_infectiousness(const std::ve
         lambda_cum += dtau * (lambda_i + lambda_last) / 2.0;
 		Lambda_i = lambda_cum;
 		
-		/* Update Lambda^(-1)(tau).
-		 * NOTE: It is essential that we overwrite existing entries here.
-		 * If lambda(tau) === 0 on an interval, the map needs to contain
-		 * the endpoint, not the starting point of that interval
-		 */
-		lambda_inverse[lambda_cum] = std::make_pair(tau_i, lambda_i);
+		/* Update Lambda^(-1)(tau) */
+		auto e = lambda_inverse.find(lambda_cum);
+		if (e == lambda_inverse.end())
+			lambda_inverse.emplace(lambda_cum, std::make_pair(std::make_pair(tau_i, tau_i), lambda_i));
+		else
+			e->second.first.second = tau_i;
 
         tau_last = tau_i;
         lambda_last = lambda_i;
@@ -391,7 +391,7 @@ double transmission_time_infectiousness::totalhazard_inverse(interval_t Lambda) 
 	const bool i_valid = (j != lambda_inverse.begin());
 	auto i = j; if (i_valid) --i;
 	const double Lambda_i = i_valid ? i->first : 0;
-	const double tau_i = i_valid ? i->second.first : 0;
+	const double tau_i = i_valid ? i->second.first.second : 0;
 	const double lambda_i = i_valid ? i->second.second : 0;
 	const double dLambda_point = Lambda - Lambda_i;
 
@@ -403,7 +403,7 @@ double transmission_time_infectiousness::totalhazard_inverse(interval_t Lambda) 
 		 * where a = 0.5 * dlambda / dtau, b = lambda_i, c = -dLambda_point. Therefore
 		 * dtau_point = (sqrt(b^2 - 4*a*c) - b) / 2a
 		 */
-		const double tau_j = j->second.first;
+		const double tau_j = j->second.first.first;
 		const double lambda_j = j->second.second;
 		const double dtau = tau_j - tau_i;
 		const double dlambda = lambda_j - lambda_i;

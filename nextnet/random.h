@@ -418,8 +418,12 @@ public:
 	/* tau -> lambda(tau), Lambda(tau) */
     std::map<double, std::pair<double, double>> lambda;
 
-	/* Lambda(tau) -> tau, lambda(tau) */
-    std::map<double, std::pair<double, double>> lambda_inverse;
+	/* Lambda(tau) -> tau_left, tau_right, lambda(tau)
+	 * here, [tau_left, tau_right] is the range where the
+	 * total hazard rate is Lambda(tau). tau_left < tau_right
+	 * implies thus that lambda(tau) is zero on that interval.
+	 */
+    std::map<double, std::pair<std::pair<double, double>, double>> lambda_inverse;
     double lambda_max;
 
 	using transmission_time::survivalprobability;
