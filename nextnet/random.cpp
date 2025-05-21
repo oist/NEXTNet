@@ -401,7 +401,7 @@ double transmission_time_infectiousness::totalhazard_inverse(interval_t Lambda) 
 		const double dtau = tau_j - tau_i;
 		const double dlambda = lambda_j - lambda_i;
 		const double a = 0.5 * dlambda / dtau;
-		if (dlambda > 0)
+		if (dlambda != 0)
 			return tau_i + (std::sqrt(lambda_i*lambda_i + 4*a*dLambda_point) - lambda_i) / (2*a);
 		else
 			return tau_i + dLambda_point / lambda_i;

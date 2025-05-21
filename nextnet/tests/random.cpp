@@ -104,14 +104,12 @@ TEST_CASE("Infectiousness distribution", "[random]")
         REQUIRE(std::abs(Psi_obs - Psi) < 1e-6);
 		if (lambda > 0) {
 			const double Psiinv_obs = d.survivalquantile(Psi_obs);
-			// TODO: The quantile function currently is imprecise, unclear why
-			// TODO: Probably related, the KS-test just barely passes below
-			//REQUIRE(abs(Psiinv_obs - tau) < 1e-6);
+			REQUIRE(abs(Psiinv_obs - tau) < 1e-6);
 		}
     }
 
     const double p_isinf = ztest((double)n_infinite/N, sqrt(pinf_exp*(1 - pinf_exp)) / sqrt(N), pinf_exp);
-    REQUIRE(p_isinf >= 0.01);
+    REQUIRE(p_isinf >= 0.05);
 
 	const double p_ks = kstest(s_finite, [&d, pinf_exp](double x) {
 		return (1.0 - d.survivalprobability(x, 0, 1.0)) / (1 - pinf_exp);
