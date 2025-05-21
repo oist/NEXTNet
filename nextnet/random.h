@@ -351,7 +351,10 @@ private:
     explicit transmission_time_polynomial_rate(std::vector<double> &&_coeffs, int dummy);
 
 public:
-    const std::vector<double> coeffs;
+	using transmission_time::survivalprobability;
+	using transmission_time::survivalquantile;
+
+	const std::vector<double> coeffs;
 
     virtual double density(interval_t tau) const override;
 
@@ -379,6 +382,9 @@ public:
     }
 
     const double value;
+
+	using transmission_time::survivalprobability;
+	using transmission_time::survivalquantile;
 
     virtual interval_t sample(rng_t &, interval_t t, double m) const override;
 
