@@ -84,7 +84,7 @@ TEST_CASE("Infectiousness distribution", "[random]")
         }
         else if (tau <= 1.5) {
             lambda = tau - 1.0;
-            Psi = std::exp(-lambda*lambda/2.0);
+            Psi = std::exp(-lambda*(tau - 1.0)/2.0);
         }
         else if (tau <= 3.5) {
             lambda = 0.5;
@@ -92,21 +92,30 @@ TEST_CASE("Infectiousness distribution", "[random]")
         }
         else if (tau <= 4.0) {
             lambda = 0.5 - (tau - 3.5);
-            Psi = std::exp(-(0.125 + 1 + (0.25 - lambda/2.0)*(tau - 3.5)));
+            Psi = std::exp(-(0.125 + 1 + 0.5*(tau - 3.5) - (tau - 3.5)*(tau - 3.5)/2.0));
         }
         else {
             lambda = 0.0;
             Psi = pinf_exp;
         }
-        REQUIRE(d.hazardrate(tau) == lambda);
-        REQUIRE(d.survivalprobability(tau) == Psi);
-        //REQUIRE(d.survivalquantile(d.survivalprobability(tau)) - tau);
+		const double lambda_obs = d.hazardrate(tau);
+        REQUIRE(std::abs(lambda_obs - lambda) < 1e-6);
+		const double Psi_obs = d.survivalprobability(tau);
+        REQUIRE(std::abs(Psi_obs - Psi) < 1e-6);
+		if (lambda > 0) {
+			const double Psiinv_obs = d.survivalquantile(Psi_obs);
+			// TODO: The quantile function currently is imprecise, unclear why
+			// TODO: Probably related, the KS-test just barely passes below
+			//REQUIRE(abs(Psiinv_obs - tau) < 1e-6);
+		}
     }
 
     const double p_isinf = ztest((double)n_infinite/N, sqrt(pinf_exp*(1 - pinf_exp)) / sqrt(N), pinf_exp);
     REQUIRE(p_isinf >= 0.01);
 
-    const double p_ks = kstest(s_finite, [&d, pinf_exp](double x) { return (1.0 - d.survivalprobability(x)) / (1 - pinf_exp); });
+	const double p_ks = kstest(s_finite, [&d, pinf_exp](double x) {
+		return (1.0 - d.survivalprobability(x, 0, 1.0)) / (1 - pinf_exp);
+	});
     REQUIRE(p_ks >= 0.01);
 }
 

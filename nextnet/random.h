@@ -409,14 +409,15 @@ public:
     transmission_time_infectiousness(const std::vector<double>& tau,
                                      const std::vector<double>& lambda);
 
-public:
-    std::map<double, double> lambda;
-    std::map<double, double> lambda_cumulative;
-    std::map<double, double> lambda_cumulative_inverse;
-    double lambda_max;
-    double lambda_extrapolate;
+	/* tau -> lambda(tau), Lambda(tau) */
+    std::map<double, std::pair<double, double>> lambda;
 
-    double interpolate(std::map<double, double> table, double x, double extrapolation_slope) const;
+	/* Lambda(tau) -> tau, lambda(tau) */
+    std::map<double, std::pair<double, double>> lambda_inverse;
+    double lambda_max;
+
+	using transmission_time::survivalprobability;
+	using transmission_time::survivalquantile;
 
     virtual double density(interval_t tau) const override;
 
