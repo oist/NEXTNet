@@ -38,38 +38,6 @@ std::string render_contact_kind(const empirical_contact_network::edge_duration_k
 	}
 }
 
-template<typename T>
-std::vector<T> parse_vector(const std::string& s)
-{
-	if ((s.size() < 2) || (s.front() != '{') || (s.back() != '}'))
-		throw std::range_error("list must be surrounded by '{', '}'");
-	
-	std::stringstream in(std::string(++s.begin(), --s.end()));
-	
-	std::vector<T> r;
-	std::string v;
-	while (std::getline(in, v, ',')) {
-		try{
-			r.push_back(boost::lexical_cast<T>(v));
-		}
-		catch (const boost::bad_lexical_cast& e) {
-			throw std::range_error("invalid list element '"s + v + "'");
-		}
-	}
-	return r;
-}
-
-template<typename T>
-std::string render_vector(const std::vector<T> v)
-{
-	std::stringstream s;
-	std::size_t i = 0;
-	s << '{';
-	for(const T& e: v)
-		(i++ ? (s << ',') : s) << e;
-	s << '}';
-	return s.str();
-}
 
 struct network_ref
 {
