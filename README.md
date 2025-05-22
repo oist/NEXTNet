@@ -6,7 +6,7 @@ The recommended way of using *NEXT-NET* is through our wrappers [*NEXTNetR*](htt
 
 # Synopsis
 
-To download and install a prebuilt binary of the *NEXT-NET* command-line interface for Linux on x86_64, click *Releases* on the right-hand side, select the latest release, download `NEXTNet-v<VERSION>-x86_64.tar.gz`, and decompress. This should yield a binary called `nextnet`.
+To download and install a prebuilt binary of the *NEXT-NET* command-line interface for Linux on x86_64, go to [*Releases*](https://github.com/oist/NEXTNet/releases), select the latest release, download `NEXTNet-v<VERSION>-x86_64.tar.gz`, and decompress. This should yield a binary called `nextnet`.
 
 Alternatively, download and build the *NEXT-NET* command-line interface. Assuming *git*, *cmake* and *Boost* are installed, do
 ```
@@ -14,7 +14,7 @@ git clone --recurse-submodules https://github.com/oist/NEXTNet.git
 cd NEXTNet
 mkdir build
 cd build
-cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ../
+cmake -DCMAKE_BUILD_TYPE=Release ../
 make
 ```
 
