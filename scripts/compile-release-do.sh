@@ -22,3 +22,4 @@ make -j16
 
 # Copy result to host
 cp nextnet "/io/$binary"
+strip "/io/$binary"
