@@ -376,9 +376,12 @@ double transmission_time_infectiousness::totalhazard(interval_t tau) const
 		const double dtau = tau_j - tau_i;
 		const double dlambda = lambda_j - lambda_i;
 		return Lambda_i + dtau_point * (lambda_i + 0.5 * dlambda * dtau_point / dtau);
-	} else {
+	} else if (std::isfinite(tau)) {
 		/* extrapolate linearly */
 		return Lambda_i + (tau - tau_i) * lambda_i;
+	} else {
+	    /* extrapolate to infinity */
+	    return (lambda_i > 0.0) ? INFINITY : Lambda_i;
 	}
 }
 
@@ -422,9 +425,12 @@ double transmission_time_infectiousness::totalhazard_inverse(interval_t Lambda) 
 			return tau_i + (std::sqrt(lambda_i*lambda_i + 4*a*dLambda_point) - lambda_i) / (2*a);
 		else
 			return tau_i + dLambda_point / lambda_i;
-	} else {
+	} else if (std::isfinite(Lambda)) {
 		/* extrapolate linearly */
 		return tau_i + dLambda_point / lambda_i;
+	} else {
+	    /* extrapolate to infinity */
+	    return INFINITY;
 	}
 }
 
