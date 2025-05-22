@@ -17,12 +17,14 @@ fi
 echo "Building full archive for version $ver (including submodules)" >&2
 mkdir -p archives
 rm -f archives/NEXTNet-v$ver-full.tar
-./scripts/git-archive-all.sh --tree-ish v$ver archives/NEXTNet-v$ver-full.tar
-gzip --best archives/NEXTNet-v$ver-full.tar
+./scripts/git-archive-all.sh --tree-ish v$ver "archives/NEXTNet-v$ver-source.tar"
+gzip --best "archives/NEXTNet-v$ver-source.tar"
 
 echo "Building binary" >&2
 mkdir -p binaries
 ./scripts/compile-release.sh $ver binaries/NEXTNet-v$ver
 
 echo "Creating NEXTNet-v$ver-x86_64.tar.gz"
-(cd binaries; tar czf ../archives/NEXTNet-v$ver-x86_64.tar.gz NEXTNet-v$ver)
+(rm -rf .build-archive; mkdir .build-archive;
+ cp binaries/NEXTNet-v$ver .build-archive/nextnet;
+ cd .build-archive; tar czf ../archives/NEXTNet-v$ver-x86_64.tar.gz nextnet)

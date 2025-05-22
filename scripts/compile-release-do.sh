@@ -12,7 +12,7 @@ set -x
 # Extract and enter source
 mkdir NEXTNet
 cd NEXTNet
-tar xzf /io/archives/NEXTNet-v$ver-full.tar.gz
+tar xzf /io/archives/"NEXTNet-v$ver-source.tar.gz"
 
 # Compile
 mkdir build
