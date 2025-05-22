@@ -47,7 +47,7 @@ networks, transmission time distributions, and simulation algorithms.
 
 * *SI* (**S**usceptible **I**nfected). Individuals start out susceptible and become infected upon transmission of the disease.
 * *SIS* (**S**usceptible **I**nfected **S**usceptible). Individuals start out susceptible, become infected upon transmission of the disease, and eventually recover and become susceptible again.
-* *SIR* (**S**usceptible **I**nfected **R**ecovered). Individuals start out susceptible, become infected upon transmission of the disease, and eventually recover. Recovered individuals do not become susceptible agian.
+* *SIR* (**S**usceptible **I**nfected **R**ecovered). Individuals start out susceptible, become infected upon transmission of the disease, and eventually recover. Recovered individuals do not become susceptible agian (Currently only available through the *R* and *Python* packages).
 
 ## Types of networks
 
@@ -74,12 +74,13 @@ networks, transmission time distributions, and simulation algorithms.
 
 Time distributions define (a) the time it takes from the infection of a node until it transmits the disease across a specific link, and (b) the time it takes for a node to recover. NEXT-NET offers the following pre-defined distributions, and allows users to easily implement additional distributions.
 
-* *Exponential*.
-* *Deterministic*. 
-* *Gamma*. 
-* *Lognormal*
-* *Weibull*
-* *Polynomial rate*.
+* *Exponential*. Exponential distribution with a given rate and optionally a given probability of no infection (i.e. an infinite transmission time).
+* *Gamma*. Gamma distribution parametrized with mean and variance and optional probability of no infection.
+* *Lognormal*. Log-normal distribution parametrized with mean and variance and optional probability of no infection.
+* *Weibull*. Weibull distribution parametrized with shape and 
+* *Polynomial rate*. Polynomial infectiousness function of arbitrary degree.
+* *Infectiousness time-course*. Arbitrary infectionsness function defined by a list of times and corresponding infection rates.
+* *Deterministic*. Fixed time of infection.
 
 ## Simulation algorithms
 
