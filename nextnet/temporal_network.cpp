@@ -484,7 +484,9 @@ temporal_erdos_renyi::temporal_erdos_renyi(int size, double avg_degree, double t
     , beta((1.0 - edge_probability) / timescale)
     , edges_present(0)
 {
-	if (size > (UINTMAX_MAX >> 1))
+    if (size < 1)
+        throw std::range_error(std::string("size must be positive"));
+	if ((std::uintmax_t)size > (UINTMAX_MAX >> 1))
 		throw std::range_error(std::string("maximal number of nodes is ") + std::to_string(UINTMAX_MAX >> 1));
 	
     /* Initial degree-weights node distribution and present/absent edge counters */
