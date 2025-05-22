@@ -75,9 +75,9 @@ networks, transmission time distributions, and simulation algorithms.
 Time distributions define (a) the time it takes from the infection of a node until it transmits the disease across a specific link, and (b) the time it takes for a node to recover. NEXT-NET offers the following pre-defined distributions, and allows users to easily implement additional distributions.
 
 * *Exponential*. Exponential distribution with a given rate and optionally a given probability of no infection (i.e. an infinite transmission time).
-* *Gamma*. Gamma distribution parametrized with mean and variance and optional probability of no infection.
-* *Lognormal*. Log-normal distribution parametrized with mean and variance and optional probability of no infection.
-* *Weibull*. Weibull distribution parametrized with shape and 
+* *Gamma*. Gamma distribution parametrized with mean and variance and optionally the probability of no infection.
+* *Lognormal*. Log-normal distribution parametrized with mean and variance and optionally the probability of no infection.
+* *Weibull*. Weibull distribution parametrized with shape and scale and optionally the probability of no infection.
 * *Polynomial rate*. Polynomial infectiousness function of arbitrary degree.
 * *Infectiousness time-course*. Arbitrary infectionsness function defined by a list of times and corresponding infection rates.
 * *Deterministic*. Fixed time of infection.
