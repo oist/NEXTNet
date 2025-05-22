@@ -149,11 +149,18 @@ endif()
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 # Boost headers are mandatory, iostreamd and filesystem are optional
-# and allow plots to be generated during test runs
-find_package(Boost CONFIG REQUIRED OPTIONAL_COMPONENTS iostreams filesystem)
-message(STATUS "Boost: Found (" ${Boost_DIR} ")")
-link_libraries(Boost::boost)
-include_directories(${Boost_INCLUDE_DIRS})
+# and allow plots to be generated during test runs. Usually find_package()
+# should find Boost, but the include dir can also be manually specified.
+if (BOOST_OVERRIDE)
+    message(STATUS "Boost: Overriden header location ${BOOST_OVERRIDE}")
+    include_directories(${BOOST_OVERRIDE})
+    
+else()
+    find_package(Boost CONFIG REQUIRED OPTIONAL_COMPONENTS iostreams filesystem)
+    message(STATUS "Boost: Found (" ${Boost_DIR} ")")
+    link_libraries(Boost::boost)
+    include_directories(${Boost_INCLUDE_DIRS})
+endif()
 # Some boost libraries attempt to use std::unary_function if this is
 # not set, which causes problems since C++17 removed this class.
 add_compile_definitions(NEXTNET_BOOST_NO_CXX98_FUNCTION_BASE)
