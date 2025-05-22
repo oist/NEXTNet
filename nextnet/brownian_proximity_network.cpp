@@ -229,7 +229,7 @@ absolutetime_t brownian_proximity_network::next(rng_t &engine, absolutetime_t ma
                         ++i;
                         continue;
                     }
-                    //assert(n.generation == current_generation);
+                    // assert(n.generation == current_generation);
                     /* Create displacement distribution */
                     const double D = node_diffusivity(n);
                     std::normal_distribution<float> delta(0, sqrt(2 * D * delta_t));

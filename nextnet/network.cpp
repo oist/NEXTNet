@@ -25,7 +25,7 @@ node_t network::nodes()
 
 network::~network()
 {
-	/* Nothing to do, this exits so that the destructor is a virtual function */
+    /* Nothing to do, this exits so that the destructor is a virtual function */
 }
 
 bool network_is_undirected::is_undirected()
@@ -35,12 +35,12 @@ bool network_is_undirected::is_undirected()
 
 bool network_is_simple::is_simple()
 {
-	return true;
+    return true;
 }
 
 network_embedding::~network_embedding()
 {
-	/* Nothing to do, this exits so that the destructor is a virtual function */
+    /* Nothing to do, this exits so that the destructor is a virtual function */
 }
 
 /*----------------------------------------------------*/
@@ -51,12 +51,12 @@ network_embedding::~network_embedding()
 
 bool adjacencylist_network::is_undirected()
 {
-	return undirected;
+    return undirected;
 }
 
 bool adjacencylist_network::is_simple()
 {
-	return simple;
+    return simple;
 }
 
 node_t adjacencylist_network::nodes()
@@ -84,7 +84,7 @@ index_t adjacencylist_network::outdegree(node_t node)
 /*----------------------------------------------------*/
 
 watts_strogatz::watts_strogatz(node_t size, int k, double p, rng_t &engine)
-	:adjacencylist_network(true, true)
+    : adjacencylist_network(true, true)
 {
     if (k <= 0)
         throw std::range_error("k must be positive for Watts-Strogatz networks");
@@ -162,7 +162,7 @@ watts_strogatz::watts_strogatz(node_t size, int k, double p, rng_t &engine)
 /*----------------------------------------------------*/
 
 erdos_renyi::erdos_renyi(int size, double avg_degree, rng_t &engine)
-	:adjacencylist_network(true, true)
+    : adjacencylist_network(true, true)
 {
     /*--------------Initialisation--------------
 
@@ -347,7 +347,7 @@ index_t acyclic::outdegree(node_t node)
 //----------------------------------------------------
 
 config_model::config_model(std::vector<int> degreelist, rng_t &engine)
-	: adjacencylist_network(true, false)
+    : adjacencylist_network(true, false)
 {
     // Verify that all half edges can be paired
     const std::size_t size         = degreelist.size();
@@ -392,9 +392,9 @@ config_model::config_model(std::vector<int> degreelist, rng_t &engine)
         else
             ++multiedges;
     }
-	
-	/* Mark graph as simple if there are no self-loopr or multi-edges */
-	simple = (selfloops == 0) && (multiedges == 0);
+
+    /* Mark graph as simple if there are no self-loopr or multi-edges */
+    simple = (selfloops == 0) && (multiedges == 0);
 }
 
 //-------- LOGNORMAL CONFIGURATION MODEL --------------
@@ -573,16 +573,16 @@ struct config_model_clustered_serrano_builder
      * Set to true during network constructions if we fail to construct enough trianglges
      */
     bool triangles_unsatisfied = false;
-	
-	/**
-	 * Number of multi-edges
-	 */
-	std::size_t multiedges = 0;
-	
-	/**
-	 * Number of self-edges
-	 */
-	std::size_t selfedges = 0;
+
+    /**
+     * Number of multi-edges
+     */
+    std::size_t multiedges = 0;
+
+    /**
+     * Number of self-edges
+     */
+    std::size_t selfedges = 0;
 
     /**
      * @brief The "eligible components" of Serrano & Boguna
@@ -807,37 +807,37 @@ struct config_model_clustered_serrano_builder
         if (ca.is_filled() || cb.is_filled())
             throw std::logic_error("add_edge() called for connected stubs");
 
-		// I. If we weren't specifically told to allow self-edges, complain about them
-		if (na == nb) {
-			if (!allow_selfedge)
-				throw std::logic_error("add_edge() called for a self-edge but allow_selfedge is false");
-			else
-				++selfedges;
-		}
+        // I. If we weren't specifically told to allow self-edges, complain about them
+        if (na == nb) {
+            if (!allow_selfedge)
+                throw std::logic_error("add_edge() called for a self-edge but allow_selfedge is false");
+            else
+                ++selfedges;
+        }
 
         // II. Check whether the two nodes are already connected, if so
         // do nothing unless we were asked to create multi-edges
         auto &na_stubs = node_stubs[na];
         auto &nb_stubs = node_stubs[nb];
-		if (na_stubs.size() < nb_stubs.size()) {
-			for (const stub &s : na_stubs) {
-				if (s.node == nb) {
-					if (!allow_multiedge)
-						return false;
-					else
-						++multiedges;
-				}
-			}
-		} else {
-			for (const stub &s : nb_stubs) {
-				if (s.node == na) {
-					if (!allow_multiedge)
-						return false;
-					else
-						++multiedges;
-				}
-			}
-		}
+        if (na_stubs.size() < nb_stubs.size()) {
+            for (const stub &s : na_stubs) {
+                if (s.node == nb) {
+                    if (!allow_multiedge)
+                        return false;
+                    else
+                        ++multiedges;
+                }
+            }
+        } else {
+            for (const stub &s : nb_stubs) {
+                if (s.node == na) {
+                    if (!allow_multiedge)
+                        return false;
+                    else
+                        ++multiedges;
+                }
+            }
+        }
 
         // III. Enumerate triangles that will be completed
         // First, build a set of neighbours of a
@@ -1103,13 +1103,13 @@ config_model_clustered_serrano::config_model_clustered_serrano(std::vector<int> 
 }
 
 config_model_clustered_serrano::config_model_clustered_serrano(std::vector<int> degreelist, std::vector<int> degreetriangles,
-															   double beta, rng_t &engine)
-	: adjacencylist_network(true, false)
+                                                               double beta, rng_t &engine)
+    : adjacencylist_network(true, false)
 {
     config_model_clustered_serrano_builder b(degreelist, degreetriangles, beta, engine);
     b.build();
-	/* Check if the resulting graph is simple */
-	simple = (b.selfedges == 0) && (b.multiedges == 0);
+    /* Check if the resulting graph is simple */
+    simple                = (b.selfedges == 0) && (b.multiedges == 0);
     triangles_unsatisfied = b.triangles_unsatisfied;
     /* Copy network structure from builder */
     for (std::size_t i = 0; i < b.node_stubs.size(); ++i) {
@@ -1131,12 +1131,12 @@ config_model_clustered_serrano::config_model_clustered_serrano(std::vector<int> 
 //--------------------------------------
 
 barabasi_albert::barabasi_albert(int size, rng_t &engine, int m)
-	: adjacencylist_network(true, false)
+    : adjacencylist_network(true, false)
 {
-	// TODO: We currently always mark Barabasi-Albert networks as not simple.
-	// TODO: We should instead only do so if they actually contains self- or
-	// TODO: multi-edges.
-	
+    // TODO: We currently always mark Barabasi-Albert networks as not simple.
+    // TODO: We should instead only do so if they actually contains self- or
+    // TODO: multi-edges.
+
     // To generate efficiently a BA network, we used the approached used in the python library networkx.
     // -> instead of re-initialising the distribution at every step by updating the weights,
     // we sample at uniform random from a list, but each node is duplicated k times where k is their degree.
@@ -1215,99 +1215,99 @@ barabasi_albert::barabasi_albert(int size, rng_t &engine, int m)
 //--------IMPORTED NETWORK----------
 //--------------------------------------
 
-empirical_network::empirical_network(std::istream& file, bool undirected,
+empirical_network::empirical_network(std::istream &file, bool undirected,
                                      bool simplify, node_t idxbase, char sep)
-	: adjacencylist_network(undirected, true)
+    : adjacencylist_network(undirected, true)
 {
-	// Read adjacencylist / edgelist file and create edge multi-set
-	const bool sep_is_space = std::isspace(sep);
-	std::unordered_map<edge_t, std::size_t, pair_hash> edges = {};
+    // Read adjacencylist / edgelist file and create edge multi-set
+    const bool sep_is_space                                  = std::isspace(sep);
+    std::unordered_map<edge_t, std::size_t, pair_hash> edges = {};
     std::string line;
-    node_t size = 0;
+    node_t size   = 0;
     std::size_t l = 0;
     while (std::getline(file, line)) {
         // Skip empty and commented lined
         if ((line.size() == 0) || (line[0] == '#'))
             continue;
-        
+
         // Read line from string buffer
-		std::stringstream is(line);
+        std::stringstream is(line);
         ++l;
-		
-		// Read source node
-    	node_t n1; 
-    	if (!(is >> n1)) {
+
+        // Read source node
+        node_t n1;
+        if (!(is >> n1)) {
             // Skip first non-commented line if it looks like a header
             if (l == 1) continue;
-    		throw std::runtime_error("invalid line: " + line);
+            throw std::runtime_error("invalid line: " + line);
         }
-    	
+
         // Translate to zero-based node indices and keep track of size
         if (n1 < idxbase)
-			throw std::runtime_error("invalid node " + std::to_string(n1));
+            throw std::runtime_error("invalid node " + std::to_string(n1));
         n1 -= idxbase;
         size = std::max(size, n1 + 1);
-        
-    	// Read list of outgoing edges separated by csep
-    	while (true) {
-    		// Consume sep unless it's whitespace, break if end of line
-    		char c = sep;
-			if (!sep_is_space && !(is >> c)) break;
-			if (sep != c)
-				throw std::runtime_error("invalid line: " + line);
-    		
-    		// Read next target node, break if end of line
-    		node_t n2;
-    		if (!(is >> n2)) {
+
+        // Read list of outgoing edges separated by csep
+        while (true) {
+            // Consume sep unless it's whitespace, break if end of line
+            char c = sep;
+            if (!sep_is_space && !(is >> c)) break;
+            if (sep != c)
+                throw std::runtime_error("invalid line: " + line);
+
+            // Read next target node, break if end of line
+            node_t n2;
+            if (!(is >> n2)) {
                 if (sep_is_space) break;
                 // There was a non-ws csep but no following node, complain
                 throw std::runtime_error("invalid line: " + line);
-    		}
-            
+            }
+
             // Translate to zero-based node indices and keep track of size
             if (n2 < idxbase)
-				throw std::runtime_error("invalid node " + std::to_string(n2));
+                throw std::runtime_error("invalid node " + std::to_string(n2));
             n2 -= idxbase;
             size = std::max(size, n2 + 1);
-            
-			// Collect edge
-			const edge_t e = (undirected
-			                  ? edge_t { std::min(n1, n2), std::max(n1, n2) }
-			                  : edge_t { n1, n2 } );
-			++edges[e];
-    	}
-    	
-    	// Must have read whole line
-    	if (!is.eof())
-    		throw std::runtime_error("invalid line: " + line);
-	}
-	
-	// Convert edges into adjacency list
+
+            // Collect edge
+            const edge_t e = (undirected
+                                  ? edge_t{ std::min(n1, n2), std::max(n1, n2) }
+                                  : edge_t{ n1, n2 });
+            ++edges[e];
+        }
+
+        // Must have read whole line
+        if (!is.eof())
+            throw std::runtime_error("invalid line: " + line);
+    }
+
+    // Convert edges into adjacency list
     adjacencylist.resize(size);
-	for(const auto& v: edges) {
-		edge_t e = v.first;
-		std::size_t m = (simplify ? 1 : v.second);
-		
-		// Skip self-edges if a simple graph was requested
-		const bool selfedge = (e.first == e.second);
-		if (selfedge && simplify)
-			continue;
-		
-		// Keep track of whether the network is simple;
-		simple = simple && !selfedge && (m == 1);
-		
-		// For undirected graphs, add both forward- and reverse-edges
-		for(int r=0; r < ((undirected && !selfedge) ? 2 : 1 ); ++r) {
-			if (r) std::swap(e.first, e.second);
-			
-			// Get adjacencylist for source node
-			std::vector<node_t>& al = adjacencylist[e.first];
-			
-			// Retain mulitplicity of edge unless simplify is true
-			for(std::size_t i=0; i < m; ++i)
-				al.push_back(e.second);
-		}
-	}
+    for (const auto &v : edges) {
+        edge_t e      = v.first;
+        std::size_t m = (simplify ? 1 : v.second);
+
+        // Skip self-edges if a simple graph was requested
+        const bool selfedge = (e.first == e.second);
+        if (selfedge && simplify)
+            continue;
+
+        // Keep track of whether the network is simple;
+        simple = simple && !selfedge && (m == 1);
+
+        // For undirected graphs, add both forward- and reverse-edges
+        for (int r = 0; r < ((undirected && !selfedge) ? 2 : 1); ++r) {
+            if (r) std::swap(e.first, e.second);
+
+            // Get adjacencylist for source node
+            std::vector<node_t> &al = adjacencylist[e.first];
+
+            // Retain mulitplicity of edge unless simplify is true
+            for (std::size_t i = 0; i < m; ++i)
+                al.push_back(e.second);
+        }
+    }
 }
 
 //---------------------------------------------------
@@ -1315,9 +1315,9 @@ empirical_network::empirical_network(std::istream& file, bool undirected,
 //---------------------------------------------------
 
 std::vector<std::vector<double>> reproduction_matrix(
-	 network &nw, double *out_r, double *out_c, double *out_k1, double *out_k2,
-	 double *out_k3, double *out_m1, double* out_m2,
-	 double *out_R0, double *out_R_r, double *out_R_pert)
+    network &nw, double *out_r, double *out_c, double *out_k1, double *out_k2,
+    double *out_k3, double *out_m1, double *out_m2,
+    double *out_R0, double *out_R_r, double *out_R_pert)
 {
     const int SIZE = (int)nw.nodes();
 
@@ -1361,27 +1361,27 @@ std::vector<std::vector<double>> reproduction_matrix(
             const int k1         = nw.outdegree(neigh_1);
             const int i1         = pos[k1];
             ekk[i0][i1]++;
-			for (index_t neigh_2_i = 0; neigh_2_i < k1; neigh_2_i++) {
-				const node_t neigh_2 = nw.neighbour(neigh_1, neigh_2_i);
-				if (neigh_2 == node)
-					continue;
-				const int k2            = nw.outdegree(neigh_2);
-				const int ksn = std::min(k0, k2);
-				const node_t small_node = (ksn == k0) ? node : neigh_2;
-				const node_t large_node = (ksn == k0) ? neigh_2 : node;
+            for (index_t neigh_2_i = 0; neigh_2_i < k1; neigh_2_i++) {
+                const node_t neigh_2 = nw.neighbour(neigh_1, neigh_2_i);
+                if (neigh_2 == node)
+                    continue;
+                const int k2            = nw.outdegree(neigh_2);
+                const int ksn           = std::min(k0, k2);
+                const node_t small_node = (ksn == k0) ? node : neigh_2;
+                const node_t large_node = (ksn == k0) ? neigh_2 : node;
 
-				// verify if edge exists between node and neighbour n°2
-				bool edge_02  = false;
-				for (index_t neigh_sn_i = 0; (neigh_sn_i < ksn) && !edge_02; neigh_sn_i++)
-					edge_02 = edge_02 || (nw.neighbour(small_node, neigh_sn_i) == large_node);
+                // verify if edge exists between node and neighbour n°2
+                bool edge_02 = false;
+                for (index_t neigh_sn_i = 0; (neigh_sn_i < ksn) && !edge_02; neigh_sn_i++)
+                    edge_02 = edge_02 || (nw.neighbour(small_node, neigh_sn_i) == large_node);
 
-				// update triangle count
-				if (edge_02) {
-					T2[i0][i1]++;
-					T1[i0]++;
-					c_node++;
-				}
-			}
+                // update triangle count
+                if (edge_02) {
+                    T2[i0][i1]++;
+                    T1[i0]++;
+                    c_node++;
+                }
+            }
         }
         if (k0 > 1) {
             c += c_node / ((double)k0 * (k0 - 1) * SIZE);
@@ -1390,7 +1390,7 @@ std::vector<std::vector<double>> reproduction_matrix(
 
     // Mkk
     std::vector<std::vector<double>> Mkk(kmax + 1, std::vector<double>(kmax + 1, 0));
-    double m1  = 0;
+    double m1 = 0;
     double m2 = 0;
     for (int k = 2; k <= kmax; k++) {
         const int i = pos[k];
@@ -1471,12 +1471,12 @@ std::vector<double> knn(network &nw)
 
 double assortativity(network &nw)
 {
-	// From the definition of the assortativity, after simple manipulations we can rewrite:
-	// r = (<k^2 knn(k)>/<k> - mu^2 ) / (<k^3>/<k> - mu^2)
-	// where mu^2 = <k^2>/<k>
-	// However <k^2 knn(k)> is tricky to measure, instead, we measure the fraction of links that connect deg i to deg j, W(i,j)
+    // From the definition of the assortativity, after simple manipulations we can rewrite:
+    // r = (<k^2 knn(k)>/<k> - mu^2 ) / (<k^3>/<k> - mu^2)
+    // where mu^2 = <k^2>/<k>
+    // However <k^2 knn(k)> is tricky to measure, instead, we measure the fraction of links that connect deg i to deg j, W(i,j)
 
-	int size                = nw.nodes();
+    int size                = nw.nodes();
     std::vector<double> Knn = knn(nw);
 
     double k1    = 0.0;
@@ -1509,7 +1509,7 @@ double assortativity(network &nw)
 
 std::vector<std::vector<double>> Wkk(network &nw)
 {
-	// Fraction of links that connect a node of deg k to a node of deg k'
+    // Fraction of links that connect a node of deg k to a node of deg k'
 
     // Determine k_max (Figured that it was the most sane option and the most readable,
     //  at the cost of going through all nodes once more.

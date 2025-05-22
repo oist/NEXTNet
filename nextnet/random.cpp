@@ -267,49 +267,49 @@ double transmission_time_polynomial_rate::survivalprobability(interval_t tau) co
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
 
-transmission_time_infectiousness::transmission_time_infectiousness(const std::vector<double>& taus, const std::vector<double>& lambdas)
+transmission_time_infectiousness::transmission_time_infectiousness(const std::vector<double> &taus, const std::vector<double> &lambdas)
 {
     if ((taus.size() != lambdas.size()) || (taus.size() == 0))
         throw std::runtime_error("size of tau and lambda vectors must agree and be non-empty");
 
     /* Fill ordered map representing lambda(tau) */
     lambda_max = 0.0;
-    for(std::size_t i=0,n=taus.size(); i < n; ++i) {
-		lambda.emplace(taus[i], std::make_pair(lambdas[i], NAN));
+    for (std::size_t i = 0, n = taus.size(); i < n; ++i) {
+        lambda.emplace(taus[i], std::make_pair(lambdas[i], NAN));
         lambda_max = std::max(lambda_max, lambdas[i]);
     }
 
     /* Fill ordered map representing Lambda(tau) = int 0 to tau lambda(tau') dtau' */
-    double lambda_cum = 0;
-    double tau_last = 0;
+    double lambda_cum  = 0;
+    double tau_last    = 0;
     double lambda_last = 0;
-    for(auto& i: lambda) {
-        const double tau_i = i.first;
+    for (auto &i : lambda) {
+        const double tau_i    = i.first;
         const double lambda_i = i.second.first;
-		double& Lambda_i = i.second.second;
+        double &Lambda_i      = i.second.second;
 
         const double dtau = (tau_i - tau_last);
         assert(dtau >= 0.0);
         if (dtau == 0.0)
             throw std::runtime_error("tau vector must not contain duplicate values");
 
-		/* Update Lambda(tau) */
+        /* Update Lambda(tau) */
         lambda_cum += dtau * (lambda_i + lambda_last) / 2.0;
-		Lambda_i = lambda_cum;
-		
-		/* Update Lambda^(-1)(L)
-		 * We keep track of ranges where Lambda(tau) is constant, by updating
-		 * the right side as long as lambda_cum does not change. Technically,
-		 * the Lambda^(-1)(L) is not well-defined on these ranges, see
-		 * totalhazard_inverse().
-		 */
-		auto e = lambda_inverse.find(lambda_cum);
-		if (e == lambda_inverse.end())
-			lambda_inverse.emplace(lambda_cum, std::make_pair(std::make_pair(tau_i, tau_i), lambda_i));
-		else
-			e->second.first.second = tau_i;
+        Lambda_i = lambda_cum;
 
-        tau_last = tau_i;
+        /* Update Lambda^(-1)(L)
+         * We keep track of ranges where Lambda(tau) is constant, by updating
+         * the right side as long as lambda_cum does not change. Technically,
+         * the Lambda^(-1)(L) is not well-defined on these ranges, see
+         * totalhazard_inverse().
+         */
+        auto e = lambda_inverse.find(lambda_cum);
+        if (e == lambda_inverse.end())
+            lambda_inverse.emplace(lambda_cum, std::make_pair(std::make_pair(tau_i, tau_i), lambda_i));
+        else
+            e->second.first.second = tau_i;
+
+        tau_last    = tau_i;
         lambda_last = lambda_i;
     }
 }
@@ -326,29 +326,30 @@ double transmission_time_infectiousness::hazardrate(interval_t tau) const
     if (tau <= 0)
         return 0.0;
 
-	/* Find i,j with tau_i <= tau < tau_j.
-	 * First, find first tau_j > tau. If no such element exists, extrapolate.
-	 * Otherwise, set i = j-1 or tau_i = 0 if tau_j is the first element, and
-	 * interpolate linearly.
-	 */
-	const auto j = lambda.upper_bound(tau);
-	const bool i_valid = (j != lambda.begin());
-	auto i = j; if (i_valid) --i;
-	const double tau_i = i_valid ? i->first : 0;
-	const double lambda_i = i_valid ? i->second.first : 0;
-	const double dtau_point = tau - tau_i;
+    /* Find i,j with tau_i <= tau < tau_j.
+     * First, find first tau_j > tau. If no such element exists, extrapolate.
+     * Otherwise, set i = j-1 or tau_i = 0 if tau_j is the first element, and
+     * interpolate linearly.
+     */
+    const auto j       = lambda.upper_bound(tau);
+    const bool i_valid = (j != lambda.begin());
+    auto i             = j;
+    if (i_valid) --i;
+    const double tau_i      = i_valid ? i->first : 0;
+    const double lambda_i   = i_valid ? i->second.first : 0;
+    const double dtau_point = tau - tau_i;
 
-	if (j != lambda.end()) {
-		/* interpolate linearly */
-		const double tau_j = j->first;
-		const double lambda_j = j->second.first;
-		const double dtau = tau_j - tau_i;
-		const double dlambda = lambda_j - lambda_i;
-		return lambda_i + dtau_point * dlambda / dtau;
-	} else {
-		/* extrapolate constant */
-		return lambda_i;
-	}
+    if (j != lambda.end()) {
+        /* interpolate linearly */
+        const double tau_j    = j->first;
+        const double lambda_j = j->second.first;
+        const double dtau     = tau_j - tau_i;
+        const double dlambda  = lambda_j - lambda_i;
+        return lambda_i + dtau_point * dlambda / dtau;
+    } else {
+        /* extrapolate constant */
+        return lambda_i;
+    }
 }
 
 double transmission_time_infectiousness::totalhazard(interval_t tau) const
@@ -356,82 +357,84 @@ double transmission_time_infectiousness::totalhazard(interval_t tau) const
     if (tau <= 0)
         return 0.0;
 
-	/* Find i,j with tau_i <= tau < tau_j.
-	 * First, find first tau_j > tau. If no such element exists, extrapolate.
-	 * Otherwise, set i = j-1 or tau_i = 0 if tau_j is the first element, and
-	 * interpolate quadratically.
-	 */
-	const auto j = lambda.upper_bound(tau);
-	const bool i_valid = (j != lambda.begin());
-	auto i = j; if (i_valid) --i;
-	const double tau_i = i_valid ? i->first : 0;
-	const double lambda_i = i_valid ? i->second.first : 0;
-	const double Lambda_i = i_valid ? i->second.second : 0;
-	const double dtau_point = tau - tau_i;
+    /* Find i,j with tau_i <= tau < tau_j.
+     * First, find first tau_j > tau. If no such element exists, extrapolate.
+     * Otherwise, set i = j-1 or tau_i = 0 if tau_j is the first element, and
+     * interpolate quadratically.
+     */
+    const auto j       = lambda.upper_bound(tau);
+    const bool i_valid = (j != lambda.begin());
+    auto i             = j;
+    if (i_valid) --i;
+    const double tau_i      = i_valid ? i->first : 0;
+    const double lambda_i   = i_valid ? i->second.first : 0;
+    const double Lambda_i   = i_valid ? i->second.second : 0;
+    const double dtau_point = tau - tau_i;
 
-	if (j != lambda.end()) {
-		/* interpolate quadratically */
-		const double tau_j = j->first;
-		const double lambda_j = j->second.first;
-		const double dtau = tau_j - tau_i;
-		const double dlambda = lambda_j - lambda_i;
-		return Lambda_i + dtau_point * (lambda_i + 0.5 * dlambda * dtau_point / dtau);
-	} else if (std::isfinite(tau)) {
-		/* extrapolate linearly */
-		return Lambda_i + (tau - tau_i) * lambda_i;
-	} else {
-	    /* extrapolate to infinity */
-	    return (lambda_i > 0.0) ? INFINITY : Lambda_i;
-	}
+    if (j != lambda.end()) {
+        /* interpolate quadratically */
+        const double tau_j    = j->first;
+        const double lambda_j = j->second.first;
+        const double dtau     = tau_j - tau_i;
+        const double dlambda  = lambda_j - lambda_i;
+        return Lambda_i + dtau_point * (lambda_i + 0.5 * dlambda * dtau_point / dtau);
+    } else if (std::isfinite(tau)) {
+        /* extrapolate linearly */
+        return Lambda_i + (tau - tau_i) * lambda_i;
+    } else {
+        /* extrapolate to infinity */
+        return (lambda_i > 0.0) ? INFINITY : Lambda_i;
+    }
 }
 
 double transmission_time_infectiousness::totalhazard_inverse(interval_t Lambda) const
 {
     if (Lambda < 0)
         return NAN;
-	
-	/* Find i,j with Lambda_i <= Lambda < Lambda_j.
-	 * First, find first Lambda_j > Lambda. If no such element exists, extrapolate.
-	 * Otherwise, set i = j-1 or Lambda_i = 0 if Lambda_j is the first element.
-	 * Finally, compute tau by inverting totalhazard() locally.
-	 * NOTE: If lambda(tau) == 0 on an interval, Lambda(tau) is constant there,
-	 * and the inverse is not well-defined. In that case, we must be careful to
-	 * use the correct (left or right) boundary of such intervals -- generally,
-	 * for tau_i we want to use the right boundary, and for tau_j the left one.
-	 */
-	const auto j = lambda_inverse.upper_bound(Lambda);
-	const bool i_valid = (j != lambda_inverse.begin());
-	auto i = j; if (i_valid) --i;
-	const double Lambda_i = i_valid ? i->first : 0;
-	const double tau_i = i_valid ? i->second.first.second : 0;
-	const double lambda_i = i_valid ? i->second.second : 0;
-	const double dLambda_point = Lambda - Lambda_i;
 
-	if (j != lambda_inverse.end()) {
-		/* interpolate by solving a quadratic equation. We have in totalhazard() that
-		 *   dLambda_point = dtau_point * (lambda_i + 0.5 * dlambda * dtau_point / dtau)
+    /* Find i,j with Lambda_i <= Lambda < Lambda_j.
+     * First, find first Lambda_j > Lambda. If no such element exists, extrapolate.
+     * Otherwise, set i = j-1 or Lambda_i = 0 if Lambda_j is the first element.
+     * Finally, compute tau by inverting totalhazard() locally.
+     * NOTE: If lambda(tau) == 0 on an interval, Lambda(tau) is constant there,
+     * and the inverse is not well-defined. In that case, we must be careful to
+     * use the correct (left or right) boundary of such intervals -- generally,
+     * for tau_i we want to use the right boundary, and for tau_j the left one.
+     */
+    const auto j       = lambda_inverse.upper_bound(Lambda);
+    const bool i_valid = (j != lambda_inverse.begin());
+    auto i             = j;
+    if (i_valid) --i;
+    const double Lambda_i      = i_valid ? i->first : 0;
+    const double tau_i         = i_valid ? i->second.first.second : 0;
+    const double lambda_i      = i_valid ? i->second.second : 0;
+    const double dLambda_point = Lambda - Lambda_i;
+
+    if (j != lambda_inverse.end()) {
+        /* interpolate by solving a quadratic equation. We have in totalhazard() that
+         *   dLambda_point = dtau_point * (lambda_i + 0.5 * dlambda * dtau_point / dtau)
          * meaning
-		 *   dtau_point^2 * a + dtau_point * b + c
-		 * where a = 0.5 * dlambda / dtau, b = lambda_i, c = -dLambda_point. Therefore
-		 * dtau_point = (sqrt(b^2 - 4*a*c) - b) / 2a
-		 * Note that a can be zero, in which case the equation is not actually quadratic.
-		 */
-		const double tau_j = j->second.first.first;
-		const double lambda_j = j->second.second;
-		const double dtau = tau_j - tau_i;
-		const double dlambda = lambda_j - lambda_i;
-		const double a = 0.5 * dlambda / dtau;
-		if (a != 0)
-			return tau_i + (std::sqrt(lambda_i*lambda_i + 4*a*dLambda_point) - lambda_i) / (2*a);
-		else
-			return tau_i + dLambda_point / lambda_i;
-	} else if (std::isfinite(Lambda)) {
-		/* extrapolate linearly */
-		return tau_i + dLambda_point / lambda_i;
-	} else {
-	    /* extrapolate to infinity */
-	    return INFINITY;
-	}
+         *   dtau_point^2 * a + dtau_point * b + c
+         * where a = 0.5 * dlambda / dtau, b = lambda_i, c = -dLambda_point. Therefore
+         * dtau_point = (sqrt(b^2 - 4*a*c) - b) / 2a
+         * Note that a can be zero, in which case the equation is not actually quadratic.
+         */
+        const double tau_j    = j->second.first.first;
+        const double lambda_j = j->second.second;
+        const double dtau     = tau_j - tau_i;
+        const double dlambda  = lambda_j - lambda_i;
+        const double a        = 0.5 * dlambda / dtau;
+        if (a != 0)
+            return tau_i + (std::sqrt(lambda_i * lambda_i + 4 * a * dLambda_point) - lambda_i) / (2 * a);
+        else
+            return tau_i + dLambda_point / lambda_i;
+    } else if (std::isfinite(Lambda)) {
+        /* extrapolate linearly */
+        return tau_i + dLambda_point / lambda_i;
+    } else {
+        /* extrapolate to infinity */
+        return INFINITY;
+    }
 }
 
 double transmission_time_infectiousness::hazardbound(interval_t) const

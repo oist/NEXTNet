@@ -13,15 +13,15 @@
 //-----Output networks-------------------------------
 //---------------------------------------------------
 
-void output_network_meta(std::ostream& dst, network& nw, char dsep)
+void output_network_meta(std::ostream &dst, network &nw, char dsep)
 {
-    weighted_network* wnw = as_weighted_network(&nw);
-    network_embedding* enw = dynamic_cast<network_embedding*>(&nw);
-    std::size_t d = enw ? enw->dimensionality() : 0;
+    weighted_network *wnw  = as_weighted_network(&nw);
+    network_embedding *enw = dynamic_cast<network_embedding *>(&nw);
+    std::size_t d          = enw ? enw->dimensionality() : 0;
 
     const node_t N = nw.nodes();
     dst << "N=";
-    ((N >= 0) ? dst << nw.nodes() : dst << "infinite" ) << ", is_undirected=" << nw.is_undirected();
+    ((N >= 0) ? dst << nw.nodes() : dst << "infinite") << ", is_undirected=" << nw.is_undirected();
     dst << ", is_simple=" << nw.is_simple() << ", is_weighted=" << (wnw != nullptr);
     dst << ", is_embedded=" << (enw != nullptr);
     if (enw != nullptr) {
@@ -30,26 +30,26 @@ void output_network_meta(std::ostream& dst, network& nw, char dsep)
         enw->bounds(x0, x1);
         dst << ", dims=" << enw->dimensionality();
         dst << ", lower=(";
-        for(std::size_t i = 0; i < d; ++i)
+        for (std::size_t i = 0; i < d; ++i)
             (i ? dst << dsep : dst) << x0[i];
         dst << "), upper=(";
-        for(std::size_t i = 0; i < d; ++i)
+        for (std::size_t i = 0; i < d; ++i)
             (i ? dst << dsep : dst) << x1[i];
         dst << ")";
     }
     dst << std::endl;
 }
 
-void output_adjacencylist(std::ostream& dst, network& nw, bool include_weights, bool include_coords,
+void output_adjacencylist(std::ostream &dst, network &nw, bool include_weights, bool include_coords,
                           bool include_meta, bool include_header, char csep, char dsep, char wsep)
 {
-    weighted_network* wnw = as_weighted_network(&nw);
-    network_embedding* enw = dynamic_cast<network_embedding*>(&nw);
+    weighted_network *wnw  = as_weighted_network(&nw);
+    network_embedding *enw = dynamic_cast<network_embedding *>(&nw);
 
     const bool is_undirected = nw.is_undirected();
-    include_weights = include_weights && (wnw != nullptr);
-    include_coords = include_coords && (enw != nullptr);
-    std::size_t d = enw ? enw->dimensionality() : 0;
+    include_weights          = include_weights && (wnw != nullptr);
+    include_coords           = include_coords && (enw != nullptr);
+    std::size_t d            = enw ? enw->dimensionality() : 0;
 
     // Output meta information
     if (include_meta) {
@@ -61,7 +61,7 @@ void output_adjacencylist(std::ostream& dst, network& nw, bool include_weights, 
     if (include_header) {
         dst << "node";
         if (include_coords)
-            for(std::size_t i = 0; i < d; ++i)
+            for (std::size_t i = 0; i < d; ++i)
                 dst << (i ? dsep : csep) << "x" << i;
         dst << csep;
         if (include_weights)
@@ -73,20 +73,20 @@ void output_adjacencylist(std::ostream& dst, network& nw, bool include_weights, 
 
     // Output nodes
     std::vector<double> x(d, 0.0);
-    for(node_t n=0, N=nw.nodes(); n < N; ++n) {
-        dst << (n+1);
+    for (node_t n = 0, N = nw.nodes(); n < N; ++n) {
+        dst << (n + 1);
 
         // Output coordinates
         if (include_coords) {
             enw->coordinates(n, x);
-            for(std::size_t i = 0; i < d; ++i)
+            for (std::size_t i = 0; i < d; ++i)
                 dst << (i ? dsep : csep) << x[i];
         }
 
         const index_t l = nw.outdegree(n);
-        for(index_t i=0; i < l; ++i) {
+        for (index_t i = 0; i < l; ++i) {
             // Get neighbour (and edge weight if applicable)
-            double w = NAN;
+            double w        = NAN;
             const node_t nn = include_weights ? wnw->neighbour(n, i, &w) : nw.neighbour(n, i);
 
             // Only output edge if (src <= dist) for undirected networks
@@ -94,7 +94,7 @@ void output_adjacencylist(std::ostream& dst, network& nw, bool include_weights, 
                 continue;
 
             // Output neighbour
-            dst << csep << (nn+1);
+            dst << csep << (nn + 1);
 
             // Output weight
             if (include_weights)

@@ -23,8 +23,8 @@
  */
 struct temporal_network : public virtual network
 {
-	virtual bool is_simple() override;
-	
+    virtual bool is_simple() override;
+
     virtual absolutetime_t next(rng_t &engine, absolutetime_t maxtime = INFINITY) = 0;
 
     virtual std::optional<network_event_t> step(rng_t &engine, absolutetime_t max_time = NAN) = 0;
@@ -267,13 +267,13 @@ struct empirical_contact_network : public virtual next_reaction_network
         infitesimal_duration = 2
     };
 
-    empirical_contact_network(std::istream& file,
+    empirical_contact_network(std::istream &file,
                               edge_duration_kind contact_type, double dt)
         : empirical_contact_network(file, (network_kind)0, contact_type, dt)
     {
     }
 
-    empirical_contact_network(std::istream& file, network_kind,
+    empirical_contact_network(std::istream &file, network_kind,
                               edge_duration_kind contact_type, double dt);
 
     std::vector<std::vector<double>> compute_number_of_edges(rng_t &engine);
@@ -288,27 +288,27 @@ struct empirical_contact_network : public virtual next_reaction_network
  */
 struct temporal_sirx_network : virtual public next_reaction_network
 {
-	/* bitfield used to store node states */
-	struct node_state
-	{
-		unsigned char removed : 1;
-		unsigned char infected : 1;
-	};
+    /* bitfield used to store node states */
+    struct node_state
+    {
+        unsigned char removed : 1;
+        unsigned char infected : 1;
+    };
 
-	static network_kind kind(network*);
-	
-	temporal_sirx_network(network& network, double kappa0, double kappa, rng_t& engine);
+    static network_kind kind(network *);
 
-	virtual void notify_epidemic_event(epidemic_event_t ev, rng_t &engine) override;
+    temporal_sirx_network(network &network, double kappa0, double kappa, rng_t &engine);
 
-	void remove_node(node_t node, absolutetime_t time);
+    virtual void notify_epidemic_event(epidemic_event_t ev, rng_t &engine) override;
 
-	void queue_removal(node_t node, node_state s, absolutetime_t time, rng_t& engine);
+    void remove_node(node_t node, absolutetime_t time);
 
-	const double kappa0;
-	const double kappa;
+    void queue_removal(node_t node, node_state s, absolutetime_t time, rng_t &engine);
 
-	std::vector<node_state> state;
+    const double kappa0;
+    const double kappa;
+
+    std::vector<node_state> state;
 };
 
 /**
@@ -333,8 +333,8 @@ struct temporal_erdos_renyi : public virtual temporal_network
 {
     temporal_erdos_renyi(int size, double avg_degree, double timescale, rng_t &engine);
 
-	virtual bool is_simple() override;
-	
+    virtual bool is_simple() override;
+
     virtual absolutetime_t next(rng_t &engine, absolutetime_t maxtime = INFINITY) override;
 
     virtual std::optional<network_event_t> step(rng_t &engine, absolutetime_t max_time = NAN) override;

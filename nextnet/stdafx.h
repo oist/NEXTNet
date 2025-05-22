@@ -57,15 +57,15 @@
 #include <boost/config.hpp>
 
 #ifdef NEXTNET_BOOST_NO_CXX98_FUNCTION_BASE
-#ifndef BOOST_NO_CXX98_FUNCTION_BASE
-#define BOOST_NO_CXX98_FUNCTION_BASE
-#endif
+#    ifndef BOOST_NO_CXX98_FUNCTION_BASE
+#        define BOOST_NO_CXX98_FUNCTION_BASE
+#    endif
 #endif
 
 #ifdef NEXTNET_BOOST_NO_CXX17_HDR_EXECUTION
-#ifndef BOOST_NO_CXX17_HDR_EXECUTION
-#define BOOST_NO_CXX17_HDR_EXECUTION
-#endif
+#    ifndef BOOST_NO_CXX17_HDR_EXECUTION
+#        define BOOST_NO_CXX17_HDR_EXECUTION
+#    endif
 #endif
 
 #include <boost/math/distributions.hpp>

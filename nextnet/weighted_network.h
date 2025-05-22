@@ -68,36 +68,40 @@ weighted_network *as_weighted_network(network *nw);
 class weighted_adjacencylist_network : public virtual weighted_network
 {
 public:
-	virtual bool is_undirected() override;
+    virtual bool is_undirected() override;
 
-	virtual bool is_simple() override;
+    virtual bool is_simple() override;
 
-	virtual node_t nodes() override;
+    virtual node_t nodes() override;
 
-	virtual node_t neighbour(node_t node, int neighbour_index, double *weight) override;
+    virtual node_t neighbour(node_t node, int neighbour_index, double *weight) override;
 
-	virtual index_t outdegree(node_t node) override;
+    virtual index_t outdegree(node_t node) override;
 
-    weighted_adjacencylist_network(std::vector<std::vector<std::pair<node_t, double>>>&& al,
+    weighted_adjacencylist_network(std::vector<std::vector<std::pair<node_t, double>>> &&al,
                                    bool undirected_, bool simple_)
-        :adjacencylist(std::move(al))
-        ,undirected(undirected_)
-        ,simple(simple_)
-    {}
+        : adjacencylist(std::move(al))
+        , undirected(undirected_)
+        , simple(simple_)
+    {
+    }
 
 protected:
-	weighted_adjacencylist_network()
-	{}
-        
-	weighted_adjacencylist_network(bool undirected_, bool simple_)
-		:undirected(undirected_), simple(simple_)
-	{}
+    weighted_adjacencylist_network()
+    {
+    }
+
+    weighted_adjacencylist_network(bool undirected_, bool simple_)
+        : undirected(undirected_)
+        , simple(simple_)
+    {
+    }
 
     /* Adjacency list of the graph */
     std::vector<std::vector<std::pair<node_t, double>>> adjacencylist;
 
-	bool undirected = false;
-	bool simple = false;
+    bool undirected = false;
+    bool simple     = false;
 };
 
 //-------------------------------------------
@@ -122,13 +126,13 @@ protected:
  * simplify is true, self-edges are removed. Multi-edges per definition
  * do not exist -- what would be a multi-edge in an unweighted networks
  * is simply an edge with a higher weight here.
- * 
+ *
  */
 class weighted_empirical_network : public virtual weighted_adjacencylist_network
 {
 public:
     weighted_empirical_network(
-        std::istream& file, bool undirected = true, bool simplify = false,
+        std::istream &file, bool undirected = true, bool simplify = false,
         node_t idxbase = 1, char csep = ' ', char wsep = ':');
 };
 

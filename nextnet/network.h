@@ -34,12 +34,12 @@ public:
      * edge (i,j) there is also an edge (j,i)
      */
     virtual bool is_undirected() = 0;
-	
-	/**
-	 * @brief Whether the graph is simple, i.e. does not contain
-	 * self edges (i,i) or multi-edges (i.e. multipel edges (i,j) for the same
-	 * nodes i and j).
-	 */
+
+    /**
+     * @brief Whether the graph is simple, i.e. does not contain
+     * self edges (i,i) or multi-edges (i.e. multipel edges (i,j) for the same
+     * nodes i and j).
+     */
     virtual bool is_simple() = 0;
 
     /**
@@ -78,7 +78,7 @@ class network_is_undirected : public virtual network
  */
 class network_is_simple : public virtual network
 {
-	virtual bool is_simple();
+    virtual bool is_simple();
 };
 
 /**
@@ -126,35 +126,39 @@ public:
 class adjacencylist_network : public virtual network
 {
 public:
-	virtual bool is_undirected() override;
-	
-	virtual bool is_simple() override;
-	
+    virtual bool is_undirected() override;
+
+    virtual bool is_simple() override;
+
     virtual node_t nodes() override;
 
     virtual node_t neighbour(node_t node, int neighbour_index) override;
 
     virtual index_t outdegree(node_t node) override;
 
-    adjacencylist_network(std::vector<std::vector<node_t>>&& al,
+    adjacencylist_network(std::vector<std::vector<node_t>> &&al,
                           bool undirected_, bool simple_)
-        :adjacencylist(std::move(al))
-        ,undirected(undirected_)
-        ,simple(simple_)
-    {}
+        : adjacencylist(std::move(al))
+        , undirected(undirected_)
+        , simple(simple_)
+    {
+    }
 
 protected:
-	adjacencylist_network()
-	{}
-	    
-	adjacencylist_network(bool undirected_, bool simple_)
-		:undirected(undirected_), simple(simple_)
-	{}
+    adjacencylist_network()
+    {
+    }
 
-	std::vector<std::vector<node_t>> adjacencylist;
-	
-	bool undirected = false;
-	bool simple = false;
+    adjacencylist_network(bool undirected_, bool simple_)
+        : undirected(undirected_)
+        , simple(simple_)
+    {
+    }
+
+    std::vector<std::vector<node_t>> adjacencylist;
+
+    bool undirected = false;
+    bool simple     = false;
 };
 //
 
@@ -168,7 +172,7 @@ protected:
 class watts_strogatz : public virtual adjacencylist_network
 {
 public:
-	watts_strogatz(node_t size, int k, double p, rng_t &engine);
+    watts_strogatz(node_t size, int k, double p, rng_t &engine);
 
     watts_strogatz(int size, double p, rng_t &engine)
         : watts_strogatz(size, 2, p, engine)
@@ -201,7 +205,7 @@ typedef erdos_renyi erdos_reyni;
  */
 class fully_connected : public virtual network
     , public virtual network_is_undirected
-	, public virtual network_is_simple
+    , public virtual network_is_simple
 {
 public:
     fully_connected(int size, rng_t &engine);
@@ -225,7 +229,7 @@ public:
  */
 class acyclic : public virtual network
     , public virtual network_is_undirected
-	, public virtual network_is_simple
+    , public virtual network_is_simple
 {
 public:
     static double lambda(double mean, int digits);
@@ -380,7 +384,7 @@ template <unsigned int D>
 class cubic_lattice : public virtual network
     , public virtual network_embedding
     , public virtual network_is_undirected
-	, public virtual network_is_simple
+    , public virtual network_is_simple
 {
 public:
     const static unsigned int dimension = D;
@@ -551,13 +555,13 @@ typedef cubic_lattice<8> cubic_lattice_8d;
  * If undirected is true, the network is assumed to be undirected, i.e.
  * for every edge (a,b) the reverse edge (b,a) is also added. If
  * simplify is true, self-edges and multi-edges are removed.
- * 
+ *
  */
 class empirical_network : public virtual adjacencylist_network
 {
 public:
     empirical_network(
-        std::istream& file, bool undirected = true, bool simplify = false,
+        std::istream &file, bool undirected = true, bool simplify = false,
         node_t idxbase = 1, char sep = ' ');
 };
 
@@ -567,7 +571,7 @@ public:
 
 std::vector<std::vector<double>> reproduction_matrix(
     network &nw, double *out_r, double *out_c, double *out_k1, double *out_k2,
-	double *out_k3, double *out_m1, double* out_m2,
+    double *out_k3, double *out_m1, double *out_m2,
     double *out_R0, double *out_R_r, double *R_pert);
 
 //------------------------------------------------

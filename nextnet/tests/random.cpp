@@ -63,7 +63,7 @@ TEST_CASE("Infectiousness distribution", "[random]")
     std::mt19937 engine;
 
     const std::size_t N = 10000;
-    transmission_time_infectiousness d{ {1.0, 1.5, 3.5, 4.0}, {0.0, 0.5, 0.5, 0.0} };
+    transmission_time_infectiousness d{ { 1.0, 1.5, 3.5, 4.0 }, { 0.0, 0.5, 0.5, 0.0 } };
     const double pinf_exp = std::exp(-1.25);
     std::vector<double> s_finite;
     s_finite.reserve(N);
@@ -76,44 +76,40 @@ TEST_CASE("Infectiousness distribution", "[random]")
             ++n_infinite;
     }
 
-    for(double tau = 0; tau <= 5.0; tau += 0.1) {
+    for (double tau = 0; tau <= 5.0; tau += 0.1) {
         double lambda, Psi;
         if (tau <= 1.0) {
             lambda = 0.0;
-            Psi = 1.0;
-        }
-        else if (tau <= 1.5) {
+            Psi    = 1.0;
+        } else if (tau <= 1.5) {
             lambda = tau - 1.0;
-            Psi = std::exp(-lambda*(tau - 1.0)/2.0);
-        }
-        else if (tau <= 3.5) {
+            Psi    = std::exp(-lambda * (tau - 1.0) / 2.0);
+        } else if (tau <= 3.5) {
             lambda = 0.5;
-            Psi = std::exp(-(0.125 + (tau - 1.5)*0.5));
-        }
-        else if (tau <= 4.0) {
+            Psi    = std::exp(-(0.125 + (tau - 1.5) * 0.5));
+        } else if (tau <= 4.0) {
             lambda = 0.5 - (tau - 3.5);
-            Psi = std::exp(-(0.125 + 1 + 0.5*(tau - 3.5) - (tau - 3.5)*(tau - 3.5)/2.0));
-        }
-        else {
+            Psi    = std::exp(-(0.125 + 1 + 0.5 * (tau - 3.5) - (tau - 3.5) * (tau - 3.5) / 2.0));
+        } else {
             lambda = 0.0;
-            Psi = pinf_exp;
+            Psi    = pinf_exp;
         }
-		const double lambda_obs = d.hazardrate(tau);
+        const double lambda_obs = d.hazardrate(tau);
         REQUIRE(std::abs(lambda_obs - lambda) < 1e-6);
-		const double Psi_obs = d.survivalprobability(tau);
+        const double Psi_obs = d.survivalprobability(tau);
         REQUIRE(std::abs(Psi_obs - Psi) < 1e-6);
-		if (lambda > 0) {
-			const double Psiinv_obs = d.survivalquantile(Psi_obs);
-			REQUIRE(abs(Psiinv_obs - tau) < 1e-6);
-		}
+        if (lambda > 0) {
+            const double Psiinv_obs = d.survivalquantile(Psi_obs);
+            REQUIRE(abs(Psiinv_obs - tau) < 1e-6);
+        }
     }
 
-    const double p_isinf = ztest((double)n_infinite/N, sqrt(pinf_exp*(1 - pinf_exp)) / sqrt(N), pinf_exp);
+    const double p_isinf = ztest((double)n_infinite / N, sqrt(pinf_exp * (1 - pinf_exp)) / sqrt(N), pinf_exp);
     REQUIRE(p_isinf >= 0.05);
 
-	const double p_ks = kstest(s_finite, [&d, pinf_exp](double x) {
-		return (1.0 - d.survivalprobability(x, 0, 1.0)) / (1 - pinf_exp);
-	});
+    const double p_ks = kstest(s_finite, [&d, pinf_exp](double x) {
+        return (1.0 - d.survivalprobability(x, 0, 1.0)) / (1 - pinf_exp);
+    });
     REQUIRE(p_ks >= 0.01);
 }
 

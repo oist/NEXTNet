@@ -15,7 +15,7 @@
 //-----Output networks-------------------------------
 //---------------------------------------------------
 
-void output_adjacencylist(std::ostream& dst, network& nw, bool include_weights=true, bool include_coords=true,
-                          bool include_meta=true, bool include_header=true, char csep=' ', char dsep=',', char wsep=':');
+void output_adjacencylist(std::ostream &dst, network &nw, bool include_weights = true, bool include_coords = true,
+                          bool include_meta = true, bool include_header = true, char csep = ' ', char dsep = ',', char wsep = ':');
 
-void output_network_meta(std::ostream& dst, network& nw, char dsep=',');
+void output_network_meta(std::ostream &dst, network &nw, char dsep = ',');

@@ -15,12 +15,12 @@
 
 bool temporal_network::is_simple()
 {
-	/* We only support simply temporal networks since
-	 * there is no way to distinguish between multiple
-	 * edges connecting the same nodes in neighbour
-	 * added/removed events
-	 */
-	return true;
+    /* We only support simply temporal networks since
+     * there is no way to distinguish between multiple
+     * edges connecting the same nodes in neighbour
+     * added/removed events
+     */
+    return true;
 }
 
 void temporal_network::notify_epidemic_event(epidemic_event_t ev, rng_t &engine)
@@ -47,8 +47,8 @@ bool mutable_network::has_edge(node_t src, node_t dst)
 
 bool mutable_network::add_edge(node_t src, node_t dst)
 {
-	if (src == dst)
-		throw std::logic_error("self-edges are not supported by mutable_network");
+    if (src == dst)
+        throw std::logic_error("self-edges are not supported by mutable_network");
     return adjacencylist.at(src).insert(dst).second;
 }
 
@@ -115,8 +115,8 @@ double mutable_weighted_network::edge_weight(node_t src, node_t dst)
 
 void mutable_weighted_network::add_edge(node_t src, node_t dst, double weight)
 {
-	if (src == dst)
-		throw std::logic_error("self-edges are not supported by mutable_network");
+    if (src == dst)
+        throw std::logic_error("self-edges are not supported by mutable_network");
     if ((weight < 0) || !std::isfinite(weight))
         throw std::range_error("weights must be positive and finite");
     if (weight == 0.0)
@@ -242,9 +242,9 @@ void next_reaction_network::clear_tag(tag_t tag)
     auto &queue_by_tag = event_queue.get<by_tag>();
     auto r             = queue_by_tag.equal_range(tag);
     queue_by_tag.erase(r.first, r.second);
-	
-	/* Forget cached next_time */
-	next_time = NAN;
+
+    /* Forget cached next_time */
+    next_time = NAN;
 }
 
 absolutetime_t next_reaction_network::next(rng_t &engine, absolutetime_t maxtime)
@@ -255,15 +255,15 @@ absolutetime_t next_reaction_network::next(rng_t &engine, absolutetime_t maxtime
 
     /* Find time of next event that step() will report */
     while (true) {
-		if (event_queue.empty()) {
-			next_time = INFINITY;
-			break;
-		}
+        if (event_queue.empty()) {
+            next_time = INFINITY;
+            break;
+        }
 
         /* Fetch next event, return nothing if past max_time */
         const queue_entry &top = top_event();
-		if (top.time > maxtime)
-			return INFINITY;
+        if (top.time > maxtime)
+            return INFINITY;
 
         /* Check whether step() would skip the event or not */
         if (const network_event_t *nwev = std::get_if<network_event_t>(&top.event)) {
@@ -295,10 +295,10 @@ absolutetime_t next_reaction_network::next(rng_t &engine, absolutetime_t maxtime
         }
 
         next_time = top.time;
-		break;
+        break;
     }
 
-	return next_time;
+    return next_time;
 }
 
 std::optional<network_event_t> next_reaction_network::step(rng_t &engine, absolutetime_t max_time)
@@ -405,7 +405,7 @@ std::optional<network_event_t> next_reaction_network::step(rng_t &engine, absolu
 /*----------------------------------------------------*/
 
 empirical_contact_network::empirical_contact_network(
-    std::istream& file, network_kind kind,
+    std::istream &file, network_kind kind,
     edge_duration_kind contact_type, interval_t dt)
     : next_reaction_network(kind)
 {
@@ -470,7 +470,6 @@ std::vector<std::vector<double>> empirical_contact_network::compute_number_of_ed
     return average_degree;
 }
 
-
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
 /*----------- DYNAMIC NETWORK: ERDÖS RENYI -----------*/
@@ -486,9 +485,9 @@ temporal_erdos_renyi::temporal_erdos_renyi(int size, double avg_degree, double t
 {
     if (size < 1)
         throw std::range_error(std::string("size must be positive"));
-	if ((std::uintmax_t)size > (UINTMAX_MAX >> 1))
-		throw std::range_error(std::string("maximal number of nodes is ") + std::to_string(UINTMAX_MAX >> 1));
-	
+    if ((std::uintmax_t)size > (UINTMAX_MAX >> 1))
+        throw std::range_error(std::string("maximal number of nodes is ") + std::to_string(UINTMAX_MAX >> 1));
+
     /* Initial degree-weights node distribution and present/absent edge counters */
     for (node_t i = 0; (std::size_t)i < this->adjacencylist.size(); ++i) {
         const unsigned k = (unsigned)this->adjacencylist[i].size();
@@ -502,7 +501,7 @@ temporal_erdos_renyi::temporal_erdos_renyi(int size, double avg_degree, double t
 
 bool temporal_erdos_renyi::is_simple()
 {
-	return true;
+    return true;
 }
 
 absolutetime_t temporal_erdos_renyi::next(rng_t &engine, absolutetime_t)
@@ -660,101 +659,101 @@ void temporal_erdos_renyi::remove_edge(node_t node, int neighbour_index)
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
 
-temporal_sirx_network::network_kind temporal_sirx_network::kind(network* nw)
+temporal_sirx_network::network_kind temporal_sirx_network::kind(network *nw)
 {
-	network_kind r = (network_kind)0;
-	r = (network_kind) (r | (nw->is_undirected() ? (network_kind)0 : directed_kind));
-	r = (network_kind) (r | (dynamic_cast<weighted_network*>(nw) ? weighted_kind : (network_kind)0));
-	return r;
+    network_kind r = (network_kind)0;
+    r              = (network_kind)(r | (nw->is_undirected() ? (network_kind)0 : directed_kind));
+    r              = (network_kind)(r | (dynamic_cast<weighted_network *>(nw) ? weighted_kind : (network_kind)0));
+    return r;
 }
 
-temporal_sirx_network::temporal_sirx_network(network& nw, double kappa0_, double kappa_, rng_t& engine)
-	: next_reaction_network(kind(&nw))
-	, kappa0(kappa0_)
-	, kappa(kappa_)
-	, state(nw.nodes(), node_state{ .removed = false, .infected = false })
+temporal_sirx_network::temporal_sirx_network(network &nw, double kappa0_, double kappa_, rng_t &engine)
+    : next_reaction_network(kind(&nw))
+    , kappa0(kappa0_)
+    , kappa(kappa_)
+    , state(nw.nodes(), node_state{ .removed = false, .infected = false })
 {
-	if (!nw.is_simple())
-		throw std::range_error("the underlying network must be simple (no self- or multi-edged)");
-	
-	weighted_network* wnw = dynamic_cast<weighted_network*>(&nw);
-	
-	/* Copy network structure */
-	resize((node_t)nw.nodes());
-	for(node_t n = 0, N = nw.nodes(); n < N; ++n) {
-		node_t nn;
-		double w = 1.0;
-		for(int i = 0; (nn = (wnw ? wnw->neighbour(n, i, &w) : nw.neighbour(n, i))) >= 0; i++)
-			add_edge(n, nn, w);
-	}
-	
-	/* Queue removals */
-	for(node_t n = 0, N = nw.nodes(); n < N; ++n)
-		queue_removal(n, state[n], 0, engine);
+    if (!nw.is_simple())
+        throw std::range_error("the underlying network must be simple (no self- or multi-edged)");
+
+    weighted_network *wnw = dynamic_cast<weighted_network *>(&nw);
+
+    /* Copy network structure */
+    resize((node_t)nw.nodes());
+    for (node_t n = 0, N = nw.nodes(); n < N; ++n) {
+        node_t nn;
+        double w = 1.0;
+        for (int i = 0; (nn = (wnw ? wnw->neighbour(n, i, &w) : nw.neighbour(n, i))) >= 0; i++)
+            add_edge(n, nn, w);
+    }
+
+    /* Queue removals */
+    for (node_t n = 0, N = nw.nodes(); n < N; ++n)
+        queue_removal(n, state[n], 0, engine);
 }
 
-void temporal_sirx_network::queue_removal(node_t node, node_state s, absolutetime_t time, rng_t& engine)
+void temporal_sirx_network::queue_removal(node_t node, node_state s, absolutetime_t time, rng_t &engine)
 {
-	/* Compute deactivation rate */
-	const double k = s.infected ? (kappa0 + kappa) : kappa0;
-	/* Deactivate immediately if rate is infinite, otherwise generate waiting time and queue */
-	if (k == INFINITY)
-		remove_node(node, time);
-	else if (k > 0) {
-		const double t = time + std::exponential_distribution<>(k)(engine);
-		queue_callback(t, [this, node, t]() { this->remove_node(node, t); }, node);
-	}
+    /* Compute deactivation rate */
+    const double k = s.infected ? (kappa0 + kappa) : kappa0;
+    /* Deactivate immediately if rate is infinite, otherwise generate waiting time and queue */
+    if (k == INFINITY)
+        remove_node(node, time);
+    else if (k > 0) {
+        const double t = time + std::exponential_distribution<>(k)(engine);
+        queue_callback(t, [this, node, t]() { this->remove_node(node, t); }, node);
+    }
 }
 
 void temporal_sirx_network::remove_node(node_t node, absolutetime_t time)
 {
-	/* Fetch and update node state */
-	node_state &s = state[node];
-	if (s.removed)
-		throw std::logic_error("node is already removed");
-	s.removed = true;
+    /* Fetch and update node state */
+    node_state &s = state[node];
+    if (s.removed)
+        throw std::logic_error("node is already removed");
+    s.removed = true;
 
-	node_t nn;
-	for (int i = 0; (nn = neighbour(node, i)) >= 0; ++i)
-		queue_remove_edge(node, nn, 1.0, time);
+    node_t nn;
+    for (int i = 0; (nn = neighbour(node, i)) >= 0; ++i)
+        queue_remove_edge(node, nn, 1.0, time);
 }
 
 void temporal_sirx_network::notify_epidemic_event(epidemic_event_t ev, rng_t &engine)
 {
-	/* Fetch node state */
-	node_state &s = state[ev.node];
+    /* Fetch node state */
+    node_state &s = state[ev.node];
 
-	/* Update infected state of node, re-genereate waiting times if necessary */
-	switch (ev.kind) {
-		case epidemic_event_kind::outside_infection:
-		case epidemic_event_kind::infection:
-			if (s.infected)
-				throw std::logic_error("node is already infected");
-			s.infected = true;
+    /* Update infected state of node, re-genereate waiting times if necessary */
+    switch (ev.kind) {
+        case epidemic_event_kind::outside_infection:
+        case epidemic_event_kind::infection:
+            if (s.infected)
+                throw std::logic_error("node is already infected");
+            s.infected = true;
 
-			/* if the remove rate of the node changed, re-generate waiting time */
-			if (!s.removed && (kappa != 0)) {
-				clear_tag(ev.node);
-				queue_removal(ev.node, s, ev.time, engine);
-			}
-			break;
+            /* if the remove rate of the node changed, re-generate waiting time */
+            if (!s.removed && (kappa != 0)) {
+                clear_tag(ev.node);
+                queue_removal(ev.node, s, ev.time, engine);
+            }
+            break;
 
-		case epidemic_event_kind::reset:
-			if (!s.infected)
-				throw std::logic_error("node is not infected");
-			s.infected = false;
+        case epidemic_event_kind::reset:
+            if (!s.infected)
+                throw std::logic_error("node is not infected");
+            s.infected = false;
 
-			/* if the remove rate of the node changed, re-generate waiting time */
-			if (!s.removed && (kappa != 0)) {
-				clear_tag(ev.node);
-				queue_removal(ev.node, s, ev.time, engine);
-			}
-			break;
+            /* if the remove rate of the node changed, re-generate waiting time */
+            if (!s.removed && (kappa != 0)) {
+                clear_tag(ev.node);
+                queue_removal(ev.node, s, ev.time, engine);
+            }
+            break;
 
-		default:
-			throw std::logic_error("unknown event type");
-			break;
-	}
+        default:
+            throw std::logic_error("unknown event type");
+            break;
+    }
 }
 
 /*----------------------------------------------------*/

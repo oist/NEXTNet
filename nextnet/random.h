@@ -313,24 +313,28 @@ public:                                                                         
 /*-----------TRANSMISSION TIMES DEFINED IN TERMS OF BOOST AND C++ STDLIB ---------*/
 
 TRANSMISSION_TIME_GENERIC_1PARAM(transmission_time_exponential_pinf,
-                                 exponential_distribution, exponential_distribution, rate, 1/rate)
-};
+                                 exponential_distribution, exponential_distribution, rate, 1 / rate)
+}
+;
 
 TRANSMISSION_TIME_GENERIC_SAMENAME_MEAN_VARIANCE(lognormal,
                                                  mu, 2 * log(m) - 0.5 * log(pow(m, 2.0) + v),
                                                  sigma, sqrt(log(1 + v / pow(m, 2.0))))
-};
+}
+;
 
 TRANSMISSION_TIME_GENERIC_SAMENAME_MEAN_VARIANCE(gamma,
                                                  shape, pow(m, 2.0) / v,
                                                  scale, v / m)
 virtual double hazardbound(interval_t) const;
-};
+}
+;
 
 TRANSMISSION_TIME_GENERIC_SAMENAME_2PARAM(weibull, shape, scale,
                                           scale *std::tgamma(1 + 1 / shape),
                                           pow(scale, 2) * (std::tgamma(1 + 2 / shape) - pow(std::tgamma(1 + 1 / shape), 2)))
-};
+}
+;
 
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
@@ -351,10 +355,10 @@ private:
     explicit transmission_time_polynomial_rate(std::vector<double> &&_coeffs, int dummy);
 
 public:
-	using transmission_time::survivalprobability;
-	using transmission_time::survivalquantile;
+    using transmission_time::survivalprobability;
+    using transmission_time::survivalquantile;
 
-	const std::vector<double> coeffs;
+    const std::vector<double> coeffs;
 
     virtual double density(interval_t tau) const override;
 
@@ -383,8 +387,8 @@ public:
 
     const double value;
 
-	using transmission_time::survivalprobability;
-	using transmission_time::survivalquantile;
+    using transmission_time::survivalprobability;
+    using transmission_time::survivalquantile;
 
     virtual interval_t sample(rng_t &, interval_t t, double m) const override;
 
@@ -412,22 +416,22 @@ public:
 class transmission_time_infectiousness : public transmission_time
 {
 public:
-    transmission_time_infectiousness(const std::vector<double>& tau,
-                                     const std::vector<double>& lambda);
+    transmission_time_infectiousness(const std::vector<double> &tau,
+                                     const std::vector<double> &lambda);
 
-	/* tau -> lambda(tau), Lambda(tau) */
+    /* tau -> lambda(tau), Lambda(tau) */
     std::map<double, std::pair<double, double>> lambda;
 
-	/* Lambda(tau) -> tau_left, tau_right, lambda(tau)
-	 * here, [tau_left, tau_right] is the range where the
-	 * total hazard rate is Lambda(tau). tau_left < tau_right
-	 * implies thus that lambda(tau) is zero on that interval.
-	 */
+    /* Lambda(tau) -> tau_left, tau_right, lambda(tau)
+     * here, [tau_left, tau_right] is the range where the
+     * total hazard rate is Lambda(tau). tau_left < tau_right
+     * implies thus that lambda(tau) is zero on that interval.
+     */
     std::map<double, std::pair<std::pair<double, double>, double>> lambda_inverse;
     double lambda_max;
 
-	using transmission_time::survivalprobability;
-	using transmission_time::survivalquantile;
+    using transmission_time::survivalprobability;
+    using transmission_time::survivalquantile;
 
     virtual double density(interval_t tau) const override;
 
@@ -443,7 +447,6 @@ public:
 
     virtual double survivalquantile(interval_t tau) const override;
 };
-
 
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/

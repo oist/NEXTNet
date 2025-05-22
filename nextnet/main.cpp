@@ -33,18 +33,18 @@ int main(int argc, const char *argv[])
 {
     rng_t engine;
     factory<transmission_time>::object_holder_t psi;
-	factory<transmission_time>::object_holder_t rho;
-	factory<network>::object_holder_t nw;
+    factory<transmission_time>::object_holder_t rho;
+    factory<network>::object_holder_t nw;
     vector<algorithm::param_t> alg_params;
     unique_ptr<simulation_algorithm> alg;
     unique_ptr<simulate_on_temporal_network> sotn_alg;
     unique_ptr<ostream> nw_out_file;
     unique_ptr<ostream> out_file;
-    ostream* nw_out = nullptr;
-    ostream* out = nullptr;
+    ostream *nw_out = nullptr;
+    ostream *out    = nullptr;
 
-	bool epidemic_events = false;
-	bool network_events = false;
+    bool epidemic_events = false;
+    bool network_events  = false;
 
     OptionParser op("options");
     auto help_opt          = op.add<Switch>("h", "help", "produce help message");
@@ -96,7 +96,7 @@ int main(int argc, const char *argv[])
         /* Whether to output networks and/or epidemic events */
 
         epidemic_events = (ev_opt->value().find("e") != string::npos);
-        network_events = (ev_opt->value().find("n") != string::npos);
+        network_events  = (ev_opt->value().find("n") != string::npos);
 
         /* Parse algorithm parameters */
 
@@ -112,11 +112,11 @@ int main(int argc, const char *argv[])
 
         /* Setup rng */
         if (seed_opt->is_set()) {
-            std::seed_seq seed { seed_opt->value() };
+            std::seed_seq seed{ seed_opt->value() };
             engine.seed(seed);
         } else {
             std::random_device rd;
-            std::seed_seq seed { rd() };
+            std::seed_seq seed{ rd() };
             engine.seed(seed);
         }
         random_engine = &engine;
@@ -159,7 +159,7 @@ int main(int argc, const char *argv[])
         }
         if (initial_opt->count() == 0) {
             if (nw.first->nodes() > 0) {
-                const node_t n = std::uniform_int_distribution<node_t>(0, nw.first->nodes()-1)(*random_engine);
+                const node_t n = std::uniform_int_distribution<node_t>(0, nw.first->nodes() - 1)(*random_engine);
                 alg->add_infections({ { n, 0.0 } });
             } else
                 alg->add_infections({ { 0, 0.0 } });
@@ -168,7 +168,7 @@ int main(int argc, const char *argv[])
         /* Create simulate_on_temporal_network algorithm if necessary */
 
         if (dynamic_cast<temporal_network *>(nw.first.get()) != nullptr)
-			sotn_alg.reset(new simulate_on_temporal_network(*alg.get()));
+            sotn_alg.reset(new simulate_on_temporal_network(*alg.get()));
     } catch (program_argument_error &e) {
         cerr << op << endl;
         cerr << "Error in argument " << e.invalid_argument << ": " << e.what() << endl;
@@ -197,8 +197,7 @@ int main(int argc, const char *argv[])
             if (!*nw_out_file)
                 throw runtime_error("failed to create "s + out_nw_opt->value());
             nw_out = nw_out_file.get();
-        }
-        else if (out_nw_opt->is_set())
+        } else if (out_nw_opt->is_set())
             nw_out = &cout;
 
     } catch (runtime_error &e) {
@@ -219,10 +218,10 @@ int main(int argc, const char *argv[])
             *out << "#psi = " << time_factory.parse(psi_opt->value()) << endl;
 
         if (rho_opt->is_set())
-            *out << "#rho = " <<  time_factory.parse(rho_opt->value()) << endl;
+            *out << "#rho = " << time_factory.parse(rho_opt->value()) << endl;
 
         if (nw_opt->is_set()) {
-            *out << "#nw = " <<  network_factory.parse(nw_opt->value()) << endl;
+            *out << "#nw = " << network_factory.parse(nw_opt->value()) << endl;
             if (nw_out != out) {
                 *out << "#nw ";
                 output_network_meta(*out, *nw.first);
@@ -244,12 +243,12 @@ int main(int argc, const char *argv[])
         *out << "total_reset" << '\t';
         *out << "infected" << '\n';
 
-        const double tmax          = tmax_opt->is_set() ? tmax_opt->value() : INFINITY;
-        size_t epidemic_step       = 0;
-        size_t network_step        = 0;
-        double infected            = 0;
-        double total_infected      = 0;
-        double total_reset         = 0;
+        const double tmax     = tmax_opt->is_set() ? tmax_opt->value() : INFINITY;
+        size_t epidemic_step  = 0;
+        size_t network_step   = 0;
+        double infected       = 0;
+        double total_infected = 0;
+        double total_reset    = 0;
         while (true) {
             // Execute next event
             const optional<network_or_epidemic_event_t> any_ev_opt =
