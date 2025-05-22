@@ -29,7 +29,7 @@ DECLARE_ARGUMENT_3(tau, double, std::nullopt);
 factory<transmission_time> time_factory = factory<transmission_time>("time")
 	.add<transmission_time_lognormal, mean, variance, pinf>("lognormal")
 	.add<transmission_time_gamma, mean, variance, pinf>("gamma")
-	.add<transmission_time_exponential, lambda>("exponential")
+	.add<transmission_time_exponential_pinf, lambda, pinf>("exponential")
 	.add<transmission_time_weibull, shape, scale, pinf>("weibull")
 	.add<transmission_time_infectiousness, taus, lambdas>("infectiousness")
 	.add<transmission_time_polynomial_rate, coeffs>("polynomial_rate")
