@@ -4,7 +4,7 @@ The *NEXT-NET* (**N**ext-reaction-based **E**pidemics e**X**tended to **T**empor
 
 We recommend that users who are already familiar with Python or R use *NEXT-Net* through the packages [*NEXTNetR*](https://oist.github.io/NEXTNetR) and [*NEXTNetPy*](https://github.com/oist/NEXTNetPy) which provide convenient and flexible access to the features of the C++ library. We aim to provide the same set of features in both packages; but occasionally available features diverge. Currently, the R wrapper provides the most complete access to temporal and weighted networks. For users not familiar with Python or R, the C++ library comes with a basic command-line tool called `nextnet`. This tool is less flexible than the Python and R packages when it comes to setting up and running simulations, but provides quick access to the main features of NEXT-Net. It also makes it easy to test custom modifications of the C++ code.
 
-We also provide a [database of empirical networks](https://github.com/oist/NextNet-EmpiricalNetworks) from the SNAP (Leskovec and Krevl, [2014](http://snap.stanford.edu/data)), ICON (Clauset *et al.*, [2016](https://icon.colorado.edu/)) and KONECT (Kunegis, [2013](https://doi.org/10.1145/2487788.2488173)) databases in a format compatible with *NEXT-Net*.
+With *[NEXTNet-EmpiricalNetworks](https://github.com/oist/NextNet-EmpiricalNetworks)* we also provide a database of empirical networks in a format compatible with *NEXT-Net*, compiled from the SNAP ([Leskovec and Krevl, 2014](http://snap.stanford.edu/data)), ICON ([Clauset *et al.*, 2016](https://icon.colorado.edu/)), and KONECT ([Kunegis, 2013](https://doi.org/10.1145/2487788.2488173)) and other publications ([Rocha *et al.*, 2011](https://doi.org/10.1371/journal.pcbi.1001109)).
 
 # Installtation
 
