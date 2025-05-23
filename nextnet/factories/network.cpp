@@ -18,19 +18,19 @@ namespace factories {
 
 empirical_contact_network::edge_duration_kind parse_contact_kind(const std::string &s)
 {
-    if (s == "instantenous")
+    if (s == "instantaneous")
         return empirical_contact_network::infitesimal_duration;
     else if (s == "finite")
         return empirical_contact_network::finite_duration;
     else
-        throw std::range_error("contact_kind must be 'instantenous' or 'finite'");
+        throw std::range_error("contact_kind must be 'instantaneous' or 'finite'");
 }
 
 std::string render_contact_kind(const empirical_contact_network::edge_duration_kind &s)
 {
     switch (s) {
         case empirical_contact_network::infitesimal_duration:
-            return "instantenous";
+            return "instantaneous";
         case empirical_contact_network::finite_duration:
             return "finite";
         default:
