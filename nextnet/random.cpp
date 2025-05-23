@@ -283,6 +283,7 @@ transmission_time_infectiousness::transmission_time_infectiousness(const std::ve
     double lambda_cum  = 0;
     double tau_last    = 0;
     double lambda_last = 0;
+    bool   first       = true;
     for (auto &i : lambda) {
         const double tau_i    = i.first;
         const double lambda_i = i.second.first;
@@ -290,7 +291,7 @@ transmission_time_infectiousness::transmission_time_infectiousness(const std::ve
 
         const double dtau = (tau_i - tau_last);
         assert(dtau >= 0.0);
-        if (dtau == 0.0)
+        if (!first && (dtau == 0.0))
             throw std::runtime_error("tau vector must not contain duplicate values");
 
         /* Update Lambda(tau) */
@@ -311,6 +312,7 @@ transmission_time_infectiousness::transmission_time_infectiousness(const std::ve
 
         tau_last    = tau_i;
         lambda_last = lambda_i;
+        first = false;
     }
 }
 
