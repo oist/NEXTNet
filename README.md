@@ -4,7 +4,7 @@ The *NEXT-NET* (**N**ext-reaction-based **E**pidemics e**X**tended to **T**empor
 
 We recommend that users who are already familiar with Python or R use *NEXT-Net* through the packages [*NEXTNetR*](https://oist.github.io/NEXTNetR) and [*NEXTNetPy*](https://github.com/oist/NEXTNetPy) which provide convenient and flexible access to the features of the C++ library. We aim to provide the same set of features in both packages; but occasionally available features diverge. Currently, the R wrapper provides the most complete access to temporal and weighted networks. For users not familiar with Python or R, the C++ library comes with a basic command-line tool called `nextnet`. This tool is less flexible than the Python and R packages when it comes to setting up and running simulations, but provides quick access to the main features of NEXT-Net. It also makes it easy to test custom modifications of the C++ code.
 
-# Synopsis
+# Installtation
 
 To download and install a prebuilt binary of the *NEXT-NET* command-line interface, go to [*Releases*](https://github.com/oist/NEXTNet/releases), select the latest release, download `NEXTNet-v<VERSION>-x86_64.tar.gz`, and decompress. This should yield a binary called `nextnet`. Currently only binaries for Linux on x86_64 (i.e. most current HPC clusters, desktop machines and laptops) are provided, but additional platforms may be added upon request. Binaries are built in a CentOS 7 environment for maximal compatibility with a wide range of systems, but 100% universal compatibility unfortunately cannot be guaranteed. On other architectures where the binary should fail to work, please see below for how to build *NEXT-Net* from source.
 
@@ -17,6 +17,8 @@ cd build
 cmake -DCMAKE_BUILD_TYPE=Release ../
 make
 ```
+
+# Synopsis
 
 To simulate an epidemic starting until time t=250 from node 1 of a Watts-Strogatz network of size N=10.000 nodes with  parameters K=6 and beta=0.1, gamma distributed infection times with mean 8 and variance 1, and log-normally distributed recovery times with mean 50 and variance 20 run
 
