@@ -8,9 +8,12 @@ We recommend that users who are already familiar with Python or R use *NEXT-Net*
 
 To download and install a prebuilt binary of the *NEXT-NET* command-line interface, go to [*Releases*](https://github.com/oist/NEXTNet/releases), select the latest release, download `NEXTNet-v<VERSION>-x86_64.tar.gz`, and decompress. This should yield a binary called `nextnet`. Currently only binaries for Linux on x86_64 (i.e. most current HPC clusters, desktop machines and laptops) are provided, but additional platforms may be added upon request. Binaries are built in a CentOS 7 environment for maximal compatibility with a wide range of systems, but 100% universal compatibility unfortunately cannot be guaranteed. On other architectures where the binary should fail to work, please see below for how to build *NEXT-Net* from source.
 
-Alternatively, if using the pre-built binary is not an option, *git*, *cmake* and *Boost* are required to build the *NEXT-NET* command-line interface. After installing these dependencies, download and build *NEXT-NET* with
+To build *NEXT-Net* from source, *[cmake](https://cmake.org/))* and *[Boost](https://www.boost.org/)* are required. If *git* is installed, the latest version of *NEXT-Net* can be downloaded with
 ```
-git clone --recurse-submodules https://github.com/oist/NEXTNet.git
+git clone --recurse-submodules --branch latest-release https://github.com/oist/NEXTNet.git
+```
+Otherwise, please got to [*Releases*](https://github.com/oist/NEXTNet/releases), select the latest release, download `NEXTNet-v<VERSION>-source.tar.gz`, decompress into a folder `NEXTNet`, and run the following commands to produce the command-line tool `nextnet`
+```
 cd NEXTNet
 mkdir build
 cd build
