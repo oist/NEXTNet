@@ -33,6 +33,6 @@ for arch in linux-x86_64 mac; do
 	rm -rf .build-binary-archive-$arch
 	mkdir .build-binary-archive-$arch
 	cp binaries/$arch/nextnet-v$ver .build-binary-archive-$arch/nextnet
-	(cd .build-binary-archive-$arch; czf ../archives/NEXTNet-v$ver-$arch.tar.gz nextnet)
+	(cd .build-binary-archive-$arch; tar czf ../archives/NEXTNet-v$ver-$arch.tar.gz nextnet)
 	rm -rf .build-binary-archive-$arch
 done
