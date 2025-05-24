@@ -87,8 +87,8 @@ Time distributions define (a) the time it takes from the infection of a node unt
 * *Gamma*. Gamma distribution parametrized with mean and variance and optionally the probability of no infection. Command-line syntax `gamma(mean, variance, pinf = 0)`.
 * *Lognormal*. Log-normal distribution parametrized with mean and variance and optionally the probability of no infection. Command-line syntax `lognormal(mean, variance, pinf = 0)`.
 * *Weibull*. Weibull distribution parametrized with shape and scale and optionally the probability of no infection. Command-line syntax `weibull(shape, scale, pinf = 0)`.
-* *Polynomial rate*. Polynomial infectiousness function of arbitrary degree. Command-line syntax `polynomial_rate(coeffs)`.
-* *Infectiousness time-course*. Arbitrary infectionsness function defined by a list of times and corresponding infection rates. Command-line syntax `infectiousness(taus, lambdas)`.
+* *Polynomial rate*. Polynomial infectiousness function of arbitrary degree. Command-line syntax `polynomial_rate(coeffs)`, where coeffs is a list `{c0, c1, ...}` of coefficients for x, x squared, etc.
+* *Infectiousness time-course*. Arbitrary infectionsness function defined by a list of times and corresponding infection rates. Command-line syntax `infectiousness(taus, lambdas)`, where `taus` and `lambdas` are lists `{v0, v1, ...}` of values describing time points and the corresponding lambda values.
 * *Deterministic*. Fixed time of infection. Command-line syntax `deterministic(tau)`.
 
 ## Simulation algorithms
