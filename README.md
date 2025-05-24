@@ -58,6 +58,8 @@ networks, transmission time distributions, and simulation algorithms.
 
 ## Types of networks
 
+*NEXT-Net* supports a range of synthetic and empirical networks, both static and dynamic. In the command-line simulator, the list of available networks can be queried with `--list-networks`, and a specific network is selected with option `-n`.
+
 ### Static networks
 
 * [*Erdős–Rényi*](https://en.wikipedia.org/wiki/Erd%C5%91s%E2%80%93R%C3%A9nyi_model). Random networks in two nodes are connected by an edge with a certian probability. These networks exhibit no clustering or hubs. Command-line syntax `erdos_renyi(size, avg_degree)`.
@@ -79,7 +81,7 @@ networks, transmission time distributions, and simulation algorithms.
 
 ## Time distributions
 
-Time distributions define (a) the time it takes from the infection of a node until it transmits the disease across a specific link, and (b) the time it takes for a node to recover. NEXT-NET offers the following pre-defined distributions, and allows users to easily implement additional distributions. Many of the common distributions listed below have an additional parameter `pinf` which specifies the probability of no infection. See the R package manual pages [](https://oist.github.io/NEXTNetR/reference/time_distributions.html) and [time_functions](https://oist.github.io/NEXTNetR/reference/time_functions.html) for additional details. 
+Time distributions define (a) the time it takes from the infection of a node until it transmits the disease across a specific link, and (b) the time it takes for a node to recover. NEXT-NET offers the following pre-defined distributions, and allows users to easily implement additional distributions. The list of avaible time distribution can be queried on the command-line with `--list-times`. Many of the common distributions listed below have an additional parameter `pinf` which specifies the probability of no infection. See the R package manual pages [](https://oist.github.io/NEXTNetR/reference/time_distributions.html) and [time_functions](https://oist.github.io/NEXTNetR/reference/time_functions.html) for additional details. The distribution can be selected on the command-line with option `-p` for the transmission time and `-r` for the recovery time.
 
 * *Exponential*. Exponential distribution with a given rate and optionally a given probability of no infection (i.e. an infinite transmission time). Command-line syntax `exponential(lambda, pinf = 0)`. 
 * *Gamma*. Gamma distribution parametrized with mean and variance and optionally the probability of no infection. Command-line syntax `gamma(mean, variance, pinf = 0)`.
@@ -91,6 +93,8 @@ Time distributions define (a) the time it takes from the infection of a node unt
 
 ## Simulation algorithms
 
-* [*Next reaction method*](https://doi.org/10.1063/1.2799998). The most efficient algorithm available, in which the runtime to find the next infection depends only weakly on the number of infected nodes. Scales to networks with millions of nodes. 
-* [*REGIR* (**Re**jection **Gi**llespie algorithm for non-Markovian **R**eactions *)](https://arxiv.org/abs/2212.05059). Based on a similar approximation as *nGMA*, but removes the quadratic growth of the time it takes to find the next infection. Typically slower than the *next reaction method* but scales similarly with network size.
-* [*nMGA* (**n**on-**M**arkovian **G**illespie **A**lgorithm)](https://doi.org/10.1103/PhysRevE.90.042108). An approximate algorithms which works well on small networks. However, the runtime to find the next infection grows quadratically with the number of infected nodes, which limits the scalability to large networks.
+The recommonded simulation algorithm for all user-cases is currently the *NEXT-Net* algorithm. The command-line simulator allows the algorithm to be selected from the following list by specifying option `-a next|regir|nmga`.
+
+* [*Next reaction method*](https://doi.org/10.1063/1.2799998). The most efficient algorithm available, in which the runtime to find the next infection depends only weakly on the number of infected nodes. Scales to networks with millions of nodes. Command-line syntax `next`. 
+* [*REGIR* (**Re**jection **Gi**llespie algorithm for non-Markovian **R**eactions *)](https://arxiv.org/abs/2212.05059). Based on a similar approximation as *nGMA*, but removes the quadratic growth of the time it takes to find the next infection. Typically slower than the *next reaction method* but scales similarly with network size. Command-line syntax `regir`
+* [*nMGA* (**n**on-**M**arkovian **G**illespie **A**lgorithm)](https://doi.org/10.1103/PhysRevE.90.042108). An approximate algorithms which works well on small networks. However, the runtime to find the next infection grows quadratically with the number of infected nodes, which limits the scalability to large networks. Command-line syntax `ngma`.
