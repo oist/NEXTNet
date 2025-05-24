@@ -79,15 +79,15 @@ networks, transmission time distributions, and simulation algorithms.
 
 ## Time distributions
 
-Time distributions define (a) the time it takes from the infection of a node until it transmits the disease across a specific link, and (b) the time it takes for a node to recover. NEXT-NET offers the following pre-defined distributions, and allows users to easily implement additional distributions.
+Time distributions define (a) the time it takes from the infection of a node until it transmits the disease across a specific link, and (b) the time it takes for a node to recover. NEXT-NET offers the following pre-defined distributions, and allows users to easily implement additional distributions. Many of the common distributions listed below have an additional parameter `pinf` which specifies the probability of no infection. See the R package manual pages [](https://oist.github.io/NEXTNetR/reference/time_distributions.html) and [time_functions](https://oist.github.io/NEXTNetR/reference/time_functions.html) for additional details. 
 
-* *Exponential*. Exponential distribution with a given rate and optionally a given probability of no infection (i.e. an infinite transmission time).
-* *Gamma*. Gamma distribution parametrized with mean and variance and optionally the probability of no infection.
-* *Lognormal*. Log-normal distribution parametrized with mean and variance and optionally the probability of no infection.
-* *Weibull*. Weibull distribution parametrized with shape and scale and optionally the probability of no infection.
-* *Polynomial rate*. Polynomial infectiousness function of arbitrary degree.
-* *Infectiousness time-course*. Arbitrary infectionsness function defined by a list of times and corresponding infection rates.
-* *Deterministic*. Fixed time of infection.
+* *Exponential*. Exponential distribution with a given rate and optionally a given probability of no infection (i.e. an infinite transmission time). Command-line syntax `exponential(lambda, pinf = 0)`. 
+* *Gamma*. Gamma distribution parametrized with mean and variance and optionally the probability of no infection. Command-line syntax `gamma(mean, variance, pinf = 0)`.
+* *Lognormal*. Log-normal distribution parametrized with mean and variance and optionally the probability of no infection. Command-line syntax `lognormal(mean, variance, pinf = 0)`.
+* *Weibull*. Weibull distribution parametrized with shape and scale and optionally the probability of no infection. Command-line syntax `weibull(shape, scale, pinf = 0)`.
+* *Polynomial rate*. Polynomial infectiousness function of arbitrary degree. Command-line syntax `polynomial_rate(coeffs)`.
+* *Infectiousness time-course*. Arbitrary infectionsness function defined by a list of times and corresponding infection rates. Command-line syntax `infectiousness(taus, lambdas)`.
+* *Deterministic*. Fixed time of infection. Command-line syntax `deterministic(tau)`.
 
 ## Simulation algorithms
 
