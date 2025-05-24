@@ -60,22 +60,22 @@ networks, transmission time distributions, and simulation algorithms.
 
 ### Static networks
 
-* [*Erdős–Rényi*](https://en.wikipedia.org/wiki/Erd%C5%91s%E2%80%93R%C3%A9nyi_model). Random networks in two nodes are connected by an edge with a certian probabilitz. These networks exhibit no clustering or hubs.
-* [*Watts-Strogatz*](https://en.wikipedia.org/wiki/Watts%E2%80%93Strogatz_model). Random small-world networks exhibiting clustering and hubs.
-* [*Barabási-Albert*](https://en.wikipedia.org/wiki/Barab%C3%A1si%E2%80%93Albert_model). Random preferential attachment networks exhibiting hubs and scale-free degree distributions.
-* *Acyclic networks*. Random tree-like networks with Poissonian distribution of number of offsprings
-* *Configuration mode*l. Random networks with given degree distributions
-* *Clustered configuration model*. Random networks with given degree distribution and clustering coefficients.
-* *Lattice*. Regular spatial networks.
-* *Empirical networks*. Networks defined by an adjacency list, i.e. a list of neighbours of each node. See [*NEXTNet-EmpiricalNetworks*](https://github.com/oist/NEXTNet-EmpiricalNetworks) for a list of empirical networks that can directly be loaded into *NEXTNet*.
+* [*Erdős–Rényi*](https://en.wikipedia.org/wiki/Erd%C5%91s%E2%80%93R%C3%A9nyi_model). Random networks in two nodes are connected by an edge with a certian probability. These networks exhibit no clustering or hubs. Command-line syntax `erdos_renyi(size, avg_degree)`.
+* [*Watts-Strogatz*](https://en.wikipedia.org/wiki/Watts%E2%80%93Strogatz_model). Random small-world networks exhibiting clustering and hubs. Command-line syntax `watts_strogatz(size, k, p)`.
+* [*Barabási-Albert*](https://en.wikipedia.org/wiki/Barab%C3%A1si%E2%80%93Albert_model). Random preferential attachment networks exhibiting hubs and scale-free degree distributions. Command-line syntax `barabasi_albert(size, m)`.
+* *Acyclic networks*. Random tree-like networks with Poissonian distribution of number of offsprings. Command-line syntax `acyclic(avg_degree) -i 1`.
+* *Configuration mode*l. Random networks with given degree distributions. Command-line syntax `config_model(degrees)`.
+* *Clustered configuration model*. Random networks with given degree distribution and clustering coefficients. Command-line syntax `config_model_clustered(degrees, triangles, beta)`.
+* *Lattice*. Regular spatial networks. Command-line syntax `lattice_2d(edgelength)`, `lattice_3d(edgelength)`
+* *Empirical networks*. Networks defined by an adjacency list, i.e. a list of neighbours of each node. See [*NEXTNet-EmpiricalNetworks*](https://github.com/oist/NEXTNet-EmpiricalNetworks) for a list of empirical networks that can directly be loaded into *NEXTNet*. Command-line syntax `empirical(file)` for unweighted networks and `weighted_empirical(file)` for weighted networks. See the R package documentation for [empirical_network](https://oist.github.io/NEXTNetR/reference/empirical_network.html) and [empirical_weighted_network](https://oist.github.io/NEXTNetR/reference/empirical_weightednetwork.html) for a description of the file format and optional parameters. Gzip-compressed files are supported if they end in ".gz".
 
 ### Temporal networks
 
-* *Temporal Erdös-Réyni*. Temporal networks that at any instant resembles an [*Erdős–Rényi*](https://en.wikipedia.org/wiki/Erd%C5%91s%E2%80%93R%C3%A9nyi_model) networks, but in which nodes randomly detach from a currently neighbour and reattach to a new, randomly chosen neighbour.
-* *SIRX network*. A network version of the [SIRX model](https://www.science.org/doi/10.1126/science.abb4557) in nodes stochastically deactivate, i.e. remove their links, in response to an epidemic outbreak.
-* *Activity-driven network*. A temporal network in which nodes stochastically detatch from their current neighbour and reattach elsewhere.
-* *Brownian proximity network*. A temporal network with spatial structure in which nodes move randomly in two dimensions and links represent spatial proximity between nodes.
-* *Epirical contact networks*. Networks defined a list *(t,i,j)* of contact times *t* between individuals *i* and *j*.
+* *Temporal Erdös-Réyni*. Temporal networks that at any instant resembles an [*Erdős–Rényi*](https://en.wikipedia.org/wiki/Erd%C5%91s%E2%80%93R%C3%A9nyi_model) networks, but in which nodes randomly detach from a currently neighbour and reattach to a new, randomly chosen neighbour. Command-line syntax `temporal_erdos_renyi(size, avg_degree)`, see the R package documentation for [erdos_renyi_temporalnetwork](https://oist.github.io/NEXTNetR/reference/erdos_renyi_temporalnetwork.html) for details.
+* *SIRX network*. A network version of the [SIRX model](https://www.science.org/doi/10.1126/science.abb4557) in nodes stochastically deactivate, i.e. remove their links, in response to an epidemic outbreak. Command-line syntax `temporal_sirx(nw, kappa0, kappa)`, see the R package documentation for [sirx_temporalnetwork](https://oist.github.io/NEXTNetR/reference/sirx_temporalnetwork.html) for details.
+* *Activity-driven network*. A temporal network in which nodes stochastically detatch from their current neighbour and reattach elsewhere. Command-line syntax `activity_driven(activities = {1}, m, eta_sus, eta_inf, b_sus, b_inf)`, see the R package documentation for [activity_driven_temporalnetwork](https://oist.github.io/NEXTNetR/reference/activity_driven_temporalnetwork.html) for details.
+* *Brownian proximity network*. A temporal network with spatial structure in which nodes move randomly in two dimensions and links represent spatial proximity between nodes. Command-line syntax `brownian_proximity(size, avg_degree, radius = 1, D0 = 1, D1 = 1)`, see the R package documentation [brownian_proximity_temporalnetwork](https://oist.github.io/NEXTNetR/reference/brownian_proximity_temporalnetwork.html) for details.
+* *Epirical contact networks*. Networks defined a list *(t,i,j)* of contact times *t* between individuals *i* and *j*. Command-line syntax `empirical_contact(file, contact_kind = instantaneous, dt = 1)`, see the R package documentation for [empirical_contact_temporalnetwork](https://oist.github.io/NEXTNetR/reference/empirical_contact_temporalnetwork.html) for a description of the file format. Gzip-compressed files are supported if they end in ".gz".
 
 ## Time distributions
 
