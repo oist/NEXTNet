@@ -343,7 +343,7 @@ struct istream_ref
 
     operator std::istream &() const { return *file.get(); }
 
-    std::filesystem::path path;
+    std::string path;
     std::shared_ptr<std::istream> file;
 };
 
