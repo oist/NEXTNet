@@ -19,6 +19,7 @@ cd build
 cmake \
 	-DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" \
 	-DCMAKE_BUILD_TYPE=Release \
+	-DCMAKE_OSX_DEPLOYMENT_TARGET=10.13 \
 	-DBOOST_OVERRIDE=~/Installs/boost/1.86-headeronly/include \
 	../
 
