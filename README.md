@@ -8,7 +8,7 @@ With *[NEXTNet-EmpiricalNetworks](https://github.com/oist/NextNet-EmpiricalNetwo
 
 # Installtation
 
-To download and install a prebuilt binary of the *NEXT-NET* command-line interface, go to [*Releases*](https://github.com/oist/NEXTNet/releases), select the latest release, download `NEXTNet-v<VERSION>-x86_64.tar.gz`, and decompress. This should yield a binary called `nextnet`. Currently only binaries for Linux on x86_64 (i.e. most current HPC clusters, desktop machines and laptops) are provided, but additional platforms may be added upon request. Binaries are built in a CentOS 7 environment for maximal compatibility with a wide range of systems, but 100% universal compatibility unfortunately cannot be guaranteed. On other architectures where the binary should fail to work, please see below for how to build *NEXT-Net* from source.
+To download and install a prebuilt binary of the *NEXT-NET* command-line interface, go to [*Releases*](https://github.com/oist/NEXTNet/releases), select the latest release, download the binary release for your platform, and decompress; this should yield a binary called `nextnet`. Currently binary releases for Linux system (`NEXTNet-v<VERSION>-linux-x86_64.tar.gz`, supports most Linux systems) and Mac OS (`NEXTNet-v<VERSION>-mac.tar.gz`, supports Mac OS 10.13 and later) are provided. For other platforms, *NEXT-Net* must be built from source, see below for instructions.
 
 To build *NEXT-Net* from source, and working C++ compiler with C++17 support, *[cmake](https://cmake.org/)* and *[Boost](https://www.boost.org/)* are required. If *git* is installed, the latest version of *NEXT-Net* can be downloaded with
 ```
