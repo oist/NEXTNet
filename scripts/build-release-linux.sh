@@ -15,4 +15,4 @@ echo "*** Building NEXTNet-v$ver"
 docker run -t -i --rm \
   -v `pwd`:/io \
   holy-build-box-boost \
-  bash /io/scripts/compile-release-do.sh $ver $binary
+  bash /io/scripts/build-release-docker-hbb.sh $ver "$binary"

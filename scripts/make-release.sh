@@ -20,11 +20,19 @@ rm -f archives/NEXTNet-v$ver-full.tar
 ./scripts/git-archive-all.sh --tree-ish v$ver "archives/NEXTNet-v$ver-source.tar"
 gzip --best "archives/NEXTNet-v$ver-source.tar"
 
-echo "Building binary" >&2
-mkdir -p binaries
-./scripts/compile-release.sh $ver binaries/NEXTNet-v$ver
+echo "Building Linux x86_64 release binaries for version $ver" >&2
+mkdir -p binaries/linux-x86_64
+./scripts/build-release-linux.sh $ver binaries/linux-x86_64/nextnet-v$ver
 
-echo "Creating NEXTNet-v$ver-x86_64.tar.gz"
-(rm -rf .build-archive; mkdir .build-archive;
- cp binaries/NEXTNet-v$ver .build-archive/nextnet;
- cd .build-archive; tar czf ../archives/NEXTNet-v$ver-x86_64.tar.gz nextnet)
+echo "Building Mac x86_64+arm64 release binaries for version $ver" >&2
+mkdir -p binaries/mac
+./scripts/build-release-mac.sh $ver binaries/mac/nextnet-v$ver
+
+for arch in linux-x86_64 mac; do
+	echo "Creating NEXTNet-v$ver-$arch.tar.gz"
+	rm -rf .build-binary-archive-$arch
+	mkdir .build-binary-archive-$arch
+	cp binaries/$arch/nextnet-v$ver .build-binary-archive-$arch/nextnet
+	(cd .build-binary-archive-$arch; czf ../archives/NEXTNet-v$ver-$arch.tar.gz nextnet)
+	rm -rf .build-binary-archive-$arch
+done

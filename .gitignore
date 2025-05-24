@@ -1,4 +1,5 @@
 build/
 archives/
+binaries/
 tests.out/
 .vscode/
