@@ -30,10 +30,14 @@
 #include <cstddef>      // for size_t, NULL
 #include <cstdlib>      // for exit()
 #include <sys/types.h>  // for pid_t
+#if defined(__MINGW32__) || defined(__MINGW64__)
+#include "wait.h"
+#else
 #include <sys/wait.h>   // for waitpid()
 #include <sys/ioctl.h>  // for ioctl() and FIONREAD
 #if defined(__sun)
 # include <sys/filio.h> // for FIONREAD on Solaris 2.5
+#endif
 #endif
 #include <unistd.h>     // for pipe() fork() exec() and filedes functions
 #include <signal.h>     // for kill()
@@ -2054,7 +2058,7 @@ namespace redi
       int avail = 0;
       if (sizeof(char_type) == 1)
         avail = fill_buffer(true) ? this->egptr() - this->gptr() : -1;
-#ifdef FIONREAD
+#if defined(FIONREAD) && !defined(__MINGW32__) && !defined(__MINGW64__)
       else
       {
         if (::ioctl(rpipe(), FIONREAD, &avail) == -1)
