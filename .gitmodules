@@ -1,9 +1,9 @@
 [submodule "ext/prio_queue"]
 	path = ext/prio_queue
-	url = git@github.com:rollbear/prio_queue.git
+	url = https://github.com/rollbear/prio_queue.git
 [submodule "ext/dyndist"]
 	path = ext/dyndist
 	url = https://github.com/fgp/dyndist.git
 [submodule "ext/popl"]
 	path = ext/popl
-	url = git@github.com:badaix/popl.git
+	url = https://github.com/badaix/popl.git
