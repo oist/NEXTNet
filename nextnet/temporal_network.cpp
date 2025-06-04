@@ -406,7 +406,7 @@ std::optional<network_event_t> next_reaction_network::step(rng_t &engine, absolu
 
 empirical_contact_network::empirical_contact_network(
     std::istream &file, network_kind kind,
-    edge_duration_kind contact_type, interval_t dt)
+    edge_duration_kind contact_type, interval_t dt, double weight)
     : next_reaction_network(kind)
 {
     current_time    = INFINITY;
@@ -427,13 +427,13 @@ empirical_contact_network::empirical_contact_network(
         switch (contact_type) {
             case finite_duration:
                 current_time = std::min(current_time, time - dt / 2.0);
-                queue_add_edge(src, dst, 1.0, time - dt / 2.0);
-                queue_remove_edge(src, dst, 1.0, time + dt / 2.0);
+                queue_add_edge(src, dst, weight, time - dt / 2.0);
+                queue_remove_edge(src, dst, weight, time + dt / 2.0);
                 break;
 
             case infitesimal_duration:
                 current_time = std::min(current_time, time);
-                queue_instantenous_contact(src, dst, dt, time);
+                queue_instantenous_contact(src, dst, weight*dt, time);
                 break;
         }
     }

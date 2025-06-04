@@ -77,6 +77,7 @@ DECLARE_ARGUMENT_3(weight_separator, char, ':')
 DECLARE_ARGUMENT_5(contact_kind, empirical_contact_network::edge_duration_kind,
                    empirical_contact_network::infitesimal_duration, parse_contact_kind, render_contact_kind);
 DECLARE_ARGUMENT_3(dt, double, 1.0);
+DECLARE_ARGUMENT_3(weight, double, 1.0);
 DECLARE_ARGUMENT_3(size, node_t, std::nullopt);
 DECLARE_ARGUMENT_3(avg_degree, double, std::nullopt);
 DECLARE_ARGUMENT_5(weights, std::vector<double>, std::vector<double>{ 1.0 },
@@ -115,7 +116,7 @@ factory<network> network_factory = factory<network>("network")
                                             column_separator>("empirical")
                                        .add<weighted_empirical_network, file, undirected, simplify, node_index_base,
                                             column_separator, weight_separator>("weighted_empirical")
-                                       .add<empirical_contact_network, file, contact_kind, dt>("empirical_contact")
+                                       .add<empirical_contact_network, file, contact_kind, dt, weight>("empirical_contact")
                                        .add<erdos_renyi, size, avg_degree, rng>("erdos_renyi")
                                        .add<weighted_erdos_renyi, size, avg_degree, weights, probabilities, rng>("weighted_erdos_renyi")
                                        .add<temporal_erdos_renyi, size, avg_degree, timescale, rng>("temporal_erdos_renyi")
