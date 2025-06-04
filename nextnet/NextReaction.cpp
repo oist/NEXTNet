@@ -100,6 +100,7 @@ void simulate_next_reaction::notify_infected_contact(network_event_t event, rng_
      * Event must occur now, not in the future
      */
     assert(active_edges.empty() || (top_edge().time >= event.time));
+    assert(event.kind == network_event_kind::instantenous_contact);
 
     /* Query state of source node */
     const auto source_state = infected.find(event.source_node);
@@ -120,6 +121,7 @@ void simulate_next_reaction::notify_infected_contact(network_event_t event, rng_
     e.source_time          = source_state->second.infection_time;
     e.source_node          = event.source_node;
     e.source_reset         = source_state->second.reset_time;
+    e.instantaneous_edge   = true;
     e.neighbour_index      = -1;
     e.neighbours_remaining = 0;
     push_edge(e);
@@ -186,7 +188,8 @@ std::optional<epidemic_event_t> simulate_next_reaction::step_infection(const act
     }
 
     /* Create event */
-    const epidemic_event_t ev{ .kind = next.kind, .source_node = next.source_node, .node = next.node, .time = next.time };
+    const epidemic_event_t ev{ .kind = next.kind, .source_node = next.source_node, .node = next.node,
+                               .time = next.time, .instantaneous_edge = next.instantaneous_edge };
 
     /* Check if event is blocked or putatively infected node is already infected, if so we're done */
     if (is_event_blocked(ev, evf) || is_infected(next.node))

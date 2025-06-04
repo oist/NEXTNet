@@ -379,7 +379,8 @@ std::optional<network_event_t> next_reaction_network::step(rng_t &engine, absolu
             flipped_edge_next = (!flipped_edge_next &&
                                  !(kind & directed_kind) &&
                                  ((ev.kind == network_event_kind::neighbour_added) ||
-                                  (ev.kind == network_event_kind::neighbour_removed)));
+                                  (ev.kind == network_event_kind::neighbour_removed) ||
+                                  (ev.kind == network_event_kind::instantenous_contact)));
 
             /* Dequeue event (unless we're doing the flipped version next) and return it */
             if (!flipped_edge_next) {

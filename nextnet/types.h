@@ -90,6 +90,7 @@ struct epidemic_event_t
     node_t source_node       = -1;
     node_t node              = -1;
     absolutetime_t time      = INFINITY;
+    bool instantaneous_edge  = false;
 };
 
 /**

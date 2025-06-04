@@ -91,15 +91,8 @@ simulate_on_temporal_network::step(rng_t &engine, absolutetime_t maxtime)
                     /* instantenous contact, check if the source node is infected, otherwise nothing to do */
                     auto it = infected_neighbour_state.find(ev.source_node);
                     if (it != infected_neighbour_state.end()) {
-                        /* source infected, find the state of the neighbour */
-                        auto &neighbours = it->second;
-                        auto it2         = neighbours.find(ev.target_node);
-                        /* check state */
-                        if ((it2 == neighbours.end()) || (it2->second == neighbour_state_t::admissible)) {
-                            /* neighbour state is admissible (default), report contact */
-                            simulation.notify_infected_contact(ev, engine);
-                        }
-                        /* nothing to do if the neighbour state is masked or transmitted */
+                        /* source infected, report the contact. instantaneous contacts are never blocked */
+                        simulation.notify_infected_contact(ev, engine);
                     }
                     break;
                 }
@@ -151,6 +144,10 @@ bool simulate_on_temporal_network::simulation_event_filter(epidemic_event_t ev)
 {
     switch (ev.kind) {
         case epidemic_event_kind::infection: {
+            /* Instantaneous contacts are never blocked */
+            if (ev.instantaneous_edge)
+                return true;
+        
             /* Infection event, find the state of the neighbour in the source node */
             auto it = infected_neighbour_state.find(ev.source_node);
             if (it == infected_neighbour_state.end())

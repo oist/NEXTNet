@@ -111,6 +111,11 @@ public:
         permutation<node_t> source_permutation;
         index_t neighbour_index      = -1;
         index_t neighbours_remaining = 0;
+        
+        /*
+         * Whether the edge exited only instantaneously
+         */
+        bool instantaneous_edge = false;
 
         bool operator<(const active_edges_entry &o) const { return time < o.time; }
         bool operator<=(const active_edges_entry &o) const { return time <= o.time; }
