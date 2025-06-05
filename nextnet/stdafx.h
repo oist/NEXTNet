@@ -66,6 +66,9 @@
 #    ifndef BOOST_NO_CXX17_HDR_EXECUTION
 #        define BOOST_NO_CXX17_HDR_EXECUTION
 #    endif
+#    ifndef BOOST_MATH_NO_CXX17_HDR_EXECUTION
+#        define BOOST_MATH_NO_CXX17_HDR_EXECUTION
+#    endif
 #endif
 
 #include <boost/math/distributions.hpp>
