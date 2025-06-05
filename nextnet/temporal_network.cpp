@@ -575,12 +575,14 @@ std::optional<network_event_t> temporal_erdos_renyi::step(rng_t &engine, absolut
             .kind        = network_event_kind::neighbour_added,
             .source_node = dst,
             .target_node = src,
+            .weight      = 1.0,
             .time        = next_time
         };
         return network_event_t{
             .kind        = network_event_kind::neighbour_added,
             .source_node = src,
             .target_node = dst,
+            .weight      = 1.0,
             .time        = next_time
         };
     } else {
