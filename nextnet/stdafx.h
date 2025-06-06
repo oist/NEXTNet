@@ -72,7 +72,6 @@
 #endif
 
 #include <boost/math/distributions.hpp>
-#include <boost/math/statistics/univariate_statistics.hpp>
 #include <boost/math/tools/roots.hpp>
 #include <boost/math/special_functions/erf.hpp>
 #include <boost/multi_index_container.hpp>
