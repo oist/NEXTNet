@@ -10,9 +10,8 @@ source /hbb_exe/activate
 set -x
 
 # Extract and enter source
-mkdir NEXTNet
-cd NEXTNet
 tar xzf /io/archives/"NEXTNet-v$ver-source.tar.gz"
+cd NEXTNet
 
 # Compile
 mkdir build

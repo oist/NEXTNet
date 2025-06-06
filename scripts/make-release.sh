@@ -17,7 +17,7 @@ fi
 echo "Building full archive for version $ver (including submodules)" >&2
 mkdir -p archives
 rm -f archives/NEXTNet-v$ver-full.tar
-./scripts/git-archive-all.sh --tree-ish v$ver "archives/NEXTNet-v$ver-source.tar"
+./scripts/git-archive-all.sh --prefix NEXTNet/ --tree-ish v$ver "archives/NEXTNet-v$ver-source.tar"
 gzip --best "archives/NEXTNet-v$ver-source.tar"
 
 echo "Building Linux x86_64 release binaries for version $ver" >&2

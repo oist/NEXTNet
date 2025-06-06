@@ -13,6 +13,7 @@ mkdir .build-release-mac
 cd .build-release-mac
 
 tar xf ../archives/"NEXTNet-v$ver-source.tar.gz"
+cd NEXTNet
 mkdir build
 cd build
 
@@ -27,6 +28,7 @@ make -j 16
 
 cd ..
 cd ..
-cp .build-release-mac/build/nextnet "$binary"
+cd ..
+cp .build-release-mac/NEXTNet/build/nextnet "$binary"
 
 rm -rf .build-release-mac
