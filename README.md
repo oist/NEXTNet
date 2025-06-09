@@ -6,7 +6,7 @@ We recommend that users who are already familiar with Python or R use *NEXT-Net*
 
 With *[NEXTNet-EmpiricalNetworks](https://github.com/oist/NextNet-EmpiricalNetworks)* we also provide a database of empirical networks in a format compatible with *NEXT-Net*, compiled from the SNAP ([Leskovec and Krevl, 2014](http://snap.stanford.edu/data)), ICON ([Clauset *et al.*, 2016](https://icon.colorado.edu/)), and KONECT ([Kunegis, 2013](https://doi.org/10.1145/2487788.2488173)) and other publications ([Rocha *et al.*, 2010](https://doi.org/10.1073/pnas.0914080107)).
 
-# Installtation
+# Installation
 
 To download and install a prebuilt binary of the *NEXT-NET* command-line interface, go to [*Releases*](https://github.com/oist/NEXTNet/releases), select the latest release, download the binary release for your platform, and decompress; this should yield a binary called `nextnet`. Currently binary releases for Linux system (`NEXTNet-v<VERSION>-linux-x86_64.tar.gz`, supports most Linux systems) and Mac OS (`NEXTNet-v<VERSION>-mac.tar.gz`, supports Mac OS 10.13 and later) are provided. For other platforms, *NEXT-Net* must be built from source, see below for instructions.
 
