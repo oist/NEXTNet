@@ -186,6 +186,26 @@ std::optional<epidemic_event_t> simulate_next_reaction::step_infection(const act
             push_edge(e);
         }
     }
+	
+	/*
+	 * To exactly simulate situations where a node A during the same infection cycle infects
+	 * a node B twice (meaning A is infected, infects B, B recovery, and is reinfected by A),
+	 * edges that have fired must be reactivated. Outside infections, however, do not get
+	 * repeated
+	 */
+	if (reactivate_edges && (next.kind != epidemic_event_kind::outside_infection)) {
+		const double tau = psi.sample(engine, next.time - next.source_time, next.edge_weight);
+		if (std::isnan(tau) || (tau < 0))
+			throw std::logic_error("transmission times must be non-negative");
+		const double t = next.time + tau;
+		/* Only queue if the edge re-fires before the source node's reset */
+		if (t < next.source_reset) {
+			assert(std::isfinite(t));
+			active_edges_entry e = next;
+			e.time = t;
+			push_edge(e);
+		}
+	}
 
     /* Create event */
     const epidemic_event_t ev{ .kind = next.kind, .source_node = next.source_node, .node = next.node,
@@ -288,6 +308,7 @@ std::optional<epidemic_event_t> simulate_next_reaction::step_infection(const act
             e.node         = neighbour;
             e.source_time  = next.time;
             e.source_node  = next.node;
+			e.edge_weight  = weight;
             e.source_reset = node_reset_time;
             if (!p.edges_concurrent)
                 e.source_permutation = std::move(pi);

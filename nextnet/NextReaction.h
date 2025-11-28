@@ -15,6 +15,7 @@ public:
     {
         params() noexcept {};
 
+		bool exact_reinfection  = true;
         bool shuffle_neighbours = true;
         bool edges_concurrent   = true;
         bool SIR                = false;
@@ -29,9 +30,12 @@ public:
         , rho(rho_)
         , p(p_)
         , shuffle_neighbours(p.shuffle_neighbours && !p.edges_concurrent)
+		, reactivate_edges(p.exact_reinfection && (rho != nullptr) && !p.SIR)
     {
+		if (!p.edges_concurrent && (p.exact_reinfection))
+			throw std::runtime_error("sequential edges mode is not supported in combination with exact reinfections");
         if (!p.edges_concurrent && (nw_weighted != nullptr))
-            throw std::runtime_error("sequential edges mode is not supported for concurrent networks");
+            throw std::runtime_error("sequential edges mode is not supported for weighted networks");
     }
 
     virtual network &get_network() const override;
@@ -73,6 +77,7 @@ public:
     const class transmission_time *rho = nullptr;
     const params p;
     const bool shuffle_neighbours;
+	const bool reactivate_edges;
 
     int removed = 0; // number of nodes that have recovered and cannot be re infected. (only active in the SIR case).
 
@@ -107,6 +112,7 @@ public:
          */
         absolutetime_t source_time  = INFINITY;
         node_t source_node          = -1;
+		double edge_weight          = 1.0;
         absolutetime_t source_reset = INFINITY;
         permutation<node_t> source_permutation;
         index_t neighbour_index      = -1;

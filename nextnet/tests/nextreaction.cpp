@@ -228,3 +228,44 @@ TEST_CASE("Fraction of the recovered nodes for SIR on the weighted Erdos-Renyi g
 
     /* TODO: Check results */
 }
+
+TEST_CASE("Exact reinfection mode", "[nextreaction]")
+{
+	rng_t engine;
+	
+	/* Create a two-node network: A <--> B */
+	adjacencylist_network nw({{1}, {0}}, true, true);
+	transmission_time_periodic psi(1.0/128);
+	transmission_time_gamma rho(2, 1);
+	const int M = 100;
+	const int K = 1;
+	
+	std::vector<std::size_t> B_infections;
+	B_infections.resize(K+2);
+	for (int i=0; i < M; ++i) {
+		/* Infect node A at time 0 and run simulation until A recovers */
+		simulate_next_reaction::params p;
+		p.exact_reinfection = true;
+		simulate_next_reaction sim(nw, psi, &rho, p);
+		sim.add_infections({ std::make_pair(0, 0.0) });
+		int B_inf = 0;
+		while(true) {
+			epidemic_event_t next = *sim.step(engine);
+			if ((next.kind == epidemic_event_kind::reset) && (next.node == 0))
+				break;
+			/* Count number of infections of B */
+			if ((next.kind == epidemic_event_kind::infection) && (next.node == 1))
+				B_inf++;
+			if (B_inf > K)
+				break;
+		}
+		B_infections[std::min(B_inf, K+1)]++;
+	}
+	
+	for(std::size_t i=0; i < K+1; ++i)
+		std::cerr << "  " << i << ": " << B_infections[i] << std::endl;
+	const double pval1 = ztest(B_infections[0], 1, 0);
+	REQUIRE(pval1 >= 0.01);
+	const double pval2 = ztest(B_infections[1], sqrt(M)/2.0, M/2.0);
+	REQUIRE(pval2 >= 0.01);
+}
