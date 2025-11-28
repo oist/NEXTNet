@@ -563,6 +563,66 @@ interval_t transmission_time_deterministic::survivalquantile(double u, interval_
 
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
+/*-----------TRANSMISSION TIME:PERIODIC---------------*/
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+
+double transmission_time_periodic::delta(interval_t t) const
+{
+	/* Return smallest integer multiple of T larger than t */
+	const double r = fmod(t, period);
+	const double d = period - r;
+	return d;
+}
+
+double transmission_time_periodic::sample(rng_t &, interval_t t, double m) const
+{
+	return delta(t);
+}
+
+double transmission_time_periodic::density(interval_t tau) const
+{
+	return (fmod(tau, period) == 0.0) ? INFINITY : 0;
+}
+
+double transmission_time_periodic::hazardrate(interval_t tau) const
+{
+	return (fmod(tau, period) == 0.0) ? INFINITY : 0;
+}
+
+double transmission_time_periodic::hazardbound(interval_t) const
+{
+	return INFINITY;
+}
+
+double transmission_time_periodic::survivalprobability(interval_t tau) const
+{
+	return (tau < delta(0)) ? 1 : 0;
+}
+
+double transmission_time_periodic::survivalprobability(interval_t tau, interval_t t, double m) const
+{
+	if ((t < 0) || !std::isfinite(t))
+		throw std::range_error("condition t must be non-negative and finite");
+	if (m < 1)
+		throw std::range_error("m must be positive");
+	if (tau < 0)
+		return 1.0;
+	return (tau < delta(t)) ? 1 : 0;
+}
+
+interval_t transmission_time_periodic::survivalquantile(double u) const
+{
+	throw std::runtime_error("not implemented");
+}
+
+interval_t transmission_time_periodic::survivalquantile(double u, interval_t t, double m) const
+{
+	throw std::runtime_error("not implemented");
+}
+
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
 /*-----------SUB RNGS---------------------------------*/
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/

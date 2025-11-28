@@ -409,6 +409,48 @@ public:
 
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
+/*-----------TRANSMISSION TIME: PERIODIC--------------*/
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
+
+/* TODO: This is prone to numerical issues atm if the perior is not exactly representable as a double */
+
+class transmission_time_periodic : public transmission_time
+{
+public:
+	transmission_time_periodic(double T)
+		: period(T)
+	{
+	}
+
+	const double period;
+
+	using transmission_time::survivalprobability;
+	using transmission_time::survivalquantile;
+
+	virtual interval_t sample(rng_t &, interval_t t, double m) const override;
+
+	virtual double density(interval_t tau) const override;
+
+	virtual double hazardrate(interval_t) const override;
+
+	virtual double hazardbound(interval_t) const override;
+
+	virtual double survivalprobability(interval_t tau) const override;
+
+	virtual double survivalprobability(interval_t tau, interval_t t, double m) const override;
+
+	virtual interval_t survivalquantile(double u) const override;
+
+	virtual interval_t survivalquantile(double u, interval_t t, double m) const override;
+	
+private:
+	virtual interval_t delta(interval_t t) const;
+};
+
+
+/*----------------------------------------------------*/
+/*----------------------------------------------------*/
 /*-----------TRANSMISSION TIME: INFECTIOUSNESS -------*/
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
