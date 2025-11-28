@@ -246,8 +246,8 @@ TEST_CASE("Exact reinfection mode", "[nextreaction]")
 		B_infections[std::min(B_inf, K+1)]++;
 	}
 	
-	for(std::size_t i=0; i < K+1; ++i)
-		std::cerr << "  " << i << ": " << B_infections[i] << std::endl;
+	//for(std::size_t i=0; i < K+1; ++i)
+	//	std::cerr << "  " << i << ": " << B_infections[i] << std::endl;
 	const double pval1 = ztest(B_infections[0], 1, 0);
 	REQUIRE(pval1 >= 0.01);
 	const double pval2 = ztest(B_infections[1], sqrt(M)/2.0, M/2.0);
