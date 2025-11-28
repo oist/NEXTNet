@@ -186,6 +186,15 @@ std::optional<epidemic_event_t> simulate_next_reaction::step_infection(const act
             push_edge(e);
         }
     }
+
+	/* Create event */
+	const epidemic_event_t ev{ .kind = next.kind, .source_node = next.source_node, .node = next.node,
+							   .time = next.time, .instantaneous_edge = next.instantaneous_edge };
+
+	/* Check if event is blocked, if so we are done.
+	 * NOTE: In this case, the edge won't re-fire during the same infection cycle even in exact reinfection mode */
+	if (is_event_blocked(ev, evf))
+		return std::nullopt;
 	
 	/*
 	 * To exactly simulate situations where a node A during the same infection cycle infects
@@ -207,12 +216,9 @@ std::optional<epidemic_event_t> simulate_next_reaction::step_infection(const act
 		}
 	}
 
-    /* Create event */
-    const epidemic_event_t ev{ .kind = next.kind, .source_node = next.source_node, .node = next.node,
-                               .time = next.time, .instantaneous_edge = next.instantaneous_edge };
-
-    /* Check if event is blocked or putatively infected node is already infected, if so we're done */
-    if (is_event_blocked(ev, evf) || is_infected(next.node))
+    /* If the node to be infected is already infected, we're done
+	 * NOTE: In exact reinfection mode, the code above ensures that we'll try to re-transmit later */
+    if (is_infected(next.node))
         return std::nullopt;
 
     /* Node becomes infected.
