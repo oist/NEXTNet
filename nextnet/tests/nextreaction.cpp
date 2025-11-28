@@ -1,27 +1,11 @@
 #include "nextnet/tests/stdafx.h"
 #include "nextnet/tests/simulate.h"
 #include "nextnet/tests/analytical.h"
+#include "nextnet/tests/statistics.h"
 #include "nextnet/tests/plot.h"
 
 #include "nextnet/random.h"
 #include "nextnet/NextReaction.h"
-
-namespace {
-
-/**
- * @brief Simple symmetric Z-test (similar to a t-Test but for known variance)
- *
- * @return The symmetric p-value
- */
-#if 0
-inline double ztest(double mean_obs, double sd_true, double mean_true) {
-	using namespace std;
-	const double z = (mean_obs - mean_true) / sd_true;
-	return 1 - std::erf(abs(z) / sqrt(2));
-}
-#endif
-
-} // namespace
 
 #if ENABLE_PLOTTING
 TEST_CASE("Plot large-population SIR mean-field (NextReaction)", "[nextreaction]")
