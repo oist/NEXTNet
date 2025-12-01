@@ -89,6 +89,7 @@ struct epidemic_event_t
     epidemic_event_kind kind = epidemic_event_kind::none;
     node_t source_node       = -1;
     node_t node              = -1;
+    double weight            = 1.0;
     absolutetime_t time      = INFINITY;
     bool instantaneous_edge  = false;
 };

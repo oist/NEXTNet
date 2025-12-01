@@ -188,7 +188,7 @@ std::optional<epidemic_event_t> simulate_next_reaction::step_infection(const act
     }
 
 	/* Create event */
-	const epidemic_event_t ev{ .kind = next.kind, .source_node = next.source_node, .node = next.node,
+	const epidemic_event_t ev{ .kind = next.kind, .source_node = next.source_node, .node = next.node,.weight=next.edge_weight,
 							   .time = next.time, .instantaneous_edge = next.instantaneous_edge };
 
 	/* Check if event is blocked, if so we are done.
