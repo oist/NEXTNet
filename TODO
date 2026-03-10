@@ -1,0 +1,4 @@
+- Extend transmission_time to accept a "class" parameter
+- Create a layered_network abstract base class that extends weighted_network but has an additional "class" parameter that specifies the layer an edge belongs to. We generally allow multi-edges as long as they exist on different layers.
+- Create an layered_transmission_time class which is created with a list of transmission_times, and selects the one relevant to the specified layer in sample() etc.
+- Create a network_stack class which is created with a list of networks and assigns all edges of the first network class 0, all edges of the next network class 1 etc.
