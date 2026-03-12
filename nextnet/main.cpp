@@ -52,7 +52,7 @@ int main(int argc, const char *argv[])
     auto rho_opt           = op.add<Value<string>>("r", "recovery-time", "recovery time (rho)");
     auto nw_opt            = op.add<Value<string>>("n", "network", "network to simulat on");
     auto alg_opt           = op.add<Value<string>>("a", "algorithm", "simulation algorithm to use", "next");
-    auto param_opt         = op.add<Value<string>>("s", "parameter", "set simulation parameter");
+    auto param_opt         = op.add<Value<string>>("s", "parameter", "set algorithm parameter");
     auto initial_opt       = op.add<Value<node_t>>("i", "initial-infection", "initial infected node");
     auto ev_opt            = op.add<Value<string>>("w", "report", "report events (e = epidemic, n = network)", "e");
     auto tmax_opt          = op.add<Value<double>>("t", "stopping-time", "stop simulation at this time");
@@ -62,6 +62,7 @@ int main(int argc, const char *argv[])
     auto out_opt           = op.add<Value<string>>("o", "output", "output file");
     auto list_times_opt    = op.add<Switch>("", "list-times", "list distributions");
     auto list_networks_opt = op.add<Switch>("", "list-networks", "list network types");
+    auto list_params_opt   = op.add<Switch>("", "list-parameters", "list algorithm parameters");
 
     /* Parse arguments and setup things */
 
@@ -90,6 +91,23 @@ int main(int argc, const char *argv[])
             cout << "--------\n";
             for (const string &s : network_factory.descriptions)
                 cout << s << "\n";
+            return 0;
+        }
+        
+        /* Create algorithm factory */
+        
+        auto a_i = algorithms.find(alg_opt->value());
+        if (a_i == algorithms.end())
+            throw program_argument_error("algorithm", "unknown algorithm "s + alg_opt->value());
+        algorithm &alg_factory = a_i->second;
+
+        /* Output list of algorithm parameters if requested, then stop */
+
+        if (list_params_opt->is_set()) {
+            cout << "parameters for algorithm '" << alg_factory.name << "'\n";
+            cout << "------------------------\n" ;
+            for (const std::string& p: alg_factory.parameters())
+                cout << p << "\n";
             return 0;
         }
 
@@ -134,20 +152,13 @@ int main(int argc, const char *argv[])
 
         /* Create simulation */
 
-        {
-            auto a_i = algorithms.find(alg_opt->value());
-            if (a_i == algorithms.end())
-                throw program_argument_error("algorithm", "unknown algorithm "s + alg_opt->value());
-            algorithm &alg_factory = a_i->second;
+        if (!nw.first)
+            throw program_argument_error("network", "no network specified");
 
-            if (!nw.first)
-                throw program_argument_error("network", "no network specified");
+        if (!psi.first)
+            throw program_argument_error("transmission-time", "no transmission time distribution specified");
 
-            if (!psi.first)
-                throw program_argument_error("transmission-time", "no transmission time distribution specified");
-
-            alg = alg_factory.create(*nw.first.get(), *psi.first.get(), rho.first.get(), alg_params);
-        }
+        alg = alg_factory.create(*nw.first.get(), *psi.first.get(), rho.first.get(), alg_params);
 
         /* Add initial infections */
 

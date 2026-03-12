@@ -16,7 +16,15 @@ namespace factories {
  */
 struct algorithm
 {
+    const std::string name;
+    
     typedef std::pair<std::string, std::string> param_t;
+
+    algorithm(const std::string name_)
+        :name(name_)
+    {}
+
+    virtual std::vector<std::string> parameters() const = 0;
 
     virtual std::unique_ptr<simulation_algorithm> create(network &nw, transmission_time &psi, transmission_time *rho,
                                                          const std::vector<param_t> &ps) = 0;
@@ -36,6 +44,10 @@ struct algorithm_implementation : public algorithm
     static algorithm_params_type default_params;
 
     std::unordered_map<std::string, setter_function_type> setters;
+    
+    algorithm_implementation(const std::string name_)
+        :algorithm(name_)
+    {}
 
     /**
      * Add algorithm parameters
@@ -50,12 +62,20 @@ struct algorithm_implementation : public algorithm
         return std::move(*this);
     }
 
+    virtual std::vector<std::string> parameters() const override
+    {
+        std::vector<std::string> r;
+        for(const auto& e: setters)
+            r.push_back(e.first);
+        return r;
+    }
+    
     /**
      * Create algorithm instance
      */
     virtual std::unique_ptr<simulation_algorithm> create(network &nw, transmission_time &psi,
                                                          transmission_time *rho,
-                                                         const std::vector<param_t> &ps)
+                                                         const std::vector<param_t> &ps) override
     {
         algorithm_params_type p;
         for (const param_t &pv : ps) {
