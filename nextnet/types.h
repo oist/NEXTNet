@@ -30,6 +30,11 @@ typedef double interval_t;
 typedef double absolutetime_t;
 
 /**
+ * Index of the layer an edge resides in
+ */
+typedef uint64_t edgelayer_t;
+
+/**
  * Represents an edge in a graph connecting two nodes;
  */
 typedef std::pair<node_t, node_t> edge_t;
@@ -131,6 +136,7 @@ struct network_event_t
     node_t source_node      = -1;
     node_t target_node      = -1;
     double weight           = 1.0;
+    edgelayer_t layer       = 0;
     absolutetime_t time     = INFINITY;
 };
 

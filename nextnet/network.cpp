@@ -28,6 +28,12 @@ network::~network()
     /* Nothing to do, this exits so that the destructor is a virtual function */
 }
 
+node_t network::neighbour(node_t node, int neighbour_index)
+{
+    return this->neighbour(node, neighbour_index, nullptr);
+}
+
+
 bool network_is_undirected::is_undirected()
 {
     return true;
@@ -36,6 +42,19 @@ bool network_is_undirected::is_undirected()
 bool network_is_simple::is_simple()
 {
     return true;
+}
+
+bool network_is_not_layered::is_layered()
+{
+    return false;
+}
+
+node_t network_is_not_layered::neighbour(node_t node, int neighbour_index, edgelayer_t* layer)
+{
+    const node_t r = this->neighbour(node, neighbour_index);
+    if ((r >= 0) && (*layer))
+        *layer = 0;
+    return r;
 }
 
 network_embedding::~network_embedding()

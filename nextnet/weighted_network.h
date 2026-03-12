@@ -26,24 +26,35 @@ class weighted_network : public virtual network
 {
 public:
     virtual ~weighted_network();
-
+    
     virtual bool is_unweighted();
-
+    
     /**
      * @brief Returns the target of the i-th outgoing edge of node <node>
      * @param node node to query
      * @param neighbour_index index of neighbour to query
+     * @param layer pointer to an edgelayer_t in which the layer containing the edge is stored
      * @param weight pointer to a double in which the weight of the edge is stored
      */
-    using network::neighbour;
-    virtual node_t neighbour(node_t node, int neighbour_index, double *weight) = 0;
+    virtual node_t neighbour(node_t node, int neighbour_index, edgelayer_t* layer, double *weight) = 0;
+    
+    /**
+     * @brief Returns the target of the i-th outgoing edge of node n.
+     * Forwards to `neighbour(node, index, nullptr, weight)` by default
+     */
+    virtual node_t neighbour(node_t node, int neighbour_index, double *weight);
 
     /**
      * @brief Returns the target of the i-th outgoing edge of node n.
-     *
-     * Forwards to `neighbour(node_t node, int neighbour_index, double* weight)`
+     * Forwards to `neighbour(node, index, layer, nullptr)` by default
      */
-    virtual node_t neighbour(node_t node, int neighbour_index) override;
+    virtual node_t neighbour(node_t node, int neighbour_index, edgelayer_t* layer);
+    
+    /**
+     * @brief Returns the target of the i-th outgoing edge of node n.
+     * Forwards to `neighbour(node, index, nullptr, nullptr)` by default
+     */
+    virtual node_t neighbour(node_t node, int neighbour_index);
 };
 
 /**
@@ -52,6 +63,38 @@ public:
  * is false).
  */
 weighted_network *as_weighted_network(network *nw);
+
+/**
+ * @brief Convenience class to mark a graph as not having layers
+ *
+ * This avoid having to override is_layered() in all non-layered graphs to
+ * return false. Instead, it suffices to additionally inherit from network_is_not_layered.
+ *
+ * In addition to returning true from is_layered(), `neighbour(node, index, layer)` is
+ * overriden to alway set layer to zero and to call `neighbour(node, index)`.
+ */
+class weighted_network_is_not_layered : public virtual weighted_network
+{
+    virtual bool is_layered();
+    
+    /**
+     * @brief Returns the target of the i-th outgoing edge of node n and the edge's layer in `layer`
+     * Forwards to `neighbour(node, index, weight)` by default and sets layer to zero
+     */
+    virtual node_t neighbour(node_t node, int neighbour_index, edgelayer_t* layer, double* weight);
+
+    /**
+     * @brief Returns the target of the i-th outgoing edge of node n and the edge's layer in `layer`
+     */
+    virtual node_t neighbour(node_t node, int neighbour_index, double* weight) = 0;
+    
+    /**
+     * @brief Returns the target of the i-th outgoing edge of node n.
+     * Forwards to `neighbour(node, index, (double*)nullptr)` by default
+     */
+    virtual node_t neighbour(node_t node, int neighbour_index);
+};
+
 
 //--------------------------------------
 //------WEIGHTED ADJACENCYLIST GRAPH----
@@ -66,6 +109,7 @@ weighted_network *as_weighted_network(network *nw);
  * is expected to setup the adjacencylist neighbours.
  */
 class weighted_adjacencylist_network : public virtual weighted_network
+    , public virtual weighted_network_is_not_layered
 {
 public:
     virtual bool is_undirected() override;

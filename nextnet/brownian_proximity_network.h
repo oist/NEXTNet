@@ -16,10 +16,11 @@
 //----------DYNAMIC NETWORKS------------
 //--------------------------------------
 
-struct brownian_proximity_network : virtual temporal_network
-    , virtual network
-    , virtual network_embedding
-    , virtual network_is_undirected
+struct brownian_proximity_network : public virtual temporal_network
+    , public virtual network
+    , public virtual network_embedding
+    , public virtual network_is_undirected
+    , public virtual network_is_not_layered
 {
     enum node_state_t {
         NONINFECTED = 0,

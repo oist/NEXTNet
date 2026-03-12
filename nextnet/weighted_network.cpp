@@ -31,15 +31,47 @@ bool weighted_network::is_unweighted()
     return false;
 }
 
+node_t weighted_network::neighbour(node_t node, int neighbour_index, double* weight)
+{
+    return this->neighbour(node, neighbour_index, nullptr, weight);
+}
+
+node_t weighted_network::neighbour(node_t node, int neighbour_index, edgelayer_t* layer)
+{
+    return this->neighbour(node, neighbour_index, layer, nullptr);
+}
+
 node_t weighted_network::neighbour(node_t node, int neighbour_index)
 {
-    double dummy;
-    return this->neighbour(node, neighbour_index, &dummy);
+    return this->neighbour(node, neighbour_index, nullptr, nullptr);
 }
 
 weighted_network::~weighted_network()
 {
 }
+
+bool weighted_network_is_not_layered::is_layered()
+{
+    return false;
+}
+
+/**
+ * @brief Returns the target of the i-th outgoing edge of node n and the edge's layer in `layer`
+ * Forwards to `neighbour(node, index, weight)` by default and sets layer to zero
+ */
+node_t weighted_network_is_not_layered::neighbour(node_t node, int neighbour_index, edgelayer_t* layer, double* weight)
+{
+    const node_t r = this->neighbour(node, neighbour_index, weight);
+    if ((r >= 0) && (layer != nullptr))
+        *layer = 0;
+    return r;
+}
+
+node_t weighted_network_is_not_layered::neighbour(node_t node, int neighbour_index)
+{
+    return this->neighbour(node, neighbour_index, (double*)nullptr);
+}
+
 
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/

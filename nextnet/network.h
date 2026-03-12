@@ -38,9 +38,16 @@ public:
     /**
      * @brief Whether the graph is simple, i.e. does not contain
      * self edges (i,i) or multi-edges (i.e. multipel edges (i,j) for the same
-     * nodes i and j).
+     * nodes i and j). If `across_layers` is false, only edges between
+     * the same nodes *and* on the same layer are counted as multi-edges.
      */
     virtual bool is_simple() = 0;
+    
+    /**
+     * @brief Whether the network is layered, i.e. whether there are edges
+     * on any layer but layer zero.
+     */
+    virtual bool is_layered() = 0;
 
     /**
      * @brief Return the number of nodes in the graph. If the number is
@@ -49,9 +56,15 @@ public:
     virtual node_t nodes();
 
     /**
-     * @brief Returns the target of the i-th outgoing edge of node n.
+     * @brief Returns the target of the i-th outgoing edge of node n and the edge's layer in `layer`
      */
-    virtual node_t neighbour(node_t node, int neighbour_index) = 0;
+    virtual node_t neighbour(node_t node, int neighbour_index, edgelayer_t* layer) = 0;
+
+    /**
+     * @brief Returns the target of the i-th outgoing edge of node n and the edge's layer in `layer`
+     * Forwards to `neighbour(node, index, nullptr)` by default
+     */
+    virtual node_t neighbour(node_t node, int neighbour_index);
 
     /**
      * @brief Returns the number of (outgoing) edges of the given node
@@ -79,6 +92,31 @@ class network_is_undirected : public virtual network
 class network_is_simple : public virtual network
 {
     virtual bool is_simple();
+};
+
+/**
+ * @brief Convenience class to mark a graph as not having layers
+ *
+ * This avoid having to override is_layered() in all non-layered graphs to
+ * return false. Instead, it suffices to additionally inherit from network_is_not_layered.
+ *
+ * In addition to returning true from is_layered(), `neighbour(node, index, layer)` is
+ * overriden to alway set layer to zero and to call `neighbour(node, index)`.
+ */
+class network_is_not_layered : public virtual network
+{
+    virtual bool is_layered() override;
+    
+    /**
+     * @brief Returns the target of the i-th outgoing edge of node n and the edge's layer in `layer`
+     * Forwards to `neighbour(node, index)` by default and sets layer to zero
+     */
+    virtual node_t neighbour(node_t node, int neighbour_index, edgelayer_t* layer) override;
+
+    /**
+     * @brief Returns the target of the i-th outgoing edge of node n and the edge's layer in `layer`
+     */
+    virtual node_t neighbour(node_t node, int neighbour_index) override = 0;
 };
 
 /**
@@ -114,7 +152,7 @@ public:
 };
 
 //--------------------------------------
-//----------ADJACENCYLIST GRAPH---------
+//----------ADJACENCYLIST NETWEORK------
 //--------------------------------------
 
 /**
@@ -123,7 +161,7 @@ public:
  * Implements functions `neighbour()` and `outdegree()`, the constructor
  * is expected to setup the adjacencylist neighbours.
  */
-class adjacencylist_network : public virtual network
+class adjacencylist_network : public virtual network, public virtual network_is_not_layered
 {
 public:
     virtual bool is_undirected() override;
@@ -160,7 +198,56 @@ protected:
     bool undirected = false;
     bool simple     = false;
 };
-//
+
+//--------------------------------------
+//-----LAYERED ADJACENCYLIST NETWORK ---
+//--------------------------------------
+
+/**
+ * @brief Base class for networks defined by an adjacency list.
+ *
+ * Implements functions `neighbour()` and `outdegree()`, the constructor
+ * is expected to setup the adjacencylist neighbours.
+ */
+class layered_adjacencylist_network : public virtual network
+{
+public:
+    virtual bool is_undirected() override;
+
+    virtual bool is_simple() override;
+    
+    virtual bool is_layered() override;
+
+    virtual node_t nodes() override;
+
+    virtual node_t neighbour(node_t node, int neighbour_index, edgelayer_t* layer) override;
+
+    virtual index_t outdegree(node_t node) override;
+
+    layered_adjacencylist_network(std::vector<std::vector<std::pair<edgelayer_t, node_t>>> &&al,
+                                  bool undirected_, bool simple_)
+        : adjacencylist(std::move(al))
+        , undirected(undirected_)
+        , simple(simple_)
+    {
+    }
+
+protected:
+    layered_adjacencylist_network()
+    {
+    }
+
+    layered_adjacencylist_network(bool undirected_, bool simple_)
+        : undirected(undirected_)
+        , simple(simple_)
+    {
+    }
+
+    std::vector<std::vector<std::pair<edgelayer_t, node_t>>> adjacencylist;
+
+    bool undirected = false;
+    bool simple     = false;
+};
 
 //--------------------------------------
 //--------WATTS STROGATZ GRAPH----------
@@ -206,6 +293,7 @@ typedef erdos_renyi erdos_reyni;
 class fully_connected : public virtual network
     , public virtual network_is_undirected
     , public virtual network_is_simple
+    , public virtual network_is_not_layered
 {
 public:
     fully_connected(int size, rng_t &engine);
@@ -230,6 +318,7 @@ public:
 class acyclic : public virtual network
     , public virtual network_is_undirected
     , public virtual network_is_simple
+    , public virtual network_is_not_layered
 {
 public:
     static double lambda(double mean, int digits);
@@ -385,6 +474,7 @@ class cubic_lattice : public virtual network
     , public virtual network_embedding
     , public virtual network_is_undirected
     , public virtual network_is_simple
+    , public virtual network_is_not_layered
 {
 public:
     const static unsigned int dimension = D;
@@ -536,7 +626,7 @@ typedef cubic_lattice<7> cubic_lattice_7d;
 typedef cubic_lattice<8> cubic_lattice_8d;
 
 //--------------------------------------
-//--------IMPORTED NETWORK----------
+//-------- EMPIRICAL NETWORK -----------
 //--------------------------------------
 
 /**
@@ -564,6 +654,7 @@ public:
         std::istream &file, bool undirected = true, bool simplify = false,
         node_t idxbase = 1, char sep = ' ');
 };
+
 
 //---------------------------------------------------
 //-----Compute the reproduction_matrix matrix --------

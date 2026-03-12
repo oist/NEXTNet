@@ -40,6 +40,7 @@ struct temporal_network : public virtual network
  * interface is agnostic to network represenations and does not provide mutators.
  */
 struct mutable_network : public virtual network
+    , public virtual network_is_not_layered
 {
     void resize(node_t nodes);
 
@@ -68,6 +69,7 @@ private:
  */
 struct mutable_weighted_network : public virtual network
     , public virtual weighted_network
+    , public virtual weighted_network_is_not_layered
 {
     void resize(node_t nodes);
 
