@@ -32,7 +32,6 @@
 		F91C06D42DA5455A007517F6 /* algorithm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F91C06C22DA53E92007517F6 /* algorithm.cpp */; };
 		F91C06D52DA5455A007517F6 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 984A0C9F27C0DE5C004A0A96 /* main.cpp */; };
 		F91C06D62DA5455A007517F6 /* time.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F91C06CF2DA54115007517F6 /* time.cpp */; };
-		F91C25E129113CA900FFAE9C /* libboost_system.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F91C25DD29113CA800FFAE9C /* libboost_system.a */; };
 		F91C25E529113CA900FFAE9C /* libboost_iostreams.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F91C25DF29113CA900FFAE9C /* libboost_iostreams.a */; };
 		F91C25E72911401C00FFAE9C /* libboost_filesystem.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F91C25DE29113CA800FFAE9C /* libboost_filesystem.a */; };
 		F921EC872952A7BF00667339 /* algorithm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F921EC862952A7BF00667339 /* algorithm.cpp */; };
@@ -104,7 +103,6 @@
 		F91C06CB2DA53F51007517F6 /* factories.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = factories.cpp; sourceTree = "<group>"; };
 		F91C06CE2DA54108007517F6 /* time.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = time.h; sourceTree = "<group>"; };
 		F91C06CF2DA54115007517F6 /* time.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = time.cpp; sourceTree = "<group>"; };
-		F91C25DD29113CA800FFAE9C /* libboost_system.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_system.a; path = lib/libboost_system.a; sourceTree = BOOST_DIR; };
 		F91C25DE29113CA800FFAE9C /* libboost_filesystem.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_filesystem.a; path = lib/libboost_filesystem.a; sourceTree = BOOST_DIR; };
 		F91C25DF29113CA900FFAE9C /* libboost_iostreams.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libboost_iostreams.a; path = lib/libboost_iostreams.a; sourceTree = BOOST_DIR; };
 		F91C25E8291140B000FFAE9C /* permutation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = permutation.h; sourceTree = "<group>"; };
@@ -162,7 +160,6 @@
 				F9D26B8F27E22A31005A272D /* libtestrunner.a in Frameworks */,
 				F91C25E529113CA900FFAE9C /* libboost_iostreams.a in Frameworks */,
 				F91C25E72911401C00FFAE9C /* libboost_filesystem.a in Frameworks */,
-				F91C25E129113CA900FFAE9C /* libboost_system.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -326,7 +323,6 @@
 			children = (
 				F91C25DE29113CA800FFAE9C /* libboost_filesystem.a */,
 				F91C25DF29113CA900FFAE9C /* libboost_iostreams.a */,
-				F91C25DD29113CA800FFAE9C /* libboost_system.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -402,7 +398,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 1620;
+				LastUpgradeCheck = 2620;
 				TargetAttributes = {
 					984A0C9B27C0DE5C004A0A96 = {
 						CreatedOnToolsVersion = 12.4;
@@ -539,6 +535,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				FRAMEWORK_SEARCH_PATHS = "$(BOOST_DIR)/lib";
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -560,11 +557,12 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = "$(BOOST_DIR)/include";
 				LIBRARY_SEARCH_PATHS = "$(BOOST_DIR)/lib";
-				MACOSX_DEPLOYMENT_TARGET = 12.0;
+				MACOSX_DEPLOYMENT_TARGET = 12.4;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				USER_HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/ext",
@@ -612,6 +610,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				FRAMEWORK_SEARCH_PATHS = "$(BOOST_DIR)/lib";
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_INLINES_ARE_PRIVATE_EXTERN = YES;
@@ -627,11 +626,12 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = "$(BOOST_DIR)/include";
 				LIBRARY_SEARCH_PATHS = "$(BOOST_DIR)/lib";
-				MACOSX_DEPLOYMENT_TARGET = 12.0;
+				MACOSX_DEPLOYMENT_TARGET = 12.4;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				USER_HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/ext",
@@ -741,7 +741,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEAD_CODE_STRIPPING = YES;
 				EXECUTABLE_PREFIX = lib;
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				USER_HEADER_SEARCH_PATHS = (
@@ -758,7 +758,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEAD_CODE_STRIPPING = YES;
 				EXECUTABLE_PREFIX = lib;
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				USER_HEADER_SEARCH_PATHS = (
