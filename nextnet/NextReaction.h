@@ -15,7 +15,7 @@ public:
     {
         params() noexcept {};
 
-		bool exact_reinfection  = true;
+        bool exact_reinfection  = false;
         bool shuffle_neighbours = true;
         bool edges_concurrent   = true;
         bool SIR                = false;
