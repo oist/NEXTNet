@@ -43,6 +43,8 @@ public:
     virtual const class transmission_time &transmission_time() const override;
 
     virtual const class transmission_time *reset_time() const override;
+    
+    virtual bool does_exact_reinfections() const override;
 
     virtual void add_infections(const std::vector<std::pair<node_t, absolutetime_t>> &v) override;
 

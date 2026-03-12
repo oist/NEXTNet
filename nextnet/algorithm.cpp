@@ -9,6 +9,11 @@ using namespace std::string_literals;
 //----------SIMULATION_ALGORITHM--------
 //--------------------------------------
 
+bool simulation_algorithm::does_exact_reinfections() const
+{
+    return false;
+}
+
 void simulation_algorithm::notify_infected_contact(network_event_t event, rng_t &engine)
 {
     throw std::logic_error("instantenous contacts are not implemented for this simulation algorithm");
@@ -23,7 +28,9 @@ simulate_on_temporal_network::simulate_on_temporal_network(simulation_algorithm 
     , simulation(sim)
 {
     if (network == NULL)
-        throw std::runtime_error("underlying simulation must use a dynamic_network");
+        throw std::runtime_error("underlying simulation must use a temporal network");
+    if (simulation.does_exact_reinfections())
+        throw std::runtime_error("exact reinfection mode is currently unsupported for temporal networks");
 };
 
 absolutetime_t

@@ -26,6 +26,8 @@ struct simulation_algorithm
     virtual const class transmission_time &transmission_time() const = 0;
 
     virtual const class transmission_time *reset_time() const = 0;
+    
+    virtual bool does_exact_reinfections() const;
 
     virtual absolutetime_t next(rng_t &engine) = 0;
 

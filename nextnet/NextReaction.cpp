@@ -5,6 +5,11 @@
 #include "nextnet/types.h"
 #include "nextnet/utility.h"
 
+bool simulate_next_reaction::does_exact_reinfections() const
+{
+    return p.exact_reinfection;
+}
+
 absolutetime_t simulate_next_reaction::next(rng_t &engine)
 {
     if (active_edges.empty())
