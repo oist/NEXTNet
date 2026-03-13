@@ -218,7 +218,7 @@ TEST_CASE("Exact reinfection mode", "[nextreaction]")
 	rng_t engine;
 	
 	/* Create a two-node network: A <--> B */
-	adjacencylist_network nw({{1}, {0}}, true, true);
+	unlayered_unweighted_adjacencylist_network nw({{1}, {0}}, true, true);
 	transmission_time_periodic psi(1.0/128);
 	transmission_time_gamma rho(2, 1);
 	const int M = 100;

@@ -28,9 +28,14 @@ network::~network()
     /* Nothing to do, this exits so that the destructor is a virtual function */
 }
 
+bool network::has_simple_layers()
+{
+    return this->is_simple();
+}
+
 node_t network::neighbour(node_t node, int neighbour_index)
 {
-    return this->neighbour(node, neighbour_index, nullptr);
+    return this->neighbour(node, neighbour_index, nullptr, nullptr);
 }
 
 
@@ -44,16 +49,24 @@ bool network_is_simple::is_simple()
     return true;
 }
 
-bool network_is_not_layered::is_layered()
+bool network_is_not_layered_and_not_weighted::is_layered()
 {
     return false;
 }
 
-node_t network_is_not_layered::neighbour(node_t node, int neighbour_index, edgelayer_t* layer)
+bool network_is_not_layered_and_not_weighted::is_unweighted()
+{
+    return true;
+}
+
+node_t network_is_not_layered_and_not_weighted::neighbour(node_t node, int neighbour_index,
+                                                          edgelayer_t* layer, double* weight)
 {
     const node_t r = this->neighbour(node, neighbour_index);
-    if ((r >= 0) && (*layer))
+    if ((r >= 0) && (layer))
         *layer = 0;
+    if ((r >= 0) && (weight))
+        *weight = 1.0;
     return r;
 }
 
@@ -64,46 +77,12 @@ network_embedding::~network_embedding()
 
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
-/*-------------- NETWORK: ADJACENCY LIST -------------*/
-/*----------------------------------------------------*/
-/*----------------------------------------------------*/
-
-bool adjacencylist_network::is_undirected()
-{
-    return undirected;
-}
-
-bool adjacencylist_network::is_simple()
-{
-    return simple;
-}
-
-node_t adjacencylist_network::nodes()
-{
-    return (node_t)adjacencylist.size();
-}
-
-node_t adjacencylist_network::neighbour(node_t node, int neighbour_index)
-{
-    const auto &n = adjacencylist.at(node);
-    if ((neighbour_index < 0) || (n.size() <= (unsigned int)neighbour_index))
-        return -1;
-    return n[neighbour_index];
-}
-
-index_t adjacencylist_network::outdegree(node_t node)
-{
-    return (index_t)adjacencylist.at(node).size();
-}
-
-/*----------------------------------------------------*/
-/*----------------------------------------------------*/
 /*-------------- NETWORK: WATTS-STROGATZ -------------*/
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
 
 watts_strogatz::watts_strogatz(node_t size, int k, double p, rng_t &engine)
-    : adjacencylist_network(true, true)
+    : unlayered_unweighted_adjacencylist_network(true, true)
 {
     if (k <= 0)
         throw std::range_error("k must be positive for Watts-Strogatz networks");
@@ -181,7 +160,7 @@ watts_strogatz::watts_strogatz(node_t size, int k, double p, rng_t &engine)
 /*----------------------------------------------------*/
 
 erdos_renyi::erdos_renyi(int size, double avg_degree, rng_t &engine)
-    : adjacencylist_network(true, true)
+    : unlayered_unweighted_adjacencylist_network(true, true) // Why is this necessary?
 {
     /*--------------Initialisation--------------
 
@@ -1320,7 +1299,7 @@ empirical_network::empirical_network(std::istream &file, bool undirected,
             if (r) std::swap(e.first, e.second);
 
             // Get adjacencylist for source node
-            std::vector<node_t> &al = adjacencylist[e.first];
+            auto &al = adjacencylist[e.first];
 
             // Retain mulitplicity of edge unless simplify is true
             for (std::size_t i = 0; i < m; ++i)

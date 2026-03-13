@@ -12,112 +12,14 @@
 
 using boost::math::erfc;
 
-/*----------------------------------------------------*/
-/*----------------------------------------------------*/
-/*------ WEIGHTED NETWORK: BASE CLASS ----------------*/
-/*----------------------------------------------------*/
-/*----------------------------------------------------*/
-
-weighted_network *as_weighted_network(network *nw)
-{
-    if (weighted_network *wnw = dynamic_cast<weighted_network *>(nw))
-        return wnw->is_unweighted() ? nullptr : wnw;
-    else
-        return nullptr;
-}
-
-bool weighted_network::is_unweighted()
-{
-    return false;
-}
-
-node_t weighted_network::neighbour(node_t node, int neighbour_index, double* weight)
-{
-    return this->neighbour(node, neighbour_index, nullptr, weight);
-}
-
-node_t weighted_network::neighbour(node_t node, int neighbour_index, edgelayer_t* layer)
-{
-    return this->neighbour(node, neighbour_index, layer, nullptr);
-}
-
-node_t weighted_network::neighbour(node_t node, int neighbour_index)
-{
-    return this->neighbour(node, neighbour_index, nullptr, nullptr);
-}
-
-weighted_network::~weighted_network()
-{
-}
-
-bool weighted_network_is_not_layered::is_layered()
-{
-    return false;
-}
-
-/**
- * @brief Returns the target of the i-th outgoing edge of node n and the edge's layer in `layer`
- * Forwards to `neighbour(node, index, weight)` by default and sets layer to zero
- */
-node_t weighted_network_is_not_layered::neighbour(node_t node, int neighbour_index, edgelayer_t* layer, double* weight)
-{
-    const node_t r = this->neighbour(node, neighbour_index, weight);
-    if ((r >= 0) && (layer != nullptr))
-        *layer = 0;
-    return r;
-}
-
-node_t weighted_network_is_not_layered::neighbour(node_t node, int neighbour_index)
-{
-    return this->neighbour(node, neighbour_index, (double*)nullptr);
-}
-
-
-/*----------------------------------------------------*/
-/*----------------------------------------------------*/
-/*------ NETWORK: WEIGHTED ADJACENCY LIST ------------*/
-/*----------------------------------------------------*/
-/*----------------------------------------------------*/
-
-bool weighted_adjacencylist_network::is_undirected()
-{
-    return undirected;
-}
-
-bool weighted_adjacencylist_network::is_simple()
-{
-    return simple;
-}
-
-node_t weighted_adjacencylist_network::nodes()
-{
-    return (node_t)adjacencylist.size();
-}
-
-node_t weighted_adjacencylist_network::neighbour(node_t node, int neighbour_index, double *weight)
-{
-    const auto &n = adjacencylist.at(node);
-    if ((neighbour_index < 0) || (n.size() <= (unsigned int)neighbour_index))
-        return -1;
-    auto neighbour_weight = n[neighbour_index];
-    if (weight != nullptr)
-        *weight = neighbour_weight.second;
-    return neighbour_weight.first;
-}
-
-index_t weighted_adjacencylist_network::outdegree(node_t node)
-{
-    return (index_t)adjacencylist.at(node).size();
-}
-
 //--------------------------------------
-//--------IMPORTED NETWORK----------
+//---- WEIGHTED EMPIRICAL NETWORK-------
 //--------------------------------------
 
 weighted_empirical_network::weighted_empirical_network(
     std::istream &file, bool undirected, bool simplify,
     node_t idxbase, char csep, char wsep)
-    : weighted_adjacencylist_network(undirected, true)
+    : unlayered_weighted_adjacencylist_network(undirected, true)
 {
     // Read adjacencylist / edgelist file and create edge multi-set
     const bool csep_is_space                            = std::isspace(csep);
@@ -219,7 +121,7 @@ weighted_empirical_network::weighted_empirical_network(
             auto &al = adjacencylist[e.first];
 
             // Retain mulitplicity of edge unless simplify is true
-            al.emplace_back(e.second, v.second);
+            al.emplace_back(std::make_tuple(e.second, v.second));
         }
     }
 }
@@ -232,7 +134,7 @@ weighted_empirical_network::weighted_empirical_network(
 
 weighted_erdos_renyi::weighted_erdos_renyi(int size, double avg_degree,
                                            std::function<double(rng_t &)> weightdist, rng_t &engine)
-    : weighted_adjacencylist_network(true, true)
+    : unlayered_weighted_adjacencylist_network(true, true)
 {
     /*--------------Initialisation--------------
 
@@ -256,8 +158,8 @@ weighted_erdos_renyi::weighted_erdos_renyi(int size, double avg_degree,
             j += 1 + s;
             assert(j < i);
             const double w = weightdist(engine);
-            adjacencylist[i].emplace_back(j, w);
-            adjacencylist[j].emplace_back(i, w);
+            adjacencylist[i].emplace_back(std::make_tuple(j, w));
+            adjacencylist[j].emplace_back(std::make_tuple(i, w));
         }
     }
 }

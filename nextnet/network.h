@@ -34,21 +34,35 @@ public:
      * edge (i,j) there is also an edge (j,i)
      */
     virtual bool is_undirected() = 0;
+    
+    /**
+     * @brief Whether the graph is weighted, i.e. each edge has an
+     * associated weight. On unweighted networks, each edge has
+     * implicit weight 1.0.
+     */
+    virtual bool is_unweighted() = 0;
+
+    /**
+     * @brief Whether the network is layered, i.e. whether edges have
+     * an associated layer. On non-layered networks, all edges exist on
+     * layer 0.
+     */
+    virtual bool is_layered() = 0;
+
 
     /**
      * @brief Whether the graph is simple, i.e. does not contain
      * self edges (i,i) or multi-edges (i.e. multipel edges (i,j) for the same
-     * nodes i and j). If `across_layers` is false, only edges between
-     * the same nodes *and* on the same layer are counted as multi-edges.
+     * nodes i and j).
      */
     virtual bool is_simple() = 0;
     
     /**
-     * @brief Whether the network is layered, i.e. whether there are edges
-     * on any layer but layer zero.
+     * @brief Whether the individual layers are simple, i.e. there are no
+     * self edges (i,i) and each layer contains each edge (i,j) at most once.
      */
-    virtual bool is_layered() = 0;
-
+    virtual bool has_simple_layers();
+    
     /**
      * @brief Return the number of nodes in the graph. If the number is
      * infinite or unknown, -1 is returned.
@@ -56,13 +70,13 @@ public:
     virtual node_t nodes();
 
     /**
-     * @brief Returns the target of the i-th outgoing edge of node n and the edge's layer in `layer`
+     * @brief Returns the target of the i-th outgoing edge of node n, the edge's layer in `layer` and the edge's weight in `weight`
      */
-    virtual node_t neighbour(node_t node, int neighbour_index, edgelayer_t* layer) = 0;
+    virtual node_t neighbour(node_t node, int neighbour_index, edgelayer_t* layer, double* weight) = 0;
 
     /**
-     * @brief Returns the target of the i-th outgoing edge of node n and the edge's layer in `layer`
-     * Forwards to `neighbour(node, index, nullptr)` by default
+     * @brief Returns the target of the i-th outgoing edge of node n
+     * Forwards to the 4-parameter version by default
      */
     virtual node_t neighbour(node_t node, int neighbour_index);
 
@@ -103,15 +117,17 @@ class network_is_simple : public virtual network
  * In addition to returning true from is_layered(), `neighbour(node, index, layer)` is
  * overriden to alway set layer to zero and to call `neighbour(node, index)`.
  */
-class network_is_not_layered : public virtual network
+class network_is_not_layered_and_not_weighted : public virtual network
 {
     virtual bool is_layered() override;
-    
+
+    virtual bool is_unweighted() override;
+
     /**
      * @brief Returns the target of the i-th outgoing edge of node n and the edge's layer in `layer`
      * Forwards to `neighbour(node, index)` by default and sets layer to zero
      */
-    virtual node_t neighbour(node_t node, int neighbour_index, edgelayer_t* layer) override;
+    virtual node_t neighbour(node_t node, int neighbour_index, edgelayer_t* layer, double* weight) override;
 
     /**
      * @brief Returns the target of the i-th outgoing edge of node n and the edge's layer in `layer`
@@ -155,98 +171,175 @@ public:
 //----------ADJACENCYLIST NETWEORK------
 //--------------------------------------
 
+namespace adjacencylist_types {
+    template<bool Layered>
+    struct member_layer {
+        member_layer(edgelayer_t l) :layer(l) {}
+        edgelayer_t layer;
+    };
+    
+    template<>
+    struct member_layer<false> {
+        member_layer(edgelayer_t l) {}
+        constexpr static edgelayer_t layer = 0;
+    };
+    
+    template<bool Weighted>
+    struct member_weight {
+        member_weight(double w) :weight(w) {}
+        double weight;
+    };
+    
+    template<>
+    struct member_weight<false> {
+        member_weight(double w) {}
+        constexpr static double weight = 1.0;
+    };
+
+    template<bool Layered, bool Weighted>
+    struct initializer{};
+
+    template<> struct initializer<false, false> {
+        typedef node_t type;
+        static constexpr node_t node(type v) { return v; }
+        static constexpr edgelayer_t layer(type v) { return 0; }
+        static constexpr double weight(type v) { return 1.0; }
+    };
+    template<> struct initializer<false, true> {
+        typedef std::tuple<node_t, double> type;
+        static constexpr node_t node(type v) { return std::get<0>(v); }
+        static constexpr edgelayer_t layer(type v) { return 0; }
+        static constexpr double weight(type v) { return std::get<1>(v); }
+    };
+    template<> struct initializer<true, false> {
+        typedef std::tuple<node_t, edgelayer_t> type;
+        static constexpr node_t node(type v) { return std::get<0>(v); }
+        static constexpr edgelayer_t layer(type v) { return std::get<1>(v); }
+        static constexpr double weight(type v) { return 1.0; }
+    };
+    template<> struct initializer<true, true> {
+        typedef std::tuple<node_t, edgelayer_t, double> type;
+        static constexpr node_t node(type v) { return std::get<0>(v); }
+        static constexpr edgelayer_t layer(type v) { return std::get<1>(v); }
+        static constexpr double weight(type v) { return std::get<2>(v); }
+    };
+}
+
 /**
  * @brief Base class for networks defined by an adjacency list.
  *
  * Implements functions `neighbour()` and `outdegree()`, the constructor
  * is expected to setup the adjacencylist neighbours.
  */
-class adjacencylist_network : public virtual network, public virtual network_is_not_layered
+template<bool Layered, bool Weighted>
+struct adjacencylist_network : public virtual network
 {
-public:
-    virtual bool is_undirected() override;
-
-    virtual bool is_simple() override;
-
-    virtual node_t nodes() override;
-
-    virtual node_t neighbour(node_t node, int neighbour_index) override;
-
-    virtual index_t outdegree(node_t node) override;
-
-    adjacencylist_network(std::vector<std::vector<node_t>> &&al,
-                          bool undirected_, bool simple_)
-        : adjacencylist(std::move(al))
-        , undirected(undirected_)
-        , simple(simple_)
+    typedef adjacencylist_types::member_layer<Layered> layer_member_t;
+    typedef adjacencylist_types::member_weight<Weighted> weight_member_t;
+    
+    struct adjacencylist_entry_t: public layer_member_t, weight_member_t
     {
-    }
+        node_t node;
+        
+        typedef adjacencylist_types::initializer<Layered, Weighted> initializer_t;
+        typedef typename initializer_t::type initializer_value_t;
 
-protected:
-    adjacencylist_network()
-    {
-    }
+        adjacencylist_entry_t(initializer_value_t v)
+            :node(initializer_t::node(v))
+            ,layer_member_t(initializer_t::layer(v))
+            ,weight_member_t(initializer_t::weight(v))
+        {}
+    };
+    
+    typedef std::vector<std::vector<adjacencylist_entry_t>> adjacencylist_t;
 
     adjacencylist_network(bool undirected_, bool simple_)
         : undirected(undirected_)
         , simple(simple_)
+        , layers_simple(simple_)
     {
     }
 
-    std::vector<std::vector<node_t>> adjacencylist;
+    adjacencylist_network(bool undirected_, bool simple_, bool layers_simple_)
+        : undirected(undirected_)
+        , simple(simple_)
+        , layers_simple(layers_simple_)
+    {
+    }
 
-    bool undirected = false;
-    bool simple     = false;
-};
-
-//--------------------------------------
-//-----LAYERED ADJACENCYLIST NETWORK ---
-//--------------------------------------
-
-/**
- * @brief Base class for networks defined by an adjacency list.
- *
- * Implements functions `neighbour()` and `outdegree()`, the constructor
- * is expected to setup the adjacencylist neighbours.
- */
-class layered_adjacencylist_network : public virtual network
-{
-public:
-    virtual bool is_undirected() override;
-
-    virtual bool is_simple() override;
     
-    virtual bool is_layered() override;
-
-    virtual node_t nodes() override;
-
-    virtual node_t neighbour(node_t node, int neighbour_index, edgelayer_t* layer) override;
-
-    virtual index_t outdegree(node_t node) override;
-
-    layered_adjacencylist_network(std::vector<std::vector<std::pair<edgelayer_t, node_t>>> &&al,
-                                  bool undirected_, bool simple_)
+    adjacencylist_network(adjacencylist_t &&al, bool undirected_, bool simple_)
         : adjacencylist(std::move(al))
         , undirected(undirected_)
         , simple(simple_)
+        , layers_simple(simple_)
     {
+    }
+
+    adjacencylist_network(adjacencylist_t &&al, bool undirected_, bool simple_, bool layers_simple_)
+        : adjacencylist(std::move(al))
+        , undirected(undirected_)
+        , simple(simple_)
+        , layers_simple(layers_simple_)
+    {
+    }
+
+    virtual bool is_undirected() { return undirected; }
+
+    virtual bool is_unweighted() { return !Weighted; }
+
+    virtual bool is_layered() { return Layered; }
+
+    virtual bool is_simple() { return simple; }
+
+    virtual bool has_simple_layers() { return layers_simple; }
+
+    virtual node_t nodes() { return (node_t)adjacencylist.size(); }
+
+    virtual int outdegree(node_t node) { return (index_t)adjacencylist.at(node).size(); }
+
+    using network::neighbour;
+    virtual node_t neighbour(node_t node, int neighbour_index, edgelayer_t* layer, double* weight) {
+        const auto &n = adjacencylist.at(node);
+        if ((neighbour_index < 0) || (n.size() <= (unsigned int)neighbour_index)) return -1;
+        const auto& e = n[neighbour_index];
+        if (layer) *layer = e.layer;
+        if (weight) *weight = e.weight;
+        return e.node;
     }
 
 protected:
-    layered_adjacencylist_network()
-    {
-    }
+    adjacencylist_t adjacencylist;
+    bool undirected    = false;
+    bool simple        = false;
+    bool layers_simple = false;
+};
 
-    layered_adjacencylist_network(bool undirected_, bool simple_)
-        : undirected(undirected_)
-        , simple(simple_)
-    {
-    }
+typedef adjacencylist_network<false, false> unlayered_unweighted_adjacencylist_network;
+typedef adjacencylist_network<false, true> unlayered_weighted_adjacencylist_network;
+typedef adjacencylist_network<true, false> layered_unweighted_adjacencylist_network;
+typedef adjacencylist_network<true, true> layered_weighted_adjacencylist_network;
 
-    std::vector<std::vector<std::pair<edgelayer_t, node_t>>> adjacencylist;
+//--------------------------------------
+//--------- PROXY NETWORK --------------
+//--------------------------------------
 
-    bool undirected = false;
-    bool simple     = false;
+struct proxy_network : public virtual network
+{
+    proxy_network(std::unique_ptr<network>&& nw)
+        :impl(std::move(nw))
+    {}
+    
+    virtual bool is_undirected() override { return impl->is_undirected(); }
+    virtual bool is_simple() override { return impl->is_simple(); }
+    virtual bool has_simple_layers() override { return impl->has_simple_layers(); }
+    virtual bool is_layered() override { return impl->is_layered(); }
+    virtual node_t nodes() override{ return impl->nodes(); }
+    virtual node_t neighbour(node_t n, int i, edgelayer_t* l, double* w) override { return impl->neighbour(n, i, l, w); }
+    virtual int outdegree(node_t n) override { return impl->outdegree(n); }
+    
+protected:
+    std::unique_ptr<network> impl;
 };
 
 //--------------------------------------
@@ -256,7 +349,7 @@ protected:
 /**
  * @brief A random Watts-Strogatz network
  */
-class watts_strogatz : public virtual adjacencylist_network
+class watts_strogatz : public virtual unlayered_unweighted_adjacencylist_network
 {
 public:
     watts_strogatz(node_t size, int k, double p, rng_t &engine);
@@ -274,9 +367,10 @@ public:
 /**
  * @brief A random Erdös-Reyni network
  */
-class erdos_renyi : public virtual adjacencylist_network
+class erdos_renyi : public virtual unlayered_unweighted_adjacencylist_network
 {
 public:
+    erdos_renyi() = delete;    
     erdos_renyi(int size, double avg_degree, rng_t &engine);
 };
 
@@ -293,7 +387,7 @@ typedef erdos_renyi erdos_reyni;
 class fully_connected : public virtual network
     , public virtual network_is_undirected
     , public virtual network_is_simple
-    , public virtual network_is_not_layered
+    , public virtual network_is_not_layered_and_not_weighted
 {
 public:
     fully_connected(int size, rng_t &engine);
@@ -318,7 +412,7 @@ public:
 class acyclic : public virtual network
     , public virtual network_is_undirected
     , public virtual network_is_simple
-    , public virtual network_is_not_layered
+    , public virtual network_is_not_layered_and_not_weighted
 {
 public:
     static double lambda(double mean, int digits);
@@ -346,7 +440,7 @@ private:
 /**
  * @brief Network from arbitrary degree distribution.
  */
-class config_model : public virtual adjacencylist_network
+class config_model : public virtual unlayered_unweighted_adjacencylist_network
 {
 public:
     config_model(std::vector<int> degreelist, rng_t &engine);
@@ -371,7 +465,7 @@ std::vector<int> powerlaw_degree_list(double exponent, int size, rng_t &engine);
  *
  * Based on the algorithm described by Serrano & Boguna, 2005.
  */
-class config_model_clustered_serrano : public virtual adjacencylist_network
+class config_model_clustered_serrano : public virtual unlayered_unweighted_adjacencylist_network
 {
 public:
     /**
@@ -442,7 +536,7 @@ public:
  */
 // TODO: Clean this up
 #if 0
-class config_model_correlated : public virtual graph_adjacencylist {
+class config_model_correlated : public virtual unlayered_unweighted_adjacencylist_network {
 public:
     config_model_correlated(std::vector<int> degreelist, rng_t& engine, bool assortative);
 
@@ -459,7 +553,7 @@ public:
  *
  * The degree distribution scales with k^-3.
  */
-class barabasi_albert : public virtual adjacencylist_network
+class barabasi_albert : public virtual unlayered_unweighted_adjacencylist_network
 {
 public:
     barabasi_albert(int size, rng_t &engine, int m = 1);
@@ -474,7 +568,7 @@ class cubic_lattice : public virtual network
     , public virtual network_embedding
     , public virtual network_is_undirected
     , public virtual network_is_simple
-    , public virtual network_is_not_layered
+    , public virtual network_is_not_layered_and_not_weighted
 {
 public:
     const static unsigned int dimension = D;
@@ -647,7 +741,7 @@ typedef cubic_lattice<8> cubic_lattice_8d;
  * simplify is true, self-edges and multi-edges are removed.
  *
  */
-class empirical_network : public virtual adjacencylist_network
+class empirical_network : public virtual unlayered_unweighted_adjacencylist_network
 {
 public:
     empirical_network(

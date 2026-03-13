@@ -15,14 +15,13 @@
 
 void output_network_meta(std::ostream &dst, network &nw, char dsep)
 {
-    weighted_network *wnw  = as_weighted_network(&nw);
     network_embedding *enw = dynamic_cast<network_embedding *>(&nw);
     std::size_t d          = enw ? enw->dimensionality() : 0;
 
     const node_t N = nw.nodes();
     dst << "N=";
     ((N >= 0) ? dst << nw.nodes() : dst << "infinite") << ", is_undirected=" << nw.is_undirected();
-    dst << ", is_simple=" << nw.is_simple() << ", is_weighted=" << (wnw != nullptr);
+    dst << ", is_simple=" << nw.is_simple() << ", is_weighted=" << !nw.is_unweighted();
     dst << ", is_embedded=" << (enw != nullptr);
     if (enw != nullptr) {
         std::vector<double> x0(d, 0.0);
@@ -43,11 +42,10 @@ void output_network_meta(std::ostream &dst, network &nw, char dsep)
 void output_adjacencylist(std::ostream &dst, network &nw, bool include_weights, bool include_coords,
                           bool include_meta, bool include_header, char csep, char dsep, char wsep)
 {
-    weighted_network *wnw  = as_weighted_network(&nw);
     network_embedding *enw = dynamic_cast<network_embedding *>(&nw);
 
     const bool is_undirected = nw.is_undirected();
-    include_weights          = include_weights && (wnw != nullptr);
+    include_weights          = include_weights;
     include_coords           = include_coords && (enw != nullptr);
     std::size_t d            = enw ? enw->dimensionality() : 0;
 
@@ -87,7 +85,7 @@ void output_adjacencylist(std::ostream &dst, network &nw, bool include_weights, 
         for (index_t i = 0; i < l; ++i) {
             // Get neighbour (and edge weight if applicable)
             double w        = NAN;
-            const node_t nn = include_weights ? wnw->neighbour(n, i, &w) : nw.neighbour(n, i);
+            const node_t nn = nw.neighbour(n, i, nullptr, &w);
 
             // Only output edge if (src <= dist) for undirected networks
             if (is_undirected && (n > nn))

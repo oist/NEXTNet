@@ -477,8 +477,10 @@ std::vector<std::vector<double>> empirical_contact_network::compute_number_of_ed
 /*----------------------------------------------------*/
 /*----------------------------------------------------*/
 
-temporal_erdos_renyi::temporal_erdos_renyi(int size, double avg_degree, double timescale, rng_t &engine)
+temporal_erdos_renyi::temporal_erdos_renyi(int size, double avg_degree,
+                                           double timescale, rng_t &engine)
     : erdos_renyi(size, avg_degree, engine)
+    , unlayered_unweighted_adjacencylist_network(true, true)
     , edge_probability(avg_degree / (size - 1))
     , alpha(edge_probability / timescale)
     , beta((1.0 - edge_probability) / timescale)
@@ -565,8 +567,10 @@ std::optional<network_event_t> temporal_erdos_renyi::step(rng_t &engine, absolut
                 dst = uniform_node(engine);
             } while (src == dst);
             /* Stop if the edge is indeed currently absent */
-            const std::vector<node_t> &al = this->adjacencylist.at(src);
-            if (std::find(al.begin(), al.end(), dst) == al.end())
+            const auto &al = this->adjacencylist.at(src);
+            auto i = al.begin();
+            for(auto e = al.end(); (i != e) && (i->node != dst); ++i);
+            if (i == al.end())
                 break;
         };
         /* Add edge and return event */
@@ -591,11 +595,11 @@ std::optional<network_event_t> temporal_erdos_renyi::step(rng_t &engine, absolut
          * their degree, and then drawing a random neighbour of that node
          */
         const node_t src              = (node_t)weighted_nodes(engine);
-        const std::vector<node_t> &al = this->adjacencylist.at(src);
+        const auto &al = this->adjacencylist.at(src);
         std::uniform_int_distribution<node_t> uniform_neighbour(0, (node_t)al.size() - 1);
         const int neighbour_index = uniform_neighbour(engine);
         /* Remove edge */
-        const node_t dst = al[neighbour_index];
+        const node_t dst = al[neighbour_index].node;
         remove_edge(src, neighbour_index);
         reverse_edge_event = network_event_t{
             .kind        = network_event_kind::neighbour_removed,
@@ -617,12 +621,12 @@ std::optional<network_event_t> temporal_erdos_renyi::step(rng_t &engine, absolut
 void temporal_erdos_renyi::add_edge(node_t node, node_t neighbour)
 {
     /* add forward edge */
-    std::vector<node_t> &al_node = this->adjacencylist.at(node);
+    auto &al_node = this->adjacencylist.at(node);
     al_node.push_back(neighbour);
     weighted_nodes[node] += 1;
 
     /* add reverse edge */
-    std::vector<node_t> &al_neighbour = this->adjacencylist.at(neighbour);
+    auto &al_neighbour = this->adjacencylist.at(neighbour);
     al_neighbour.push_back(node);
     weighted_nodes[neighbour] += 1;
 
@@ -637,16 +641,17 @@ void temporal_erdos_renyi::remove_edge(node_t node, int neighbour_index)
 
     /* Remove forward edge */
     assert(weighted_nodes[node] > 0);
-    std::vector<node_t> &al_node = this->adjacencylist.at(node);
+    auto &al_node = this->adjacencylist.at(node);
     assert(!al_node.empty());
-    const node_t neighbour = al_node[neighbour_index];
+    const node_t neighbour = al_node[neighbour_index].node;
     swap(al_node[neighbour_index], al_node.back());
     al_node.pop_back();
     weighted_nodes[node] -= 1;
 
     /* Remove reverse edge */
-    std::vector<node_t> &al_neighbour = this->adjacencylist.at(neighbour);
-    auto i                            = std::find(al_neighbour.begin(), al_neighbour.end(), node);
+    auto &al_neighbour = this->adjacencylist.at(neighbour);
+    auto i = al_neighbour.begin();
+    for(auto e = al_neighbour.end(); (i != e) && (i->node != node); ++i);
     swap(*i, al_neighbour.back());
     al_neighbour.pop_back();
     weighted_nodes[neighbour] -= 1;
@@ -666,7 +671,7 @@ temporal_sirx_network::network_kind temporal_sirx_network::kind(network *nw)
 {
     network_kind r = (network_kind)0;
     r              = (network_kind)(r | (nw->is_undirected() ? (network_kind)0 : directed_kind));
-    r              = (network_kind)(r | (dynamic_cast<weighted_network *>(nw) ? weighted_kind : (network_kind)0));
+    r              = (network_kind)(r | (nw->is_unweighted() ? (network_kind)0 : weighted_kind));
     return r;
 }
 
@@ -679,14 +684,12 @@ temporal_sirx_network::temporal_sirx_network(network &nw, double kappa0_, double
     if (!nw.is_simple())
         throw std::range_error("the underlying network must be simple (no self- or multi-edged)");
 
-    weighted_network *wnw = dynamic_cast<weighted_network *>(&nw);
-
     /* Copy network structure */
     resize((node_t)nw.nodes());
     for (node_t n = 0, N = nw.nodes(); n < N; ++n) {
         node_t nn;
         double w = 1.0;
-        for (int i = 0; (nn = (wnw ? wnw->neighbour(n, i, &w) : nw.neighbour(n, i))) >= 0; i++)
+        for (int i = 0; (nn = nw.neighbour(n, i, nullptr, &w)) >= 0; i++)
             add_edge(n, nn, w);
     }
 

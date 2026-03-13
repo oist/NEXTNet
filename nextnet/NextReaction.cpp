@@ -154,7 +154,7 @@ std::optional<epidemic_event_t> simulate_next_reaction::step_infection(const act
     if (next.neighbours_remaining > 0) {
         /* Should never happen if we're making sibling edges active concurrently */
         assert(!p.edges_concurrent);
-        assert(!nw_weighted);
+        assert(nw.is_unweighted());
 
         /* This only occurs for infection edges, reset self-loops have no neighbours */
         const node_t neighbour_id = next.source_permutation[next.neighbour_index + 1];
@@ -279,10 +279,7 @@ std::optional<epidemic_event_t> simulate_next_reaction::step_infection(const act
         /* Get i-th neighbour according to the permutation */
         double weight    = 1.0;
         node_t neighbour = -1;
-        if (!nw_weighted)
-            neighbour = nw.neighbour(next.node, pi[neighbour_i]);
-        else
-            neighbour = nw_weighted->neighbour(next.node, pi[neighbour_i], &weight);
+        neighbour = nw.neighbour(next.node, pi[neighbour_i], nullptr, &weight);
 
         /* This should never happen unless the graph reported the wrong number
          * of outgoing edges */
@@ -305,7 +302,7 @@ std::optional<epidemic_event_t> simulate_next_reaction::step_infection(const act
          * also a minimal over several i.i.d draws of the unmodified distribution.
          */
         assert(p.edges_concurrent || (weight == 1.0));
-        assert(p.edges_concurrent || !nw_weighted);
+        assert(p.edges_concurrent || nw.is_unweighted());
         const double tau = psi.sample(engine, 0, p.edges_concurrent ? weight : neighbours_total);
         if (std::isnan(tau) || (tau < 0))
             throw std::logic_error("transmission times must be non-negative");

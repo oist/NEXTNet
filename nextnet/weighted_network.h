@@ -13,141 +13,6 @@
 #include "nextnet/random.h"
 #include "nextnet/utility.h"
 
-//--------------------------------------
-//--------------WEIGHTED NETWORK--------
-//--------------------------------------
-
-/**
- * @brief Extends the abstract interface <network> to support weighted networks
- *
- * The function `neighbour(node_t node, int neighbour_index, double* weight)`
- */
-class weighted_network : public virtual network
-{
-public:
-    virtual ~weighted_network();
-    
-    virtual bool is_unweighted();
-    
-    /**
-     * @brief Returns the target of the i-th outgoing edge of node <node>
-     * @param node node to query
-     * @param neighbour_index index of neighbour to query
-     * @param layer pointer to an edgelayer_t in which the layer containing the edge is stored
-     * @param weight pointer to a double in which the weight of the edge is stored
-     */
-    virtual node_t neighbour(node_t node, int neighbour_index, edgelayer_t* layer, double *weight) = 0;
-    
-    /**
-     * @brief Returns the target of the i-th outgoing edge of node n.
-     * Forwards to `neighbour(node, index, nullptr, weight)` by default
-     */
-    virtual node_t neighbour(node_t node, int neighbour_index, double *weight);
-
-    /**
-     * @brief Returns the target of the i-th outgoing edge of node n.
-     * Forwards to `neighbour(node, index, layer, nullptr)` by default
-     */
-    virtual node_t neighbour(node_t node, int neighbour_index, edgelayer_t* layer);
-    
-    /**
-     * @brief Returns the target of the i-th outgoing edge of node n.
-     * Forwards to `neighbour(node, index, nullptr, nullptr)` by default
-     */
-    virtual node_t neighbour(node_t node, int neighbour_index);
-};
-
-/**
- * @brief Converts a points to a network into a pointer to a weighted number if
- * the network is actually weighted (i.e. an instance of weighted_network and is_unweighted
- * is false).
- */
-weighted_network *as_weighted_network(network *nw);
-
-/**
- * @brief Convenience class to mark a graph as not having layers
- *
- * This avoid having to override is_layered() in all non-layered graphs to
- * return false. Instead, it suffices to additionally inherit from network_is_not_layered.
- *
- * In addition to returning true from is_layered(), `neighbour(node, index, layer)` is
- * overriden to alway set layer to zero and to call `neighbour(node, index)`.
- */
-class weighted_network_is_not_layered : public virtual weighted_network
-{
-    virtual bool is_layered();
-    
-    /**
-     * @brief Returns the target of the i-th outgoing edge of node n and the edge's layer in `layer`
-     * Forwards to `neighbour(node, index, weight)` by default and sets layer to zero
-     */
-    virtual node_t neighbour(node_t node, int neighbour_index, edgelayer_t* layer, double* weight);
-
-    /**
-     * @brief Returns the target of the i-th outgoing edge of node n and the edge's layer in `layer`
-     */
-    virtual node_t neighbour(node_t node, int neighbour_index, double* weight) = 0;
-    
-    /**
-     * @brief Returns the target of the i-th outgoing edge of node n.
-     * Forwards to `neighbour(node, index, (double*)nullptr)` by default
-     */
-    virtual node_t neighbour(node_t node, int neighbour_index);
-};
-
-
-//--------------------------------------
-//------WEIGHTED ADJACENCYLIST GRAPH----
-//--------------------------------------
-
-/**
- * @brief Base class for weighted networks defined by an adjacency list.
- *
- * Stores a vector of (neighbour, weight) pairs for every node.
- *
- * Implements functions `neighbour()` and `outdegree()`, the constructor
- * is expected to setup the adjacencylist neighbours.
- */
-class weighted_adjacencylist_network : public virtual weighted_network
-    , public virtual weighted_network_is_not_layered
-{
-public:
-    virtual bool is_undirected() override;
-
-    virtual bool is_simple() override;
-
-    virtual node_t nodes() override;
-
-    virtual node_t neighbour(node_t node, int neighbour_index, double *weight) override;
-
-    virtual index_t outdegree(node_t node) override;
-
-    weighted_adjacencylist_network(std::vector<std::vector<std::pair<node_t, double>>> &&al,
-                                   bool undirected_, bool simple_)
-        : adjacencylist(std::move(al))
-        , undirected(undirected_)
-        , simple(simple_)
-    {
-    }
-
-protected:
-    weighted_adjacencylist_network()
-    {
-    }
-
-    weighted_adjacencylist_network(bool undirected_, bool simple_)
-        : undirected(undirected_)
-        , simple(simple_)
-    {
-    }
-
-    /* Adjacency list of the graph */
-    std::vector<std::vector<std::pair<node_t, double>>> adjacencylist;
-
-    bool undirected = false;
-    bool simple     = false;
-};
-
 //-------------------------------------------
 //--------WEIGHTED EMPIRICAL NETWORK---------
 //-------------------------------------------
@@ -172,7 +37,7 @@ protected:
  * is simply an edge with a higher weight here.
  *
  */
-class weighted_empirical_network : public virtual weighted_adjacencylist_network
+class weighted_empirical_network : public virtual unlayered_weighted_adjacencylist_network
 {
 public:
     weighted_empirical_network(
@@ -187,7 +52,7 @@ public:
 /**
  * @brief A random Erdös-Reyni network
  */
-class weighted_erdos_renyi : public virtual weighted_adjacencylist_network
+class weighted_erdos_renyi : public virtual unlayered_weighted_adjacencylist_network
 {
 public:
     /**

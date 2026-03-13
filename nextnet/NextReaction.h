@@ -25,7 +25,6 @@ public:
                            const class transmission_time *rho_ = nullptr,
                            params p_                           = params())
         : nw(nw_)
-        , nw_weighted(as_weighted_network(&nw))
         , psi(psi_)
         , rho(rho_)
         , p(p_)
@@ -34,7 +33,7 @@ public:
     {
 		if (!p.edges_concurrent && (p.exact_reinfection))
 			throw std::runtime_error("sequential edges mode is not supported in combination with exact reinfections");
-        if (!p.edges_concurrent && (nw_weighted != nullptr))
+        if (!p.edges_concurrent && !nw.is_unweighted())
             throw std::runtime_error("sequential edges mode is not supported for weighted networks");
     }
 
@@ -74,7 +73,6 @@ public:
     infected_nodes_t infected;
 
     network &nw;
-    weighted_network *nw_weighted;
     const class transmission_time &psi;
     const class transmission_time *rho = nullptr;
     const params p;
