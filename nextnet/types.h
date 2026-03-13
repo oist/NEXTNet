@@ -32,7 +32,7 @@ typedef double absolutetime_t;
 /**
  * Index of the layer an edge resides in
  */
-typedef uint64_t edgelayer_t;
+typedef uint32_t edgelayer_t;
 
 /**
  * Represents an edge in a graph connecting two nodes;
